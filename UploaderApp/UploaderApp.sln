@@ -3,7 +3,48 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UploaderApp", "UploaderApp.csproj", "{06E12C20-F85E-44C6-9CB7-9229A798743F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Core.UploaderBase", "Husa.Core.UploaderBase\Husa.Core.UploaderBase.csproj", "{C7E637A3-6237-463F-9E6A-617CC8B26C7D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Uploader.SignalR.Client", "Husa.Uploader.SignalR.Client\Husa.Uploader.SignalR.Client.csproj", "{6BE01DF8-627C-482D-868B-9093AEA3DE15}"
+EndProject
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "Husa.Uploader.SignalR", "..\..\..\husa-core\core-repos\Cargador\Husa.Uploader.SignalR\", "{C5FD3CFE-D453-44AF-AF9F-D5D8C3E9867F}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.6.1"
+		Debug.AspNetCompiler.VirtualPath = "/localhost_57448"
+		Debug.AspNetCompiler.PhysicalPath = "..\..\..\husa-core\core-repos\Cargador\Husa.Uploader.SignalR\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_57448\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/localhost_57448"
+		Release.AspNetCompiler.PhysicalPath = "..\..\..\husa-core\core-repos\Cargador\Husa.Uploader.SignalR\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_57448\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "57448"
+		SlnRelativePath = "..\..\..\husa-core\core-repos\Cargador\Husa.Uploader.SignalR\"
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Husa.Core.Uploaders", "Husa.Core.Uploaders", "{DEF6DFE0-EBC2-4719-BECC-A5A6B3765B73}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Core.Uploaders.Austin", "Husa.Core.Uploaders\Husa.Core.Uploaders.Austin\Husa.Core.Uploaders.Austin.csproj", "{56DD91EB-1E11-41E6-BCDA-B24BA3FE90A9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Core.Uploaders.Dfw", "Husa.Core.Uploaders\Husa.Core.Uploaders.Dfw\Husa.Core.Uploaders.Dfw.csproj", "{6DB7A470-A669-4AF3-8CD6-7CFCA1F84BB3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Core.Uploaders.Houston", "Husa.Core.Uploaders\Husa.Core.Uploaders.Houston\Husa.Core.Uploaders.Houston.csproj", "{088C4337-5E04-4B2A-B9BA-097B77825F25}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Core.Uploaders.LongView", "Husa.Core.Uploaders\Husa.Core.Uploaders.LongView\Husa.Core.Uploaders.LongView.csproj", "{5AB0D980-761E-4225-A2D8-995634790CC7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Core.Uploaders.SanAntonio", "Husa.Core.Uploaders\Husa.Core.Uploaders.SanAntonio\Husa.Core.Uploaders.SanAntonio.csproj", "{DB3E448D-A07B-43C0-B477-D1762DDB6AFC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Core.Uploaders.Waco", "Husa.Core.Uploaders\Husa.Core.Uploaders.Waco\Husa.Core.Uploaders.Waco.csproj", "{D5BDEFE1-4D81-464B-AB0A-88962AFC7778}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Uploader", "Husa.Uploader\Husa.Uploader.csproj", "{1625E4AF-194F-4B6D-AC79-C6B2CCB4243E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Uploader.EventLog", "Husa.Uploader.EventLog\Husa.Uploader.EventLog.csproj", "{CEE38D3D-6DD6-427F-AB3D-B17D0B29593F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,13 +52,61 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{06E12C20-F85E-44C6-9CB7-9229A798743F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{06E12C20-F85E-44C6-9CB7-9229A798743F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{06E12C20-F85E-44C6-9CB7-9229A798743F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{06E12C20-F85E-44C6-9CB7-9229A798743F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7E637A3-6237-463F-9E6A-617CC8B26C7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7E637A3-6237-463F-9E6A-617CC8B26C7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7E637A3-6237-463F-9E6A-617CC8B26C7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7E637A3-6237-463F-9E6A-617CC8B26C7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6BE01DF8-627C-482D-868B-9093AEA3DE15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BE01DF8-627C-482D-868B-9093AEA3DE15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BE01DF8-627C-482D-868B-9093AEA3DE15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BE01DF8-627C-482D-868B-9093AEA3DE15}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5FD3CFE-D453-44AF-AF9F-D5D8C3E9867F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5FD3CFE-D453-44AF-AF9F-D5D8C3E9867F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5FD3CFE-D453-44AF-AF9F-D5D8C3E9867F}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5FD3CFE-D453-44AF-AF9F-D5D8C3E9867F}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{56DD91EB-1E11-41E6-BCDA-B24BA3FE90A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56DD91EB-1E11-41E6-BCDA-B24BA3FE90A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56DD91EB-1E11-41E6-BCDA-B24BA3FE90A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56DD91EB-1E11-41E6-BCDA-B24BA3FE90A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DB7A470-A669-4AF3-8CD6-7CFCA1F84BB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DB7A470-A669-4AF3-8CD6-7CFCA1F84BB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DB7A470-A669-4AF3-8CD6-7CFCA1F84BB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DB7A470-A669-4AF3-8CD6-7CFCA1F84BB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{088C4337-5E04-4B2A-B9BA-097B77825F25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{088C4337-5E04-4B2A-B9BA-097B77825F25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{088C4337-5E04-4B2A-B9BA-097B77825F25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{088C4337-5E04-4B2A-B9BA-097B77825F25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AB0D980-761E-4225-A2D8-995634790CC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AB0D980-761E-4225-A2D8-995634790CC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AB0D980-761E-4225-A2D8-995634790CC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AB0D980-761E-4225-A2D8-995634790CC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB3E448D-A07B-43C0-B477-D1762DDB6AFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB3E448D-A07B-43C0-B477-D1762DDB6AFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB3E448D-A07B-43C0-B477-D1762DDB6AFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB3E448D-A07B-43C0-B477-D1762DDB6AFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5BDEFE1-4D81-464B-AB0A-88962AFC7778}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5BDEFE1-4D81-464B-AB0A-88962AFC7778}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5BDEFE1-4D81-464B-AB0A-88962AFC7778}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5BDEFE1-4D81-464B-AB0A-88962AFC7778}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1625E4AF-194F-4B6D-AC79-C6B2CCB4243E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1625E4AF-194F-4B6D-AC79-C6B2CCB4243E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1625E4AF-194F-4B6D-AC79-C6B2CCB4243E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1625E4AF-194F-4B6D-AC79-C6B2CCB4243E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEE38D3D-6DD6-427F-AB3D-B17D0B29593F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEE38D3D-6DD6-427F-AB3D-B17D0B29593F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEE38D3D-6DD6-427F-AB3D-B17D0B29593F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEE38D3D-6DD6-427F-AB3D-B17D0B29593F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{56DD91EB-1E11-41E6-BCDA-B24BA3FE90A9} = {DEF6DFE0-EBC2-4719-BECC-A5A6B3765B73}
+		{6DB7A470-A669-4AF3-8CD6-7CFCA1F84BB3} = {DEF6DFE0-EBC2-4719-BECC-A5A6B3765B73}
+		{088C4337-5E04-4B2A-B9BA-097B77825F25} = {DEF6DFE0-EBC2-4719-BECC-A5A6B3765B73}
+		{5AB0D980-761E-4225-A2D8-995634790CC7} = {DEF6DFE0-EBC2-4719-BECC-A5A6B3765B73}
+		{DB3E448D-A07B-43C0-B477-D1762DDB6AFC} = {DEF6DFE0-EBC2-4719-BECC-A5A6B3765B73}
+		{D5BDEFE1-4D81-464B-AB0A-88962AFC7778} = {DEF6DFE0-EBC2-4719-BECC-A5A6B3765B73}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1856F660-B284-4E09-B465-51865E97F433}

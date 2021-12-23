@@ -1,0 +1,61 @@
+<Window x:Class="Husa.Cargador.MlsIssueReportView"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:cal="http://www.caliburnproject.org"
+                 xmlns:mam="http://metro.mahapps.com/winfx/xaml/controls"
+                 Title="Report a problem"
+                 MinHeight="100"
+                 MinWidth="400"
+                 MaxWidth="400"
+                 Width="400"
+                 WindowStyle="ToolWindow" ShowInTaskbar="False" SizeToContent="WidthAndHeight" WindowStartupLocation="CenterOwner" ResizeMode="NoResize"                 >
+    <StackPanel Margin="10">
+        <StackPanel.Resources>
+            <Style x:Key="HyperlinkButton" TargetType="Button">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <ContentPresenter/>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </StackPanel.Resources>
+        <StackPanel Visibility="{Binding ShowFields, Converter={StaticResource BooleanToVisibilityConverter }}">
+
+            <TextBlock>Please provide a description of the problem</TextBlock>
+            <TextBox Name="IssueDescription" Height="120" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"></TextBox>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Name="Report" Padding="7" Margin="0,5,0,0">Report</Button>
+                <Button Name="Cancel" Padding="7" Margin="5,5,0,0">Dont' report</Button>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel Visibility="{Binding ShowIssue, Converter={StaticResource BooleanToVisibilityConverter }}">
+            <TextBlock TextAlignment="Center" >
+                Issue created
+            </TextBlock>
+            <TextBlock TextAlignment="Center" Name="Url"  FontSize="30">
+                HUSAPUL-122
+            </TextBlock>
+            <Button Style="{StaticResource HyperlinkButton}" Focusable="False" Name="Navigate">
+                <TextBlock HorizontalAlignment="Center">
+                    <Hyperlink>Open Issue in JIRA</Hyperlink>
+                </TextBlock>
+            </Button>
+            <Button Name="Close" Padding="7" Margin="0,15,0,0">Close</Button>
+        </StackPanel>
+
+        <StackPanel Visibility="{Binding ShowError, Converter={StaticResource BooleanToVisibilityConverter }}">
+            <TextBlock TextAlignment="Center" Foreground="Red" TextWrapping="WrapWithOverflow" >
+               There was an unexpected error when trying to report this problem. The development team has been notified.
+            </TextBlock>
+
+            <Button Name="Finish" Padding="7" Margin="0,15,0,0">Close</Button>
+        </StackPanel>
+        <StackPanel Visibility="{Binding ShowCreating, Converter={StaticResource BooleanToVisibilityConverter }}">
+            <TextBlock TextAlignment="Center" FontSize="20" TextWrapping="WrapWithOverflow" >
+               Reporting the problem to JIRA ...
+            </TextBlock>
+        </StackPanel>
+    </StackPanel>
+</Window>
