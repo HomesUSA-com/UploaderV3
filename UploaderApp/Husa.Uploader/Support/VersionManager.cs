@@ -19,7 +19,7 @@ namespace Husa.Cargador.Support
                 if (_appBuildDate != null)
                     return _appBuildDate;
                 var te = RetrieveLinkerTimestamp();
-                _appBuildDate = "Version: " + (te.HasValue ? te.Value.ToString("yyyy.MM.dd-HH.mm") : "Unkown");
+                _appBuildDate = "Version 3: " + (te.HasValue ? te.Value.ToString("yyyy.MM.dd-HH.mm") : "Unkown");
 
                 return _appBuildDate;
             }

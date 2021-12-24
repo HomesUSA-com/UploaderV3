@@ -139,7 +139,7 @@
 
                     <StackPanel x:Name="RightPanel" Width="312" MaxHeight="456" MaxWidth="456" Height="456" >
                         <StackPanel.Background>
-                            <ImageBrush Stretch="UniformToFill" ImageSource="/Husa.Cargador;component/Media/House01.jpg"/>
+                            <ImageBrush Stretch="UniformToFill" ImageSource="/Husa.Uploader;component/Media/House01.jpg"/>
                         </StackPanel.Background>
                     </StackPanel>
                     <StackPanel x:Name="LeftPanel" Width="380" Background="#FF333333" MinWidth="380" MaxWidth="380" MaxHeight="456" MinHeight="456" 
@@ -452,7 +452,7 @@
                                 <Button x:Name="ButtonOpenMenu" Width="60" Height="60" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Top" HorizontalAlignment="Right" Visibility="Visible" Grid.RowSpan="2">
                                     <materialDesign:PackIcon Foreground="#FF1B3861" Kind="Menu" Width="25" Height="25"/>
                                 </Button>
-                                <Image x:Name="image" Margin="10,20,10,48" Grid.Row="1" Source="/Husa.Cargador;component/Media/dark-logo.png"/>
+                                <Image x:Name="image" Margin="10,20,10,48" Grid.Row="1" Source="/Husa.Uploader;component/Media/dark-logo.png"/>
                                 <!--<Image Width="40" Height="40" Margin="10,65,10,45" Source="/Husa.Cargador;component/Media/dark-logo.png" />-->
                             </Grid>
                             <ListView x:Name="LateralMenu" Foreground="#FF1B3861" ScrollViewer.HorizontalScrollBarVisibility="Hidden" SelectedIndex="{Binding CurrentEntity, Mode=TwoWay}">
