@@ -5,15 +5,10 @@ using System.Linq;
 using System.Reflection;
 using Husa.Cargador.Support;
 using Husa.Core.UploaderBase;
-using Husa.Core.Uploaders.Austin;
-using Husa.Core.Uploaders.Dfw;
-using Husa.Core.Uploaders.Houston;
 using Husa.Core.Uploaders.SanAntonio;
-using Husa.Core.Uploaders.Waco;
 using OpenQA.Selenium.Chrome;
 using Husa.Cargador.EventLog;
 using System.Diagnostics;
-using Husa.Core.Uploaders.LongView;
 
 namespace Husa.Cargador
 {
@@ -30,13 +25,7 @@ namespace Husa.Cargador
         {
             //PrimeUploaders
             // This code should be removed as soon as a correct mechanism for handling Uploaders is developed
-            IUploader prime = new AustinUploader();
-            prime = new DfwUploader();
-            prime = new HoustonHARUploader();
-            prime = new SanAntonioUploader();
-            prime = new AustinUploaderCTX();
-            prime = new WacoUploader();
-            prime = new LongViewUploader();
+            IUploader prime = new SanAntonioUploader();
 
             Uploaders = GetUploaders();
 

@@ -338,29 +338,9 @@
       <Project>{c7e637a3-6237-463f-9e6a-617cc8b26c7d}</Project>
       <Name>Husa.Core.UploaderBase</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Husa.Core.Uploaders\Husa.Core.Uploaders.LongView\Husa.Core.Uploaders.LongView.csproj">
-      <Project>{5AB0D980-761E-4225-A2D8-995634790CC7}</Project>
-      <Name>Husa.Core.Uploaders.LongView</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Husa.Core.Uploaders\Husa.Core.Uploaders.Austin\Husa.Core.Uploaders.Austin.csproj">
-      <Project>{56dd91eb-1e11-41e6-bcda-b24ba3fe90a9}</Project>
-      <Name>Husa.Core.Uploaders.Austin</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Husa.Core.Uploaders\Husa.Core.Uploaders.Dfw\Husa.Core.Uploaders.Dfw.csproj">
-      <Project>{6db7a470-a669-4af3-8cd6-7cfca1f84bb3}</Project>
-      <Name>Husa.Core.Uploaders.Dfw</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Husa.Core.Uploaders\Husa.Core.Uploaders.Houston\Husa.Core.Uploaders.Houston.csproj">
-      <Project>{088c4337-5e04-4b2a-b9ba-097b77825f25}</Project>
-      <Name>Husa.Core.Uploaders.Houston</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Husa.Core.Uploaders\Husa.Core.Uploaders.SanAntonio\Husa.Core.Uploaders.SanAntonio.csproj">
       <Project>{db3e448d-a07b-43c0-b477-d1762ddb6afc}</Project>
       <Name>Husa.Core.Uploaders.SanAntonio</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Husa.Core.Uploaders\Husa.Core.Uploaders.Waco\Husa.Core.Uploaders.Waco.csproj">
-      <Project>{d5bdefe1-4d81-464b-ab0a-88962afc7778}</Project>
-      <Name>Husa.Core.Uploaders.Waco</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

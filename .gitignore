@@ -49,3 +49,16 @@ Thumbs.db
 *.wmv
 
 UploaderApp/.packages/
+UploaderApp/Husa.Core.UploaderBase/bin/
+UploaderApp/Husa.Core.UploaderBase/obj/
+UploaderApp/Husa.Core.Uploaders/Husa.Core.Uploaders.Austin/bin/
+UploaderApp/Husa.Core.Uploaders/Husa.Core.Uploaders.SanAntonio/bin/
+UploaderApp/Husa.Core.Uploaders/Husa.Core.Uploaders.SanAntonio/obj/
+UploaderApp/Husa.Uploader.EventLog/bin/
+UploaderApp/Husa.Uploader.EventLog/obj/
+UploaderApp/Husa.Uploader.SignalR.Client/bin/
+UploaderApp/Husa.Uploader.SignalR.Client/obj/
+UploaderApp/Husa.Uploader.SignalR/bin/
+UploaderApp/Husa.Uploader.SignalR/obj/
+UploaderApp/Husa.Uploader/bin/
+UploaderApp/Husa.Uploader/obj/
