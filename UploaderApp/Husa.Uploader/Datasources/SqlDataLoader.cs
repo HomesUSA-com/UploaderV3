@@ -39,8 +39,8 @@ namespace Husa.Cargador.Datasources
         {
             var listingRequest = await GetDataInternalListingsCosmoDB();
             var internalRLRCosmo = classTransform.CosmoObjectToResidentialListingRequest(listingRequest);
-            var internalListings = await GetDataInternalListings(" ([rl].[SysStatusID] = 1 AND [rl].[SysState] <> 'D' AND [m].[IsValidMarket] = 1 AND ([rl].[TransactionType] <> 'FL' OR [rl].[TransactionType] IS NULL) ) ");
-            return internalRLRCosmo.Concat(internalListings).OrderBy(x => x.ResidentialListingRequestID).Distinct();
+            ////var internalListings = await GetDataInternalListings(" ([rl].[SysStatusID] = 1 AND [rl].[SysState] <> 'D' AND [m].[IsValidMarket] = 1 AND ([rl].[TransactionType] <> 'FL' OR [rl].[TransactionType] IS NULL) ) ");
+            return internalRLRCosmo.Distinct();
         }
 
         public Task<IEnumerable<ResidentialListingRequest>> GetLeasingData()
@@ -101,9 +101,9 @@ namespace Husa.Cargador.Datasources
         private async Task<IEnumerable<ListingRequestSale>> GetDataInternalListingsCosmoDB()
         {
             Microsoft.Azure.Cosmos.CosmosClient client = new Microsoft.Azure.Cosmos.CosmosClient("https://dfwcosmosdb.documents.azure.com:443/", "aDBWzrq8xMCFRYVmPKxHRBVumR5ESgcijQcejMSTF9ZjHwCjfrp4zNy2DGpPxBQ56oj3ELVQ93dbQFNfDJGYqw==");
-            this.saleContainer = client.GetContainer("dfwDev", "salerequest");
-            Microsoft.Azure.Cosmos.DatabaseResponse database = await client.CreateDatabaseIfNotExistsAsync("dfwDev");
-            await database.Database.CreateContainerIfNotExistsAsync("salerequest", "/ListingSaleId");
+            this.saleContainer = client.GetContainer("saborDev", "saleRequest");
+            Microsoft.Azure.Cosmos.DatabaseResponse database = await client.CreateDatabaseIfNotExistsAsync("saborDev");
+            await database.Database.CreateContainerIfNotExistsAsync("saleRequest", "/ListingSaleId");
             CancellationToken token;
 
             using (

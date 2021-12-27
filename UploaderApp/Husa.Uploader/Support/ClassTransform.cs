@@ -17,83 +17,65 @@
                 var residentialListingRequest = new ResidentialListingRequest();
                 residentialListingRequest.MarketUsername = "username";
                 residentialListingRequest.MarketPassword = "password";
-                residentialListingRequest.MarketID = 5;
-                residentialListingRequest.MarketName = "DFW";
-
-                residentialListingRequest.ContingencyInfo = listingRequest.ContingencyInfo;
-                residentialListingRequest.ContractDate = listingRequest.ContractDate;
-                residentialListingRequest.ExpiredDateOption = listingRequest.ExpiredDateOption;
-                ////residentialListingRequest.Financing = listingRequest.Financing;
-                residentialListingRequest.KickOutInfo = listingRequest.KickOutInformation;
-                residentialListingRequest.MortgageCoSold = listingRequest.MortgageCompany;
-                decimal test = 0;
-                decimal.TryParse(listingRequest.SellerPaid, out test);
-                residentialListingRequest.SellerPaid = test;
-                residentialListingRequest.StateCode =  listingRequest.ListingRequestState.ToString();
+                residentialListingRequest.MarketID = 8;
+                residentialListingRequest.MarketName = "San Antonio";
                 residentialListingRequest.ListPrice = (decimal)listingRequest.ListPrice;
-                residentialListingRequest.MLSArea = listingRequest.MlsArea;
-                residentialListingRequest.MLSSubArea = listingRequest.MlsSubArea;
                 residentialListingRequest.MLSNum = listingRequest.MlsNumber;
                 residentialListingRequest.MlsStatus = listingRequest.MlsStatus.ToString();
-                ////residentialListingRequest.AgentID_SELL = listingRequest.AgentID;
-                residentialListingRequest.BackOnMarketDate = listingRequest.BackOnMarketDate;
-                ////residentialListingRequest. = listingRequest.CancelDate;
-                residentialListingRequest.CancelledOption = listingRequest.CancelledOption;
-                residentialListingRequest.CancelledReason = listingRequest.CancelledReason;
-                residentialListingRequest.ClosedDate = listingRequest.ClosedDate;
-                ////residentialListingRequest. = listingRequest.ClosePrice;
-                residentialListingRequest.EstClosedDate = listingRequest.EstimatedClosedDate;
-                residentialListingRequest.OffMarketDate = listingRequest.OffMarketDate;
-                residentialListingRequest.PendingDate = listingRequest.PendingDate;
                 residentialListingRequest.SysCreatedOn = listingRequest.CreatedOn;
-                ////residentialListingRequest.SysCreatedBy = listingRequest.CreatedBy;
+                residentialListingRequest.SysCreatedBy = listingRequest.CreatedBy;
                 residentialListingRequest.SysModifiedOn = listingRequest.ModifiedOn;
-                ////residentialListingRequest.SysModifiedBy = listingRequest.ModifiedBy;
-                ///
-                #region PropertyTab
-                residentialListingRequest.BuildCompletionDate = listingRequest.SaleProperty.PropertyTab.ConstCompletionDate;
-                ////residentialListingRequest. = listingRequest.SaleProperty.PropertyTab.LakeName;
-                ////residentialListingRequest. = listingRequest.SaleProperty.PropertyTab.ConstructionStartYear;
-                ////residentialListingRequest. = listingRequest.SaleProperty.PropertyTab.ConstructionStage;
-                residentialListingRequest.MasterPlannedCommunityName = listingRequest.SaleProperty.PropertyTab.MasterPlannedCommunity;
-                residentialListingRequest.TaxID = listingRequest.SaleProperty.PropertyTab.TaxId;
-                residentialListingRequest.Acres = listingRequest.SaleProperty.PropertyTab.Acres;
-                residentialListingRequest.Block = listingRequest.SaleProperty.PropertyTab.Block;
-                residentialListingRequest.City = listingRequest.SaleProperty.PropertyTab.City;
-                residentialListingRequest.County = listingRequest.SaleProperty.PropertyTab.County;
-                residentialListingRequest.Latitude = listingRequest.SaleProperty.PropertyTab.Latitude ;
-                residentialListingRequest.Longitude = listingRequest.SaleProperty.PropertyTab.Longitude;
-                residentialListingRequest.LotNum = listingRequest.SaleProperty.PropertyTab.Lot;
-                residentialListingRequest.LotDesc = listingRequest.SaleProperty.PropertyTab.LotDescription;
-                residentialListingRequest.LotDim = listingRequest.SaleProperty.PropertyTab.LotDimensions;
-                residentialListingRequest.LotSizeAcres = listingRequest.SaleProperty.PropertyTab.LotSizeAcreage;
-                residentialListingRequest.OwnerName = listingRequest.SaleProperty.PropertyTab.OwnerName;
-                ////residentialListingRequest. = listingRequest.SaleProperty.PropertyTab.PreDirection;
-                residentialListingRequest.State = listingRequest.SaleProperty.PropertyTab.State;
-                residentialListingRequest.StreetName = listingRequest.SaleProperty.PropertyTab.StreetName;
-                residentialListingRequest.StreetNum = listingRequest.SaleProperty.PropertyTab.StreetNum;
-                residentialListingRequest.StreetType = listingRequest.SaleProperty.PropertyTab.StreetType;
-                residentialListingRequest.Subdivision = listingRequest.SaleProperty.PropertyTab.Subdivision;
-                residentialListingRequest.UnitNum = listingRequest.SaleProperty.PropertyTab.UnitNumber;
-                residentialListingRequest.Zip = listingRequest.SaleProperty.PropertyTab.ZipCode;
+                residentialListingRequest.SysModifiedBy = listingRequest.ModifiedBy;
+
+                #region AddressInfo
+                residentialListingRequest.StreetNum = listingRequest.SaleProperty.AddressInfo.StreetNumber.ToString();
+                residentialListingRequest.StreetName = listingRequest.SaleProperty.AddressInfo.StreetName;
+                residentialListingRequest.City = listingRequest.SaleProperty.AddressInfo.City;
+                residentialListingRequest.State = listingRequest.SaleProperty.AddressInfo.State;
+                residentialListingRequest.Zip = listingRequest.SaleProperty.AddressInfo.ZipCode;
+                residentialListingRequest.County = listingRequest.SaleProperty.AddressInfo.County;
+                residentialListingRequest.LotNum = listingRequest.SaleProperty.AddressInfo.LotNum;
+                residentialListingRequest.Block = listingRequest.SaleProperty.AddressInfo.Block;
+                residentialListingRequest.Subdivision = listingRequest.SaleProperty.AddressInfo.Subdivision;
                 #endregion
 
-                #region SpaceAndDimensionTab
-                residentialListingRequest.CarportCapacity = listingRequest.SaleProperty.SpaceAndDimensionsTab.CarpotSpaces;
-                residentialListingRequest.BathsFull = listingRequest.SaleProperty.SpaceAndDimensionsTab.FullBaths;
-                residentialListingRequest.GarageDesc = listingRequest.SaleProperty.SpaceAndDimensionsTab.GarageDescription;
-                residentialListingRequest.GarageLength = listingRequest.SaleProperty.SpaceAndDimensionsTab.GarageLength;
-                ////residentialListingRequest. = listingRequest.SaleProperty.SpaceAndDimensionsTab.GarageSpaces;
-                residentialListingRequest.GarageWidth = listingRequest.SaleProperty.SpaceAndDimensionsTab.GarageWidth;
-                residentialListingRequest.HousingTypeDesc = listingRequest.SaleProperty.SpaceAndDimensionsTab.HousingType;
-                residentialListingRequest.BathsHalf = listingRequest.SaleProperty.SpaceAndDimensionsTab.HalfBaths;
-                residentialListingRequest.PropType = listingRequest.SaleProperty.SpaceAndDimensionsTab.PropertyType;
-                residentialListingRequest.NumStories = listingRequest.SaleProperty.SpaceAndDimensionsTab.Stories;
-                residentialListingRequest.SqFtTotal = listingRequest.SaleProperty.SpaceAndDimensionsTab.SquareFeets; 
-                residentialListingRequest.SqFtSource = listingRequest.SaleProperty.SpaceAndDimensionsTab.SquareFeetSource;
-                ////residentialListingRequest. = listingRequest.SaleProperty.SpaceAndDimensionsTab.MasterBedroom;
-                ////residentialListingRequest. = listingRequest.SaleProperty.SpaceAndDimensionsTab.UtilityRoom;
+                #region PropertyInfo
+                residentialListingRequest.BuildCompletionDate = listingRequest.SaleProperty.PropertyInfo.ConstructionCompletionDate;// check
+                //ConstructionStage
+                //ConstructionYear
+                residentialListingRequest.Legal = listingRequest.SaleProperty.PropertyInfo.LegalDescription; //check
+                residentialListingRequest.TaxID = listingRequest.SaleProperty.PropertyInfo.TaxId;
+                residentialListingRequest.MLSArea = listingRequest.SaleProperty.PropertyInfo.MlsArea;
+                residentialListingRequest.MapscoMapBook = listingRequest.SaleProperty.PropertyInfo.MapscoGrid; // check
+                residentialListingRequest.LotDim = listingRequest.SaleProperty.PropertyInfo.LotDimension;
+                residentialListingRequest.LotSize = listingRequest.SaleProperty.PropertyInfo.LotSize;
+                residentialListingRequest.LotDesc = listingRequest.SaleProperty.PropertyInfo.LotDescription;
+                residentialListingRequest.Occupancy = listingRequest.SaleProperty.PropertyInfo.Occupancy;
+                //UpdateGeoCodes
+                residentialListingRequest.Latitude = listingRequest.SaleProperty.PropertyInfo.Latitude;
+                residentialListingRequest.Longitude = listingRequest.SaleProperty.PropertyInfo.Longitude;
+                //isBxlManaged
+                #endregion
+
+                #region SpaceAndDimensionInfo
+                residentialListingRequest.Category = listingRequest.SaleProperty.SpacesDimensionsInfo.TypeCategory; //check
+                residentialListingRequest.NumStories = int.Parse(listingRequest.SaleProperty.SpacesDimensionsInfo.Stories);
+                residentialListingRequest.SqFtTotal = listingRequest.SaleProperty.SpacesDimensionsInfo.SqFtTotal;
+                residentialListingRequest.SqFtSource = listingRequest.SaleProperty.SpacesDimensionsInfo.SqFtSource;
+                //EntryLength
+                //EntryWidth
+                //SpecialtyRooms
+                //MasterBedrrom
+                //numBedrooms
+                residentialListingRequest.BathsFull= listingRequest.SaleProperty.SpacesDimensionsInfo.BathsFull;
+                residentialListingRequest.BathsHalf= listingRequest.SaleProperty.SpacesDimensionsInfo.BathsHalf;
+                //masterBathDescription
+                residentialListingRequest.GarageDesc= listingRequest.SaleProperty.SpacesDimensionsInfo.GarageDescription;
+                residentialListingRequest.OtherParking = listingRequest.SaleProperty.SpacesDimensionsInfo.OtherParking;
+                #endregion
+
                 #region Rooms
+                /*
                 foreach (var room in listingRequest.SaleProperty.SpaceAndDimensionsTab.Rooms)
                 {
                     var dimensions = room.Dimensions.Split('x');
@@ -222,72 +204,81 @@
                             break;
 
                     }
-                }
-                #endregion
-                #endregion
-
-                #region FeatureTab
-                ////residentialListingRequest. = listingRequest.SaleProperty.FeatureTab.Accessibility;
-                residentialListingRequest.AccessibilityDesc = listingRequest.SaleProperty.FeatureTab.AccessibilityFeatures;
-                ////residentialListingRequest. = listingRequest.SaleProperty.FeatureTab.AlarmSecurity;
-                ///residentialListingRequest. = listingRequest.SaleProperty.FeatureTab.AlarmSecurityType;
-                residentialListingRequest.BreakfastLevel = listingRequest.SaleProperty.FeatureTab.BreakFastRoom;
-                residentialListingRequest.ConstructionDesc = listingRequest.SaleProperty.FeatureTab.Construction;
-                residentialListingRequest.EnergyDesc = listingRequest.SaleProperty.FeatureTab.EnergyFeatures;
-                residentialListingRequest.ExteriorDesc = listingRequest.SaleProperty.FeatureTab.Exterior;
-                residentialListingRequest.FenceDesc = listingRequest.SaleProperty.FeatureTab.Fence;
-                residentialListingRequest.FireplaceDesc = listingRequest.SaleProperty.FeatureTab.FirePlaceDescription;
-                residentialListingRequest.FloorsDesc = listingRequest.SaleProperty.FeatureTab.Flooring;
-                residentialListingRequest.FoundationDesc = listingRequest.SaleProperty.FeatureTab.Foundation;
-                residentialListingRequest.GreenCerts = listingRequest.SaleProperty.FeatureTab.GreenCertification;
-                residentialListingRequest.GreenFeatures = listingRequest.SaleProperty.FeatureTab.GreenFeatures;
-                residentialListingRequest.HeatSystemDesc = listingRequest.SaleProperty.FeatureTab.HeatingCooling;
-                residentialListingRequest.HousingStyleDesc = listingRequest.SaleProperty.FeatureTab.HousingStyle;
-                residentialListingRequest.InteriorDesc = listingRequest.SaleProperty.FeatureTab.Interior;
-                residentialListingRequest.KitchenDesc = listingRequest.SaleProperty.FeatureTab.KitchenDescription;
-                residentialListingRequest.KitchenEquipmentDesc = listingRequest.SaleProperty.FeatureTab.KitchenEquipment;
-                residentialListingRequest.NumFireplaces = listingRequest.SaleProperty.FeatureTab.NumFirePlaces;
-                residentialListingRequest.HasPool = listingRequest.SaleProperty.FeatureTab.PrivatePool.ToString();
-                residentialListingRequest.PoolDesc = listingRequest.SaleProperty.FeatureTab.PrivatePoolDescription;
-                residentialListingRequest.RoofDesc = listingRequest.SaleProperty.FeatureTab.Roof;
-                residentialListingRequest.SMARTFEATURESAPP = listingRequest.SaleProperty.FeatureTab.SmartFeatures.ToString();
-                ////residentialListingRequest. = listingRequest.SaleProperty.FeatureTab.NeighborhoodAmenities;
-                residentialListingRequest.MUDDistrict = listingRequest.SaleProperty.FeatureTab.MudDistrict.ToString();
-                ////residentialListingRequest. = listingRequest.SaleProperty.FeatureTab.PropertyDescription;
-                residentialListingRequest.Utilities = listingRequest.SaleProperty.FeatureTab.Utilities;
+                }*/
                 #endregion
 
-                #region FinantialSchoolTab
-                residentialListingRequest.AgentCommissionDollarsYN = listingRequest.SaleProperty.FinancialSchoolTab.AgentBonus;
-                residentialListingRequest.AgentCommissionPercentYN = listingRequest.SaleProperty.FinancialSchoolTab.AgentBonusWithAmount;
-                residentialListingRequest.AgentBonusAmount = listingRequest.SaleProperty.FinancialSchoolTab.AgentBonusAmount;
-                ////residentialListingRequest. = listingRequest.SaleProperty.FinancialSchoolTab.AgentBonusExpirationDate;
-                ////residentialListingRequest. = listingRequest.SaleProperty.FinancialSchoolTab.BillingFrequency;
-                residentialListingRequest.BuyerIncentive = listingRequest.SaleProperty.FinancialSchoolTab.BuyerIncentive.ToString();
-                residentialListingRequest.HOA = listingRequest.SaleProperty.FinancialSchoolTab.HOAFee.ToString();
-                residentialListingRequest.TitleCo = listingRequest.SaleProperty.FinancialSchoolTab.PreferredTitleCompany;
-                residentialListingRequest.TitleCoPhone = listingRequest.SaleProperty.FinancialSchoolTab.TitleCompanyPhone;
-                residentialListingRequest.TitleCoLocation = listingRequest.SaleProperty.FinancialSchoolTab.TitleCompanyLocation;
-                ////residentialListingRequest. = listingRequest.SaleProperty.FinancialSchoolTab.AgentCommission;
-                residentialListingRequest.SchoolName1 = listingRequest.SaleProperty.FinancialSchoolTab.ElementarySchool;
-                residentialListingRequest.HasHOA = listingRequest.SaleProperty.FinancialSchoolTab.HOA.ToString();
-                residentialListingRequest.AssocFeeIncludes = listingRequest.SaleProperty.FinancialSchoolTab.HOAIncludes;
-                residentialListingRequest.AssocName = listingRequest.SaleProperty.FinancialSchoolTab.HOAManagementCompany;
-                residentialListingRequest.AssocPhone = listingRequest.SaleProperty.FinancialSchoolTab.HOAManagementCompanyPhone;
-                residentialListingRequest.SchoolName3 = listingRequest.SaleProperty.FinancialSchoolTab.HighSchool;
-                residentialListingRequest.SchoolName7 = listingRequest.SaleProperty.FinancialSchoolTab.IntermediateSchool;
-                residentialListingRequest.SchoolName5 = listingRequest.SaleProperty.FinancialSchoolTab.JuniorHighSchool;
-                residentialListingRequest.SchoolName2 = listingRequest.SaleProperty.FinancialSchoolTab.MiddleSchool;
-                ////residentialListingRequest. = listingRequest.SaleProperty.FinancialSchoolTab.PrimarySchool;
-                residentialListingRequest.SchoolName6 = listingRequest.SaleProperty.FinancialSchoolTab.SeniorSchool;
-                residentialListingRequest.SchoolDistrict = listingRequest.SaleProperty.FinancialSchoolTab.SchoolDistrict;
+                #region FeaturesInfo
+                //PropertyDescription
+                residentialListingRequest.InclusionsDesc = listingRequest.SaleProperty.FeaturesInfo.Inclusions;
+                residentialListingRequest.NumFireplaces = listingRequest.SaleProperty.FeaturesInfo.Fireplaces;
+                residentialListingRequest.FireplaceDesc = listingRequest.SaleProperty.FeaturesInfo.FireplaceDescription;
+                residentialListingRequest.FloorsDesc = listingRequest.SaleProperty.FeaturesInfo.Floors;
+                residentialListingRequest.WindowCoverings = listingRequest.SaleProperty.FeaturesInfo.WindowCoverings;
+                //HasAccessibility
+                residentialListingRequest.AccessibilityDesc = listingRequest.SaleProperty.FeaturesInfo.Accessibility;
+                residentialListingRequest.HousingStyleDesc = listingRequest.SaleProperty.FeaturesInfo.HousingStyle;
+                residentialListingRequest.ExteriorFeatures = listingRequest.SaleProperty.FeaturesInfo.ExteriorFeatures;
+                residentialListingRequest.RoofDesc = listingRequest.SaleProperty.FeaturesInfo.RoofDescription;
+                residentialListingRequest.FoundationDesc = listingRequest.SaleProperty.FeaturesInfo.Foundation;
+                residentialListingRequest.ExteriorDesc = listingRequest.SaleProperty.FeaturesInfo.Exterior;
+                residentialListingRequest.HasPool = listingRequest.SaleProperty.FeaturesInfo.HasPrivatePool.ToString();
+                residentialListingRequest.PoolDesc = listingRequest.SaleProperty.FeaturesInfo.PrivatePool;
+                residentialListingRequest.FacesDesc = listingRequest.SaleProperty.FeaturesInfo.HomeFaces; //check
+                residentialListingRequest.SupElectricity = listingRequest.SaleProperty.FeaturesInfo.SupplierElectricity;
+                residentialListingRequest.SupWater = listingRequest.SaleProperty.FeaturesInfo.SupplierWater;
+                residentialListingRequest.SupGarbage = listingRequest.SaleProperty.FeaturesInfo.SupplierGarbage;
+                residentialListingRequest.SupGarbage = listingRequest.SaleProperty.FeaturesInfo.SupplierGarbage;
+                residentialListingRequest.SupGas = listingRequest.SaleProperty.FeaturesInfo.SupplierGas;
+                residentialListingRequest.SupSewer = listingRequest.SaleProperty.FeaturesInfo.SupplierSewer;
+                residentialListingRequest.SupOther = listingRequest.SaleProperty.FeaturesInfo.SupplierOther;
+                residentialListingRequest.HeatSystemDesc = listingRequest.SaleProperty.FeaturesInfo.HeatSystem;
+                residentialListingRequest.CoolSystemDesc = listingRequest.SaleProperty.FeaturesInfo.CoolingSystem;
+                residentialListingRequest.HeatingFuel = listingRequest.SaleProperty.FeaturesInfo.HeatingFuel;
+                residentialListingRequest.WaterAccessDesc = listingRequest.SaleProperty.FeaturesInfo.WaterSewer; //check
+                residentialListingRequest.GreenCerts = listingRequest.SaleProperty.FeaturesInfo.GreenCertification;
+                residentialListingRequest.EnergyDesc = listingRequest.SaleProperty.FeaturesInfo.EnergyFeatures; //check
+                residentialListingRequest.GreenFeatures = listingRequest.SaleProperty.FeaturesInfo.GreenFeatures;
+                residentialListingRequest.CommonFeatures = listingRequest.SaleProperty.FeaturesInfo.NeighborhoodAmenities; //check
+                //lotImprovements
                 #endregion
 
-                #region ShowingTab
-                residentialListingRequest.AlternatePhoneFromCompany = listingRequest.SaleProperty.ShowingTab.AltPhone;
+                #region FinantialInfo
+                residentialListingRequest.TaxRate = listingRequest.SaleProperty.FinancialInfo.TaxRate;
+                residentialListingRequest.TaxYear = listingRequest.SaleProperty.FinancialInfo.TaxYear;
+                residentialListingRequest.IsMultiParcel = listingRequest.SaleProperty.FinancialInfo.IsMultipleTaxed.ToString(); //check
+                residentialListingRequest.TitleCo = listingRequest.SaleProperty.FinancialInfo.TitleCompany;
+                residentialListingRequest.PROPSDTRMS = listingRequest.SaleProperty.FinancialInfo.ProposedTerms;
+                //hoaRequirement
+                residentialListingRequest.HasMultipleHOA = listingRequest.SaleProperty.FinancialInfo.HasMultipleHOA.ToString();
+                //NumHOA
+                //buyersAgentCommission
+                //HasAgentBonus
+                //hasBonusWithAmount
+                residentialListingRequest.AgentBonusAmount = listingRequest.SaleProperty.FinancialInfo.AgentBonusAmount.ToString();
+                residentialListingRequest.CompBuyBonusExpireDate = listingRequest.SaleProperty.FinancialInfo.BonusExpirationDate; //check
+                residentialListingRequest.BuyerIncentive = listingRequest.SaleProperty.FinancialInfo.HasBuyerIncentive.ToString(); //check
+
+                #endregion
+
+                #region ShowingInfo
+                residentialListingRequest.AltPhoneCommunity = listingRequest.SaleProperty.ShowingInfo.AltPhoneCommunity;
+                residentialListingRequest.AgentListApptPhone = listingRequest.SaleProperty.ShowingInfo.AgentListApptPhone;
+                residentialListingRequest.Showing = listingRequest.SaleProperty.ShowingInfo.Showing;
+                residentialListingRequest.RealtorContactEmail = listingRequest.SaleProperty.ShowingInfo.RealtorContactEmail;
+                residentialListingRequest.Directions = listingRequest.SaleProperty.ShowingInfo.Directions;
+                residentialListingRequest.AgentPrivateRemarks = listingRequest.SaleProperty.ShowingInfo.AgentPrivateRemarks;
+                #endregion
+
+                #region SchoolsInfo
+                residentialListingRequest.SchoolDistrict = listingRequest.SaleProperty.SchoolsInfo.SchoolDistrict;
+                residentialListingRequest.SchoolName1 = listingRequest.SaleProperty.SchoolsInfo.ElementarySchool;
+                residentialListingRequest.SchoolName2 = listingRequest.SaleProperty.SchoolsInfo.MiddleSchool;
+                residentialListingRequest.SchoolName3 = listingRequest.SaleProperty.SchoolsInfo.HighSchool;
+                #endregion
+
                 #region OpenHouse
-
-                foreach(var openHouse in listingRequest.SaleProperty.ShowingTab.OpenHouses)
+                /*
+                foreach (var openHouse in listingRequest.SaleProperty.ShowingTab.OpenHouses)
                 {
                     switch (openHouse.Type) 
                     {
@@ -335,18 +326,11 @@
                             break;
                         default: break;
                     }
-                }
+                }*/
                 #endregion
 
-                residentialListingRequest.AgentListApptPhone = listingRequest.SaleProperty.ShowingTab.ApptPhone;
-                ////residentialListingRequest. = listingRequest.SaleProperty.ShowingTab.AgentorRemarks;
-                residentialListingRequest.Directions = listingRequest.SaleProperty.ShowingTab.Directions;
-                residentialListingRequest.EmailRealtorsContact = listingRequest.SaleProperty.ShowingTab.EmailforRealtors;
-                residentialListingRequest.Showing = listingRequest.SaleProperty.ShowingTab.Showing;
-                residentialListingRequest.ShowingInstructions = listingRequest.SaleProperty.ShowingTab.ShowingInstructions;
+                #region HOAS
                 #endregion
-
-
                 residentialListingRequests.Add(residentialListingRequest);
             }
 

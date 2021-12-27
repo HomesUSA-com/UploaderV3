@@ -1,16 +1,11 @@
 ﻿namespace Husa.Cargador.ViewModels.ListingRequestSaleSubClass
 {
-    using Husa.Cargador.ViewModels.Enum;
-    using System;
-
     public class Rooms
     {
-        public Guid Id { get; set; } = Guid.Empty;
-
+        public int Length { get; set; }
+        public int Width { get; set; }
         public string Level { get; set; }
-
-        public RoomTypeEnum Type { get; set; }
-
-        public string Dimensions { get; set; }
+        public string RoomType { get; set; }
+        public string EntityOwnerType { get; }
     }
 }

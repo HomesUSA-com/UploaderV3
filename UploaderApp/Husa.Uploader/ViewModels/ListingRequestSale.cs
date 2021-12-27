@@ -8,61 +8,31 @@
     {
         public string id { get; set; }
 
-        public SaleProperty SaleProperty { get; set; }
-
         public Guid ListingSaleId { get; set; }
 
-        public string ContingencyInfo { get; set; }
+        public SaleProperty SaleProperty { get; set; }
 
-        public DateTime? ContractDate { get; set; }
+        public int? CDOM { get; set; }
 
-        public DateTime? ExpiredDateOption { get; set; }
-
-        public string Financing { get; set; }
-
-        public string KickOutInformation { get; set; }
-
-        public string MortgageCompany { get; set; }
-
-        public string SellerPaid { get; set; }
+        public int? DOM { get; set; }
 
         public DateTime? ExpirationDate { get; set; }
 
-        public ListingRequestState ListingRequestState { get; set; }
+        public DateTime? ListDate { get; set; }
 
         public decimal? ListPrice { get; set; }
 
-        public string MlsArea { get; set; }
+        public string ListType { get; protected set; }
 
-        public string MlsSubArea { get; set; }
+        public DateTime? MarketModifiedOn { get; set; }
+
+        public string MarketUniqueId { get; set; }
 
         public string MlsNumber { get; set; }
 
-        public MarketStatusesEnum MlsStatus { get; set; }
+        public string MlsStatus { get; set; }
 
-        #region Status Fields 
-
-        public Guid? AgentID { get; set; }
-
-        public DateTime? BackOnMarketDate { get; set; }
-
-        public DateTime? CancelDate { get; set; }
-
-        public string CancelledOption { get; set; } // CancelledOptionsEnum
-
-        public string CancelledReason { get; set; }
-
-        public DateTime? ClosedDate { get; set; }
-
-        public decimal? ClosePrice { get; set; }
-
-        public DateTime? EstimatedClosedDate { get; set; }
-
-        public DateTime? OffMarketDate { get; set; }
-
-        public DateTime? PendingDate { get; set; }
-
-        #endregion
+        public Guid PropertyId { get; set; }
 
         //Entity Base Data
         public DateTime CreatedOn { get; set; }

@@ -16,9 +16,9 @@ namespace Husa.Core.UploaderBase
         public int ResidentialListingRequestID { get; set; }
         public short? SysStatusID { get; set; }
         public string SysState { get; set; }
-        public int? SysCreatedBy { get; set; }
+        public Guid? SysCreatedBy { get; set; }
         public DateTime? SysCreatedOn { get; set; }
-        public int? SysModifiedBy { get; set; }
+        public Guid? SysModifiedBy { get; set; }
         public DateTime? SysModifiedOn { get; set; }
         public int? ResidentialListingID { get; set; }
         public int? MarketID { get; set; }

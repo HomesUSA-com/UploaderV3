@@ -1,6 +1,7 @@
 ﻿namespace Husa.Cargador.ViewModels.ListingRequestSaleSubClass
 {
     using System;
+    using System.Collections.Generic;
 
     public class SaleProperty
     {
@@ -8,14 +9,24 @@
 
         public Guid CompanyId { get; set; }
 
-        public PropertyTab PropertyTab { get; set; }
-        
-        public SpaceAndDimensionsTab SpaceAndDimensionsTab { get; set; }
-        
-        public FeatureTab FeatureTab { get; set; }
+        public AddressInfo AddressInfo { get; set; }
 
-        public FinancialSchoolTab FinancialSchoolTab { get; set; }
+        public PropertyInfo PropertyInfo { get; set; }
+        
+        public SpacesDimensionsInfo SpacesDimensionsInfo { get; set; }
+        
+        public FeaturesInfo FeaturesInfo { get; set; }
 
-        public ShowingTab ShowingTab { get; set; }
+        public FinancialInfo FinancialInfo { get; set; }
+
+        public ShowingInfo ShowingInfo { get; set; }
+
+        public SchoolsInfo SchoolsInfo { get; set; }
+
+        public ICollection<Rooms> Rooms { get; set; }
+
+        public ICollection<ListingSaleHoa> ListingSaleHoas { get; set; }
+
+        public ICollection<ListingSaleOpenHouse> OpenHouses { get; set; }
     }
 }
