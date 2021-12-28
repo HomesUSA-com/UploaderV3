@@ -18,6 +18,7 @@ using Husa.Cargador.ViewModels;
 using Microsoft.Azure.Cosmos.Linq;
 using System.Threading;
 using Husa.Cargador.Support;
+using Husa.Cargador.ViewModels.Enum;
 // ReSharper disable UnusedAutoPropertyAccessor.Local
 
 namespace Husa.Cargador.Datasources
@@ -109,6 +110,7 @@ namespace Husa.Cargador.Datasources
             using (
                 var query =
                 this.saleContainer.GetItemLinqQueryable<ListingRequestSale>(false)
+                .Where(x => x.RequestState == ListingRequestState.Approved && !x.IsDeleted)
                 .ToFeedIterator()
                 )
             {

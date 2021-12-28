@@ -136,7 +136,7 @@ namespace Husa.Core.UploaderBase
         public string AccessInstructionsDesc { get; set; }
         public DateTime? BuildCompletionDate { get; set; }
         public DateTime? SysTimestamp { get; set; }
-        public int? CommunityProfileID { get; set; }
+        public Guid? CommunityProfileID { get; set; }
         public string AvailableDocumentsDesc { get; set; }
         public string AssocName { get; set; }
         public string HasWaterAccess { get; set; }
@@ -167,7 +167,7 @@ namespace Husa.Core.UploaderBase
         public string FireplaceDesc { get; set; }
         public string ExteriorDesc { get; set; }
         public string AssocFeeIncludes { get; set; }
-        public int? PlanProfileID { get; set; }
+        public Guid? PlanProfileID { get; set; }
         public decimal? Latitude { get; set; }
         public string WaterAccessDesc { get; set; }
         public string LaundryFacilityDesc { get; set; }

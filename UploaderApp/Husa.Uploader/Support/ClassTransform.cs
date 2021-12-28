@@ -26,6 +26,10 @@
                 residentialListingRequest.SysCreatedBy = listingRequest.CreatedBy;
                 residentialListingRequest.SysModifiedOn = listingRequest.ModifiedOn;
                 residentialListingRequest.SysModifiedBy = listingRequest.ModifiedBy;
+                residentialListingRequest.BuilderName = listingRequest.SaleProperty.OwnerName;
+                residentialListingRequest.PlanProfileID = listingRequest.SaleProperty.PlanId;
+                residentialListingRequest.CommunityProfileID = listingRequest.SaleProperty.CommunityId;
+                residentialListingRequest.CompanyName = listingRequest.SaleProperty.OwnerName;
 
                 #region AddressInfo
                 residentialListingRequest.StreetNum = listingRequest.SaleProperty.AddressInfo.StreetNumber.ToString();

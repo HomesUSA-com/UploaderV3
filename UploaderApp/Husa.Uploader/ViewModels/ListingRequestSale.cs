@@ -44,5 +44,9 @@
         public Guid? ModifiedBy { get; set; }
 
         public char SysState { get; set; }
+
+        public ListingRequestState RequestState { get; set; }
+
+        public virtual bool IsDeleted { get; set; }
     }
 }
