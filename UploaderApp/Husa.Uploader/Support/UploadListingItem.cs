@@ -4,7 +4,7 @@ namespace Husa.Cargador.Support
 {
     public class UploadListingItem
     {
-        public int RequestId { get; set; }
+        public System.Guid RequestId { get; set; }
         public int InternalLotRequestId { get; set; }
         public string Market { get; set; }
         public string MlsNumber { get; set; }

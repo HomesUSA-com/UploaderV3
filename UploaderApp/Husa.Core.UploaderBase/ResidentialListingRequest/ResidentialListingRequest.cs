@@ -13,7 +13,7 @@ namespace Husa.Core.UploaderBase
 
         public string CommunityName { get; set; }
         public string CompanyName { get; set; }
-        public int ResidentialListingRequestID { get; set; }
+        public Guid ResidentialListingRequestID { get; set; }
         public short? SysStatusID { get; set; }
         public string SysState { get; set; }
         public Guid? SysCreatedBy { get; set; }
@@ -677,7 +677,7 @@ namespace Husa.Core.UploaderBase
 
         // HNF-56 (Leasing fields)
         public int? ResidentialLeaseID { get; set; }
-        public int ResidentialLeaseRequestID { get; set; }
+        public Guid ResidentialLeaseRequestID { get; set; }
         public string AppFee { get; set; }
         public string LotSizeAcres { get; set; }
         public string NonRefunPetFee { get; set; }

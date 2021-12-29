@@ -15,8 +15,9 @@
             foreach(var listingRequest in listingsRequestSale)
             {
                 var residentialListingRequest = new ResidentialListingRequest();
-                residentialListingRequest.MarketUsername = "username";
-                residentialListingRequest.MarketPassword = "password";
+                residentialListingRequest.ResidentialListingRequestID = listingRequest.ListingSaleId;
+                residentialListingRequest.MarketUsername = "966512";
+                residentialListingRequest.MarketPassword = "3QGzkcmYSuxm*";
                 residentialListingRequest.MarketID = 8;
                 residentialListingRequest.MarketName = "San Antonio";
                 residentialListingRequest.ListPrice = (decimal)listingRequest.ListPrice;

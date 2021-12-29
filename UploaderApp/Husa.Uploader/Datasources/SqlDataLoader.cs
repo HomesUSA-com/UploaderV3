@@ -1,24 +1,24 @@
-﻿using System;
+﻿using Dapper;
+using Husa.Cargador.EventLog;
+using Husa.Cargador.Support;
+using Husa.Cargador.ViewModels;
+using Husa.Cargador.ViewModels.Enum;
+using Husa.Core.UploaderBase;
+using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Cosmos.Linq;
+using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Dapper;
-using Husa.Core.UploaderBase;
-using Serilog;
 using System.Net;
-using Husa.Cargador.EventLog;
-using System.Drawing;
-using System.Drawing.Imaging;
-using Microsoft.Azure.Cosmos;
-using Husa.Cargador.ViewModels;
-using Microsoft.Azure.Cosmos.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
-using Husa.Cargador.Support;
-using Husa.Cargador.ViewModels.Enum;
+using System.Threading.Tasks;
 // ReSharper disable UnusedAutoPropertyAccessor.Local
 
 namespace Husa.Cargador.Datasources
@@ -532,7 +532,7 @@ namespace Husa.Cargador.Datasources
             return data;
         }
 
-        public IEnumerable<IListingMedia> GetListingMedia(int residentialListingRequestId, string marketName)
+        public IEnumerable<IListingMedia> GetListingMedia(Guid residentialListingRequestId, string marketName)
         {
             IEnumerable<MlsResource> data;
             try
@@ -548,7 +548,7 @@ namespace Husa.Cargador.Datasources
                       LEFT JOIN  [Mediaman].[dbo].[Resource] as mr on r.[ResourceID] = mr.[ResourceID] 
                     WHERE 
                       r.[SysStatusID] <> 2 AND r.[SysState] <> 'D' AND r.[ResidentialListingRequestID] = {0}
-                    ORDER BY r.[Order] ASC, r.[IsPrimaryPic] DESC, r.[MlsResourceID] ASC ", residentialListingRequestId.ToString(CultureInfo.InvariantCulture)));
+                    ORDER BY r.[Order] ASC, r.[IsPrimaryPic] DESC, r.[MlsResourceID] ASC ", residentialListingRequestId.ToString(CultureInfo.InvariantCulture.ToString())));
 
                 sql.Close();
             }
@@ -640,7 +640,7 @@ namespace Husa.Cargador.Datasources
             return result;
         }
 
-        public IEnumerable<IListingMedia> GetLeasingMedia(int residentialListingRequestId, string marketName)
+        public IEnumerable<IListingMedia> GetLeasingMedia(Guid residentialListingRequestId, string marketName)
         {
             IEnumerable<MlsResource> data;
             try
@@ -655,7 +655,7 @@ namespace Husa.Cargador.Datasources
                       LEFT JOIN  [Mediaman].[dbo].[Resource] as mr on r.[ResourceID] = mr.[ResourceID] 
                     WHERE (r.[ResourceID] IS NOT NULL OR r.[VirtualTourAddress] IS NOT NULL) AND 
                       r.[SysStatusID] <> 2 AND r.[SysState] <> 'D' AND r.[ResidentialLeaseRequestID] = {0}
-                    ORDER BY r.[Order] ASC, r.[IsPrimaryPic] DESC ", residentialListingRequestId.ToString(CultureInfo.InvariantCulture)));
+                    ORDER BY r.[Order] ASC, r.[IsPrimaryPic] DESC ", residentialListingRequestId.ToString(CultureInfo.InvariantCulture.ToString())));
                 sql.Close();
             }
             catch (Exception ex)

@@ -30,21 +30,26 @@ namespace Husa.Cargador
             Uploaders = GetUploaders();
 
             NoPluginOptions = new ChromeOptions();
-            NoPluginOptions.AddArguments("test-type", "disable-extensions", "disable-plugin", "disable-bundled-ppapi-flash", "start-maximized", "--incognito");
+            NoPluginOptions.AddArguments("test-type", "disable-extensions", "disable-plugin", "disable-bundled-ppapi-flash", "start-maximized", "--incognito", "--disable-geolocation");
             NoPluginOptions.AddUserProfilePreference("credentials_enable_service", false);
             NoPluginOptions.AddUserProfilePreference("profile.password_manager_enabled", false);
+            NoPluginOptions.AddUserProfilePreference("profile.default_content_settings.geolocation", 2);
+            NoPluginOptions.AddUserProfilePreference("profile.default_content_setting_values.notifications", 2);
+            NoPluginOptions.AddUserProfilePreference("profile.default_content_setting_values.geolocation", 2);
 
-            NoPluginDriverService = ChromeDriverService.CreateDefaultService(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)); 
-            //NoPluginDriverService = ChromeDriverService.CreateDefaultService("C:\\");
+
+            NoPluginDriverService = ChromeDriverService.CreateDefaultService(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location));
             NoPluginDriverService.HideCommandPromptWindow = true;
 
             WithPluginOptions = new ChromeOptions();
-            WithPluginOptions.AddArguments("test-type", "disable-extensions", "start-maximized", "--incognito");
+            WithPluginOptions.AddArguments("test-type", "disable-extensions", "start-maximized", "--incognito", "--disable-geolocation");
             WithPluginOptions.AddUserProfilePreference("credentials_enable_service", false);
             WithPluginOptions.AddUserProfilePreference("profile.password_manager_enabled", false);
+            WithPluginOptions.AddUserProfilePreference("profile.default_content_settings.geolocation", 2);
+            WithPluginOptions.AddUserProfilePreference("profile.default_content_setting_values.notifications", 2);
+            WithPluginOptions.AddUserProfilePreference("profile.default_content_setting_values.geolocation", 2);
 
             WithPluginDriverService = ChromeDriverService.CreateDefaultService(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location));
-            //WithPluginDriverService = ChromeDriverService.CreateDefaultService("C:\\");
             WithPluginDriverService.HideCommandPromptWindow = true;
         }
 
@@ -157,7 +162,7 @@ namespace Husa.Cargador
 
         #region Drivers manage
 
-        private static CoreWebDriver GetWebDriver(int requestId, bool allowFlash)
+        private static CoreWebDriver GetWebDriver(Guid requestId, bool allowFlash)
         {
             var logger = LoggingSupport.GetLogger(requestId.ToString(), Guid.NewGuid());
 

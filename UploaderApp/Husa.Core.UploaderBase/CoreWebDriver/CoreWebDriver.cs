@@ -8,7 +8,7 @@ namespace Husa.Core.UploaderBase
 {
     public sealed class CoreWebDriver : IWebDriver, IJavaScriptExecutor
     {
-        public CoreWebDriver(IWebDriver driver, ILogger logger, int residentialListingRequestId)
+        public CoreWebDriver(IWebDriver driver, ILogger logger, Guid residentialListingRequestId)
         {
             if (driver == null)
             {

@@ -491,10 +491,10 @@ namespace Husa.Cargador
                         MlsNumber = string.IsNullOrEmpty(c.MLSNum) ? "New " + CurrentEntity : c.MLSNum,
                         Address = c.StreetNum + " " + c.StreetName,
                         Status = !String.IsNullOrEmpty(c.ListStatusName) ? c.ListStatusName.ToString(): "",
-                        Market = c.MarketName,
+                        Market = "San Antonio",
                         CompanyName = c.CompanyName,
-                        BuilderName = c.BrokerName,
-                        BrokerOffice = c.BrokerOffice,
+                        BuilderName = "Ben Caballero",
+                        BrokerOffice = "HHRE00",
                         FullListing = c,
                         UnitNumber = c.UnitNum,
                         IsLeasing = "",
@@ -1333,10 +1333,10 @@ namespace Husa.Cargador
                 return _loader.GetLeasingMedia(request.ResidentialLeaseRequestID, request.MarketName);
             });
 
-            if (SelectedListingRequest.FullListing.ResidentialLeaseRequestID == 0)
+            /*if (SelectedListingRequest.FullListing.ResidentialLeaseRequestID)
             {
                 return;
-            }
+            }*/
 
             await Start(UploadType.InserOrUpdate, listing => UploaderEngine.UpdateLease(listing, media), SelectedListingRequest.FullListing);
         }
