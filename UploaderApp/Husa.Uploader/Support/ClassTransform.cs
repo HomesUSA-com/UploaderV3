@@ -76,22 +76,28 @@
                 residentialListingRequest.BathsHalf= listingRequest.SaleProperty.SpacesDimensionsInfo.BathsHalf;
                 //masterBathDescription
                 residentialListingRequest.GarageDesc= listingRequest.SaleProperty.SpacesDimensionsInfo.GarageDescription;
+                residentialListingRequest.ParkingDesc= listingRequest.SaleProperty.SpacesDimensionsInfo.GarageDescription;
                 residentialListingRequest.OtherParking = listingRequest.SaleProperty.SpacesDimensionsInfo.OtherParking;
                 #endregion
 
                 #region Rooms
-                /*
-                foreach (var room in listingRequest.SaleProperty.SpaceAndDimensionsTab.Rooms)
+                foreach (var room in listingRequest.SaleProperty.Rooms)
                 {
-                    var dimensions = room.Dimensions.Split('x');
-                    var width = Int32.Parse(dimensions[0]);
-                    var length = Int32.Parse(dimensions[1]);
-                    switch(room.Type)
+                    var width = room.Width;
+                    var length = room.Length;
+                    var level = room.Level;
+                    switch (room.RoomType)
                     {
-                        case RoomTypeEnum.BEDROO:
+                        case RoomType.MasterBedroom:
+                            residentialListingRequest.Bed1Level = level;
+                            residentialListingRequest.Bed1Length = length;
+                            residentialListingRequest.Bed1Width = width;
+                            residentialListingRequest.Bed1Desc = listingRequest.SaleProperty.SpacesDimensionsInfo.MasterBedroom;
+                            break;
+                        case RoomType.Bed:
                             if (residentialListingRequest.Bed2Level == null)
                             {
-                                residentialListingRequest.Bed2Level = room.Level;
+                                residentialListingRequest.Bed2Level = level;
                                 residentialListingRequest.Bed2Length = length;
                                 residentialListingRequest.Bed2Width = width;
                                 break;
@@ -99,7 +105,7 @@
 
                             if (residentialListingRequest.Bed3Level == null)
                             {
-                                residentialListingRequest.Bed3Level = room.Level;
+                                residentialListingRequest.Bed3Level = level;
                                 residentialListingRequest.Bed3Length = length;
                                 residentialListingRequest.Bed3Width = width;
                                 break;
@@ -107,7 +113,7 @@
 
                             if (residentialListingRequest.Bed4Level == null)
                             {
-                                residentialListingRequest.Bed4Level = room.Level;
+                                residentialListingRequest.Bed4Level = level;
                                 residentialListingRequest.Bed4Length = length;
                                 residentialListingRequest.Bed4Width = width;
                                 break;
@@ -115,101 +121,82 @@
 
                             if (residentialListingRequest.Bed5Level == null)
                             {
-                                residentialListingRequest.Bed5Level = room.Level;
+                                residentialListingRequest.Bed5Level = level;
                                 residentialListingRequest.Bed5Length = length;
                                 residentialListingRequest.Bed5Width = width;
                                 break;
                             }
                             break;
-
-                        case RoomTypeEnum.BREROO:
-                            residentialListingRequest.BreakfastLevel = room.Level;
+                        case RoomType.Breakfast:
+                            residentialListingRequest.BreakfastLevel = level;
                             residentialListingRequest.BreakfastLength = length;
                             residentialListingRequest.BreakfastWidth = width;
-                            residentialListingRequest.OtherRoomDesc = listingRequest.SaleProperty.SpaceAndDimensionsTab.UtilityRoom;
                             break;
-                        
-                        case RoomTypeEnum.DINROO:
-                            residentialListingRequest.DiningRoomLevel = room.Level;
-                            residentialListingRequest.DiningRoomLength = length;
+                        case RoomType.Dining:
+                            residentialListingRequest.DiningRoomLevel = level;
+                            residentialListingRequest.BreakfastLength = length;
                             residentialListingRequest.DiningRoomWidth = width;
                             break;
-
-                        case RoomTypeEnum.GAMROO:
-                            residentialListingRequest.LivingRoom3Level = room.Level;
+                        case RoomType.Entry:
+                            residentialListingRequest.LivingRoom3Level = level;
                             residentialListingRequest.LivingRoom3Length = length;
                             residentialListingRequest.LivingRoom3Width = width;
                             break;
-
-                        case RoomTypeEnum.KITCHE:
-                            residentialListingRequest.KitchenLevel = room.Level;
+                        case RoomType.Family:
+                            residentialListingRequest.LivingRoom2Level = level;
+                            residentialListingRequest.LivingRoom2Length = length;
+                            residentialListingRequest.LivingRoom2Width = width;
+                            break;
+                        case RoomType.Game:
+                            residentialListingRequest.OtherRoom1Level = level;
+                            residentialListingRequest.OtherRoom1Length = length;
+                            residentialListingRequest.OtherRoom1Width = width;
+                            break;
+                        case RoomType.Kitchen:
+                            residentialListingRequest.KitchenLevel = level;
                             residentialListingRequest.KitchenLength = length;
                             residentialListingRequest.KitchenWidth = width;
                             break;
-
-                        case RoomTypeEnum.LIVROO:
-                            if (residentialListingRequest.LivingRoom1Level == null)
-                            {
-                                residentialListingRequest.LivingRoom1Level = room.Level;
-                                residentialListingRequest.LivingRoom1Length = length;
-                                residentialListingRequest.LivingRoom1Width = width;
-                                break;
-                            }
-
-                            if (residentialListingRequest.LivingRoom2Level == null)
-                            {
-                                residentialListingRequest.LivingRoom2Level = room.Level;
-                                residentialListingRequest.LivingRoom2Length = length;
-                                residentialListingRequest.LivingRoom2Width = width;
-                                break;
-                            }
-
+                        case RoomType.Living:
+                            residentialListingRequest.LivingRoom1Level = level;
+                            residentialListingRequest.LivingRoom1Length = length;
+                            residentialListingRequest.LivingRoom1Width = width;
                             break;
-
-                        case RoomTypeEnum.MASBED:
-                            residentialListingRequest.Bed1Level = room.Level;
-                            residentialListingRequest.Bed1Length = length;
-                            residentialListingRequest.Bed1Width = width;
-                            residentialListingRequest.BedBathDesc = listingRequest.SaleProperty.SpaceAndDimensionsTab.MasterBedroom;
+                        case RoomType.MasterBath:
+                            residentialListingRequest.Bath1Level = level;
+                            residentialListingRequest.Bath1Length = length;
+                            residentialListingRequest.Bath1Width = width;
+                            residentialListingRequest.BedBathDesc = listingRequest.SaleProperty.SpacesDimensionsInfo.MasterBathDescription;
                             break;
-
-                        case RoomTypeEnum.MEDROO:
-                        case RoomTypeEnum.OTHER:
-                            if (residentialListingRequest.OtherRoom1Level == null)
-                            {
-                                residentialListingRequest.OtherRoom1Level = room.Level;
-                                residentialListingRequest.OtherRoom1Length = length;
-                                residentialListingRequest.OtherRoom1Width = width;
-                                break;
-                            }
-
-                            if (residentialListingRequest.OtherRoom2Level == null)
-                            {
-                                residentialListingRequest.OtherRoom2Level = room.Level;
-                                residentialListingRequest.OtherRoom2Length = length;
-                                residentialListingRequest.OtherRoom2Width = width;
-                                break;
-                            }
-
+                        case RoomType.MasterBedroomCloset:
+                            residentialListingRequest.ClosetLength = length;
+                            residentialListingRequest.ClosetWidth = width;
                             break;
-
-                        case RoomTypeEnum.STUDEN:
-                            residentialListingRequest.StudyLevel = room.Level;
+                        case RoomType.Media:
+                            residentialListingRequest.OtherRoom2Level = level;
+                            residentialListingRequest.OtherRoom2Length = length;
+                            residentialListingRequest.OtherRoom2Width = width;
+                            break;
+                        case RoomType.Study:
+                            residentialListingRequest.StudyLevel = level;
                             residentialListingRequest.StudyLength = length;
                             residentialListingRequest.StudyWidth = width;
                             break;
-
-                        case RoomTypeEnum.UTIROO:
-                            residentialListingRequest.UtilityRoomLevel = room.Level;
+                        case RoomType.Utility:
+                            residentialListingRequest.UtilityRoomLevel = level;
                             residentialListingRequest.UtilityRoomLength = length;
                             residentialListingRequest.UtilityRoomWidth = width;
                             break;
-
+                        case RoomType.Studen:
+                        case RoomType.Other:
+                        case RoomType.Office:
+                        case RoomType.HalfBath:
+                        case RoomType.FullBath:
                         default:
                             break;
 
                     }
-                }*/
+                }
                 #endregion
 
                 #region FeaturesInfo

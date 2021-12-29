@@ -243,7 +243,7 @@
     <Compile Include="ViewModels\Enum\ListingRequestState.cs" />
     <Compile Include="ViewModels\Enum\MarketStatusesEnum.cs" />
     <Compile Include="ViewModels\Enum\OpenHouseTypeEnum.cs" />
-    <Compile Include="ViewModels\Enum\RoomTypeEnum.cs" />
+    <Compile Include="ViewModels\Enum\RoomType.cs" />
     <Compile Include="ViewModels\LatLonInputViewModel.cs" />
     <Compile Include="ViewModels\ListingRequestSale.cs" />
     <Compile Include="ViewModels\ListingRequestSaleSubClass\AddressInfo.cs" />
