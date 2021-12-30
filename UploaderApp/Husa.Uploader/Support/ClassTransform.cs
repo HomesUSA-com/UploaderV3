@@ -28,9 +28,10 @@
                 residentialListingRequest.SysModifiedOn = listingRequest.ModifiedOn;
                 residentialListingRequest.SysModifiedBy = listingRequest.ModifiedBy;
                 residentialListingRequest.BuilderName = listingRequest.SaleProperty.OwnerName;
+                residentialListingRequest.CompanyName = listingRequest.SaleProperty.OwnerName;
+                residentialListingRequest.OwnerName = listingRequest.SaleProperty.OwnerName;
                 residentialListingRequest.PlanProfileID = listingRequest.SaleProperty.PlanId;
                 residentialListingRequest.CommunityProfileID = listingRequest.SaleProperty.CommunityId;
-                residentialListingRequest.CompanyName = listingRequest.SaleProperty.OwnerName;
 
                 #region AddressInfo
                 residentialListingRequest.StreetNum = listingRequest.SaleProperty.AddressInfo.StreetNumber.ToString();
@@ -46,6 +47,7 @@
 
                 #region PropertyInfo
                 residentialListingRequest.BuildCompletionDate = listingRequest.SaleProperty.PropertyInfo.ConstructionCompletionDate;// check
+                residentialListingRequest.YearBuiltDesc = listingRequest.SaleProperty.PropertyInfo.ConstructionStage;
                 //ConstructionStage
                 //ConstructionYear
                 residentialListingRequest.Legal = listingRequest.SaleProperty.PropertyInfo.LegalDescription; //check
@@ -64,7 +66,7 @@
 
                 #region SpaceAndDimensionInfo
                 residentialListingRequest.Category = listingRequest.SaleProperty.SpacesDimensionsInfo.TypeCategory; //check
-                residentialListingRequest.NumStories = int.Parse(listingRequest.SaleProperty.SpacesDimensionsInfo.Stories);
+                residentialListingRequest.NumStories = listingRequest.SaleProperty.SpacesDimensionsInfo.Stories;
                 residentialListingRequest.SqFtTotal = listingRequest.SaleProperty.SpacesDimensionsInfo.SqFtTotal;
                 residentialListingRequest.SqFtSource = listingRequest.SaleProperty.SpacesDimensionsInfo.SqFtSource;
                 //EntryLength
@@ -78,6 +80,8 @@
                 residentialListingRequest.GarageDesc= listingRequest.SaleProperty.SpacesDimensionsInfo.GarageDescription;
                 residentialListingRequest.ParkingDesc= listingRequest.SaleProperty.SpacesDimensionsInfo.GarageDescription;
                 residentialListingRequest.OtherParking = listingRequest.SaleProperty.SpacesDimensionsInfo.OtherParking;
+
+                residentialListingRequest.Beds = listingRequest.SaleProperty.SpacesDimensionsInfo.NumBedrooms;
                 #endregion
 
                 #region Rooms
@@ -213,7 +217,7 @@
                 residentialListingRequest.RoofDesc = listingRequest.SaleProperty.FeaturesInfo.RoofDescription;
                 residentialListingRequest.FoundationDesc = listingRequest.SaleProperty.FeaturesInfo.Foundation;
                 residentialListingRequest.ExteriorDesc = listingRequest.SaleProperty.FeaturesInfo.Exterior;
-                residentialListingRequest.HasPool = listingRequest.SaleProperty.FeaturesInfo.HasPrivatePool.ToString();
+                residentialListingRequest.HasPool = listingRequest.SaleProperty.FeaturesInfo.HasPrivatePool;
                 residentialListingRequest.PoolDesc = listingRequest.SaleProperty.FeaturesInfo.PrivatePool;
                 residentialListingRequest.FacesDesc = listingRequest.SaleProperty.FeaturesInfo.HomeFaces; //check
                 residentialListingRequest.SupElectricity = listingRequest.SaleProperty.FeaturesInfo.SupplierElectricity;
@@ -249,6 +253,7 @@
                 residentialListingRequest.AgentBonusAmount = listingRequest.SaleProperty.FinancialInfo.AgentBonusAmount.ToString();
                 residentialListingRequest.CompBuyBonusExpireDate = listingRequest.SaleProperty.FinancialInfo.BonusExpirationDate; //check
                 residentialListingRequest.BuyerIncentive = listingRequest.SaleProperty.FinancialInfo.HasBuyerIncentive.ToString(); //check
+                residentialListingRequest.CompBuy = listingRequest.SaleProperty.FinancialInfo.BuyersAgentCommission; 
 
                 #endregion
 

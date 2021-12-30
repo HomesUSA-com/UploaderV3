@@ -65,7 +65,7 @@ namespace Husa.Core.UploaderBase
         public string OtherPhone { get; set; }
         public string OfficeList { get; set; }
         public string Occupancy { get; set; }
-        public int? NumStories { get; set; }
+        public string NumStories { get; set; }
         public int? NumLivingAreas { get; set; }
         public int? NumFireplaces { get; set; }
         public int? NumDiningAreas { get; set; }
@@ -99,7 +99,7 @@ namespace Husa.Core.UploaderBase
         public string HOA { get; set; }
         public string HeatSystemDesc { get; set; }
         public string HasRestrictions { get; set; }
-        public string HasPool { get; set; }
+        public bool HasPool { get; set; }
         public string HasHOA { get; set; }
         public string HasHandicapAmenities { get; set; }
         public string HasGuestAccommodations { get; set; }
