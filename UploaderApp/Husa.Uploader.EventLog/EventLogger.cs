@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace Husa.Cargador.EventLog
+namespace Husa.Uploader.EventLog
 {
     public class EventLogWriter
     {

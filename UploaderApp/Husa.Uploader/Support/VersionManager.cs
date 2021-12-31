@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using Serilog;
 
-namespace Husa.Cargador.Support
+namespace Husa.Uploader.Support
 {
     internal static class VersionManager
     {

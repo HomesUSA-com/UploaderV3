@@ -1,4 +1,4 @@
-namespace Husa.Cargador.Support
+namespace Husa.Uploader.Support
 {
     public enum UploaderState
     {

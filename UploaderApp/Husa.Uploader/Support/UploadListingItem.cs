@@ -1,6 +1,6 @@
 using Husa.Core.UploaderBase;
 
-namespace Husa.Cargador.Support
+namespace Husa.Uploader.Support
 {
     public class UploadListingItem
     {

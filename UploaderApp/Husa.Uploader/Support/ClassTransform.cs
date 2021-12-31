@@ -1,7 +1,7 @@
-﻿namespace Husa.Cargador.Support
+﻿namespace Husa.Uploader.Support
 {
-    using Husa.Cargador.ViewModels;
-    using Husa.Cargador.ViewModels.Enum;
+    using Husa.Uploader.ViewModels;
+    using Husa.Uploader.ViewModels.Enum;
     using Husa.Core.UploaderBase;
     using System;
     using System.Collections.Generic;

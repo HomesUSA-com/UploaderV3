@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using Caliburn.Micro;
-using Husa.Cargador.Datasources;
-using Husa.Cargador.Support;
+using Husa.Uploader.Datasources;
+using Husa.Uploader.Support;
 using Husa.Core.UploaderBase;
-using Husa.Cargador.EventLog;
+using Husa.Uploader.EventLog;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
@@ -22,7 +22,7 @@ using System.Deployment.Application;
 using Newtonsoft.Json;
 using System.Windows.Navigation;
 
-namespace Husa.Cargador
+namespace Husa.Uploader
 {
     public interface IShell
     { }

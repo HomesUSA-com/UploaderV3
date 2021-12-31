@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Husa.Cargador.EventLog
+namespace Husa.Uploader.EventLog
 {
     /// <summary>
     /// Provides a way to assign string codes to Enumerable types

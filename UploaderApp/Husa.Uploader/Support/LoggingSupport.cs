@@ -4,7 +4,7 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.Elasticsearch;
 
-namespace Husa.Cargador.Support
+namespace Husa.Uploader.Support
 {
     internal static class LoggingSupport
     {

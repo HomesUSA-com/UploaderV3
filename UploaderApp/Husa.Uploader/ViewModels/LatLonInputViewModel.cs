@@ -9,7 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 
-namespace Husa.Cargador
+namespace Husa.Uploader
 {
     public class LatLonInputViewModel : Caliburn.Micro.Screen
     {

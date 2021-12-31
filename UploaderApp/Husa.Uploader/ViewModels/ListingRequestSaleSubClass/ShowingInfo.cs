@@ -1,4 +1,4 @@
-﻿namespace Husa.Cargador.ViewModels.ListingRequestSaleSubClass
+﻿namespace Husa.Uploader.ViewModels.ListingRequestSaleSubClass
 {
     public class ShowingInfo
     {

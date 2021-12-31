@@ -3,7 +3,7 @@
 // ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace Husa.Cargador
+namespace Husa.Uploader
 {
     public class MlsNumInputViewModel : Caliburn.Micro.Screen
     {

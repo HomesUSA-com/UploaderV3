@@ -1,4 +1,4 @@
-<mam:MetroWindow x:Class="Husa.Cargador.ShellView"
+<mam:MetroWindow x:Class="Husa.Uploader.ShellView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:cal="http://www.caliburnproject.org"
@@ -417,7 +417,7 @@
                                     <materialDesign:PackIcon Foreground="#FF1B3861" Kind="Menu" Width="25" Height="25"/>
                                 </Button>
                                 <Image x:Name="image" Margin="10,20,10,48" Grid.Row="1" Source="/Husa.Uploader;component/Media/dark-logo.png"/>
-                                <!--<Image Width="40" Height="40" Margin="10,65,10,45" Source="/Husa.Cargador;component/Media/dark-logo.png" />-->
+                                <!--<Image Width="40" Height="40" Margin="10,65,10,45" Source="/Husa.Uploader;component/Media/dark-logo.png" />-->
                             </Grid>
                             <ListView x:Name="LateralMenu" Foreground="#FF1B3861" ScrollViewer.HorizontalScrollBarVisibility="Hidden" SelectedIndex="{Binding CurrentEntity, Mode=TwoWay}">
                                 <ListViewItem Style="{StaticResource ResidentialItem}" x:Name="Listings" Height="80" Cursor="Hand" ToolTip="Residential Listings for Sale">

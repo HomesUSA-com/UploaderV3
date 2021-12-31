@@ -1,6 +1,6 @@
-﻿namespace Husa.Cargador.ViewModels.ListingRequestSaleSubClass
+﻿namespace Husa.Uploader.ViewModels.ListingRequestSaleSubClass
 {
-    using Husa.Cargador.ViewModels.Enum;
+    using Husa.Uploader.ViewModels.Enum;
 
     public class Rooms
     {

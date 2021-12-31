@@ -5,12 +5,12 @@
 
 using System;
 using System.Threading.Tasks;
-using Husa.Cargador.Support;
+using Husa.Uploader.Support;
 //using Husa.Core.ErrorReporter;
 using Serilog;
-using Husa.Cargador.EventLog;
+using Husa.Uploader.EventLog;
 
-namespace Husa.Cargador
+namespace Husa.Uploader
 {
     public class MlsIssueReportViewModel : Caliburn.Micro.Screen
     {

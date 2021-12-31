@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Husa.Cargador.Support
+namespace Husa.Uploader.Support
 {
     public class Item
     {

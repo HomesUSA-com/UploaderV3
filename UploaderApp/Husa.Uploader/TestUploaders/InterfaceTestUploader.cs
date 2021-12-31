@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using Husa.Core.UploaderBase;
 
-namespace Husa.Cargador
+namespace Husa.Uploader
 {
     public class InterfaceTestUploader : IUploader, IImageUploader, IPriceUploader, IStatusUploader
     {

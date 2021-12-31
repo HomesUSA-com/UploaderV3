@@ -1,4 +1,4 @@
-﻿namespace Husa.Cargador.ViewModels.Enum
+﻿namespace Husa.Uploader.ViewModels.Enum
 {
     using System.Runtime.Serialization;
 

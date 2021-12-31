@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Husa.Cargador.Support;
+using Husa.Uploader.Support;
 using Husa.Core.UploaderBase;
 using Husa.Core.Uploaders.SanAntonio;
 using OpenQA.Selenium.Chrome;
-using Husa.Cargador.EventLog;
+using Husa.Uploader.EventLog;
 using System.Diagnostics;
 
-namespace Husa.Cargador
+namespace Husa.Uploader
 {
     public static class UploaderEngine
     {

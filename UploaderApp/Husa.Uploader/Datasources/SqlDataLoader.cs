@@ -1,8 +1,8 @@
 ﻿using Dapper;
-using Husa.Cargador.EventLog;
-using Husa.Cargador.Support;
-using Husa.Cargador.ViewModels;
-using Husa.Cargador.ViewModels.Enum;
+using Husa.Uploader.EventLog;
+using Husa.Uploader.Support;
+using Husa.Uploader.ViewModels;
+using Husa.Uploader.ViewModels.Enum;
 using Husa.Core.UploaderBase;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
@@ -21,7 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 // ReSharper disable UnusedAutoPropertyAccessor.Local
 
-namespace Husa.Cargador.Datasources
+namespace Husa.Uploader.Datasources
 {
     public class SqlDataLoader
     {

@@ -4,10 +4,10 @@ using System.IO;
 using System.Threading;
 using System.Windows;
 using Caliburn.Micro;
-using Husa.Cargador.Support;
+using Husa.Uploader.Support;
 using Serilog;
 
-namespace Husa.Cargador
+namespace Husa.Uploader
 {
     public class AppBootstrapper : BootstrapperBase
     {
