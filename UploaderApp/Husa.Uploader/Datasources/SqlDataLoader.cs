@@ -110,7 +110,7 @@ namespace Husa.Uploader.Datasources
             using (
                 var query =
                 this.saleContainer.GetItemLinqQueryable<ListingRequestSale>(false)
-                .Where(x => x.RequestState == ListingRequestState.Approved && !x.IsDeleted)
+                .Where(x => x.RequestState == ListingRequestState.Processing && !x.IsDeleted)
                 .ToFeedIterator()
                 )
             {

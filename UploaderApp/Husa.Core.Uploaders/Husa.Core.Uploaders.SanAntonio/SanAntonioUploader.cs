@@ -769,8 +769,8 @@ namespace Husa.Core.Uploaders.SanAntonio
 
             // TODO : Remove the below lines
             //if (String.IsNullOrEmpty(listing.ExteriorFeatures))
-                listing.ExteriorFeatures = "BRICK,WOOD,VINYL";
-            driver.WriteTextbox(By.Name("EXTERIOR"), listing.ExteriorFeatures); //Exterior
+                //listing.ExteriorDesc = "BRICK,WOOD,VINYL";
+            driver.WriteTextbox(By.Name("EXTERIOR"), listing.ExteriorDesc); //Exterior
             driver.FindElement(By.Name("EXTERIOR")).SendKeys(Keys.Tab);
             Thread.Sleep(500);
 
@@ -819,7 +819,7 @@ namespace Husa.Core.Uploaders.SanAntonio
             else
                 driver.WriteTextbox(By.Name("POOLSPA"), "NONE");
 
-            driver.WriteTextbox(By.Name("EXTERRFTRS"), listing.ExteriorDesc, true);//Exterior Features
+            driver.WriteTextbox(By.Name("EXTERRFTRS"), listing.ExteriorFeatures, true);//Exterior Features
             driver.FindElement(By.Name("EXTERRFTRS")).SendKeys(Keys.Tab);
             Thread.Sleep(500);
 
@@ -2114,6 +2114,7 @@ namespace Husa.Core.Uploaders.SanAntonio
                     else miscComplete = "UNDCN";
                 }
                 else
+                    
                     miscComplete = listing.MiscellaneousDesc;
             }
             else if (listing.YearBuiltDesc.Equals("I"))
