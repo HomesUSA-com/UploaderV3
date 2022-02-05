@@ -17,7 +17,7 @@
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <PublishUrl>ftp://10.0.0.8/</PublishUrl>
+    <PublishUrl>ftp://10.0.0.7/</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
@@ -27,14 +27,14 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>http://40.121.59.211/</InstallUrl>
-    <ProductName>HomesUSA CORE Uploader2</ProductName>
-    <PublisherName>HomesUSA.com CORE Uploader2</PublisherName>
-    <SuiteName>HomesUSA CORE Uploader2</SuiteName>
+    <InstallUrl>http://23.96.11.87:8081/</InstallUrl>
+    <ProductName>HomesUSA CORE Uploader3</ProductName>
+    <PublisherName>HomesUSA.com CORE Uploader3</PublisherName>
+    <SuiteName>HomesUSA CORE Uploader3</SuiteName>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
-    <ApplicationRevision>139</ApplicationRevision>
-    <ApplicationVersion>2.0.0.%2a</ApplicationVersion>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
