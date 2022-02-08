@@ -102,9 +102,9 @@ namespace Husa.Uploader.Datasources
         private async Task<IEnumerable<ListingRequestSale>> GetDataInternalListingsCosmoDB()
         {
             Microsoft.Azure.Cosmos.CosmosClient client = new Microsoft.Azure.Cosmos.CosmosClient("https://dfwcosmosdb.documents.azure.com:443/", "aDBWzrq8xMCFRYVmPKxHRBVumR5ESgcijQcejMSTF9ZjHwCjfrp4zNy2DGpPxBQ56oj3ELVQ93dbQFNfDJGYqw==");
-            this.saleContainer = client.GetContainer("Dfwstaging", "salerequest");
-            Microsoft.Azure.Cosmos.DatabaseResponse database = await client.CreateDatabaseIfNotExistsAsync("Dfwstaging");
-            await database.Database.CreateContainerIfNotExistsAsync("salerequest", "/ListingSaleId");
+            this.saleContainer = client.GetContainer("saborDev", "saleRequestQA");
+            Microsoft.Azure.Cosmos.DatabaseResponse database = await client.CreateDatabaseIfNotExistsAsync("saborDev");
+            await database.Database.CreateContainerIfNotExistsAsync("saleRequestQA", "/ListingSaleId");
             CancellationToken token;
 
             using (
