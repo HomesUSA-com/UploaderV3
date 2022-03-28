@@ -2,7 +2,7 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <EnableSecurityDebugging>false</EnableSecurityDebugging>
-    <PublishUrlHistory>ftp://10.0.0.8/|ftp://10.0.0.7/|ftp://10.0.0.8:22/|ftp://10.0.0.8:20/</PublishUrlHistory>
+    <PublishUrlHistory>ftp://10.0.0.7/|ftp://10.0.0.8/|ftp://10.0.0.8:22/|ftp://10.0.0.8:20/</PublishUrlHistory>
     <InstallUrlHistory>http://23.96.11.87:8081/|http://40.121.59.211:8081/|http://40.121.59.211/</InstallUrlHistory>
     <SupportUrlHistory />
     <UpdateUrlHistory />
