@@ -16,8 +16,8 @@
             {
                 var residentialListingRequest = new ResidentialListingRequest();
                 residentialListingRequest.ResidentialListingRequestID = listingRequest.ListingSaleId;
-                residentialListingRequest.MarketUsername = "966512";
-                residentialListingRequest.MarketPassword = "3QGzkcmYSuxm*";
+                residentialListingRequest.MarketUsername = "096651";
+                residentialListingRequest.MarketPassword = "8Hw*whRhxD&rr";
                 residentialListingRequest.MarketID = 8;
                 residentialListingRequest.MarketName = "San Antonio";
                 residentialListingRequest.ListPrice = (decimal)listingRequest.ListPrice;

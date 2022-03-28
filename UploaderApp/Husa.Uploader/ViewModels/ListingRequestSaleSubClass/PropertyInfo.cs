@@ -8,7 +8,7 @@
 
         public string ConstructionStage { get; set; }
 
-        public int ConstructionStartYear { get; set; }
+        public int? ConstructionStartYear { get; set; }
 
         public string LegalDescription { get; set; }
 

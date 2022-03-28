@@ -31,7 +31,7 @@ namespace Husa.Core.UploaderBase
         public string UID { get; set; }
         public string TitleCo { get; set; }
         public int? TaxYear { get; set; }
-        public decimal TaxRate { get; set; }
+        public decimal? TaxRate { get; set; }
         public string TaxID { get; set; }
         public string Subdivision { get; set; }
         public string StreetType { get; set; }
@@ -40,7 +40,7 @@ namespace Husa.Core.UploaderBase
         public string StreetName { get; set; }
         public DateTime? StatusChangeDate { get; set; }
         public string State { get; set; }
-        public decimal? SqFtTotal { get; set; }
+        public int? SqFtTotal { get; set; }
         public string SqFtSource { get; set; }
         public string ShowingInstructions { get; set; }
         public string SewerDesc { get; set; }
@@ -450,8 +450,8 @@ namespace Husa.Core.UploaderBase
 
         //HY-277 and HY-278
         public string OtherParking { get; set; }
-        public decimal ClosetWidth { get; set; }
-        public decimal ClosetLength { get; set; }
+        public int? ClosetWidth { get; set; }
+        public int? ClosetLength { get; set; }
 
         //HY-429
         public string LegalsubdivisionDisp { get; set; }

@@ -4,7 +4,7 @@
     {
         public string PropertyDescription { get; set; }
 
-        public int Fireplaces { get; set; }
+        public int? Fireplaces { get; set; }
 
         public string FireplaceDescription { get; set; }
 

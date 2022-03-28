@@ -374,6 +374,7 @@ namespace Husa.Core.Uploaders.SanAntonio
             // Connect to the login page
             this.siteURL = "http://sabor.connectmls.com/slogin.jsp";
             driver.Navigate().GoToUrl(siteURL);
+
             try
             {
                 driver.wait.Until(x => driver.FindElement(By.Name("go")).Displayed);
@@ -1546,7 +1547,7 @@ namespace Husa.Core.Uploaders.SanAntonio
             ((IJavaScriptExecutor)driver).ExecuteScript("openPicklist('HOAMNDTRY')");
             ((IJavaScriptExecutor)driver).ExecuteScript("selectVals('HOAMNDTRY'); ; HOAMNDTRYActions(); closeDiv();");
             Thread.Sleep(1000);
-            driver.WriteTextbox(By.Name("TOTALTAX"), listing.TaxRate.ToString("0.##")); //Total Tax (Without Exemptions)
+            driver.WriteTextbox(By.Name("TOTALTAX"), listing.TaxRate != null ? listing.TaxRate.Value.ToString("0.##") : "0.00"); //Total Tax (Without Exemptions)
             if (listing.HOA.Trim() == "MAND" || listing.HOA.Trim() == "VOLNT")
             {
                 ((IJavaScriptExecutor)driver).ExecuteScript("openPicklist('HOAMNDTRY')");

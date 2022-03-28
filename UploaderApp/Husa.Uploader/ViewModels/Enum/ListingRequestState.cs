@@ -5,6 +5,9 @@
 
     public enum ListingRequestState
     {
+        [Description("All")]
+        [EnumMember(Value = "All")]
+        All,
         [Description("Pending")]
         [EnumMember(Value = "Pending")]
         Pending,
