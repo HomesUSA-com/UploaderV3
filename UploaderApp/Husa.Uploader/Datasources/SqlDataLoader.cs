@@ -112,8 +112,9 @@ namespace Husa.Uploader.Datasources
                 using (
                     var query =
                     this.saleContainer.GetItemLinqQueryable<ListingRequestSale>(false)
-                    .Where(x => x.RequestState == ListingRequestState.Pending && !x.IsDeleted)
-                    .ToFeedIterator()
+                    .Where(x => x.RequestState != null && 
+                        x.RequestState.ToString() == ListingRequestState.Pending.ToString() && 
+                        !x.IsDeleted).ToFeedIterator()
                     )
                 {
                     if (query.HasMoreResults)

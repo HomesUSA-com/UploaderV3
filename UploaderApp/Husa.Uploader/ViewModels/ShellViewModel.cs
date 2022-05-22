@@ -1,26 +1,19 @@
+using Caliburn.Micro;
+using Husa.Core.UploaderBase;
+using Husa.Uploader.Datasources;
+using Husa.Uploader.EventLog;
+using Husa.Uploader.Support;
+using Microsoft.AspNet.SignalR.Client;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using Caliburn.Micro;
-using Husa.Uploader.Datasources;
-using Husa.Uploader.Support;
-using Husa.Core.UploaderBase;
-using Husa.Uploader.EventLog;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using Newtonsoft.Json.Linq;
-using System.Windows.Controls;
-using Microsoft.AspNet.SignalR.Client;
-using System.Threading;
-using System.Collections;
-using System.Text;
-using System.Deployment.Application;
-using Newtonsoft.Json;
-using System.Windows.Navigation;
 
 namespace Husa.Uploader
 {
@@ -58,7 +51,7 @@ namespace Husa.Uploader
 
         private ObservableCollection<UploadListingItem> _listingRequests;
         private ObservableCollection<UploadListingItem> _lots;
-        
+
         private bool isListingButtonActive;
         private bool isLotButtonActive;
 
@@ -67,7 +60,7 @@ namespace Husa.Uploader
         #endregion Attributes
 
         #region Properties
-        
+
         public Dictionary<string, Item> Workers { get; set; }
 
         private bool _updateAvailable;
@@ -78,18 +71,19 @@ namespace Husa.Uploader
         public bool ShowDataBaseOnline;
         public bool ShowDataBaseError;
         private DataBaseStatus _databaseOnline;
-        public DataBaseStatus DatabaseOnline 
+        public DataBaseStatus DatabaseOnline
         {
             get { return this._databaseOnline; }
             set
             {
                 if (value == _databaseOnline) return;
                 _databaseOnline = value;
-                if(_databaseOnline != DataBaseStatus.Online)
+                if (_databaseOnline != DataBaseStatus.Online)
                 {
                     ShowDataBaseOnline = false;
                     ShowDataBaseError = true;
-                } else
+                }
+                else
                 {
                     ShowDataBaseOnline = true;
                     ShowDataBaseError = false;
@@ -123,7 +117,7 @@ namespace Husa.Uploader
                 NotifyOfPropertyChange(() => ShowSignalRError);
             }
         }
-        
+
         public bool ShowCancelButton { get; set; }
 
         public string UserName
@@ -210,7 +204,7 @@ namespace Husa.Uploader
                 _currentEntity = value;
                 SelectedListingRequest = null;
                 Entity loadEntity = (Entity)_currentEntity;
-                if(loadEntity != Entity.Empty)
+                if (loadEntity != Entity.Empty)
                 {
                     Workers = null;
                     SignalRConnectionTriesError = 0;
@@ -252,8 +246,8 @@ namespace Husa.Uploader
 
         public string ApplicationBuildDateLogin
         {
-            get 
-            { 
+            get
+            {
                 var version = VersionManager.ApplicationBuildDate + " - " + VersionManager.ApplicationBuildVersion;
                 return version;
             }
@@ -396,7 +390,7 @@ namespace Husa.Uploader
             int recordsCount = 0;
             LastUpdated = "Updating " + entity + " data...";
 
-            switch(entity)
+            switch (entity)
             {
                 case Entity.Listing:
                     IEnumerable<ResidentialListingRequest> fullListings;
@@ -417,7 +411,7 @@ namespace Husa.Uploader
                         EventLogWriter.Write(SystemLog.UploaderApp, "UploaderApp", 0, "Failed to Connect to Server.\n\n" + ex.Message + "\n\n" + ex.StackTrace, System.Diagnostics.EventLogEntryType.Error);
                         LoadFailed = true;
                         DatabaseOnline = DataBaseStatus.Failed;
-                        Refresh();                        
+                        Refresh();
                     }
                     break;
                 case Entity.Leasing:
@@ -437,7 +431,7 @@ namespace Husa.Uploader
                         EventLogWriter.Write(SystemLog.UploaderApp, "UploaderApp", 0, "Failed to Connect to Server.\n\n" + ex.Message + "\n\n" + ex.StackTrace, System.Diagnostics.EventLogEntryType.Error);
                         LoadFailed = true;
                         DatabaseOnline = DataBaseStatus.Failed;
-                        Refresh();                        
+                        Refresh();
                     }
                     break;
                 case Entity.Lot:
@@ -490,7 +484,7 @@ namespace Husa.Uploader
                         RequestId = c.ResidentialListingRequestID,
                         MlsNumber = string.IsNullOrEmpty(c.MLSNum) ? "New " + CurrentEntity : c.MLSNum,
                         Address = c.StreetNum + " " + c.StreetName,
-                        Status = !String.IsNullOrEmpty(c.ListStatusName) ? c.ListStatusName.ToString(): "",
+                        Status = !String.IsNullOrEmpty(c.ListStatusName) ? c.ListStatusName.ToString() : "",
                         Market = "San Antonio",
                         CompanyName = c.CompanyName,
                         BuilderName = "Ben Caballero",
@@ -540,7 +534,7 @@ namespace Husa.Uploader
 
                 ListingRequests = new ObservableCollection<UploadListingItem>(uploadItems);
             }
-            catch 
+            catch
             {
                 ListingRequests = new ObservableCollection<UploadListingItem>();
             }
@@ -619,7 +613,7 @@ namespace Husa.Uploader
                 }
                 ListingRequests = new ObservableCollection<UploadListingItem>(uploadItems);
             }
-            catch 
+            catch
             {
                 ListingRequests = new ObservableCollection<UploadListingItem>();
             }
@@ -756,7 +750,9 @@ namespace Husa.Uploader
             {
                 await ReceiveWorkerList();
                 SignalRConnectionTriesError = 0;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 SignalRConnectionTriesError++;
             }
         }
@@ -824,8 +820,8 @@ namespace Husa.Uploader
                 bool notNull = SelectedListingRequest != null && UploaderEngine.UploaderSupports<IUpdateOpenHouseUploader>(SelectedListingRequest.FullListing);
                 bool hasMLSNumber = notNull && !string.IsNullOrWhiteSpace(SelectedListingRequest.FullListing.MLSNum);
                 bool enableListingOH = notNull && SelectedListingRequest.FullListing.EnableOpenHouse;
-                
-                bool isPending = notNull && (SelectedListingRequest.FullListing.ListStatus == "PEND" || 
+
+                bool isPending = notNull && (SelectedListingRequest.FullListing.ListStatus == "PEND" ||
                                                 SelectedListingRequest.FullListing.ListStatus == "PND");
                 bool showOHPending = notNull && SelectedListingRequest.FullListing.AllowPendingList == "Y";
                 bool pendingFeature = isPending && showOHPending;
@@ -854,7 +850,7 @@ namespace Husa.Uploader
         {
             get
             {
-                return ( (SelectedListingRequest != null && SelectedListingRequest.IsLeasing == "Yes") && UploaderEngine.UploaderSupports<ILeaseUploader>(SelectedListingRequest.FullListing));
+                return ((SelectedListingRequest != null && SelectedListingRequest.IsLeasing == "Yes") && UploaderEngine.UploaderSupports<ILeaseUploader>(SelectedListingRequest.FullListing));
             }
         }
 
@@ -874,9 +870,9 @@ namespace Husa.Uploader
         {
             get
             {
-                return (CurrentEntity == Entity.Lot && 
+                return (CurrentEntity == Entity.Lot &&
                         SelectedListingRequest != null &&
-                        SelectedListingRequest.IsLot == "Yes") 
+                        SelectedListingRequest.IsLot == "Yes")
                         && UploaderEngine.UploaderSupports<ILotUploader>(SelectedListingRequest.FullListing);
             }
         }
@@ -885,9 +881,9 @@ namespace Husa.Uploader
         {
             get
             {
-                return (CurrentEntity == Entity.Lot && 
-                        SelectedListingRequest != null && 
-                        SelectedListingRequest.InternalLotRequestId > 0) 
+                return (CurrentEntity == Entity.Lot &&
+                        SelectedListingRequest != null &&
+                        SelectedListingRequest.InternalLotRequestId > 0)
                         && UploaderEngine.UploaderSupports<IStatusLotUploader>(SelectedListingRequest.FullListing) && !string.IsNullOrWhiteSpace(SelectedListingRequest.FullListing.MLSNumLot);
             }
         }
@@ -1057,8 +1053,8 @@ namespace Husa.Uploader
                     SelectedItemID = selectedID
                 };
                 await echo.Invoke("SendSelectedItem", UserFullName, item);
-            }  
-            catch(Exception e)
+            }
+            catch (Exception e)
             {
                 EventLogWriter.Write(SystemLog.UploaderApp, "UploaderApp", 0, "Error connecting to SignalR service SendSelectedItem. " + e.StackTrace, System.Diagnostics.EventLogEntryType.Error);
                 SignalROnline = SignalRStatus.Failed;
@@ -1131,8 +1127,8 @@ namespace Husa.Uploader
                         }
                         else
                         {
-                            var diff = response.Where(entry => Workers.ContainsKey(entry.Key) && 
-                                            (Workers[entry.Key].SelectedItemID != entry.Value.SelectedItemID || Workers[entry.Key].Status != entry.Value.Status) )
+                            var diff = response.Where(entry => Workers.ContainsKey(entry.Key) &&
+                                            (Workers[entry.Key].SelectedItemID != entry.Value.SelectedItemID || Workers[entry.Key].Status != entry.Value.Status))
                                     .ToDictionary(entry => entry.Key, entry => entry.Value);
                             if (diff.Any())
                             {
@@ -1178,7 +1174,7 @@ namespace Husa.Uploader
                                 }
                                 catch
                                 { }
-                                
+
                             }
                         }
                     }
@@ -1209,14 +1205,14 @@ namespace Husa.Uploader
         private async Task DoLoginAction()
         {
             HasPermission = false;
-            using (var stringContent = new StringContent("{ \"username\": \""+ UserName + "\", \"password\": \"" + Password + "\"  }", System.Text.Encoding.UTF8, "application/json"))
+            using (var stringContent = new StringContent("{ \"username\": \"" + UserName + "\", \"password\": \"" + Password + "\"  }", System.Text.Encoding.UTF8, "application/json"))
             using (var client = new HttpClient())
             {
                 try
                 {
                     var config = UploaderConfiguration.GetConfiguration();
                     var response = await client.PostAsync(config.AuthenticateServerUrl, stringContent);
-                    if(response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
+                    if (response.StatusCode.Equals(System.Net.HttpStatusCode.OK))
                     {
                         var result = await response.Content.ReadAsStringAsync();
                         if (!String.IsNullOrEmpty(result))
@@ -1228,10 +1224,10 @@ namespace Husa.Uploader
                             {
                                 HasPermission = true;
                                 UserFullName = value.fullName.ToString();
-                            } 
+                            }
                         }
                     }
-                    if(!HasPermission)
+                    if (!HasPermission)
                     {
                         ErrorMessage = "Username or password incorrect. Please, try again.";
                         IsErrorVisible = true;
@@ -1507,11 +1503,11 @@ namespace Husa.Uploader
         public void CancelProcess()
         {
             ShowCancelButton = false;
-            try 
-            { 
+            try
+            {
                 UploaderEngine.CloseDrivers();
-            } 
-            catch  (Exception e)
+            }
+            catch (Exception e)
             {
                 EventLogWriter.Write(SystemLog.UploaderApp, "UploaderApp", 0, "Failed to kill the Chromedriver.exe proccess." + e.StackTrace, System.Diagnostics.EventLogEntryType.Error);
             }

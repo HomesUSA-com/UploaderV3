@@ -509,7 +509,7 @@ namespace Husa.Core.Uploaders.SanAntonio
             driver.WriteTextbox(By.Id("ADDRNUMBER"), listing.StreetNum != null ? listing.StreetNum.ToString() : ""); // Street Number
             driver.WriteTextbox(By.Id("ADDRSTREET"), listing.StreetName); // Street Name
             driver.WriteTextbox(By.Id("CITYID"), listing.CityCode); // City
-            driver.WriteTextbox(By.Id("STATEID"), listing.State); // State
+            driver.WriteTextbox(By.Id("STATEID"), "TX"); // State
             driver.WriteTextbox(By.Id("zip5"), listing.Zip); // Zip
             driver.WriteTextbox(By.Id("COUNTYID"), listing.County); // County
             if (listing.TaxID != null)
@@ -613,10 +613,7 @@ namespace Husa.Core.Uploaders.SanAntonio
             driver.WriteTextbox(By.Name("INSTORDIR"), direction);//Inst/Dir
             driver.WriteTextbox(By.Name("HOMEFACES"), listing.FacesDesc, true);//Home Faces
 
-            // TODO : remove the below line
-            //if (listing.YearBuilt == null)
-                listing.YearBuilt = 2021;
-            if (String.IsNullOrEmpty(listing.YearBuiltDesc) || listing.YearBuiltDesc == "complete")
+            if (String.IsNullOrEmpty(listing.YearBuiltDesc) || listing.YearBuiltDesc == "Complete")
             {
                 listing.YearBuiltDesc = "C";
             } 
@@ -626,7 +623,7 @@ namespace Husa.Core.Uploaders.SanAntonio
             }
 
 
-            if (listing.YearBuilt.HasValue)
+            if (listing.YearBuilt != null && listing.YearBuilt.HasValue)
                 driver.WriteTextbox(By.Name("YEAR_BUILT"), listing.YearBuilt.Value); //Year Built
             else
             {
@@ -653,9 +650,6 @@ namespace Husa.Core.Uploaders.SanAntonio
             driver.WriteTextbox(By.Name("CONSTRCTN"), "NEW");//Construction
             driver.WriteTextbox(By.Name("BLDRNAME"), listing.OwnerName);//Builder Name
 
-            // TODO : Remove the below line
-            //if(String.IsNullOrEmpty(listing.HasHandicapAmenities))
-                listing.HasHandicapAmenities = "NO";
             driver.WriteTextbox(By.Name("ACCESS_HOME"), listing.HasHandicapAmenities);//Accessible/Adaptive Home
 
             driver.WriteTextbox(By.Name("NGHBRHDMNT"), listing.CommonFeatures);//Neighborhood Amenities
@@ -707,7 +701,7 @@ namespace Husa.Core.Uploaders.SanAntonio
             driver.SetAttribute(By.Name("SUBDIVISION_CKA"), listing.Subdivision, "value");//Subdivision (Common Name)
                                                                                           //driver.WriteTextbox(By.Name("CONDONAME"), listing.); // Condo Name
             driver.WriteTextbox(By.Name("LEGALDESC"), listing.Legal); //Legal Description
-            if (listing.YearBuilt.HasValue)
+            if (listing.YearBuilt != null && listing.YearBuilt.HasValue)
                 driver.WriteTextbox(By.Name("YEAR_BUILT"), listing.YearBuilt.Value); //Year Built
             else
             {
@@ -753,24 +747,24 @@ namespace Husa.Core.Uploaders.SanAntonio
             ((IJavaScriptExecutor)driver).ExecuteScript(" SP('1') ");
             Thread.Sleep(2000);
 
-            // TODO : Remove the below lines
-            //if (String.IsNullOrEmpty(listing.HousingTypeDesc))
-                listing.HousingTypeDesc = "1STRY,TRDNL";
-            driver.WriteTextbox(By.Name("STYLE"), listing.HousingTypeDesc); //Style
+            driver.WriteTextbox(By.Name("STYLE"), listing.HousingStyleDesc); //Style
             driver.FindElement(By.Name("STYLE")).SendKeys(Keys.Tab);
             Thread.Sleep(500);
 
-            // TODO : Remove the below lines
-            //if(String.IsNullOrEmpty(listing.NumStories))
-                listing.NumStories = "2";
-            driver.WriteTextbox(By.Name("NOSTRY"), listing.NumStories); //# of Stories
+            int numericValue;
+            if (!String.IsNullOrEmpty(listing.NumStories))
+            {
+                bool isNumber = int.TryParse(listing.NumStories, out numericValue);
+                if (isNumber && int.Parse(listing.NumStories) > 2){
+                    listing.NumStories = "3+";
+                }
+                driver.WriteTextbox(By.Name("NOSTRY"), listing.NumStories); //# of Stories
+            }
+
 
             driver.FindElement(By.Name("NOSTRY")).SendKeys(Keys.Tab);
             Thread.Sleep(500);
 
-            // TODO : Remove the below lines
-            //if (String.IsNullOrEmpty(listing.ExteriorFeatures))
-                //listing.ExteriorDesc = "BRICK,WOOD,VINYL";
             driver.WriteTextbox(By.Name("EXTERIOR"), listing.ExteriorDesc); //Exterior
             driver.FindElement(By.Name("EXTERIOR")).SendKeys(Keys.Tab);
             Thread.Sleep(500);
@@ -804,21 +798,16 @@ namespace Husa.Core.Uploaders.SanAntonio
 
             //HY-277
             //driver.WriteTextbox(By.Name("NOGARSPC"), listing.GarageCapacity); //# Parking Spaces
-
-            // TODO : Remove the below lines
-            if(listing.HasPool != null && listing.HasPool == true)
-            {
-                driver.WriteTextbox(By.Name("POOL"), "Y"); //Pool
-            }
-            else
-            {
-                driver.WriteTextbox(By.Name("POOL"), "N"); //Pool
-            }
             
-            if (!string.IsNullOrWhiteSpace(listing.PoolDesc))//Pool/Spa
-                driver.WriteTextbox(By.Name("POOLSPA"), listing.PoolDesc);
+            if(listing.HasPool)
+                driver.WriteTextbox(By.Name("POOL"), "Y"); // Pool
             else
-                driver.WriteTextbox(By.Name("POOLSPA"), "NONE");
+                driver.WriteTextbox(By.Name("POOL"), "N"); // Pool
+
+            if (!listing.HasPool)
+                driver.WriteTextbox(By.Name("POOLSPA"), "OTHER"); //Pool/Spa
+            else
+                driver.WriteTextbox(By.Name("POOLSPA"), "NONE"); //Pool/Spa
 
             driver.WriteTextbox(By.Name("EXTERRFTRS"), listing.ExteriorFeatures, true);//Exterior Features
             driver.FindElement(By.Name("EXTERRFTRS")).SendKeys(Keys.Tab);
@@ -992,9 +981,6 @@ namespace Husa.Core.Uploaders.SanAntonio
             ((IJavaScriptExecutor)driver).ExecuteScript(" BEDROOMSActions() ");
 
             // 8.
-            // TODO : Remove the below line
-            //if (String.IsNullOrEmpty(listing.Bed1Desc))
-                listing.Bed1Desc = "DWNST,WLKIN,CLFAN,FLBT";
             driver.WriteTextbox(By.Name("MASTERBDRM"), listing.Bed1Desc); //Master Bedroom
 
             // 9.
@@ -1014,9 +1000,6 @@ namespace Husa.Core.Uploaders.SanAntonio
             Thread.Sleep(500);
 
             // 10.
-            // TODO : Remove the below lines
-            //if (String.IsNullOrEmpty(listing.BedBathDesc))
-                listing.BedBathDesc = "TSCMB,HS/HR,DBLVN";
             driver.WriteTextbox(By.Name("MASTERBATH"), listing.BedBathDesc); //Master Bath
             ((IJavaScriptExecutor)driver).ExecuteScript(" MASTERBATHActions(); closeDiv(); ");
             //selectVals('MASTERBATH'); ; MASTERBATHActions(); closeDiv();
@@ -1502,10 +1485,7 @@ namespace Husa.Core.Uploaders.SanAntonio
             driver.WriteTextbox(By.Name("HEATINGFUL"), listing.HeatingFuel);//Heating Fuel
             driver.FindElement(By.Name("HEATINGFUL")).SendKeys(Keys.Tab);
 
-            // TODO : Remove the below lines
-            //if (String.IsNullOrEmpty(listing.WaterDesc))
-                listing.WaterDesc = "WTRSY,SWRSY,CITY";
-            driver.WriteTextbox(By.Name("WATERSEWER"), listing.WaterDesc);//Water/Sewer
+            driver.WriteTextbox(By.Name("WATERSEWER"), listing.WaterAccessDesc);//Water/Sewer
             driver.FindElement(By.Name("WATERSEWER")).SendKeys(Keys.Tab);
 
             driver.WriteTextbox(By.Name("UTSPELEC"), listing.SupElectricity, true);//Utility Supplier: Elec
@@ -1529,10 +1509,9 @@ namespace Husa.Core.Uploaders.SanAntonio
 
             driver.WriteTextbox(By.Name("MTPLCNTY"), "NO"); //Taxed by Mltpl Counties
 
-            driver.WriteTextbox(By.Name("TAX_YEAR"), listing.YearBuilt); //Certified Tax Year
+            driver.WriteTextbox(By.Name("TAX_YEAR"), listing.TaxYear); //Certified Tax Year
 
-            // TODO : Remove the below line
-            //if(String.IsNullOrEmpty(listing.HOA))
+            if(String.IsNullOrEmpty(listing.HOA))
                 listing.HOA = "NONE";
 
             driver.WriteTextbox(By.Name("HOAMNDTRY"), listing.HOA); //HOA
@@ -1582,8 +1561,6 @@ namespace Husa.Core.Uploaders.SanAntonio
             if (driver.UploadInformation.IsNewListing)
             {
                 DateTime ListDate = DateTime.Now;
-                // TODO : Remove the bnelow line
-                listing.ListStatus = "ACT";
 
                 if (listing.ListStatus.ToLower() == "pnd")
                     ListDate = ListDate.AddDays(-2);
@@ -1624,9 +1601,6 @@ namespace Husa.Core.Uploaders.SanAntonio
             driver.WriteTextbox(By.Name("OWNER"), listing.OwnerName); //Owner
             driver.WriteTextbox(By.Name("SUBAGTCOM"), "0%"); //Subagent Com
 
-            // TODO : Remove the below line
-            //if (String.IsNullOrEmpty(listing.CompBuy))
-                listing.CompBuy = "0";
             driver.WriteTextbox(By.Name("BUYAGTCOM"), listing.CompBuy); //Buyer Agent Com
 
             if(!String.IsNullOrEmpty(listing.AgentBonusAmount))
@@ -2550,7 +2524,7 @@ namespace Husa.Core.Uploaders.SanAntonio
                                                                                           //driver.WriteTextbox(By.Name("CONDONAME"), listing.); // Condo Name
             driver.WriteTextbox(By.Name("LEGALDESC"), listing.Legal); //Legal Description
             driver.WriteTextbox(By.Name("ZONING"), "Residential"); // Zoning
-            if (listing.YearBuilt.HasValue)
+            if (listing.YearBuilt != null && listing.YearBuilt.HasValue)
                 driver.WriteTextbox(By.Name("YEAR_BUILT"), listing.YearBuilt.Value); //Year Built
             else
             {

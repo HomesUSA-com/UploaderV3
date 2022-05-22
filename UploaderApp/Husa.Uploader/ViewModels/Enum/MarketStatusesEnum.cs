@@ -9,31 +9,34 @@
     public enum MarketStatusesEnum
     {
         [Description("Active")]
-        [EnumMember(Value = "A")]
+        [EnumMember(Value = "ACT")]
         Active,
-        [Description("Active Contingent")]
-        [EnumMember(Value = "AC")]
-        ActiveContingent,
-        [Description("Active Kick Out")]
-        [EnumMember(Value = "AKO")]
-        ActiveKickOut,
-        [Description("Active Option Contract")]
-        [EnumMember(Value = "AOC")]
-        ActiveOptionContract,
+        [Description("Active Option")]
+        [EnumMember(Value = "AO")]
+        ActiveOption,
+        [Description("Active RFR")]
+        [EnumMember(Value = "RFR")]
+        ActiveRFR,
+        [Description("Back on Market")]
+        [EnumMember(Value = "BOM")]
+        BackOnMarket,
         [Description("Cancelled")]
-        [EnumMember(Value = "C")]
+        [EnumMember(Value = "CAN")]
         Cancelled,
-        [Description("Leased")]
-        [EnumMember(Value = "L")]
-        Leased,
         [Description("Pending")]
-        [EnumMember(Value = "P")]
+        [EnumMember(Value = "PND")]
         Pending,
+        [Description("Pending SB")]
+        [EnumMember(Value = "PDB")]
+        PendingSB,
+        [Description("Price Change")]
+        [EnumMember(Value = "PCH")]
+        PriceChange,
         [Description("Sold")]
-        [EnumMember(Value = "S")]
+        [EnumMember(Value = "SLD")]
         Sold,
-        [Description("TempOffMarket")]
-        [EnumMember(Value = "T")]
-        TempOffMarket
+        [Description("Withdrawn")]
+        [EnumMember(Value = "WDN")]
+        Withdrawn
     }
 }

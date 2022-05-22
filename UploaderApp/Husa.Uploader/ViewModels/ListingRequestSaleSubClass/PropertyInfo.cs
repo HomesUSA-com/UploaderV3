@@ -1,12 +1,13 @@
 ﻿namespace Husa.Uploader.ViewModels.ListingRequestSaleSubClass
 {
+    using Husa.Uploader.ViewModels.Enum;
     using System;
 
     public class PropertyInfo
     {
         public DateTime ConstructionCompletionDate { get; set; }
 
-        public string ConstructionStage { get; set; }
+        public ConstructionStageEnum ConstructionStage { get; set; }
 
         public int? ConstructionStartYear { get; set; }
 

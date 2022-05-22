@@ -1,9 +1,8 @@
 ﻿namespace Husa.Uploader.Support
 {
+    using Husa.Core.UploaderBase;
     using Husa.Uploader.ViewModels;
     using Husa.Uploader.ViewModels.Enum;
-    using Husa.Core.UploaderBase;
-    using System;
     using System.Collections.Generic;
 
     public class ClassTransform
@@ -12,16 +11,16 @@
         {
             var residentialListingRequests = new List<ResidentialListingRequest>();
 
-            foreach(var listingRequest in listingsRequestSale)
+            foreach (var listingRequest in listingsRequestSale)
             {
                 var residentialListingRequest = new ResidentialListingRequest();
                 residentialListingRequest.ResidentialListingRequestID = listingRequest.ListingSaleId;
                 residentialListingRequest.MarketUsername = "096651";
-                residentialListingRequest.MarketPassword = "8Hw*whRhxD&rr";
+                residentialListingRequest.MarketPassword = /*"8Hw*whRhxD&rr"*/"r&v4RJDUv";
                 residentialListingRequest.MarketID = 8;
                 residentialListingRequest.MarketName = "San Antonio";
                 residentialListingRequest.ListPrice = (decimal)listingRequest.ListPrice;
-                residentialListingRequest.MLSNum = listingRequest.MlsNumber;
+                residentialListingRequest.MLSNum = ""/*listingRequest.MlsNumber*/;
                 residentialListingRequest.MlsStatus = listingRequest.MlsStatus.ToString();
                 residentialListingRequest.SysCreatedOn = listingRequest.CreatedOn;
                 residentialListingRequest.SysCreatedBy = listingRequest.CreatedBy;
@@ -32,6 +31,7 @@
                 residentialListingRequest.OwnerName = listingRequest.SaleProperty.OwnerName;
                 residentialListingRequest.PlanProfileID = listingRequest.SaleProperty.PlanId;
                 residentialListingRequest.CommunityProfileID = listingRequest.SaleProperty.CommunityId;
+                residentialListingRequest.ListStatus = listingRequest.MlsStatus;
 
                 #region AddressInfo
                 residentialListingRequest.StreetNum = listingRequest.SaleProperty.AddressInfo.StreetNumber.ToString();
@@ -47,7 +47,8 @@
 
                 #region PropertyInfo
                 residentialListingRequest.BuildCompletionDate = listingRequest.SaleProperty.PropertyInfo.ConstructionCompletionDate;// check
-                residentialListingRequest.YearBuiltDesc = listingRequest.SaleProperty.PropertyInfo.ConstructionStage;
+                residentialListingRequest.YearBuiltDesc = listingRequest.SaleProperty.PropertyInfo.ConstructionStage.ToString();
+                residentialListingRequest.YearBuilt = listingRequest.SaleProperty.PropertyInfo.ConstructionStartYear;
                 //ConstructionStage
                 //ConstructionYear
                 residentialListingRequest.Legal = listingRequest.SaleProperty.PropertyInfo.LegalDescription; //check
@@ -74,11 +75,11 @@
                 //SpecialtyRooms
                 //MasterBedrrom
                 //numBedrooms
-                residentialListingRequest.BathsFull= listingRequest.SaleProperty.SpacesDimensionsInfo.BathsFull;
-                residentialListingRequest.BathsHalf= listingRequest.SaleProperty.SpacesDimensionsInfo.BathsHalf;
+                residentialListingRequest.BathsFull = listingRequest.SaleProperty.SpacesDimensionsInfo.BathsFull;
+                residentialListingRequest.BathsHalf = listingRequest.SaleProperty.SpacesDimensionsInfo.BathsHalf;
                 //masterBathDescription
-                residentialListingRequest.GarageDesc= listingRequest.SaleProperty.SpacesDimensionsInfo.GarageDescription;
-                residentialListingRequest.ParkingDesc= listingRequest.SaleProperty.SpacesDimensionsInfo.GarageDescription;
+                residentialListingRequest.GarageDesc = listingRequest.SaleProperty.SpacesDimensionsInfo.GarageDescription;
+                residentialListingRequest.ParkingDesc = listingRequest.SaleProperty.SpacesDimensionsInfo.GarageDescription;
                 residentialListingRequest.OtherParking = listingRequest.SaleProperty.SpacesDimensionsInfo.OtherParking;
 
                 residentialListingRequest.Beds = listingRequest.SaleProperty.SpacesDimensionsInfo.NumBedrooms;
@@ -253,7 +254,7 @@
                 residentialListingRequest.AgentBonusAmount = listingRequest.SaleProperty.FinancialInfo.AgentBonusAmount.ToString();
                 residentialListingRequest.CompBuyBonusExpireDate = listingRequest.SaleProperty.FinancialInfo.BonusExpirationDate; //check
                 residentialListingRequest.BuyerIncentive = listingRequest.SaleProperty.FinancialInfo.HasBuyerIncentive.ToString(); //check
-                residentialListingRequest.CompBuy = listingRequest.SaleProperty.FinancialInfo.BuyersAgentCommission; 
+                residentialListingRequest.CompBuy = listingRequest.SaleProperty.FinancialInfo.BuyersAgentCommission;
 
                 #endregion
 
