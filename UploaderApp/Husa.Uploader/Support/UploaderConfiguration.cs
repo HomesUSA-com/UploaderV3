@@ -10,7 +10,7 @@
                 SingalRRefreshIntervalSeconds = 2,
                 SignalRURLServer = "https://husauploadersignalrwebapp.azurewebsites.net/",
                 DataRefreshIntervalInSeconds = 45,
-                DatabaseConnectionString = "Server=40.121.13.197;Database=MLS;User ID=databasedev;Password=f2w}b/4)#xQssK<g;Trusted_Connection=False;Connection Timeout=15;",
+                DatabaseConnectionString = "Server=10.0.0.31;Database=MLS;User ID=databasedev;Password=f2w}b/4)#xQssK<g;Trusted_Connection=False;Connection Timeout=15;",
 #if !DEBUG
                 ElasticSearchServerUrl = "http://logs.homesusa.com:9200/",
                     //DatabaseConnectionString = "Server=40.121.13.197;Database=MLS;User ID=uploaderapp;Password=UPL01User23#.;Trusted_Connection=False;"

@@ -2,7 +2,7 @@
 {
     public class AddressInfo
     {
-        public int StreetNumber { get; set; }
+        public string StreetNumber { get; set; }
 
         public string StreetName { get; set; }
 

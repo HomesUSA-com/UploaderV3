@@ -16,7 +16,7 @@
 
         public decimal? AgentBonusAmount { get; set; }
 
-        public DateTime BonusExpirationDate { get; set; }
+        public DateTime? BonusExpirationDate { get; set; }
 
         public bool HasBuyerIncentive { get; set; }
 
