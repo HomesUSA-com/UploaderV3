@@ -485,7 +485,7 @@ namespace Husa.Uploader
                         MlsNumber = string.IsNullOrEmpty(c.MLSNum) ? "New " + CurrentEntity : c.MLSNum,
                         Address = c.StreetNum + " " + c.StreetName,
                         Status = !String.IsNullOrEmpty(c.ListStatusName) ? c.ListStatusName.ToString() : "",
-                        Market = "San Antonio",
+                        Market = c.MarketName,
                         CompanyName = c.CompanyName,
                         BuilderName = "Ben Caballero",
                         BrokerOffice = "HHRE00",

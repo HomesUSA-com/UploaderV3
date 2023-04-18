@@ -1,5 +1,9 @@
-﻿namespace Husa.Uploader.ViewModels.ListingRequestSaleSubClass
+﻿using System.Collections.Generic;
+
+namespace Husa.Uploader.ViewModels.ListingRequestSaleSubClass
 {
+    using Husa.Uploader.ViewModels.Enum;
+
     public class SpacesDimensionsInfo
     {
         public string TypeCategory { get; set; }
@@ -28,6 +32,6 @@
 
         public int? NumBedrooms { get; set; }
 
-        public string GarageDescription { get; set; }
+        //public HashSet<GarageDescription> GarageDescription { get; set; }
     }
 }

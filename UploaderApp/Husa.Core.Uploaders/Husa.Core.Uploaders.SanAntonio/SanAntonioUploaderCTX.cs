@@ -1,22 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Husa.Core.UploaderBase;
+﻿using Husa.Core.UploaderBase;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace Husa.Core.Uploaders.SanAntonio
 {
-    public class SanAntonioUploaderCTX :    IUploader, 
-                                            IEditor, 
-                                            IStatusUploader, 
-                                            IImageUploader, 
-                                            ICompletionDateUploader, 
-                                            IPriceUploader, 
+    public class SanAntonioUploaderCTX : IUploader,
+                                            IEditor,
+                                            IStatusUploader,
+                                            IImageUploader,
+                                            ICompletionDateUploader,
+                                            IPriceUploader,
                                             IUploadVirtualTourUploader
     {
         public string RoomType { get; set; }
@@ -27,16 +25,8 @@ namespace Husa.Core.Uploaders.SanAntonio
         {
             //This method must return true if the listing can be uploaded with this MarketSpecific Uploader
             // UP-74
-            if (listing.MarketName == "San Antonio CTX" && listing.ServiceSubscription > 0 &&
-                !String.IsNullOrEmpty(listing.isCTX) && listing.isCTX == "1")
+            if (listing.MarketName == "San Antonio CTX")
             {
-                if (!String.IsNullOrEmpty(listing.CTXMLSNum))
-                    listing.MLSNum = listing.CTXMLSNum;
-                else
-                    listing.MLSNum = String.Empty;
-                listing.MarketName = "San Antonio CTX";
-                //listing.MarketUsername = listing.CTXUser;
-                //listing.MarketPassword = listing.CTXPass;
                 listing.MarketUsername = "306362";
                 listing.MarketPassword = "1232";
 
@@ -55,7 +45,7 @@ namespace Husa.Core.Uploaders.SanAntonio
                 Login(driver, listing);
 
                 #region navigateMenu
-                driver.wait.Until(ExpectedConditions.ElementExists(By.Id("ctl03_m_divFooterContainer")));
+                Thread.Sleep(5000);
                 #endregion
 
                 if (string.IsNullOrWhiteSpace(listing.MLSNum))
@@ -280,7 +270,7 @@ namespace Husa.Core.Uploaders.SanAntonio
             //Prepare Media
             driver.wait.Until(ExpectedConditions.ElementIsVisible(By.Id("m_lbSave")));
             DeleteAllImages(driver);
-            UploadNewImages(driver, media.OfType<ResidentialListingMedia>());
+            UploadNewImages(driver, media.OfType<ResidentialListingMedia>(), listing);
 
             return UploadResult.Success;
         }
@@ -297,9 +287,26 @@ namespace Husa.Core.Uploaders.SanAntonio
             }
         }
 
-        private void UploadNewImages(CoreWebDriver driver, IEnumerable<ResidentialListingMedia> media)
+        private void UploadNewImages(CoreWebDriver driver, IEnumerable<ResidentialListingMedia> media, ResidentialListingRequest listing)
         {
             var js = (IJavaScriptExecutor)driver.InternalWebDriver;
+            js.ExecuteScript("javascript:var btn = jQuery('#m_lbSave')[0]; btn.click();");
+
+            try
+            {
+                var alert = driver.SwitchTo().Alert();
+                alert.Accept();
+            }
+            catch (Exception ex) { }
+
+            QuickEdit(driver, listing);
+
+            Thread.Sleep(400);
+
+            // Enter Manage Photos
+            driver.wait.Until(ExpectedConditions.ElementIsVisible(By.LinkText("Manage Photos")));
+            driver.Click(By.LinkText("Manage Photos"));
+
             var i = 0;
 
             //Upload Images
@@ -324,16 +331,14 @@ namespace Husa.Core.Uploaders.SanAntonio
 
                 driver.wait.Until(ExpectedConditions.ElementIsVisible(By.Id("photoCell_" + i)));
 
-                js.ExecuteScript("javascript:ManageMediaJS.showDetails(" + i + ");");
+                js.ExecuteScript("jQuery('#photoCell_" + i + " a')[0].click();");
+                Thread.Sleep(500);
 
-                driver.wait.Until(ExpectedConditions.ElementIsVisible(By.Id("DescriptionDiv")));
+                js.ExecuteScript("jQuery('#m_tbxDescription').val('" + image.Caption + "');");
 
-                var wait = driver.GetWait();
-                var descriptionBtn = wait.Until(ExpectedConditions.ElementIsVisible(By.LinkText("Enter description")));
+                Thread.Sleep(500);
 
-                descriptionBtn.Click();
-                driver.WriteTextbox(By.Id("m_tbxDescription"), image.Caption);
-                driver.Click(By.LinkText("Done"));
+                js.ExecuteScript("jQuery('#m_ucDetailsView_m_btnSave').parent().removeClass('disabled');");
 
                 driver.Click(By.Id("m_ucDetailsView_m_btnSave"));
 
@@ -365,28 +370,20 @@ namespace Husa.Core.Uploaders.SanAntonio
 
             #region login
             // Connect to the login page
-            driver.Navigate("http://matrix.ctxmls.com/Matrix/login.aspx");
+            driver.Navigate("https://matrix.ctxmls.com/Matrix/login.aspx");
 
-            driver.wait.Until(ExpectedConditions.ElementIsVisible(By.ClassName("loginbutton")));
-            driver.ExecuteScript("document.getElementById('m_tbName').focus();");
-            driver.WriteTextbox(By.Id("m_tbName"), listing.MarketUsername);
-
-            //driver.ExecuteScript("$('#password').css({ 'display': 'none' });");
-            driver.ExecuteScript("document.getElementById('m_tbPassword').value='" + listing.MarketPassword + "';");
-            //driver.ExecuteScript("document.getElementById('j_password').value='" + listing.MarketPassword + "';");
-
-            driver.Click(By.ClassName("loginbutton"));
+            driver.wait.Until(ExpectedConditions.ElementIsVisible(By.Id("loginbtn")));
+            
+            driver.WriteTextbox(By.Name("username"), "bcaballero");
+            driver.WriteTextbox(By.Name("password"), "Mls#2021!");
+            driver.Click(By.Id("loginbtn"));
             #endregion
 
             Thread.Sleep(2000);
 
             #region loadingMLS
-            // Wait until login page has been loaded.
-
-            //driver.wait.Until(ExpectedConditions.ElementIsVisible(By.TagName("footer")));
-
+            
             // Use the same browser page NOT _blank
-            //driver.Navigate("http://matrix.ctxmls.com/Matrix/Default.aspx?c=AAEAAAD*****AQAAAAAAAAARAQAAAFIAAAAGAgAAAAQ4OTQwDRsGAwAAAAQLPCUSDTUL&f=");
             #endregion
 
             Thread.Sleep(2000);
@@ -399,7 +396,8 @@ namespace Husa.Core.Uploaders.SanAntonio
 
             try { driver.Click(By.LinkText("Skip"), true); } catch { }
             Thread.Sleep(2000);
-
+            driver.Navigate("https://matrix.ctxmls.com/Matrix/Default.aspx?c=AAEAAAD*****AQAAAAAAAAARAQAAAFIAAAAGAgAAAAQ4OTQwDRsGAwAAAAQLPCUSDTUL&f=");
+            Thread.Sleep(2000);
             #endregion
 
             return LoginResult.Logged;
@@ -408,9 +406,9 @@ namespace Husa.Core.Uploaders.SanAntonio
         private void NewProperty(CoreWebDriver driver, ResidentialListingRequest listing)
         {
             #region newProperty
-
-            driver.wait.Until(ExpectedConditions.ElementIsVisible(By.LinkText("Input")));
-            driver.Click(By.LinkText("Input"));
+            driver.Navigate("https://matrix.ctxmls.com/Matrix/Input");
+            //driver.wait.Until(ExpectedConditions.ElementIsVisible(By.LinkText("Input")));
+            //driver.Click(By.LinkText("Input"));
             driver.wait.Until(ExpectedConditions.ElementIsVisible(By.LinkText("Add new")));
             driver.Click(By.LinkText("Add new"));
             driver.wait.Until(ExpectedConditions.ElementIsVisible(By.LinkText("Residential Input Form")));
@@ -431,8 +429,9 @@ namespace Husa.Core.Uploaders.SanAntonio
 
         private void QuickEdit(CoreWebDriver driver, ResidentialListingRequest listing)
         {
-            driver.wait.Until(ExpectedConditions.ElementIsVisible(By.LinkText("Input")));
-            driver.Click(By.LinkText("Input"));
+            driver.Navigate("https://matrix.ctxmls.com/Matrix/Input");
+            //driver.wait.Until(ExpectedConditions.ElementIsVisible(By.LinkText("Input")));
+            //driver.Click(By.LinkText("Input"));
             driver.wait.Until(ExpectedConditions.ElementIsVisible(By.LinkText("Edit existing")));
             driver.Click(By.LinkText("Edit existing"));
             driver.wait.Until(ExpectedConditions.ElementIsVisible(By.Id("m_txtSourceCommonID")));
@@ -447,42 +446,51 @@ namespace Husa.Core.Uploaders.SanAntonio
         /// <param name="listing">Current listing being processed</param>
         private void FillListingInformation(CoreWebDriver driver, ResidentialListingRequest listing)
         {
+            string tabName = "Listing Information";
             driver.Click(By.LinkText("Listing Information")); // click in tab Listing Information
-            driver.wait.Until(ExpectedConditions.ElementIsVisible(By.Id("Input_189"))); // the last field on the form
+            driver.wait.Until(ExpectedConditions.ElementIsVisible(By.Id("Input_107"))); 
 
             #region Location Information
             driver.WriteTextbox(By.Id("Input_107"), listing.StreetNum); // Street Number
-            driver.SetSelect(By.Id("Input_108"), listing.StreetDir); // St Direction
+            driver.SetSelect(By.Id("Input_108"), listing.StreetDir, "St Direction", tabName); // St Direction
             driver.WriteTextbox(By.Id("Input_110"), listing.StreetName); // Street Name
-            driver.SetSelect(By.Id("Input_109"), listing.StreetType); // Street Type
+            driver.SetSelect(By.Id("Input_109"), listing.StreetType, "Street Type", tabName); // Street Type
             driver.WriteTextbox(By.Id("Input_111"), listing.UnitNum); // Unit #
-            driver.SetSelectByText(By.Id("Input_112"), listing.City); // City
-            driver.SetSelect(By.Id("Input_113"), listing.StateCode); // State  -- TEST: verify if must to use State or StateCode property
-            driver.WriteTextbox(By.Id("Input_114"), listing.Zip); // Zip Code
-            driver.SetSelectByText(By.Id("Input_115"), listing.County); // County
-            driver.WriteTextbox(By.Id("Input_396"), listing.Subdivision); // Subdivision
-            driver.WriteTextbox(By.Id("Input_117"), listing.Legal); // Legal Description
-            driver.WriteTextbox(By.Id("Input_118"), listing.TaxID); // Property ID
-            driver.WriteTextbox(By.Id("Input_119"), listing.CTXGeoID); // Geo ID
-            // driver.WriteTextbox(By.Id("Input_120"), ??? ); // Lot
-            // driver.WriteTextbox(By.Id("Input_121"), ??? ); // Block
-            driver.SetSelect(By.Id("Input_122"), listing.SchoolDistrict.ToUpper()); // School District
-            driver.SetSelect(By.Id("Input_123"), "YES"); // In City Limits
-
+            driver.SetSelectByText(By.Id("Input_112"), listing.City, "City", tabName); // City
+            driver.SetSelect(By.Id("Input_113"), listing.StateCode, "State", tabName); // State
+            driver.SetSelect(By.Id("Input_123"), "YES", "In City Limits", tabName); // In City Limits
             string CTXETJ = "0";
             if (listing.CTXETJ == true)
                 CTXETJ = "1";
-            driver.SetSelect(By.Id("Input_124"), CTXETJ); // ETJ
-            driver.SetSelect(By.Id("Input_406"), listing.SchoolName1.ToUpper()); // Elementary School
-            driver.SetSelect(By.Id("Input_407"), listing.SchoolName2.ToUpper()); // Middle School
-            driver.SetSelect(By.Id("Input_405"), listing.SchoolName3.ToUpper()); // High School
-            driver.WriteTextbox(By.Id("Input_125"), listing.MapscoMapCoord); // Map Grid
-            driver.WriteTextbox(By.Id("Input_126"), listing.MapscoMapPage); // Map Source
+            driver.SetSelect(By.Id("Input_124"), CTXETJ, "ETJ", tabName); // ETJ
+            driver.WriteTextbox(By.Id("Input_114"), listing.Zip); // Zip Code
+            driver.SetSelectByText(By.Id("Input_115"), listing.County, "County", tabName); // County
+            driver.WriteTextbox(By.Id("Input_396"), listing.Subdivision); // Subdivision
+            driver.WriteTextbox(By.Id("Input_528"), listing.Legal); // Legal Description
+            driver.WriteTextbox(By.Id("Input_529"), listing.TaxID); // Property ID
+            driver.WriteTextbox(By.Id("Input_766"), listing.CTXGeoID); // Geo ID
+            driver.SetSelect(By.Id("Input_530"), "NO", "FEMA Flood Plain", tabName); // FEMA Flood Plain
+            driver.SetSelect(By.Id("Input_531"), "NO", "Residential Flooded", tabName); // Residential Flooded
+            driver.WriteTextbox(By.Id("Input_532"), listing.LotNum); // Lot
+            driver.WriteTextbox(By.Id("Input_533"), listing.Block); // Block
+            
+            driver.SetSelect(By.Id("Input_535_TB"), listing.SchoolDistrict.ToUpper(), "School District", tabName); // School District
+
+            fillFieldSingleOption(driver, "Input_535", listing.SchoolDistrict.ToUpper());
+
+            driver.SetSelect(By.Id("Input_658"), listing.SchoolName1.ToUpper(), "Elementary School", tabName); // Elementary School
+            driver.SetSelect(By.Id("Input_659"), listing.SchoolName2.ToUpper(), "Middle School", tabName); // Middle School
+            driver.SetSelect(By.Id("Input_660"), listing.SchoolName3.ToUpper(), "High School", tabName); // High School
+
+            //driver.WriteTextbox(By.Id("Input_125"), listing.MapscoMapCoord); // Map Grid
+            //driver.WriteTextbox(By.Id("Input_126"), listing.MapscoMapPage); // Map Source
             SetLongitudeAndLatitudeValues(driver, listing);
             #endregion Location Information
 
             #region Listing Information
             driver.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
+            driver.WriteTextbox(By.Id("Input_133"), listing.OwnerName); // Owner Legal Name
+            driver.SetSelect(By.Id("Input_137"), "0", "Also For Rent", tabName); // Also For Rent
 
             //'CNDMI',
             //'Condominium',
@@ -511,7 +519,7 @@ namespace Husa.Core.Uploaders.SanAntonio
                     break;
                 case "CO":
                     PropSubType = "CNDMI";
-                    break;                
+                    break;
                 case "RE":
                     PropSubType = "SFM";
                     break;
@@ -519,7 +527,7 @@ namespace Husa.Core.Uploaders.SanAntonio
                     PropSubType = "";
                     break;
             }
-            driver.SetSelect(By.Id("Input_128"), PropSubType); // Property Type
+            driver.SetSelect(By.Id("Input_539"), PropSubType, "Property Type", tabName); // Property Type
 
             if (driver.UploadInformation.IsNewListing)
             {
@@ -533,27 +541,29 @@ namespace Husa.Core.Uploaders.SanAntonio
                     listDate = DateTime.Now.AddDays(-4);
                 }
 
-                driver.WriteTextbox(By.Id("Input_129"), listDate.ToShortDateString()); // List Date TODO: verify this logic
+                driver.WriteTextbox(By.Id("Input_129"), listDate.ToShortDateString()); // List Date
             }
 
             if (listing.ListDate != null)
                 driver.WriteTextbox(By.Id("Input_130"), DateTime.Now.AddYears(1).ToShortDateString()); // Expiration Date
             else
                 driver.WriteTextbox(By.Id("Input_130"), (listing.ExpiredDate != null ? ((DateTime)listing.ExpiredDate).ToShortDateString() : "")); // Expiration Date
-            driver.SetSelect(By.Id("Input_131"), "NA"); // First Right Refusal Option (default hardcode "N/A")
-            driver.SetSelect(By.Id("Input_132"), "1"); // Owner LREA (default hardcode "Yes")
-            driver.WriteTextbox(By.Id("Input_133"), listing.OwnerName); // Owner Legal Name
-            driver.WriteTextbox(By.Id("Input_134"), listing.AgentListApptPhone.Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", "")); // Owner Phone
+            
+            driver.SetSelect(By.Id("Input_544"), "NA", "First Right Refusal Option", tabName); // First Right Refusal Option (default hardcode "N/A")
+
+            //driver.SetSelect(By.Id("Input_132"), "1", "Owner LREA", tabName); // Owner LREA (default hardcode "Yes")
+            
+            //driver.WriteTextbox(By.Id("Input_134"), listing.AgentListApptPhone.Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", "")); // Owner Phone
             //driver.WriteTextbox(By.Id("Input_134"), listing.OwnerPhone.Remove('(').Remove(')').Remove('-').Trim()); // Owner Phone
-            driver.SetSelect(By.Id("Input_135"), "NO"); // Short Sale
-            driver.SetSelect(By.Id("Input_136"), "0"); // Foreclosure
-            driver.SetSelect(By.Id("Input_137"), "0"); // Also For Rent
+            //driver.SetSelect(By.Id("Input_135"), "NO", "Short Sale", tabName); // Short Sale
+            //driver.SetSelect(By.Id("Input_136"), "0", "Foreclosure", tabName); // Foreclosure
+
             // driver.WriteTextbox(By.Id("Input_138"), ??? ); // Additional MLS #
-            driver.WriteTextbox(By.Id("Input_139"), listing.TaxRate); // Total Tax Rate
+            //driver.WriteTextbox(By.Id("Input_139"), listing.TaxRate); // Total Tax Rate
             #endregion Listing Information
 
             #region General Listing Information
-            driver.SetSelect(By.Id("Input_183"), "0"); // Res Flooded
+            driver.SetSelect(By.Id("Input_531"), "0", "Res Flooded", tabName); // Res Flooded
 
             String constructionStatus = "";
             switch (listing.YearBuiltDesc)
@@ -566,13 +576,131 @@ namespace Husa.Core.Uploaders.SanAntonio
                     break;
             }
 
-            driver.SetSelect(By.Id("Input_184"), constructionStatus); // Construction Status
-            driver.WriteTextbox(By.Id("Input_185"), listing.YearBuilt); // Year Built
-            driver.SetSelect(By.Id("Input_186"), "OWNSE"); // Year Built Source (default hardcode "Owner/Seller")
-            driver.WriteTextbox(By.Id("Input_187"), listing.OwnerName); // Builder Name
-            driver.WriteTextbox(By.Id("Input_188"), listing.SqFtTotal); // Total SqFt
-            driver.SetSelect(By.Id("Input_189"), "BUILD"); // Source SqFt
+            driver.SetSelect(By.Id("Input_547"), constructionStatus, "Construction Status", tabName); // Construction Status
+            driver.WriteTextbox(By.Id("Input_548"), listing.OwnerName); // Builder Name
+            driver.WriteTextbox(By.Id("Input_549"), listing.BuildCompletionDate); // Estimated Completion Date
+            driver.WriteTextbox(By.Id("Input_553"), listing.YearBuilt); // Year Built
+            driver.SetSelect(By.Id("Input_186"), "OWNSE", "Year Built Source", tabName); // Year Built Source (default hardcode "Owner/Seller")
+            
+            driver.WriteTextbox(By.Id("Input_550"), listing.SqFtTotal); // Total SqFt
+            driver.SetSelect(By.Id("Input_551"), "BUILD", "Source SqFt", tabName); // Source SqFt
+
+            //driver.SetMultipleCheckboxById("Input_551", listing, "Documents on File (Max 25)", tabName); //Documents on File (Max 25)
             #endregion 	General Listing Information
+
+            //driver.SetMultipleCheckboxById("Input_219", listing.RestrictionsDesc); // 	Documents On File
+            List<String> putOptionsRestrictionsDesc = new List<String>();
+            List<String> optionsRestrictionsDesc = String.IsNullOrWhiteSpace(listing.RestrictionsDesc) ? new List<String>() : listing.RestrictionsDesc.Split(',').ToList();
+            foreach (string option in optionsRestrictionsDesc)
+            {
+                switch (option)
+                {
+                    case "ADLT55":
+                        //putOptionsRestrictionsDesc.Add("");
+                        break;
+                    case "ADLT62":
+                        //putOptionsRestrictionsDesc.Add("");
+                        break;
+                    case "BLDGST":
+                        //putOptionsRestrictionsDesc.Add("");
+                        break;
+                    case "BLDGSZ":
+                        //putOptionsRestrictionsDesc.Add("");
+                        break;
+                    case "CITRS":
+                        //putOptionsRestrictionsDesc.Add("");
+                        break;
+                    case "CVNANT":
+                        //putOptionsRestrictionsDesc.Add("");
+                        break;
+                    case "DEEDRS":
+                        putOptionsRestrictionsDesc.Add("DEEDR");
+                        break;
+                    case "DVLMPT":
+                        //putOptionsRestrictionsDesc.Add("");
+                        break;
+                    case "ENVRO":
+                        //putOptionsRestrictionsDesc.Add("");
+                        break;
+                    case "ESMNT":
+                        //putOptionsRestrictionsDesc.Add("");
+                        break;
+                    case "LEASE":
+                        //putOptionsRestrictionsDesc.Add("");
+                        break;
+                    case "LMTDVH":
+                        //putOptionsRestrictionsDesc.Add("");
+                        break;
+                    case "LVSTCK":
+                        //putOptionsRestrictionsDesc.Add("");
+                        break;
+                    case "RSLIM":
+                        //putOptionsRestrictionsDesc.Add("");
+                        break;
+                    case "RUNKN":
+                        //putOptionsRestrictionsDesc.Add("");
+                        break;
+                    case "ZONE":
+                        //putOptionsRestrictionsDesc.Add("");
+                        break;
+                }
+            }
+            // Market options that doesn't match
+            //'AERIA','Aerial Photos',
+            //'APPRA','Appraisal',
+            //'BOUND','Boundary Survey',
+            //'ENGIN','Engineer\'s Report',
+            //'FIELD','Field Notes',
+            //'FLODC','Flood Certification',
+            //'FLOOR','Floor Plans',
+            //'INHOM','Inspection-Home',
+            //'INPES','Inspection-Pest',
+            //'INSPT','Inspection-Septic',
+            //'LEADB','Lead Based Paint Addendum',
+            //'NONE','None',
+            //'ONSSE','On-Site Sewer Disclosure',
+            //'OTHSE','Other-See Remarks',
+            //'PLAT','Plat',
+            //'SELLE','Seller\'s Disclosure',
+            //'SPECI','Special Contract\/Addendum Required',
+            //'SBDRE','Subdivision Restrictions',
+            //'SURVE','Survey',
+            //'TOPOM','Topo Map'
+
+            //if (putOptionsRestrictionsDesc.Count > 0)
+            //{
+            //    driver.SetMultipleCheckboxById("Input_219", string.Join(",", putOptionsRestrictionsDesc.ToArray())); // 	Documents On File
+            //}
+            driver.SetMultipleCheckboxById("Input_554", "NONE", "Documents On File", tabName); // Documents On File
+        }
+
+        private void fillFieldSingleOption(CoreWebDriver driver, string fieldName, string value)
+        {
+            if (!String.IsNullOrEmpty(value))
+            {
+                var mainWindow = driver.WindowHandles.FirstOrDefault(c => c == driver.CurrentWindowHandle);
+
+                driver.ExecuteScript("jQuery('#" + fieldName + "_TB').focus();");
+                driver.ExecuteScript("jQuery('#" + fieldName + "_A')[0].click();");
+                driver.SwitchTo().Window(driver.WindowHandles.Last());
+                Thread.Sleep(400);
+
+                char[] fieldValue = value.ToArray();
+
+                foreach (var charact in fieldValue)
+                {
+                    Thread.Sleep(400);
+                    driver.FindElement(By.Id("m_txtSearch")).SendKeys(charact.ToString().ToUpper());
+                }
+                Thread.Sleep(400);
+
+                driver.ExecuteScript("jQuery(\"li[title=^'"+value+"'])");
+                Thread.Sleep(400);
+
+                driver.ExecuteScript("let btnSave = jQuery(\"#cboxClose > button\")[0]; jQuery(btnSave).focus(); jQuery(btnSave).click();");
+
+                driver.SwitchTo().Window(mainWindow);
+            }
         }
 
         /// <summary>
@@ -582,10 +710,10 @@ namespace Husa.Core.Uploaders.SanAntonio
         /// <param name="listing">Current listing being processed</param>
         private void FillRooms(CoreWebDriver driver, ResidentialListingRequest listing)
         {
+            string tabName = "Rooms";
             driver.ExecuteScript(" jQuery(document).scrollTop(0);");
 
             driver.Click(By.LinkText("Rooms")); // click in tab Listing Information
-                                                //driver.wait.Until(ExpectedConditions.ElementIsVisible(By.Id("Input_189t"))); // the last field on the form
 
             //driver.Click(By.Id("m_rpPageList_ctl02_lbPageLink")); // Tab: Input | Subtab: Rooms
             driver.wait.Until(ExpectedConditions.ElementIsVisible(By.Id("ctl02_m_divFooterContainer"))); // Look if the footer elements has been loaded
@@ -608,7 +736,7 @@ namespace Husa.Core.Uploaders.SanAntonio
                 switch (option)
                 {
                     case "NONE":
-                        driver.SetSelect(By.Id("Input_198"), "0"); // Garage/Carport
+                        //driver.SetSelect(By.Id("Input_198"), "0", "Garage/Carport", tabName); // Garage/Carport
                         break;
                 }
             }
@@ -616,28 +744,31 @@ namespace Husa.Core.Uploaders.SanAntonio
             //'OTHSE','Other-See Remarks',
             //'NONE','None'
 
-            if (optionsGarageDesc.Count > 0)
-            {
-                driver.SetSelect(By.Id("Input_198"), "1"); // Garage/Carport
-            }
+            //if (optionsGarageDesc.Count > 0)
+            //{
+            //    driver.SetSelect(By.Id("Input_198"), "1", "Garage/Carport", tabName); // Garage/Carport
+            //}
 
             string guestHouse = "0";
             if (listing.CTXGuestHouse == true)
                 guestHouse = "1";
 
-            driver.SetSelect(By.Id("Input_199"), guestHouse); // Garage/Carport
+            //driver.SetSelect(By.Id("Input_199"), guestHouse, "Guest House", tabName); // Garage/Carport
 
             if (!driver.UploadInformation.IsNewListing)
             {
-                var elems = driver.FindElements(By.CssSelector("table[id^=_Input_192__del_REPEAT] a"));
-
+                var elems = driver.FindElements(By.CssSelector("table[id^=_Input_556__del_REPEAT] a"));
+                
                 foreach (var elem in elems.Where(c => c.Displayed))
                     elem.Click();
             }
 
             var roomTypes = ReadRoomAndFeatures(listing);
 
-            driver.Click(By.Id("m_rpPageList_ctl02_lbPageLink"));
+            //driver.Click(By.Id("m_rpPageList_ctl04_lbPageLink"));
+            driver.ExecuteScript(" jQuery(document).scrollTop(0);");
+
+            driver.Click(By.LinkText("Rooms")); // click in tab Listing Information
             Thread.Sleep(400);
 
             var i = 0;
@@ -647,7 +778,7 @@ namespace Husa.Core.Uploaders.SanAntonio
             {
                 if (i > 0)
                 {
-                    driver.Click(By.Id("_Input_192_more"));
+                    driver.Click(By.Id("_Input_556_more"));
                     Thread.Sleep(400);
                 }
 
@@ -687,13 +818,13 @@ namespace Husa.Core.Uploaders.SanAntonio
                 //'WORKS', 'Workshop        ',
                 //'GuestHse', 'Guest House'
 
-                driver.SetSelect(By.Id("_Input_192__REPEAT" + i + "_190"), roomType, true); // FieldName
+                driver.SetSelect(By.Id("_Input_190__REPEAT" + i + "_190"), roomType, "Name", tabName, true); // FieldName
                 Thread.Sleep(400);
                 //driver.ScrollDown();
-                //driver.SetSelect(By.Id("_Input_192__REPEAT" + i + "_491"), roomType.Level, true);
+                //driver.SetSelect(By.Id("_Input_190__REPEAT" + i + "_491"), roomType.Level, true);
                 //Thread.Sleep(400);
                 //driver.ScrollDown();
-                //driver.WriteTextbox(By.Id("_Input_192__REPEAT" + i + "_191"), roomType.Length, true);
+                //driver.WriteTextbox(By.Id("_Input_190__REPEAT" + i + "_191"), roomType.Length, true);
                 //Thread.Sleep(400);
                 //driver.ScrollDown();
 
@@ -708,13 +839,132 @@ namespace Husa.Core.Uploaders.SanAntonio
         /// <param name="listing">Current listing being processed</param>
         private void FillFeatures(CoreWebDriver driver, ResidentialListingRequest listing)
         {
+            string tabName = "Features";
             driver.ExecuteScript(" jQuery(document).scrollTop(0);");
 
             driver.Click(By.LinkText("Features")); // click in tab Features
-            driver.wait.Until(ExpectedConditions.ElementIsVisible(By.Id("Input_167"))); // the last field on the form
 
-            driver.SetMultipleCheckboxById("Input_156", "TRADI"); // Style (default hardcode "Traditional")
-            //driver.SetMultipleCheckboxById("Input_157", listing.ConstructionDesc); // Construction/Exterior
+            //driver.SetMultipleCheckboxById("Input_156", "TRADI", "Style", tabName); // Style (default hardcode "Traditional")
+            driver.SetMultipleCheckboxById("Input_557", listing.HousingTypeDesc, "Style", tabName); // Style
+
+            //driver.SetMultipleCheckboxById("Input_159", listing.FoundationDesc); // Foundation
+            List<String> putFoundation = new List<String>();
+            List<String> optionsFoundation = String.IsNullOrWhiteSpace(listing.FoundationDesc) ? new List<String>() : listing.FoundationDesc.Split(',').ToList();
+            foreach (string option in optionsFoundation)
+            {
+                switch (option)
+                {
+                    case "BSMNT":
+                        putFoundation.Add("BASEM");
+                        break;
+                    case "CEDAR":
+                        putFoundation.Add("CEDAR");
+                        break;
+                    case "OTHER":
+                        putFoundation.Add("OTHSE");
+                        break;
+                    case "SLAB":
+                        putFoundation.Add("SLAB");
+                        break;
+
+                }
+            }
+            // Market options that doesn't match
+            //'BASEM','Basement',
+            //'CEDAR','Cedar Post',
+            //'NONE','None',
+            //'OTHSE','Other-See Remarks',
+            //'PIER','Pier',
+
+            if (putFoundation.Count > 0)
+            {
+                driver.SetMultipleCheckboxById("Input_558", string.Join(",", putFoundation.ToArray()), "Foundation", tabName); // Foundation
+            }
+
+            //driver.SetMultipleCheckboxById("Input_161", listing.NumStories); // # Stories
+            List<String> putOptionsNumStories = new List<String>();
+            List<String> optionsNumStories = String.IsNullOrWhiteSpace(listing.NumStories) ? new List<String>() : listing.NumStories.Split(',').ToList();
+            foreach (string option in optionsNumStories)
+            {
+                switch (option)
+                {
+                    case "1":
+                        putOptionsNumStories.Add("ONE");
+                        break;
+                    case "2":
+                        putOptionsNumStories.Add("TWO");
+                        break;
+                    case "3":
+                        putOptionsNumStories.Add("THREE");
+                        break;
+                    case "M":
+                        putOptionsNumStories.Add("SPLIT");
+                        break;
+                }
+            }
+            // Market options that doesn't match
+            //'OTHSE','Other-See Remarks',
+            //'NONE','None'
+
+            if (putOptionsNumStories.Count > 0)
+            {
+                driver.SetMultipleCheckboxById("Input_563", string.Join(",", putOptionsNumStories.ToArray()), "# Stories", tabName);
+            }
+
+            //driver.SetMultipleCheckboxById("Input_559", listing.RoofDesc); // Roof / Attic
+            List<String> putOptionsRoofDesc = new List<String>();
+            List<String> optionsRoofDesc = String.IsNullOrWhiteSpace(listing.RoofDesc) ? new List<String>() : listing.RoofDesc.Split(',').ToList();
+            foreach (string option in optionsRoofDesc)
+            {
+                switch (option)
+                {
+                    case "BLTUP":
+                        putOptionsRoofDesc.Add("GRAVE");
+                        break;
+                    case "CLAY":
+                        //putOptionsRoofDesc.Add("");
+                        break;
+                    case "COMP":
+                        putOptionsRoofDesc.Add("SHNGC");
+                        break;
+                    case "CONCR":
+                        putOptionsRoofDesc.Add("CONCR");
+                        break;
+                    case "FLAT":
+                        putOptionsRoofDesc.Add("FLAT");
+                        break;
+                    case "HVCMP":
+                        //putOptionsRoofDesc.Add("");
+                        break;
+                    case "METAL":
+                        putOptionsRoofDesc.Add("METAL");
+                        break;
+                    case "NA":
+                        //putOptionsRoofDesc.Add("");
+                        break;
+                    case "OTHER":
+                        putOptionsRoofDesc.Add("OTHRO");
+                        break;
+                    case "SLATE":
+                        putOptionsRoofDesc.Add("SLATE");
+                        break;
+                    case "TILE":
+                        putOptionsRoofDesc.Add("TILE");
+                        break;
+                    case "WOOD":
+                        putOptionsRoofDesc.Add("WOOD");
+                        break;
+                    case "WDSHN":
+                        //putOptionsRoofDesc.Add("");
+                        break;
+                }
+            }
+
+            if (putOptionsRoofDesc.Count > 0)
+            {
+                driver.SetMultipleCheckboxById("Input_559", string.Join(",", putOptionsRoofDesc.ToArray()), "Roof / Attic", tabName);
+            }
+
             List<String> putOptionsConstructionDesc = new List<String>();
             List<String> optionsConstructionDesc = String.IsNullOrWhiteSpace(listing.ConstructionDesc) ? new List<String>() : listing.ConstructionDesc.Split(',').ToList();
             foreach (string option in optionsConstructionDesc)
@@ -774,95 +1024,7 @@ namespace Husa.Core.Uploaders.SanAntonio
 
             if (putOptionsConstructionDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_157", string.Join(",", putOptionsConstructionDesc.ToArray()));
-            }
-
-            //driver.SetMultipleCheckboxById("Input_158", listing.RoofDesc); // Roof / Attic
-            List<String> putOptionsRoofDesc = new List<String>();
-            List<String> optionsRoofDesc = String.IsNullOrWhiteSpace(listing.RoofDesc) ? new List<String>() : listing.RoofDesc.Split(',').ToList();
-            foreach (string option in optionsRoofDesc)
-            {
-                switch (option)
-                {
-                    case "BLTUP":
-                        putOptionsRoofDesc.Add("GRAVE");
-                        break;
-                    case "CLAY":
-                        //putOptionsRoofDesc.Add("");
-                        break;
-                    case "COMP":
-                        putOptionsRoofDesc.Add("SHNGC");
-                        break;
-                    case "CONCR":
-                        putOptionsRoofDesc.Add("CONCR");
-                        break;
-                    case "FLAT":
-                        putOptionsRoofDesc.Add("FLAT");
-                        break;
-                    case "HVCMP":
-                        //putOptionsRoofDesc.Add("");
-                        break;
-                    case "METAL":
-                        putOptionsRoofDesc.Add("METAL");
-                        break;
-                    case "NA":
-                        //putOptionsRoofDesc.Add("");
-                        break;
-                    case "OTHER":
-                        putOptionsRoofDesc.Add("OTHRO");
-                        break;
-                    case "SLATE":
-                        putOptionsRoofDesc.Add("SLATE");
-                        break;
-                    case "TILE":
-                        putOptionsRoofDesc.Add("TILE");
-                        break;
-                    case "WOOD":
-                        putOptionsRoofDesc.Add("WOOD");
-                        break;
-                    case "WDSHN":
-                        //putOptionsRoofDesc.Add("");
-                        break;
-                }
-            }
-
-            if (putOptionsRoofDesc.Count > 0)
-            {
-                driver.SetMultipleCheckboxById("Input_158", string.Join(",", putOptionsRoofDesc.ToArray()));
-            }
-
-            //driver.SetMultipleCheckboxById("Input_159", listing.FoundationDesc); // Foundation
-            List<String> putFoundation = new List<String>();
-            List<String> optionsFoundation = String.IsNullOrWhiteSpace(listing.FoundationDesc) ? new List<String>() : listing.FoundationDesc.Split(',').ToList();
-            foreach (string option in optionsFoundation)
-            {
-                switch (option)
-                {
-                    case "BSMNT":
-                        putFoundation.Add("BASEM");
-                        break;
-                    case "CEDAR":
-                        putFoundation.Add("CEDAR");
-                        break;
-                    case "OTHER":
-                        putFoundation.Add("OTHSE");
-                        break;
-                    case "SLAB":
-                        putFoundation.Add("SLAB");
-                        break;
-
-                }
-            }
-            // Market options that doesn't match
-            //'BASEM','Basement',
-            //'CEDAR','Cedar Post',
-            //'NONE','None',
-            //'OTHSE','Other-See Remarks',
-            //'PIER','Pier',
-
-            if (putFoundation.Count > 0)
-            {
-                driver.SetMultipleCheckboxById("Input_159", string.Join(",", putFoundation.ToArray())); // Foundation
+                driver.SetMultipleCheckboxById("Input_561", string.Join(",", putOptionsConstructionDesc.ToArray()), "Construction/Exterior", tabName);
             }
 
             //driver.SetMultipleCheckboxById("Input_163", listing.FireplaceDesc); // Fireplace
@@ -952,7 +1114,7 @@ namespace Husa.Core.Uploaders.SanAntonio
 
             if (putOptionsFireplaceDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_163", string.Join(",", putOptionsFireplaceDesc.ToArray()));
+                driver.SetMultipleCheckboxById("Input_562", string.Join(",", putOptionsFireplaceDesc.ToArray()), "Fireplace", tabName);
             }
 
             //driver.SetMultipleCheckboxById("Input_160", listing.FloorsDesc); // Flooring
@@ -1018,38 +1180,10 @@ namespace Husa.Core.Uploaders.SanAntonio
 
             if (putOptionsFloorsDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_160", string.Join(",", putOptionsFloorsDesc.ToArray()));
+                driver.SetMultipleCheckboxById("Input_565", string.Join(",", putOptionsFloorsDesc.ToArray()), "Flooring", tabName);
             }
 
-            //driver.SetMultipleCheckboxById("Input_161", listing.NumStories); // # Stories
-            //List<String> putOptionsNumStories = new List<String>();
-            //List<String> optionsNumStories = String.IsNullOrWhiteSpace(listing.NumStories) ? new List<String>() : listing.NumStories.Split(',').ToList();
-            //foreach (string option in optionsNumStories)
-            //{
-            //    switch (option)
-            //    {
-            //        case "1":
-            //            putOptionsNumStories.Add("ONE");
-            //            break;
-            //        case "2":
-            //            putOptionsNumStories.Add("TWO");
-            //            break;
-            //        case "3":
-            //            putOptionsNumStories.Add("THREE");
-            //            break;
-            //        case "M":
-            //            putOptionsNumStories.Add("SPLIT");
-            //            break;
-            //    }
-            //}
-            // Market options that doesn't match
-            //'OTHSE','Other-See Remarks',
-            //'NONE','None'
 
-            //if (putOptionsNumStories.Count > 0)
-            //{
-            //    driver.SetMultipleCheckboxById("Input_161", string.Join(",", putOptionsNumStories.ToArray()));
-            //}
 
             //driver.SetMultipleCheckboxById("Input_164", listing.KitchenDesc); // Kitchen Features
             List<String> putOptionsKitchenDesc = new List<String>();
@@ -1240,7 +1374,7 @@ namespace Husa.Core.Uploaders.SanAntonio
 
             if (optionsKitchenDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_164", string.Join(",", putOptionsKitchenDesc.ToArray()));
+                driver.SetMultipleCheckboxById("Input_566", string.Join(",", putOptionsKitchenDesc.ToArray()), "Kitchen Features", tabName);
             }
 
             //driver.SetMultipleCheckboxById("Input_165", listing.LaundryFacilityDesc); // Laundry
@@ -1336,7 +1470,7 @@ namespace Husa.Core.Uploaders.SanAntonio
 
             if (putOptionsLaundryFacilityDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_165", string.Join(",", putOptionsLaundryFacilityDesc.ToArray()));
+                driver.SetMultipleCheckboxById("Input_567", string.Join(",", putOptionsLaundryFacilityDesc.ToArray()), "Laundry", tabName);
             }
 
             //driver.SetMultipleCheckboxById("Input_166", listing.InteriorDesc); // Interior Features
@@ -1485,7 +1619,7 @@ namespace Husa.Core.Uploaders.SanAntonio
             //'WHIRL','Whirlpool',
             if (putOptionsInteriorDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_166", string.Join(",", putOptionsInteriorDesc.ToArray()));
+                driver.SetMultipleCheckboxById("Input_571", string.Join(",", putOptionsInteriorDesc.ToArray()), "Interior Features", tabName);
             }
 
             //driver.SetMultipleCheckboxById("Input_167", listing.GarageDesc); // Garage/Carport
@@ -1557,7 +1691,7 @@ namespace Husa.Core.Uploaders.SanAntonio
 
             if (putOptionsGarageDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_167", string.Join(",", putOptionsGarageDesc.ToArray()));
+                driver.SetMultipleCheckboxById("Input_570", string.Join(",", putOptionsGarageDesc.ToArray()), "Garage/Carport", tabName);
             }
         }
 
@@ -1568,155 +1702,15 @@ namespace Husa.Core.Uploaders.SanAntonio
         /// <param name="listing">Current listing being processed</param>
         private void FillLotEnvironmentUtilityInformation(CoreWebDriver driver, ResidentialListingRequest listing)
         {
+            string tabName = "Lot/Environment/Utility";
             driver.ExecuteScript(" jQuery(document).scrollTop(0);");
 
-            driver.Click(By.LinkText("Lot/Environment/Utility Information")); // Lot/Environment/Utility Information
-            driver.wait.Until(ExpectedConditions.ElementIsVisible(By.Id("Input_182"))); // the last field on the form
+            driver.Click(By.LinkText("Lot/Environment/Utility")); // Lot/Environment/Utility
 
             #region Lot Information
-            driver.WriteTextbox(By.Id("Input_169"), listing.LotDim); // Lot Dimensions
+            driver.WriteTextbox(By.Id("Input_576"), listing.LotDim); // Lot Dimensions
             // driver.WriteTextbox(By.Id("Input_170"), ??? ); // Apx Acreage
-            driver.SetSelect(By.Id("Input_236"), "0"); // Manufactured Allowed (default hardcode "No")
-
-            //driver.SetMultipleCheckboxById("Input_171", "SPRIN"); // Exterior Features (default hardcode "Sprinkler System")
-            List<String> putOptionsExteriorDesc = new List<String>();
-            List<String> optionsExteriorDesc = String.IsNullOrWhiteSpace(listing.ExteriorDesc) ? new List<String>() : listing.ExteriorDesc.Split(',').ToList();
-            foreach (string option in optionsExteriorDesc)
-            {
-                switch (option)
-                {
-                    case "ADDDW":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "BBQ":
-                        putOptionsExteriorDesc.Add("BBQGR");
-                        break;
-                    case "BOATHOUSE":
-                        putOptionsExteriorDesc.Add("BOATH");
-                        break;
-                    case "CHLNK":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "CROSSFENCE":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "CVPAT":
-                        putOptionsExteriorDesc.Add("CPATIO");
-                        break;
-                    case "DBLPN":
-                        putOptionsExteriorDesc.Add("DOUBL");
-                        break;
-                    case "DECBR":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "DGRUN":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "DK/BL":
-                        putOptionsExteriorDesc.Add("DECK");
-                        break;
-                    case "DOCK":
-                        putOptionsExteriorDesc.Add("DOCK");
-                        break;
-                    case "DTQTR":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "GARAGEAPT":
-                        putOptionsExteriorDesc.Add("GARAG");
-                        break;
-                    case "GAZE":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "GLASSEDINPORCH":
-                        putOptionsExteriorDesc.Add("GLASS");
-                        break;
-                    case "GRILL":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "GTTRS":
-                        putOptionsExteriorDesc.Add("GUTTE");
-                        break;
-                    case "HANGR":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "HORSE":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "NONE":
-                        putOptionsExteriorDesc.Add("NONE");
-                        break;
-                    case "OTHER":
-                        putOptionsExteriorDesc.Add("OTHSE");
-                        break;
-                    case "OTKT":                        
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "PRFNC":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "PRSPR":                        
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "PTSLB":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "PVFNC":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "PVTEN":
-                        putOptionsExteriorDesc.Add("TENNI");
-                        break;
-                    case "RANCHFENCE":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "SCREENEDPORCH":
-                        putOptionsExteriorDesc.Add("SCREE");
-                        break;
-                    case "SOLAR":
-                        putOptionsExteriorDesc.Add("SOLAR");
-                        break;
-                    case "SPCL":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "SPSYS":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "STONE":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "STORMDOORS":
-                        putOptionsExteriorDesc.Add("STODO");
-                        break;
-                    case "STRG":
-                        putOptionsExteriorDesc.Add("STORA");
-                        break;
-                    case "STRWN":
-                        putOptionsExteriorDesc.Add("STOWI");
-                        break;
-                    case "TREES":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "WFIMPROV":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "WFUNIMPROV":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "WIRE":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                    case "WKSHP":
-                        putOptionsExteriorDesc.Add("WORKS");
-                        break;
-                    case "WRGHT":
-                        //putOptionsExteriorDesc.Add("");
-                        break;
-                }
-            }
-            if (putOptionsExteriorDesc.Count > 0)
-            {
-                driver.SetMultipleCheckboxById("Input_171", string.Join(",", putOptionsExteriorDesc.ToArray()));
-            }
+            driver.SetSelect(By.Id("Input_578"), "0", "Manufactured Allowed", tabName); // Manufactured Allowed (default hardcode "No")
 
 
             //driver.SetMultipleCheckboxById("Input_172", listing.FenceDesc); // Fencing
@@ -1802,11 +1796,12 @@ namespace Husa.Core.Uploaders.SanAntonio
             }
             if (putOptionsFenceDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_172", string.Join(",", putOptionsFenceDesc.ToArray()));
+                driver.SetMultipleCheckboxById("Input_581", string.Join(",", putOptionsFenceDesc.ToArray()), "Fencing", tabName);
             }
 
-            driver.SetSelect(By.Id("Input_173"), listing.IsWaterFront); // Waterfront
-            //driver.SetMultipleCheckboxById("Input_174", listing.WaterfrontDesc); // Water Features
+            driver.SetSelect(By.Id("Input_582"), listing.IsWaterFront, "Waterfront", tabName); // Waterfront
+
+            driver.SetMultipleCheckboxById("Input_585", "NONE", "Water Features", tabName); // Water Features
             /*List<String> putOptionsWaterfrontDesc = new List<String>();
             List<String> optionsWaterfrontDesc = String.IsNullOrWhiteSpace(listing.WaterfrontDesc) ? new List<String>() : listing.WaterfrontDesc.Split(',').ToList();
             foreach (string option in optionsWaterfrontDesc)
@@ -1863,9 +1858,166 @@ namespace Husa.Core.Uploaders.SanAntonio
 
             /*if (putOptionsWaterfrontDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_174", string.Join(",", putOptionsWaterfrontDesc.ToArray())); // Water Features
+                driver.SetMultipleCheckboxById("Input_585", string.Join(",", putOptionsWaterfrontDesc.ToArray())); // Water Features
             }*/
-            driver.SetMultipleCheckboxById("Input_174", "NONE"); // Water Features
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            //driver.SetMultipleCheckboxById("Input_171", "SPRIN"); // Exterior Features (default hardcode "Sprinkler System")
+            List<String> putOptionsExteriorDesc = new List<String>();
+            List<String> optionsExteriorDesc = String.IsNullOrWhiteSpace(listing.ExteriorDesc) ? new List<String>() : listing.ExteriorDesc.Split(',').ToList();
+            foreach (string option in optionsExteriorDesc)
+            {
+                switch (option)
+                {
+                    case "ADDDW":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "BBQ":
+                        putOptionsExteriorDesc.Add("BBQGR");
+                        break;
+                    case "BOATHOUSE":
+                        putOptionsExteriorDesc.Add("BOATH");
+                        break;
+                    case "CHLNK":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "CROSSFENCE":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "CVPAT":
+                        putOptionsExteriorDesc.Add("CPATIO");
+                        break;
+                    case "DBLPN":
+                        putOptionsExteriorDesc.Add("DOUBL");
+                        break;
+                    case "DECBR":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "DGRUN":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "DK/BL":
+                        putOptionsExteriorDesc.Add("DECK");
+                        break;
+                    case "DOCK":
+                        putOptionsExteriorDesc.Add("DOCK");
+                        break;
+                    case "DTQTR":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "GARAGEAPT":
+                        putOptionsExteriorDesc.Add("GARAG");
+                        break;
+                    case "GAZE":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "GLASSEDINPORCH":
+                        putOptionsExteriorDesc.Add("GLASS");
+                        break;
+                    case "GRILL":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "GTTRS":
+                        putOptionsExteriorDesc.Add("GUTTE");
+                        break;
+                    case "HANGR":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "HORSE":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "NONE":
+                        putOptionsExteriorDesc.Add("NONE");
+                        break;
+                    case "OTHER":
+                        putOptionsExteriorDesc.Add("OTHSE");
+                        break;
+                    case "OTKT":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "PRFNC":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "PRSPR":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "PTSLB":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "PVFNC":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "PVTEN":
+                        putOptionsExteriorDesc.Add("TENNI");
+                        break;
+                    case "RANCHFENCE":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "SCREENEDPORCH":
+                        putOptionsExteriorDesc.Add("SCREE");
+                        break;
+                    case "SOLAR":
+                        putOptionsExteriorDesc.Add("SOLAR");
+                        break;
+                    case "SPCL":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "SPSYS":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "STONE":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "STORMDOORS":
+                        putOptionsExteriorDesc.Add("STODO");
+                        break;
+                    case "STRG":
+                        putOptionsExteriorDesc.Add("STORA");
+                        break;
+                    case "STRWN":
+                        putOptionsExteriorDesc.Add("STOWI");
+                        break;
+                    case "TREES":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "WFIMPROV":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "WFUNIMPROV":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "WIRE":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                    case "WKSHP":
+                        putOptionsExteriorDesc.Add("WORKS");
+                        break;
+                    case "WRGHT":
+                        //putOptionsExteriorDesc.Add("");
+                        break;
+                }
+            }
+            if (putOptionsExteriorDesc.Count > 0)
+            {
+                driver.SetMultipleCheckboxById("Input_596", string.Join(",", putOptionsExteriorDesc.ToArray()), "Exterior Features", tabName);
+            }
+
             //driver.SetMultipleCheckboxById("Input_175", listing.LotDesc); // Topo/Land Description
             List<String> putOptionsLotDesc = new List<String>();
             List<String> optionsLotDesc = String.IsNullOrWhiteSpace(listing.LotDesc) ? new List<String>() : listing.LotDesc.Split(',').ToList();
@@ -1967,7 +2119,7 @@ namespace Husa.Core.Uploaders.SanAntonio
 
             if (putOptionsLotDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_175", string.Join(",", putOptionsLotDesc.ToArray())); // Topo/Land Description
+                driver.SetMultipleCheckboxById("Input_597", string.Join(",", putOptionsLotDesc.ToArray()), "Topo/Land Description", tabName); // Topo/Land Description
             }
             //driver.SetMultipleCheckboxById("Input_176", listing.CommonFeatures); // Neighborhood Amenities
             List<String> putOptionsCommonFeatures = new List<String>();
@@ -2073,7 +2225,7 @@ namespace Husa.Core.Uploaders.SanAntonio
 
             if (putOptionsCommonFeatures.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_176", string.Join(",", putOptionsCommonFeatures.ToArray()));  // Neighborhood Amenities
+                driver.SetMultipleCheckboxById("Input_599", string.Join(",", putOptionsCommonFeatures.ToArray()), "Neighborhood Amenities", tabName);  // Neighborhood Amenities
             }
 
             //driver.SetMultipleCheckboxById("Input_177", listing.LotDesc); // Access/Road Surface
@@ -2158,7 +2310,7 @@ namespace Husa.Core.Uploaders.SanAntonio
             //{
             //    driver.SetMultipleCheckboxById("Input_177", string.Join(",", putOptionsLotDescForAccessRoadSurface.ToArray())); // Access/Road Surface
             //}
-            driver.SetMultipleCheckboxById("Input_177", "CITYS"); // Access/Road Surface
+            driver.SetMultipleCheckboxById("Input_600", "CITYS", "Access/Road Surface", tabName); // Access/Road Surface
             #endregion Lot Information
 
             #region Utility Information
@@ -2223,7 +2375,7 @@ namespace Husa.Core.Uploaders.SanAntonio
 
             if (putOptionsHeat.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_178", string.Join(",", putOptionsHeat.ToArray())); // Heat
+                driver.SetMultipleCheckboxById("Input_610", string.Join(",", putOptionsHeat.ToArray()), "Heat", tabName); // Heat
             }
 
             //driver.SetMultipleCheckboxById("Input_179", listing.CoolSystemDesc); // A/C 
@@ -2236,39 +2388,39 @@ namespace Husa.Core.Uploaders.SanAntonio
                     case "":
                         //putOptionsCoolSystemDesc.Add("");
                         break;
-                    /*case "":
-                        putOptionsCoolSystemDesc.Add("");
-                        break;
-                    case "":
-                        //putOptionsCoolSystemDesc.Add("");
-                        break;
-                    case "":
-                        //putOptionsCoolSystemDesc.Add("");
-                        break;
-                    case "":
-                        //putOptionsCoolSystemDesc.Add("");
-                        break;
-                    case "":
-                        //putOptionsCoolSystemDesc.Add("");
-                        break;
-                    case "":
-                        //putOptionsCoolSystemDesc.Add("");
-                        break;
-                    case "":
-                        putOptionsCoolSystemDesc.Add("");
-                        break;
-                    case "":
-                        //putOptionsCoolSystemDesc.Add("");
-                        break;
-                    case "":
-                        //putOptionsCoolSystemDesc.Add("");
-                        break;
-                    case "":
-                        //putOptionsCoolSystemDesc.Add("");
-                        break;
-                    case "":
-                        putOptionsCoolSystemDesc.Add("");
-                        break;*/
+                        /*case "":
+                            putOptionsCoolSystemDesc.Add("");
+                            break;
+                        case "":
+                            //putOptionsCoolSystemDesc.Add("");
+                            break;
+                        case "":
+                            //putOptionsCoolSystemDesc.Add("");
+                            break;
+                        case "":
+                            //putOptionsCoolSystemDesc.Add("");
+                            break;
+                        case "":
+                            //putOptionsCoolSystemDesc.Add("");
+                            break;
+                        case "":
+                            //putOptionsCoolSystemDesc.Add("");
+                            break;
+                        case "":
+                            putOptionsCoolSystemDesc.Add("");
+                            break;
+                        case "":
+                            //putOptionsCoolSystemDesc.Add("");
+                            break;
+                        case "":
+                            //putOptionsCoolSystemDesc.Add("");
+                            break;
+                        case "":
+                            //putOptionsCoolSystemDesc.Add("");
+                            break;
+                        case "":
+                            putOptionsCoolSystemDesc.Add("");
+                            break;*/
                 }
             }
             // Market options that doesn't match
@@ -2283,7 +2435,7 @@ namespace Husa.Core.Uploaders.SanAntonio
 
             if (putOptionsCoolSystemDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_179", string.Join(",", putOptionsCoolSystemDesc.ToArray())); // A/C 
+                driver.SetMultipleCheckboxById("Input_611", string.Join(",", putOptionsCoolSystemDesc.ToArray()), "A/C ", tabName); // A/C 
             }
 
             //driver.SetMultipleCheckboxById("Input_180", listing.SewerDesc); // Water/Sewer
@@ -2338,11 +2490,11 @@ namespace Husa.Core.Uploaders.SanAntonio
 
             if (putOptionsSewerDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_180", string.Join(",", putOptionsSewerDesc.ToArray())); // Water/Sewer
+                driver.SetMultipleCheckboxById("Input_612", string.Join(",", putOptionsSewerDesc.ToArray()), "Water/Sewer", tabName); // Water/Sewer
             }
 
-            if (!String.IsNullOrWhiteSpace(listing.CTXRWaterHeater))
-                driver.SetMultipleCheckboxById("Input_181", listing.CTXRWaterHeater.Trim()); // Water/Heater
+            //if (!String.IsNullOrWhiteSpace(listing.CTXRWaterHeater))
+            //    driver.SetMultipleCheckboxById("Input_181", listing.CTXRWaterHeater.Trim(), "Water/Heater", tabName); // Water/Heater
             //driver.SetMultipleCheckboxById("Input_182", listing.UtilitiesDesc); // Other Utilities
             List<String> putOptionsUtilitiesDesc = new List<String>();
             List<String> optionsUtilitiesDesc = String.IsNullOrWhiteSpace(listing.UtilitiesDesc) ? new List<String>() : listing.UtilitiesDesc.Split(',').ToList();
@@ -2424,7 +2576,7 @@ namespace Husa.Core.Uploaders.SanAntonio
             //'TELEP','Telephone'
             if (putOptionsUtilitiesDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_182", string.Join(",", putOptionsUtilitiesDesc.ToArray())); // Water/Sewer
+                driver.SetMultipleCheckboxById("Input_613", string.Join(",", putOptionsUtilitiesDesc.ToArray()), " Other Utilities", tabName); //  Other Utilities
             }
             #endregion Utility Information
         }
@@ -2436,28 +2588,30 @@ namespace Husa.Core.Uploaders.SanAntonio
         /// <param name="listing">Current listing being processed</param>
         private void FillFinancialInformation(CoreWebDriver driver, ResidentialListingRequest listing)
         {
+            string tabName = "Financial Information";
             driver.ExecuteScript(" jQuery(document).scrollTop(0);");
 
-            driver.Click(By.LinkText("Financial Information")); // Financial Information
-            driver.wait.Until(ExpectedConditions.ElementIsVisible(By.Id("Input_155"))); // the last field on the form
+            driver.Click(By.LinkText("Financial")); // Financial
 
             // driver.SetMultipleCheckboxById("Input_149", ??? ); // Special
 
-            driver.WriteTextbox(By.Name("PROPSDTRMS"), listing.PROPSDTRMS);
+            //driver.WriteTextbox(By.Name("PROPSDTRMS"), listing.PROPSDTRMS);
             //driver.SetMultipleCheckboxById("Input_150", "NEGOT,CASH,CONVE,FHA,TEXAS,VA"); // Proposed Terms
-            driver.SetMultipleCheckboxById("Input_150", listing.PROPSDTRMS); // Proposed Terms
+            //driver.SetMultipleCheckboxById("Input_150", listing.PROPSDTRMS, "Proposed Terms", tabName); // Proposed Terms
 
-            driver.SetSelect(By.Id("Input_151"), listing.HasHOA); // HOA
-            if (!String.IsNullOrEmpty(listing.HOA) && (listing.HOA == "M"))
+
+            //driver.SetSelect(By.Id("Input_624"), listing.HasHOA, "HOA", tabName); // HOA
+            if (!String.IsNullOrEmpty(listing.HOA) && (listing.HOA == "MAND"))
             {
-                driver.SetSelect(By.Id("Input_151"), "1"); // HOA
-                driver.SetSelect(By.Id("Input_152"), "1"); // HOA Mandatory
+                //driver.SetSelect(By.Id("Input_151"), "1", "HOA", tabName); // HOA
+                driver.SetSelect(By.Id("Input_622"), "MAN", "HOA Mandatory", tabName); // HOA Mandatory
             }
             else
-                driver.SetSelect(By.Id("Input_152"), "0"); // HOA Mandatory
-            driver.WriteTextbox(By.Id("Input_153"), listing.AssocName); // HOA Name
-            driver.WriteTextbox(By.Id("Input_154"), listing.AssocFee); // HOA Amount
-            driver.SetSelect(By.Id("Input_155"),listing.AssocFeePaid); // HOA Term
+                driver.SetSelect(By.Id("Input_622"), "NONE", "HOA Mandatory", tabName); // HOA Mandatory
+
+            driver.WriteTextbox(By.Id("Input_623"), listing.AssocName); // HOA Name
+            driver.WriteTextbox(By.Id("Input_624"), listing.AssocFee); // HOA Amount
+            driver.SetSelect(By.Id("Input_625"), listing.AssocFeePaid, "HOA Term", tabName); // HOA Term
         }
 
         /// <summary>
@@ -2467,10 +2621,10 @@ namespace Husa.Core.Uploaders.SanAntonio
         /// <param name="listing">Current listing being processed</param>
         private void FillShowingInformation(CoreWebDriver driver, ResidentialListingRequest listing)
         {
+            string tabName = "Showing Information";
             driver.ExecuteScript(" jQuery(document).scrollTop(0);");
 
-            driver.Click(By.LinkText("Showing Information")); // Financial Information
-            driver.wait.Until(ExpectedConditions.ElementIsVisible(By.Id("Input_217"))); // the last field on the form
+            driver.Click(By.LinkText("Brokerage/Showing Information")); // Brokerage/Showing Information
 
             #region Showing Information
             //driver.WriteTextbox(By.Id("Input_209"), listing.AgentList); // List Agent MLS ID TODO: Verify the correct property
@@ -2481,15 +2635,15 @@ namespace Husa.Core.Uploaders.SanAntonio
             #endregion Showing Information
 
             #region Compensation/Showing Information
-            driver.SetSelect(By.Id("Input_484"), "Pct"); // Buyer Agency $ or %  (default hardcode "%")
-            driver.WriteTextbox(By.Id("Input_486"), "3"); // Buyer Agency Compensation (default hardcode "3")
+            driver.SetSelect(By.Id("Input_632"), "Pct", "Buyer Agency $ or %", tabName); // Buyer Agency $ or %  (default hardcode "%")
+            driver.WriteTextbox(By.Id("Input_633"), "3"); // Buyer Agency Compensation (default hardcode "3")
             // driver.SetSelect(By.Id("Input_213"), ??? ); // Variable Compensation
-            driver.SetMultipleCheckboxById("Input_217", "APPOI"); // How to Show/Occupancy (default hardcode "Appointment Only")
-            driver.SetSelect(By.Id("Input_485"), "Pct"); // Sub Agency $ or % (default hardcode "%")
-            driver.WriteTextbox(By.Id("Input_487"), "0"); // Buyer Agency Compensation (default hardcode "0")
-            driver.SetSelect(By.Id("Input_235"), "0"); // Prospects Exempt (default hardcode "No")
-            driver.WriteTextbox(By.Id("Input_215"), listing.TitleCo); // Pref Title Company
-            driver.WriteTextbox(By.Id("Input_216"), listing.CTXEarnestMoney); // Earnest Money
+            driver.SetMultipleCheckboxById("Input_645", "APPOI", "How to Show/Occupancy", tabName); // How to Show/Occupancy (default hardcode "Appointment Only")
+            driver.WriteTextbox(By.Id("Input_635"), "0"); // Buyer Agency Compensation (default hardcode "0")
+            driver.SetSelect(By.Id("Input_636"), "Pct", "Sub Agency $ or % ", tabName); // Sub Agency $ or % (default hardcode "%")
+            driver.SetSelect(By.Id("Input_637"), "0", "Prospects Exempt", tabName); // Prospects Exempt (default hardcode "No")
+            driver.WriteTextbox(By.Id("Input_638"), listing.TitleCo); // Pref Title Company
+            driver.WriteTextbox(By.Id("Input_639"), listing.CTXEarnestMoney); // Earnest Money
             #endregion Compensation/Showing Information
         }
 
@@ -2500,101 +2654,17 @@ namespace Husa.Core.Uploaders.SanAntonio
         /// <param name="listing">Current listing being processed</param>
         private void FillRemarks(CoreWebDriver driver, ResidentialListingRequest listing)
         {
+            string tabName = "Remarks";
             driver.ExecuteScript(" jQuery(document).scrollTop(0);");
 
             driver.Click(By.LinkText("Remarks")); // Financial Information
-            driver.wait.Until(ExpectedConditions.ElementIsVisible(By.Id("Input_142"))); // the last field on the form
 
             #region Documents & Internet Display
-            driver.SetSelect(By.Id("Input_143"), "1"); // IDX Opt In (default hardcode "Yes")
-            driver.SetSelect(By.Id("Input_144"), "1"); // Display on Internet (default hardcode "Yes")
-            driver.SetSelect(By.Id("Input_145"), "1"); // Display Address (default hardcode "Yes")
-            driver.SetSelect(By.Id("Input_146"), "0"); // Allow AVM (default hardcode "Yes")
-            driver.SetSelect(By.Id("Input_147"), "1"); // Allow Comment (default hardcode "Yes")
-            //driver.SetMultipleCheckboxById("Input_219", listing.RestrictionsDesc); // 	Documents On File
-            List<String> putOptionsRestrictionsDesc = new List<String>();
-            List<String> optionsRestrictionsDesc = String.IsNullOrWhiteSpace(listing.RestrictionsDesc) ? new List<String>() : listing.RestrictionsDesc.Split(',').ToList();
-            foreach (string option in optionsRestrictionsDesc)
-            {
-                switch (option)
-                {
-                    case "ADLT55":
-                        //putOptionsRestrictionsDesc.Add("");
-                        break;
-                    case "ADLT62":
-                        //putOptionsRestrictionsDesc.Add("");
-                        break;
-                    case "BLDGST":
-                        //putOptionsRestrictionsDesc.Add("");
-                        break;
-                    case "BLDGSZ":
-                        //putOptionsRestrictionsDesc.Add("");
-                        break;
-                    case "CITRS":
-                        //putOptionsRestrictionsDesc.Add("");
-                        break;
-                    case "CVNANT":
-                        //putOptionsRestrictionsDesc.Add("");
-                        break;
-                    case "DEEDRS":
-                        putOptionsRestrictionsDesc.Add("DEEDR");
-                        break;
-                    case "DVLMPT":
-                        //putOptionsRestrictionsDesc.Add("");
-                        break;
-                    case "ENVRO":
-                        //putOptionsRestrictionsDesc.Add("");
-                        break;
-                    case "ESMNT":
-                        //putOptionsRestrictionsDesc.Add("");
-                        break;
-                    case "LEASE":
-                        //putOptionsRestrictionsDesc.Add("");
-                        break;
-                    case "LMTDVH":
-                        //putOptionsRestrictionsDesc.Add("");
-                        break;
-                    case "LVSTCK":
-                        //putOptionsRestrictionsDesc.Add("");
-                        break;
-                    case "RSLIM":
-                        //putOptionsRestrictionsDesc.Add("");
-                        break;
-                    case "RUNKN":
-                        //putOptionsRestrictionsDesc.Add("");
-                        break;
-                    case "ZONE":
-                        //putOptionsRestrictionsDesc.Add("");
-                        break;
-                }
-            }
-            // Market options that doesn't match
-            //'AERIA','Aerial Photos',
-            //'APPRA','Appraisal',
-            //'BOUND','Boundary Survey',
-            //'ENGIN','Engineer\'s Report',
-            //'FIELD','Field Notes',
-            //'FLODC','Flood Certification',
-            //'FLOOR','Floor Plans',
-            //'INHOM','Inspection-Home',
-            //'INPES','Inspection-Pest',
-            //'INSPT','Inspection-Septic',
-            //'LEADB','Lead Based Paint Addendum',
-            //'NONE','None',
-            //'ONSSE','On-Site Sewer Disclosure',
-            //'OTHSE','Other-See Remarks',
-            //'PLAT','Plat',
-            //'SELLE','Seller\'s Disclosure',
-            //'SPECI','Special Contract\/Addendum Required',
-            //'SBDRE','Subdivision Restrictions',
-            //'SURVE','Survey',
-            //'TOPOM','Topo Map'
-
-            //if (putOptionsRestrictionsDesc.Count > 0)
-            //{
-            //    driver.SetMultipleCheckboxById("Input_219", string.Join(",", putOptionsRestrictionsDesc.ToArray())); // 	Documents On File
-            //}
-            driver.SetMultipleCheckboxById("Input_219", "NONE"); // Documents On File
+            driver.SetSelect(By.Id("Input_143"), "1", "IDX Opt In", tabName); // IDX Opt In (default hardcode "Yes")
+            driver.SetSelect(By.Id("Input_144"), "1", "Display on Internet", tabName); // Display on Internet (default hardcode "Yes")
+            driver.SetSelect(By.Id("Input_145"), "1", "Display Address", tabName); // Display Address (default hardcode "Yes")
+            driver.SetSelect(By.Id("Input_146"), "0", "Allow AVM", tabName); // Allow AVM (default hardcode "Yes")
+            driver.SetSelect(By.Id("Input_147"), "1", "Allow Comment", tabName); // Allow Comment (default hardcode "Yes")
             #endregion Documents & Internet Display
 
             #region Comments
@@ -2607,9 +2677,10 @@ namespace Husa.Core.Uploaders.SanAntonio
 
         private void UpdateYearBuiltDescriptionInGeneralTab(CoreWebDriver driver, ResidentialListingRequest listing)
         {
+            string tabName = "General";
             driver.wait.Until(x => ExpectedConditions.ElementIsVisible(By.Id("Input_185")));
             driver.ScrollDown();
-            driver.SetSelect(By.Id("Input_184"), listing.YearBuiltDesc); // Construction Status
+            driver.SetSelect(By.Id("Input_184"), listing.YearBuiltDesc, "Construction Status", tabName); // Construction Status
             driver.WriteTextbox(By.Id("Input_185"), listing.YearBuilt); // Year Built
         }
 

@@ -24,7 +24,7 @@
 
         public string HomeFaces { get; set; }
 
-        public string NeighborhoodAmenities { get; set; }
+        //public string NeighborhoodAmenities { get; set; }
 
         public string LotImprovements { get; set; }
 

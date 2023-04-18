@@ -52,6 +52,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CoreWebDriver\UploaderError.cs" />
     <Compile Include="HusaMarketConstants.cs" />
     <Compile Include="OpenHouseBase.cs" />
     <Compile Include="UploadResult.cs" />

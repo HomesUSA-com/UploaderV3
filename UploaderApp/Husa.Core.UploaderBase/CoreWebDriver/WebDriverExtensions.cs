@@ -436,6 +436,239 @@ namespace Husa.Core.UploaderBase
         }
 
         /// <summary>
+        /// Activates the checkboxes that represent the values provided in the 'values' parameter
+        /// </summary>
+        /// <param name="driver">The Selenium Web Driver (wrapped in a CoreWebDriver instance) that is to be used to drive the web browser</param>
+        /// <param name="id">The multiple checkboxes common id</param>
+        /// <param name="values">A comma separated list of the values to activate/select</param>
+        /// <param name="isOptional">Whether the value is optional (and so may be null or empty) or required. If required, the code will log a warning</param>
+        /// <returns>The same instance of CoreWebDriver provided to the method. Used for extension method chaining</returns>
+        public static CoreWebDriver SetMultipleCheckboxById(this CoreWebDriver driver, string id, string values, string fieldLabel, string fieldSection, bool isOptional = false)
+        {
+            string friendlyErrorMessage = "Tried to transform an element with locator: {" + id + "} into a Select when processing the values {" + values + "}.";
+            try
+            {
+                if (string.IsNullOrWhiteSpace(values))
+                {
+                    driver.ExecuteScript(" jQuery('input[id^=" + id + "]').each( function () { jQuery(this).prop('checked', false) }); ");
+
+                    //if (!isOptional)
+                    driver.Logger.Warning("Tried to use a null value in MultiCheckbox with locator: {id} when processing Request with {ResidentialListingRequestId}.", id, driver.UploadInformation.RequestId);
+
+                    return driver;
+                }
+
+                int positionParentElement = 0;
+                string posY = driver.ExecuteScript(" var returnValue = 0; try { returnValue = jQuery('#" + id + "').position().top; } catch { } return returnValue; ").ToString();
+                if (!String.IsNullOrEmpty(posY))
+                {
+                    var positionYDecimal = Decimal.Parse(posY);
+                    positionParentElement = int.Parse(Decimal.Round(positionYDecimal, 0).ToString()) - 100;
+                    driver.ExecuteScript(" jQuery(document).scrollTop(0);");
+                    Thread.Sleep(400);
+                    driver.ScrollDownPosition(positionParentElement);
+                }
+
+                var splitValues = values.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                string theValue = "";
+
+                if (!driver.UploadInformation.IsNewListing)
+                {
+
+                    try
+                    {
+                        var elems = driver.FindElement(By.Id(id)).FindElements(By.CssSelector("input[type=checkbox]"));
+                        //var elems = driver.FindElement(By.Id(id))
+                        foreach (var el in elems.Where(el => el.Selected))
+                        {
+                            el.Click();
+                        }
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            foreach (var value in splitValues)
+                            {
+                                theValue = value;
+                                driver.ExecuteScript(" jQuery('#" + id + "_" + value + "').prop('checked', false);");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            driver.UploadInformation.UploaderErrors.Add(new UploaderError(id, fieldLabel, fieldSection, friendlyErrorMessage, ex.Message));
+                            throw;
+                        }
+                    }
+                }
+
+                bool hasScrollBar = Boolean.Parse(driver.ExecuteScript("  (function($) { $.fn.hasScrollBar = function() { return this.get(0).scrollHeight > this.height(); }  })(jQuery); return $('#" + id + "').hasScrollBar();  ").ToString());
+
+                foreach (var value in splitValues)
+                {
+                    theValue = value;
+                    friendlyErrorMessage = "Tried to select a non-existing {" + value + "} in Select with locator: " + id;
+                    try
+                    {
+                        driver.wait.Until(ExpectedConditions.ElementIsVisible(By.Id(id)));
+                        driver.FindElement(By.Id(id));
+
+                        try
+                        {
+                            int positionOfItem = 0;
+                            string posItemY = driver.ExecuteScript(" var returnValue = 0; try { returnValue = jQuery('#" + id + "_" + value + "').position().top; } catch { } return returnValue; ").ToString();
+                            if (!String.IsNullOrEmpty(posItemY) && !hasScrollBar)
+                            {
+                                var positionYDecimal = Decimal.Parse(posItemY);
+                                positionOfItem = int.Parse(Decimal.Round(positionYDecimal, 0).ToString()) - 100;
+                                driver.ExecuteScript(" jQuery(document).scrollTop(0);");
+                                Thread.Sleep(400);
+                                driver.ScrollDownPosition(positionOfItem);
+                            }
+                        }
+                        catch { }
+
+                        Thread.Sleep(400);
+                        driver.Click(By.Id(id + "_" + value));
+                    }
+                    catch (Exception ex)
+                    {
+                        try
+                        {
+                            driver.ExecuteScript("jQuery('#" + id + " [value=\"" + value + "\"]').attr('selected', 'selected');");
+                        }
+                        catch { }
+                        driver.UploadInformation.UploaderErrors.Add(new UploaderError(id, fieldLabel, fieldSection, friendlyErrorMessage, ""));
+                        driver.Logger.Error("Error when processing Request with {ResidentialListingRequestId}.\nError Details: " + ex.Message, null, driver.UploadInformation.RequestId);
+                    }
+                }
+
+                return driver;
+            }
+            catch (Exception ex)
+            {
+                driver.Logger.Error("Error when processing Request with {ResidentialListingRequestId}.\nError Details: " + ex.Message, null, driver.UploadInformation.RequestId);
+                driver.UploadInformation.UploaderErrors.Add(new UploaderError(id, fieldLabel, fieldSection, "Unknow error in Select with locator: " + id, ex.Message));
+                throw ex;
+            }
+        }
+
+        /// <summary>
+        /// Selects an specific value into a Select element identified with the 'by' provided
+        /// </summary>
+        /// <param name="driver">The Selenium Web Driver (wrapped in a CoreWebDriver instance) that is to be used to drive the web browser</param>
+        /// <param name="by">The Selenium selector used to determine the element to act on</param>
+        /// <param name="value">The value to choose in the Select element</param>
+        /// <param name="isOptional">Whether the value is optional (and so may be null or empty) or required. If required, the code will log a warning</param>
+        /// <returns>The same instance of CoreWebDriver provided to the method. Used for extension method chaining</returns>
+        public static CoreWebDriver SetSelect(this CoreWebDriver driver, By by, string value, string fieldLabel, string fieldSection, bool isOptional = false)
+        {
+            string friendlyErrorMessage = "Tried to transform an element with locator: {" + by.ToString() + "} into a Select when processing the value(s) {" + value + "}.";
+            try
+            {
+                var elem = driver.FindElement(by);
+                friendlyErrorMessage = "Tried to select a non-existing {" + value + "} in Select with locator: " + by;
+
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    driver.ExecuteScript(" jQuery('select[id^=" + elem.GetAttribute("id") + "]').each( function () { jQuery(this).val(''); }); ");
+                    if (!isOptional)
+                        driver.Logger.Warning("Tried to select a null value in Select with locator: {by} when processing Request with {ResidentialListingRequestId}.", by, driver.UploadInformation.RequestId);
+
+                    driver.UploadInformation.UploaderErrors.Add(new UploaderError(by.ToString(), fieldLabel, fieldSection, friendlyErrorMessage, ""));
+
+                    return driver;
+                }
+
+                if (isOptional && string.IsNullOrWhiteSpace(value))
+                    return driver;
+
+                var select = new SelectElement(elem);
+
+                if (!driver.UploadInformation.IsNewListing && select.IsMultiple)
+                    select.DeselectAll();
+
+                select.SelectByValue(value);
+            }
+            catch (NoSuchElementException ex)
+            {
+                if (!isOptional)
+                    driver.Logger.Warning("Tried to select a non-existing {value} in Select with locator: {by} when processing Request with {ResidentialListingRequestId}.", value, by, driver.UploadInformation.RequestId);
+
+                driver.UploadInformation.UploaderErrors.Add(new UploaderError(by.ToString(), fieldLabel, fieldSection, friendlyErrorMessage, ex.Message));
+            }
+            catch (UnexpectedTagNameException ex)
+            {
+                if (!isOptional)
+                    driver.Logger.Warning("Tried to transform an element with locator: {by} into a Select when processing Request with {ResidentialListingRequestId}.", by, driver.UploadInformation.RequestId);
+
+                driver.UploadInformation.UploaderErrors.Add(new UploaderError(by.ToString(), fieldLabel, fieldSection, friendlyErrorMessage, ex.Message));
+            }
+            catch (Exception ex)
+            {
+                driver.UploadInformation.UploaderErrors.Add(new UploaderError(by.ToString(), fieldLabel, fieldSection, "Unknow error in Select with locator: " + by, ex.Message));
+            }
+
+            return driver;
+        }
+
+        /// <summary>
+        /// Selects an specific value into a Select element identified with the 'by' provided
+        /// </summary>
+        /// <param name="driver">The Selenium Web Driver (wrapped in a CoreWebDriver instance) that is to be used to drive the web browser</param>
+        /// <param name="by">The Selenium selector used to determine the element to act on</param>
+        /// <param name="text">The text to choose in the Select element</param>
+        /// <param name="isOptional">Whether the value is optional (and so may be null or empty) or required. If required, the code will log a warning</param>
+        /// <returns>The same instance of CoreWebDriver provided to the method. Used for extension method chaining</returns>
+        public static CoreWebDriver SetSelectByText(this CoreWebDriver driver, By by, string text, string fieldLabel, string fieldSection, bool isOptional = false)
+        {
+            string friendlyErrorMessage = "Tried to transform an element with locator: {" + by.ToString() + "} into a Select when processing the value(s) {" + text + "}.";
+            try
+            {
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    if (!isOptional)
+                        driver.Logger.Warning("Tried to select a null value in Select with locator: {by} when processing Request with {ResidentialListingRequestId}.", by, driver.UploadInformation.RequestId);
+
+                    return driver;
+                }
+
+                if (isOptional && string.IsNullOrWhiteSpace(text))
+                    return driver;
+
+                var elem = driver.FindElement(by);
+                friendlyErrorMessage = "Tried to select a non-existing {" + text + "} in Select with locator: " + by;
+
+                var select = new SelectElement(elem);
+
+                if (!driver.UploadInformation.IsNewListing && select.IsMultiple)
+                    select.DeselectAll();
+
+                select.SelectByText(text);
+            }
+            catch (NoSuchElementException ex)
+            {
+                if (!isOptional)
+                    driver.Logger.Warning("Tried to select a non-existing {value} in Select with locator: {by} when processing Request with {ResidentialListingRequestId}.", by, driver.UploadInformation.RequestId);
+
+                driver.UploadInformation.UploaderErrors.Add(new UploaderError(by.ToString(), fieldLabel, fieldSection, friendlyErrorMessage, ex.Message));
+            }
+            catch (UnexpectedTagNameException ex)
+            {
+                if (!isOptional)
+                    driver.Logger.Warning("Tried to transform an element with locator: {by} into a Select when processing Request with {ResidentialListingRequestId}.", by, driver.UploadInformation.RequestId);
+
+                driver.UploadInformation.UploaderErrors.Add(new UploaderError(by.ToString(), fieldLabel, fieldSection, friendlyErrorMessage, ex.Message));
+            }
+            catch (Exception ex)
+            {
+                driver.UploadInformation.UploaderErrors.Add(new UploaderError(by.ToString(), fieldLabel, fieldSection, "Unknow error in Select with locator: " + by, ex.Message));
+            }
+
+            return driver;
+        }
+
+        /// <summary>
         /// Selects an specific value into a Select element identified with the 'by' provided
         /// </summary>
         /// <param name="driver">The Selenium Web Driver (wrapped in a CoreWebDriver instance) that is to be used to drive the web browser</param>

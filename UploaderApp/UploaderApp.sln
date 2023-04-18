@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Uploader.SignalR.Clien
 EndProject
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "Husa.Uploader.SignalR", "..\..\..\husa-core\core-repos\Cargador\Husa.Uploader.SignalR\", "{C5FD3CFE-D453-44AF-AF9F-D5D8C3E9867F}"
 	ProjectSection(WebsiteProperties) = preProject
-		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.6.1"
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.8"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_57448"
 		Debug.AspNetCompiler.PhysicalPath = "..\..\..\husa-core\core-repos\Cargador\Husa.Uploader.SignalR\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_57448\"

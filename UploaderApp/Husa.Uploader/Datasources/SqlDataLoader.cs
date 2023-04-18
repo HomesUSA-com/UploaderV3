@@ -31,17 +31,29 @@ namespace Husa.Uploader.Datasources
         public static DatabaseState dbConnectionState = DatabaseState.Online;
         private readonly ClassTransform classTransform = new ClassTransform();
 
+        private static String URL_DATA_SERVER_COSMOS_DB = "https://cosmosdb-quicklister-qa.documents.azure.com:443/";
+        private static String DATA_AUTHORIZED_TOKEN = "tbHhEXtL4lu4BtpZ5sKuNAEvrFBcuzalXH3bj6CH3lGNp5fSVzhA7LzAFA5IrIl5yVsSX6mqUX0pACDb55JU7A==";
+        private static String URL_MEDIA_SERVER_COSMOS_DB = "https://mediav3-qa.homesusa.com/api/media?OwnerId=56af879a-1ae0-4ac6-a144-08db295d345c&Type=Residential";
+        private static String MEDIA_AUTHORIZED_TOKEN = "tbHhEXtL4lu4BtpZ5sKuNAEvrFBcuzalXH3bj6CH3lGNp5fSVzhA7LzAFA5IrIl5yVsSX6mqUX0pACDb55JU7A==";
+
         public SqlDataLoader(string connectionString)
         {
             _connectionString = connectionString;
         }
 
         public async Task<IEnumerable<ResidentialListingRequest>> GetListingData()
-        {
-            var listingRequest = await GetDataInternalListingsCosmoDB();
-            var internalRLRCosmo = classTransform.CosmoObjectToResidentialListingRequest(listingRequest);
-            ////var internalListings = await GetDataInternalListings(" ([rl].[SysStatusID] = 1 AND [rl].[SysState] <> 'D' AND [m].[IsValidMarket] = 1 AND ([rl].[TransactionType] <> 'FL' OR [rl].[TransactionType] IS NULL) ) ");
-            return internalRLRCosmo.Distinct();
+        {            
+            var saListingRequest = await GetDataSA();
+            var internalSARLRCosmo = classTransform.CosmoObjectToResidentialListingRequest(saListingRequest);
+
+            var saCTXListingRequest = await GetDataSACTX();
+            if (saCTXListingRequest != null)
+            {
+                var internalSACTXRLRCosmo = classTransform.CosmoObjectToResidentialListingRequest(saCTXListingRequest);
+                var newRLR = internalSARLRCosmo.Concat(internalSACTXRLRCosmo);
+                return newRLR;
+            }
+            return internalSARLRCosmo.Distinct();
         }
 
         public Task<IEnumerable<ResidentialListingRequest>> GetLeasingData()
@@ -99,27 +111,34 @@ namespace Husa.Uploader.Datasources
             }
         }
 
-        private async Task<IEnumerable<ListingRequestSale>> GetDataInternalListingsCosmoDB()
+        private async Task<List<ListingRequestSale>> GetDataSA()
         {
+            List<ListingRequestSale> results = null;
             try
             {
-                Microsoft.Azure.Cosmos.CosmosClient client = new Microsoft.Azure.Cosmos.CosmosClient("https://dfwcosmosdb.documents.azure.com:443/", "aDBWzrq8xMCFRYVmPKxHRBVumR5ESgcijQcejMSTF9ZjHwCjfrp4zNy2DGpPxBQ56oj3ELVQ93dbQFNfDJGYqw==");
-                this.saleContainer = client.GetContainer("saborDev", "saleRequestQA");
-                Microsoft.Azure.Cosmos.DatabaseResponse database = await client.CreateDatabaseIfNotExistsAsync("saborDev");
-                await database.Database.CreateContainerIfNotExistsAsync("saleRequestQA", "/ListingSaleId");
+                Microsoft.Azure.Cosmos.CosmosClient client = 
+                    new Microsoft.Azure.Cosmos.CosmosClient(URL_DATA_SERVER_COSMOS_DB,
+                    DATA_AUTHORIZED_TOKEN);
+                
+                this.saleContainer = client.GetContainer("sabor", "saleRequest");
                 CancellationToken token;
 
                 using (
                     var query =
                     this.saleContainer.GetItemLinqQueryable<ListingRequestSale>(false)
-                    .Where(x => x.RequestState != null && 
-                        x.RequestState.ToString() == ListingRequestState.Pending.ToString() && 
+                    .Where(x => x.RequestState != null &&
+                        x.RequestState.ToString() == ListingRequestState.Pending.ToString() &&
                         !x.IsDeleted).ToFeedIterator()
                     )
                 {
                     if (query.HasMoreResults)
                     {
-                        return (await query.ReadNextAsync(token)).ToList();
+                        results = (await query.ReadNextAsync(token)).ToList();
+
+                        foreach (var record in results)
+                        {
+                            record.MarketUniqueId = "San Antonio";
+                        }
                     }
                 }
             } 
@@ -128,7 +147,46 @@ namespace Husa.Uploader.Datasources
                 string andy = "ërror";
             }
 
-            return null;
+            return results;
+        }
+
+        private async Task<IEnumerable<ListingRequestSale>> GetDataSACTX()
+        {
+            List<ListingRequestSale> results = null;
+            try
+            {
+                Microsoft.Azure.Cosmos.CosmosClient client = 
+                    new Microsoft.Azure.Cosmos.CosmosClient(URL_DATA_SERVER_COSMOS_DB,
+                    DATA_AUTHORIZED_TOKEN);
+
+                this.saleContainer = client.GetContainer("ctx", "saleRequest");
+                CancellationToken token;
+
+                using (
+                    var query =
+                    this.saleContainer.GetItemLinqQueryable<ListingRequestSale>(false)
+                    .Where(x => x.RequestState != null &&
+                        x.RequestState.ToString() == ListingRequestState.Pending.ToString() &&
+                        !x.IsDeleted).ToFeedIterator()
+                    )
+                {
+                    if (query.HasMoreResults)
+                    {
+                        results = (await query.ReadNextAsync(token)).ToList();
+
+                        foreach (var record in results)
+                        {
+                            record.MarketUniqueId = "San Antonio CTX";
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                string andy = "ërror";
+            }
+
+            return results;
         }
 
         private async Task<IEnumerable<ResidentialListingRequest>> GetDataInternalListings(string whereClause)
@@ -951,7 +1009,6 @@ namespace Husa.Uploader.Datasources
             // Delete the original file
             File.Delete(newFileName + actualExt);
         }
-
         public static void convertFileJpgToPng(String pathFile, String actualExt, int width, int height)
         {
             String newFileName = pathFile + "_backup_" + DateTime.Now.Ticks.ToString();

@@ -17,9 +17,9 @@
                     var residentialListingRequest = new ResidentialListingRequest();
                     residentialListingRequest.ResidentialListingRequestID = listingRequest.ListingSaleId;
                     residentialListingRequest.MarketUsername = "096651";
-                    residentialListingRequest.MarketPassword = /*"8Hw*whRhxD&rr"*/"r&v4RJDUv";
+                    residentialListingRequest.MarketPassword = "3C$AFu2eL";
                     residentialListingRequest.MarketID = 8;
-                    residentialListingRequest.MarketName = "San Antonio";
+                    residentialListingRequest.MarketName = listingRequest.MarketUniqueId;
                     residentialListingRequest.ListPrice = (decimal)listingRequest.ListPrice;
                     residentialListingRequest.MLSNum = ""/*listingRequest.MlsNumber*/;
                     residentialListingRequest.MlsStatus = listingRequest.MlsStatus.ToString();
@@ -37,7 +37,7 @@
                     #region AddressInfo
                     residentialListingRequest.StreetNum = listingRequest.SaleProperty.AddressInfo.StreetNumber;
                     residentialListingRequest.StreetName = listingRequest.SaleProperty.AddressInfo.StreetName;
-                    residentialListingRequest.City = listingRequest.SaleProperty.AddressInfo.City;
+                    residentialListingRequest.CityCode = listingRequest.SaleProperty.AddressInfo.City;
                     residentialListingRequest.State = listingRequest.SaleProperty.AddressInfo.State;
                     residentialListingRequest.Zip = listingRequest.SaleProperty.AddressInfo.ZipCode;
                     residentialListingRequest.County = listingRequest.SaleProperty.AddressInfo.County;
@@ -79,8 +79,8 @@
                     residentialListingRequest.BathsFull = listingRequest.SaleProperty.SpacesDimensionsInfo.BathsFull;
                     residentialListingRequest.BathsHalf = listingRequest.SaleProperty.SpacesDimensionsInfo.BathsHalf;
                     //masterBathDescription
-                    residentialListingRequest.GarageDesc = listingRequest.SaleProperty.SpacesDimensionsInfo.GarageDescription;
-                    residentialListingRequest.ParkingDesc = listingRequest.SaleProperty.SpacesDimensionsInfo.GarageDescription;
+                    //residentialListingRequest.GarageDesc = listingRequest.SaleProperty.SpacesDimensionsInfo.GarageDescription.ToString();
+                    //residentialListingRequest.ParkingDesc = listingRequest.SaleProperty.SpacesDimensionsInfo.GarageDescription.ToString();
                     residentialListingRequest.OtherParking = listingRequest.SaleProperty.SpacesDimensionsInfo.OtherParking;
 
                     residentialListingRequest.Beds = listingRequest.SaleProperty.SpacesDimensionsInfo.NumBedrooms;
@@ -236,7 +236,7 @@
                     residentialListingRequest.GreenCerts = listingRequest.SaleProperty.FeaturesInfo.GreenCertification;
                     residentialListingRequest.EnergyDesc = listingRequest.SaleProperty.FeaturesInfo.EnergyFeatures; //check
                     residentialListingRequest.GreenFeatures = listingRequest.SaleProperty.FeaturesInfo.GreenFeatures;
-                    residentialListingRequest.CommonFeatures = listingRequest.SaleProperty.FeaturesInfo.NeighborhoodAmenities; //check
+                    //residentialListingRequest.CommonFeatures = listingRequest.SaleProperty.FeaturesInfo.NeighborhoodAmenities; //check
                                                                                                                                //lotImprovements
                     #endregion
 
