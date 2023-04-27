@@ -16,8 +16,8 @@
                 {
                     var residentialListingRequest = new ResidentialListingRequest();
                     residentialListingRequest.ResidentialListingRequestID = listingRequest.ListingSaleId;
-                    residentialListingRequest.MarketUsername = "096651";
-                    residentialListingRequest.MarketPassword = "3C$AFu2eL";
+                    residentialListingRequest.MarketUsername = "966512";
+                    residentialListingRequest.MarketPassword = "i5Y5kw!*QV";
                     residentialListingRequest.MarketID = 8;
                     residentialListingRequest.MarketName = listingRequest.MarketUniqueId;
                     residentialListingRequest.ListPrice = (decimal)listingRequest.ListPrice;

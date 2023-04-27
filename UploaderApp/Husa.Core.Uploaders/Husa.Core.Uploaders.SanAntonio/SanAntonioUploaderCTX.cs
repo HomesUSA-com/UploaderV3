@@ -27,8 +27,8 @@ namespace Husa.Core.Uploaders.SanAntonio
             // UP-74
             if (listing.MarketName == "San Antonio CTX")
             {
-                listing.MarketUsername = "306362";
-                listing.MarketPassword = "1232";
+                listing.MarketUsername = "966512";
+                listing.MarketPassword = "i5Y5kw!*QV";
 
                 return true;
             }
