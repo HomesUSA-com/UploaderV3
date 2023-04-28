@@ -33,7 +33,7 @@
     <SuiteName>HomesUSA CORE Uploader3</SuiteName>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
-    <ApplicationRevision>17</ApplicationRevision>
+    <ApplicationRevision>18</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
@@ -231,6 +231,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Support\ClassTransform.cs" />
     <Compile Include="Support\Item.cs" />
     <Compile Include="Support\SecurityManager.cs" />
@@ -240,6 +241,7 @@
     <Compile Include="Support\LoggingSupport.cs" />
     <Compile Include="ViewModels\Enum\CancelledOptionsEnum.cs" />
     <Compile Include="ViewModels\Enum\ConstructionStageEnum.cs" />
+    <Compile Include="ViewModels\Enum\FireplaceDescriptions.cs" />
     <Compile Include="ViewModels\Enum\GarageDescription.cs" />
     <Compile Include="ViewModels\Enum\ListingRequestState.cs" />
     <Compile Include="ViewModels\Enum\MarketStatusesEnum.cs" />

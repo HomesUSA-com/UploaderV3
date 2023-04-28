@@ -1,4 +1,8 @@
-﻿namespace Husa.Uploader.ViewModels.ListingRequestSaleSubClass
+﻿using Husa.Uploader.ViewModels.Enum;
+using System.Collections;
+using System.Collections.Generic;
+
+namespace Husa.Uploader.ViewModels.ListingRequestSaleSubClass
 {
     public class FeaturesInfo
     {
@@ -6,7 +10,7 @@
 
         public int? Fireplaces { get; set; }
 
-        public string FireplaceDescription { get; set; }
+        public ICollection<FireplaceDescription> FireplaceDescription { get; set; }
 
         public string WindowCoverings { get; set; }
 

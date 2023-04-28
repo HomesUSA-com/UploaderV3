@@ -1,6 +1,7 @@
 ﻿namespace Husa.Uploader.Support
 {
     using Husa.Core.UploaderBase;
+    using Husa.Uploader.Extensions;
     using Husa.Uploader.ViewModels;
     using Husa.Uploader.ViewModels.Enum;
     using System.Collections.Generic;
@@ -209,7 +210,7 @@
                     //PropertyDescription
                     residentialListingRequest.InclusionsDesc = listingRequest.SaleProperty.FeaturesInfo.Inclusions;
                     residentialListingRequest.NumFireplaces = listingRequest.SaleProperty.FeaturesInfo.Fireplaces;
-                    residentialListingRequest.FireplaceDesc = listingRequest.SaleProperty.FeaturesInfo.FireplaceDescription;
+                    residentialListingRequest.FireplaceDesc = listingRequest.SaleProperty.FeaturesInfo.FireplaceDescription.ToStringFromEnumMembers();
                     residentialListingRequest.FloorsDesc = listingRequest.SaleProperty.FeaturesInfo.Floors;
                     residentialListingRequest.WindowCoverings = listingRequest.SaleProperty.FeaturesInfo.WindowCoverings;
                     //HasAccessibility
