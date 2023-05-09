@@ -1,32 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31205.134
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Core.UploaderBase", "Husa.Core.UploaderBase\Husa.Core.UploaderBase.csproj", "{C7E637A3-6237-463F-9E6A-617CC8B26C7D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Uploader.SignalR.Client", "Husa.Uploader.SignalR.Client\Husa.Uploader.SignalR.Client.csproj", "{6BE01DF8-627C-482D-868B-9093AEA3DE15}"
-EndProject
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "Husa.Uploader.SignalR", "..\..\..\husa-core\core-repos\Cargador\Husa.Uploader.SignalR\", "{C5FD3CFE-D453-44AF-AF9F-D5D8C3E9867F}"
-	ProjectSection(WebsiteProperties) = preProject
-		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.8"
-		Debug.AspNetCompiler.VirtualPath = "/localhost_57448"
-		Debug.AspNetCompiler.PhysicalPath = "..\..\..\husa-core\core-repos\Cargador\Husa.Uploader.SignalR\"
-		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_57448\"
-		Debug.AspNetCompiler.Updateable = "true"
-		Debug.AspNetCompiler.ForceOverwrite = "true"
-		Debug.AspNetCompiler.FixedNames = "false"
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.VirtualPath = "/localhost_57448"
-		Release.AspNetCompiler.PhysicalPath = "..\..\..\husa-core\core-repos\Cargador\Husa.Uploader.SignalR\"
-		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_57448\"
-		Release.AspNetCompiler.Updateable = "true"
-		Release.AspNetCompiler.ForceOverwrite = "true"
-		Release.AspNetCompiler.FixedNames = "false"
-		Release.AspNetCompiler.Debug = "False"
-		VWDPort = "57448"
-		SlnRelativePath = "..\..\..\husa-core\core-repos\Cargador\Husa.Uploader.SignalR\"
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Husa.Core.Uploaders", "Husa.Core.Uploaders", "{DEF6DFE0-EBC2-4719-BECC-A5A6B3765B73}"
 EndProject
@@ -35,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Uploader", "Husa.Uploader\Husa.Uploader.csproj", "{1625E4AF-194F-4B6D-AC79-C6B2CCB4243E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Uploader.EventLog", "Husa.Uploader.EventLog\Husa.Uploader.EventLog.csproj", "{CEE38D3D-6DD6-427F-AB3D-B17D0B29593F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Uploader.SignalR.WebApp", "Husa.Uploader.SignalR\Husa.Uploader.SignalR.WebApp.csproj", "{1833E2BF-4D58-4288-8CBA-869981888972}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,10 +31,6 @@ Global
 		{6BE01DF8-627C-482D-868B-9093AEA3DE15}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6BE01DF8-627C-482D-868B-9093AEA3DE15}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6BE01DF8-627C-482D-868B-9093AEA3DE15}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C5FD3CFE-D453-44AF-AF9F-D5D8C3E9867F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C5FD3CFE-D453-44AF-AF9F-D5D8C3E9867F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C5FD3CFE-D453-44AF-AF9F-D5D8C3E9867F}.Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{C5FD3CFE-D453-44AF-AF9F-D5D8C3E9867F}.Release|Any CPU.Build.0 = Debug|Any CPU
 		{DB3E448D-A07B-43C0-B477-D1762DDB6AFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DB3E448D-A07B-43C0-B477-D1762DDB6AFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB3E448D-A07B-43C0-B477-D1762DDB6AFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -66,6 +43,10 @@ Global
 		{CEE38D3D-6DD6-427F-AB3D-B17D0B29593F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CEE38D3D-6DD6-427F-AB3D-B17D0B29593F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CEE38D3D-6DD6-427F-AB3D-B17D0B29593F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1833E2BF-4D58-4288-8CBA-869981888972}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1833E2BF-4D58-4288-8CBA-869981888972}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1833E2BF-4D58-4288-8CBA-869981888972}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1833E2BF-4D58-4288-8CBA-869981888972}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

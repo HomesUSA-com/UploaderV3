@@ -1,0 +1,146 @@
+﻿using Husa.Uploader.Crosscutting.Options;
+using Husa.Uploader.Data;
+using Microsoft.Azure.Cosmos.Fluent;
+using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.Elasticsearch;
+using System;
+using System.Reflection;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium;
+using Husa.Uploader.ViewModels;
+using Husa.Uploader.Views;
+using Husa.Uploader.Core.Interfaces;
+using Husa.Uploader.Core.Services;
+using Husa.Uploader.Factories;
+using System.Runtime.CompilerServices;
+
+namespace Husa.Uploader.Configuration
+{
+    public static class ApplicationBootstrapper
+    {
+        public static IServiceCollection ConfigureApplicationOptions(this IServiceCollection services)
+        {
+            services
+                .AddOptions<ApplicationOptions>()
+                .Configure<IConfiguration>((settings, config) => config.GetSection(ApplicationOptions.Section).Bind(settings))
+                .ValidateOnStart();
+
+            return services;
+        }
+
+        public static void ConfigureSerilog(
+            this LoggerConfiguration loggerConfiguration,
+            ApplicationOptions options,
+            IConfiguration configuration,
+            string environmentName)
+        {
+            loggerConfiguration
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .Enrich.FromLogContext()
+                .Enrich.WithEnvironmentName()
+                .Enrich.WithMachineName()
+                .Enrich.WithProperty(nameof(ApplicationOptions.ApplicationId), options.ApplicationId)
+                .WriteTo.Trace()
+                .WriteTo.Debug(restrictedToMinimumLevel: LogEventLevel.Verbose)
+                .ConfigureEventLog(environmentName)
+                .ConfigureElasticSearch(options.ElasticSearchServerUrl, environmentName)
+                .ReadFrom.Configuration(configuration);
+        }
+
+        public static LoggerConfiguration ConfigureElasticSearch(this LoggerConfiguration loggerConfiguration, string elasticSearchServerUrl, string environmentName)
+        {
+            loggerConfiguration
+                .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(elasticSearchServerUrl))
+                {
+                    AutoRegisterTemplate = true,
+                    AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv6,
+                    IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name!.ToLower().Replace(".", "-")}-{environmentName?.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
+                    MinimumLogEventLevel = LogEventLevel.Information,
+                    Period = TimeSpan.FromMilliseconds(200)
+                });
+
+            return loggerConfiguration;
+        }
+
+        public static LoggerConfiguration ConfigureEventLog(this LoggerConfiguration loggerConfiguration, string environmentName)
+        {
+            loggerConfiguration.WriteTo.EventLog(
+                source: "UploaderApp",
+                logName: "uploader-v3",
+                machineName: Environment.MachineName,
+                manageEventSource: true,
+                outputTemplate: $"{Assembly.GetExecutingAssembly().GetName().Name!.ToLower().Replace(".", "-")}-{environmentName?.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
+                restrictedToMinimumLevel: LogEventLevel.Debug);
+
+            return loggerConfiguration;
+        }
+
+        public static void ConfigureDataAccess(this IServiceCollection services)
+        {
+            services.AddTransient<ISqlDataLoader, SqlDataLoader>();
+        }
+
+        public static void ConfigureServices(this IServiceCollection services)
+        {
+            services.AddHttpClient();
+            services.AddHttpClient<IAuthenticationClient, AuthenticationClient>((provider, client) =>
+            {
+                var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
+                client.BaseAddress = new Uri(options.AuthenticateServerUrl);
+            });
+        }
+
+        public static IServiceCollection ConfigureWebDriver(this IServiceCollection services) => services
+            .AddScoped<IWebDriver>(provider =>
+            {
+                var appOptions = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
+                var chromeOptions = GetOptions(appOptions.Uploader);
+
+                return new ChromeDriver(appOptions.Uploader.ChromeOptions.DriverPath, options: chromeOptions);
+            });
+
+        private static ChromeOptions GetOptions(UploaderSettings uploaderOptions)
+        {
+            var options = new ChromeOptions();
+            options.AddArguments(uploaderOptions.ChromeOptions.Arguments);
+
+            foreach (var preference in uploaderOptions.ChromeOptions.UserProfilePreferences)
+            {
+                options.AddUserProfilePreference(preference.Key, preference.Value);
+            }
+
+            return options;
+        }
+
+        public static void RegisterViews(this IServiceCollection services)
+        {
+            services.AddSingleton<IChildViewFactory, ChildViewFactory>();
+            services.AddSingleton<ShellView>();
+            services.AddSingleton<ShellViewModel>();
+            ////services.AddTransient<MlsnumInputView>();
+            ////services.AddTransient<MlsnumInputViewModel>();
+            ////services.AddTransient<LatLonInputView>();
+            ////services.AddTransient<LatLonInputViewModel>();
+            ////services.AddTransient<MlsIssueReportView>();
+            ////services.AddTransient<MlsIssueReportViewModel>();
+            services.AddViewFactory<MlsnumInputView, MlsnumInputViewModel>();
+            services.AddViewFactory<LatLonInputView, LatLonInputViewModel>();
+            services.AddViewFactory<MlsIssueReportView, MlsIssueReportViewModel>();
+        }
+
+        public static void AddViewFactory<TForm, TModel>(this IServiceCollection services)
+            where TForm : class
+            where TModel : class
+        {
+            services.AddTransient<TForm>();
+            services.AddTransient<TModel>();
+            services.AddTransient<Func<TForm>>(serviceProvider => () => serviceProvider.GetService<TForm>());
+            services.AddSingleton<IAbstractFactory<TForm>, AbstractFactory<TForm>>();
+        }
+    }
+}
