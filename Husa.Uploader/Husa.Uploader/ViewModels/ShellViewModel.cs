@@ -1,6 +1,8 @@
-﻿using Husa.Uploader.Commands;
+﻿using Elasticsearch.Net;
+using Husa.Uploader.Commands;
 using Husa.Uploader.Core;
 using Husa.Uploader.Core.Interfaces;
+using Husa.Uploader.Core.Interfaces.Services;
 using Husa.Uploader.Core.Models;
 using Husa.Uploader.Crosscutting.Enums;
 using Husa.Uploader.Crosscutting.Extensions;
@@ -22,6 +24,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -39,6 +42,7 @@ namespace Husa.Uploader.ViewModels
         private readonly IChildViewFactory mlsIssueReportFactory;
         private readonly IAbstractFactory<LatLonInputView> locationViewFactory;
         private readonly IAbstractFactory<MlsnumInputView> mlsNumberInputFactory;
+        private readonly IUploadFactory uploadFactory;
         private readonly ILogger<ShellView> logger;
 
         private DispatcherTimer dispatcherTimer;
@@ -97,6 +101,7 @@ namespace Husa.Uploader.ViewModels
             IChildViewFactory mlsIssueReportFactory,
             IAbstractFactory<LatLonInputView> locationViewFactory,
             IAbstractFactory<MlsnumInputView> mlsNumberInputFactory,
+            IUploadFactory uploadFactory,
             ILogger<ShellView> logger)
             : this()
         {
@@ -107,6 +112,7 @@ namespace Husa.Uploader.ViewModels
             this.mlsIssueReportFactory = mlsIssueReportFactory ?? throw new ArgumentNullException(nameof(mlsIssueReportFactory));
             this.locationViewFactory = locationViewFactory ?? throw new ArgumentNullException(nameof(locationViewFactory));
             this.mlsNumberInputFactory = mlsNumberInputFactory ?? throw new ArgumentNullException(nameof(mlsNumberInputFactory));
+            this.uploadFactory = uploadFactory ?? throw new ArgumentNullException(nameof(uploadFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -124,7 +130,7 @@ namespace Husa.Uploader.ViewModels
             this.State = UploaderState.Ready;
         }
 
-        private UploadResponse UploadResponse { get; set; }
+        private UploadResult UploadResult { get; set; }
 
         public int SelectedTabItem
         {
@@ -535,36 +541,35 @@ namespace Husa.Uploader.ViewModels
             }
         }
 
-        public bool CanStartEdit => this.SelectedListingRequest != null && UploaderEngine.UploaderSupports<IEditor>(this.SelectedListingRequest.FullListing);
+        public bool CanStartEdit => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IEditListing>(this.SelectedListingRequest.FullListing.MarketCode);
 
-        public bool CanStartUpload => this.SelectedListingRequest != null && UploaderEngine.UploaderSupports<IUploader>(SelectedListingRequest.FullListing);
+        public bool CanStartUpload => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IUploadListing>(SelectedListingRequest.FullListing.MarketCode);
 
-        public bool CanStartImageUpdate => this.SelectedListingRequest != null && UploaderEngine.UploaderSupports<IImageUploader>(SelectedListingRequest.FullListing);
+        public bool CanStartImageUpdate => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IUpdateImages>(SelectedListingRequest.FullListing.MarketCode);
 
-        public bool CanStartStatusUpdate => this.SelectedListingRequest != null && UploaderEngine.UploaderSupports<IStatusUploader>(SelectedListingRequest.FullListing) && !string.IsNullOrWhiteSpace(SelectedListingRequest.FullListing.MLSNum);
+        public bool CanStartStatusUpdate => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdateStatus>(SelectedListingRequest.FullListing.MarketCode);
 
-        public bool CanStartPriceUpdate => this.SelectedListingRequest != null && UploaderEngine.UploaderSupports<IPriceUploader>(SelectedListingRequest.FullListing) && !string.IsNullOrWhiteSpace(SelectedListingRequest.FullListing.MLSNum);
+        public bool CanStartPriceUpdate => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdatePrice>(SelectedListingRequest.FullListing.MarketCode);
 
-        public bool CanStartCompletionDateUpdate => this.SelectedListingRequest != null && UploaderEngine.UploaderSupports<ICompletionDateUploader>(SelectedListingRequest.FullListing) && !string.IsNullOrWhiteSpace(SelectedListingRequest.FullListing.MLSNum);
+        public bool CanStartCompletionDateUpdate => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdateCompletionDate>(SelectedListingRequest.FullListing.MarketCode);
 
-        public bool CanStartUploadVirtualTour => this.SelectedListingRequest != null && UploaderEngine.UploaderSupports<IImageUploader>(SelectedListingRequest.FullListing);
+        public bool CanStartUploadVirtualTour => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IUpdateImages>(SelectedListingRequest.FullListing.MarketCode);
 
         public bool CanStartOHUpdate
         {
             get
             {
-                bool notNull = this.SelectedListingRequest != null && UploaderEngine.UploaderSupports<IUpdateOpenHouseUploader>(SelectedListingRequest.FullListing);
-                bool hasMLSNumber = notNull && !string.IsNullOrWhiteSpace(SelectedListingRequest.FullListing.MLSNum);
-                bool enableListingOH = notNull && SelectedListingRequest.FullListing.EnableOpenHouse;
+                if (this.SelectedListingRequest == null || !UploaderFactory.IsActionSupported<IUpdateOpenHouse>(SelectedListingRequest.FullListing.MarketCode))
+                {
+                    return false;
+                }
 
-                bool isPending = notNull && (SelectedListingRequest.FullListing.ListStatus == "PEND" ||
-                                                SelectedListingRequest.FullListing.ListStatus == "PND");
-                bool showOHPending = notNull && SelectedListingRequest.FullListing.AllowPendingList == "Y";
-                bool pendingFeature = isPending && showOHPending;
-
-                return notNull && hasMLSNumber &&
-                    (pendingFeature ||
-                    !pendingFeature && enableListingOH);
+                var isPending = (this.SelectedListingRequest.FullListing.ListStatus == "PEND" || this.SelectedListingRequest.FullListing.ListStatus == "PND");
+                var showOHPending = this.SelectedListingRequest.FullListing.AllowPendingList == "Y";
+                bool isPendingWithOHPending = isPending && showOHPending;
+                return !this.SelectedListingRequest.FullListing.IsNewListing &&
+                    (isPendingWithOHPending ||
+                    !isPendingWithOHPending && this.SelectedListingRequest.FullListing.EnableOpenHouse);
             }
         }
 
@@ -1014,9 +1019,9 @@ namespace Husa.Uploader.ViewModels
             }
         }
 
-        private async Task Start(UploadType opType, Func<ResidentialListingRequest, ILogger, UploadResponse> action)
+        private async Task StartUpload(UploadType opType, Func<ResidentialListingRequest, UploadResult> action)
         {
-            var listing = this.selectedListingRequest.FullListing;
+            var listing = this.SelectedListingRequest.FullListing;
             this.ShowCancelButton = true;
             var entityID = Guid.Empty;
             switch (CurrentEntity)
@@ -1032,7 +1037,6 @@ namespace Husa.Uploader.ViewModels
 
             try
             {
-                UploaderEngine.CloseDrivers();
                 this.SignalRConnectionTriesError = 0;
                 this.State = UploaderState.UploadInProgress;
 
@@ -1044,23 +1048,17 @@ namespace Husa.Uploader.ViewModels
                 await this.RefreshWorkersOnTable(UserFullName, item);
 
                 //2. Execute de action
-                var response = await Task.Run(() => action(listing, this.logger));
-                this.HandleUploadResult(response);
+                var response = await Task.Run(() => action(listing));
+                this.HandleUploadExecutionResult(response);
             }
             catch (Exception exception)
             {
-                this.HandleUploadResult(response: new()
-                {
-                    Driver = null,
-                    Result = UploadResult.Failure,
-                    Exception = exception,
-                    Uploader = null,
-                    Listing = listing
-                });
+                this.logger.LogError(exception, "Failed when processing the user request.");
+                this.HandleUploadExecutionResult(response: UploadResult.Failure);
             }
             finally
             {
-                switch (this.UploadResponse.Result)
+                switch (this.UploadResult)
                 {
                     case UploadResult.Success:
                         this.State = UploaderState.UploadSucceeded;
@@ -1073,17 +1071,14 @@ namespace Husa.Uploader.ViewModels
                         this.logger.LogError("[{uploadType}] upload for [{marketName}] listing with [{ResidentialListingRequestId}] succeeded WITH ERRORS", opType, listing.MarketName, listing.ResidentialListingRequestID);
                         this.State = UploaderState.UploadFailed;
                         break;
-                    default:
-                        UploaderEngine.CloseDrivers();
-                        throw new ArgumentOutOfRangeException($"The option {this.UploadResponse.Result} is invalid");
                 }
 
                 // 1. roadcast message to other users
-                await BroadcastSelectedList(selectedId: entityID);
+                await this.BroadcastSelectedList(selectedId: entityID);
 
                 // 2. Refresh the table
                 var item = new Item(listing.ResidentialListingRequestID, uploaderStatus: this.State);
-                await RefreshWorkersOnTable(this.UserFullName, item);
+                await this.RefreshWorkersOnTable(this.UserFullName, item);
 
                 try
                 {
@@ -1096,7 +1091,11 @@ namespace Husa.Uploader.ViewModels
             }
         }
 
-        private async Task StartEdit() => await this.Start(opType: UploadType.Edit, action: UploaderEngine.Edit);
+        private async Task StartEdit()
+        {
+            var uploader = this.uploadFactory.Create<IEditListing>(this.SelectedListingRequest.FullListing.MarketCode);
+            await this.StartUpload(opType: UploadType.Edit, action: uploader.Edit);
+        }
 
         private async Task StartUpload()
         {
@@ -1122,14 +1121,27 @@ namespace Husa.Uploader.ViewModels
             }
 
             this.ShowCancelButton = true;
-            await this.Start(opType: UploadType.InserOrUpdate, action: (listing, logger) => UploaderEngine.Upload(listing, media, this.logger));
+            var uploader = this.uploadFactory.Create<IUploadListing>(this.SelectedListingRequest.FullListing.MarketCode);
+            await this.StartUpload(opType: UploadType.InserOrUpdate, action: listing => uploader.Upload(listing, media));
         }
 
-        private async Task StartStatusUpdate() => await this.Start(opType: UploadType.Status, action: UploaderEngine.UpdateStatus);
+        private async Task StartStatusUpdate()
+        {
+            var uploader = this.uploadFactory.Create<IUpdateStatus>(this.SelectedListingRequest.FullListing.MarketCode);
+            await this.StartUpload(opType: UploadType.Status, action: uploader.UpdateStatus);
+        }
 
-        private async Task StartPriceUpdate() => await this.Start(opType: UploadType.Price, action: UploaderEngine.UpdatePrice);
+        private async Task StartPriceUpdate()
+        {
+            var uploader = this.uploadFactory.Create<IUpdatePrice>(this.SelectedListingRequest.FullListing.MarketCode);
+            await this.StartUpload(opType: UploadType.Price, action: uploader.UpdatePrice);
+        }
 
-        private async Task StartCompletionDateUpdate() => await this.Start(opType: UploadType.CompletionDate, action: UploaderEngine.UpdateCompletionDate);
+        private async Task StartCompletionDateUpdate()
+        {
+            var uploader = this.uploadFactory.Create<IUpdateCompletionDate>(this.SelectedListingRequest.FullListing.MarketCode);
+            await this.StartUpload(opType: UploadType.CompletionDate, action: uploader.UpdateCompletionDate);
+        }
 
         private async Task StartImageUpdate()
         {
@@ -1151,10 +1163,15 @@ namespace Husa.Uploader.ViewModels
                 }
             }
 
-            await this.Start(opType: UploadType.Image, action: (listing, logger) => UploaderEngine.UpdateImages(listing, media, this.logger));
+            var uploader = this.uploadFactory.Create<IUpdateImages>(this.SelectedListingRequest.FullListing.MarketCode);
+            await this.StartUpload(opType: UploadType.Image, action: listing => uploader.UpdateImages(listing, media));
         }
 
-        private async Task StartOHUpdate() => await this.Start(opType: UploadType.OpenHouse, action: UploaderEngine.UpdateOpenHouse);
+        private async Task StartOHUpdate()
+        {
+            var uploader = this.uploadFactory.Create<IUpdateOpenHouse>(this.SelectedListingRequest.FullListing.MarketCode);
+            await this.StartUpload(opType: UploadType.OpenHouse, action: uploader.UpdateOpenHouse);
+        }
 
         private async Task StartVTUpload()
         {
@@ -1176,23 +1193,24 @@ namespace Husa.Uploader.ViewModels
                 }
             }
 
-            await Start(opType: UploadType.VirtualTour, action: (listing, logger) => UploaderEngine.UpdateVirtualTour(listing, media, this.logger));
+            var uploader = this.uploadFactory.Create<IUpdateVirtualTour>(this.SelectedListingRequest.FullListing.MarketCode);
+            await StartUpload(opType: UploadType.VirtualTour, action: listing => uploader.UploadVirtualTour(listing, media));
         }
 
         private async Task FinishUpload()
         {
-            if (this.UploadResponse != null && this.UploadResponse.Driver != null && this.UploadResponse.Uploader != null)
+            if (this.State == UploaderState.UploadInProgress)
             {
                 try
                 {
-                    this.UploadResponse.Uploader.Logout(this.UploadResponse.Driver);
+                    this.uploadFactory.Uploader.Logout();
                 }
                 catch (Exception ex)
                 {
-                    this.logger.LogWarning(ex, "Failed to logout of listing {ResidentialListingRequestId} with {uploaderType}", this.UploadResponse.Listing.ResidentialListingRequestID, UploadResponse.Uploader.GetType().ToString());
+                    this.logger.LogWarning(ex, "Failed to logout of listing {ResidentialListingRequestId} with {uploaderType}", this.SelectedListingRequest.FullListing.ResidentialListingRequestID, this.uploadFactory.Uploader.GetType().ToString());
                 }
 
-                UploaderEngine.CloseDriver(this.UploadResponse.Driver);
+                this.uploadFactory.Uploader.CancelOperation();
             }
 
             this.ShowCancelButton = false;
@@ -1216,11 +1234,11 @@ namespace Husa.Uploader.ViewModels
             this.ShowCancelButton = false;
             try
             {
-                UploaderEngine.CloseDrivers();
+                this.uploadFactory.Uploader.CancelOperation();
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
-                this.logger.LogError(e, "Failed to kill the Chromedriver.exe proccess.");
+                this.logger.LogError(exception, "Failed to kill the Chromedriver.exe proccess.");
             }
 
             this.State = UploaderState.Ready;
@@ -1266,10 +1284,10 @@ namespace Husa.Uploader.ViewModels
             return new();
         }
 
-        private void HandleUploadResult(UploadResponse response)
+        private void HandleUploadExecutionResult(UploadResult response)
         {
-            this.UploadResponse = response;
-            if (this.UploadResponse.Result == UploadResult.Failure)
+            this.UploadResult = response;
+            if (this.UploadResult == UploadResult.Failure)
             {
                 this.ShowCancelButton = false;
             }

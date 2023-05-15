@@ -45,7 +45,7 @@ public partial class App : Application
                 loggerConfig.ConfigureSerilog(
                     options: applicationOptions,
                     configuration: context.Configuration,
-                    environmentName: context.HostingEnvironment.EnvironmentName);
+                    environment: context.HostingEnvironment);
             })
             .ConfigureServices((host, services) =>
             {

@@ -365,3 +365,4 @@ FodyWeavers.xsd
 **/.[Pp]ackages/*
 **/.vs/*
 **/chromedriver.exe
+**/*.user

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Husa.Extensions.Common.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Husa.Uploader.Crosscutting.Options
 {
@@ -9,10 +10,21 @@ namespace Husa.Uploader.Crosscutting.Options
         [Required(AllowEmptyStrings = false)]
         public string Name { get; set; }
 
+        public MarketCode MarketCode { get; set; }
+
         [Required(AllowEmptyStrings = false)]
         public string Username { get; set; }
 
         [Required(AllowEmptyStrings = false)]
         public string Password { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
+        public string ServiceUrl { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
+        public string LoginUrl { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
+        public string LogoutUrl { get; set; }
     }
 }

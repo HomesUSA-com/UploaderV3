@@ -1,8 +1,11 @@
 ﻿namespace Husa.Uploader.Crosscutting.Enums
 {
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
     using System.ComponentModel;
     using System.Runtime.Serialization;
 
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum ListingRequestState
     {
         [Description("All")]

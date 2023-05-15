@@ -26,7 +26,7 @@ namespace Husa.Uploader.Data.QuicklisterEntities.Ctx.Records
 
         public string Occupancy { get; set; }
 
-        public bool UpdateGeocodes { get; set; }
+        public bool? UpdateGeocodes { get; set; }
 
         public decimal? Latitude { get; set; }
 
@@ -34,7 +34,7 @@ namespace Husa.Uploader.Data.QuicklisterEntities.Ctx.Records
 
         public int? Lot { get; set; }
 
-        public bool IsBxlManaged { get; set; }
+        public bool? IsBxlManaged { get; set; }
 
         public int? SqFtTotal { get; set; }
 

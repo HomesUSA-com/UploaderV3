@@ -122,7 +122,7 @@ namespace Husa.Uploader.ViewModels
             get => this.url;
             set
             {
-                if (value == this.url)
+                if (this.url == value)
                 {
                     return;
                 }

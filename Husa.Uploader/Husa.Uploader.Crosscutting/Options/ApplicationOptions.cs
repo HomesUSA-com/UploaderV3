@@ -24,10 +24,12 @@ namespace Husa.Uploader.Crosscutting.Options
         [Required(AllowEmptyStrings = false)]
         public string ApplicationId { get; set; }
 
-        public int ListDateSold { get; set; }
+        public int ListDateSold { get; set; } = 4;
 
+        [Required]
         public MarketConfiguration MarketInfo { get; set; }
-
+        
+        [Required]
         public UploaderSettings Uploader { get; set; }
     }
 }

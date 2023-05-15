@@ -5,7 +5,6 @@ namespace Husa.Uploader.Data.QuicklisterEntities.Ctx.Records
 
     public record FeaturesRecord
     {
-        public const string SummarySection = "Features";
         public ICollection<HousingStyleDescription> HousingStyle { get; set; }
 
         public ICollection<FoundationDescription> Foundation { get; set; }
@@ -46,17 +45,17 @@ namespace Husa.Uploader.Data.QuicklisterEntities.Ctx.Records
 
         public ICollection<FencingDescription> Fencing { get; set; }
 
-        public bool WaterAccess { get; set; }
+        public bool? WaterAccess { get; set; }
 
         public ICollection<WaterAccessTypeDescription> WaterAccessType { get; set; }
 
-        public bool WaterFront { get; set; }
+        public bool? WaterFront { get; set; }
 
         public ICollection<WaterDescription> WaterFeatures { get; set; }
 
-        public bool GatedCommunity { get; set; }
+        public bool? GatedCommunity { get; set; }
 
-        public bool SprinklerSystem { get; set; }
+        public bool? SprinklerSystem { get; set; }
 
         public ICollection<SprinklerSystemDescription> SprinklerSystemDescription { get; set; }
 
@@ -81,13 +80,13 @@ namespace Husa.Uploader.Data.QuicklisterEntities.Ctx.Records
         public ICollection<GreenVerificationSourceDescription> GreenVerificationSource { get; set; }
 
         public ICollection<WaterSewerDescription> WaterSewer { get; set; }
-        public bool IsNewConstruction { get; set; }
+        public bool? IsNewConstruction { get; set; }
 
         public ICollection<AccessRoadSurfaceDescription> AccessRoadSurface { get; set; }
 
-        public bool UpgradedEnergyFeatures { get; set; }
+        public bool? UpgradedEnergyFeatures { get; set; }
 
-        public bool EESFeatures { get; set; }
+        public bool? EESFeatures { get; set; }
 
         public ICollection<GreenBuildingVerificationDescription> GreenCertification { get; set; }
 

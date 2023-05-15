@@ -1,4 +1,5 @@
-﻿using Husa.Uploader.Crosscutting.Options;
+﻿using Husa.Uploader.Crosscutting.Enums;
+using Husa.Uploader.Crosscutting.Options;
 using Husa.Uploader.Data.Entities;
 using Husa.Uploader.Data.Interfaces;
 using Husa.Uploader.Data.QuicklisterEntities.Ctx;
@@ -25,6 +26,11 @@ namespace Husa.Uploader.Data
             HttpClient httpClient,
             ILogger<SqlDataLoader> logger)
         {
+            if (applicationOptions is null)
+            {
+                throw new ArgumentNullException(nameof(applicationOptions));
+            }
+
             this.cosmosClient = cosmosClient ?? throw new ArgumentNullException(nameof(cosmosClient));
             this.options = options ?? throw new ArgumentNullException(nameof(options));
             this.httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
@@ -80,7 +86,7 @@ namespace Husa.Uploader.Data
                 saleContainer.GetItemLinqQueryable<SaborListingRequestSale>(allowSynchronousQueryExecution: false)
                 .Where(listingRequest => !listingRequest.IsDeleted)
                 .Where(listingRequest => listingRequest.Id == residentialListingRequestId)
-                ////.Where(listingRequest => listingRequest.RequestState == ListingRequestState.Pending)
+                .Where(listingRequest => listingRequest.RequestState == ListingRequestState.Pending)
                 .ToFeedIterator();
 
             if (query.HasMoreResults)
@@ -107,7 +113,7 @@ namespace Husa.Uploader.Data
             using var query =
                 saleContainer.GetItemLinqQueryable<T>(allowSynchronousQueryExecution: false)
                 .Where(listingRequest => !listingRequest.IsDeleted)
-                ////.Where(listingRequest => listingRequest.RequestState == ListingRequestState.Pending)
+                .Where(listingRequest => listingRequest.RequestState == ListingRequestState.Pending)
                 .ToFeedIterator();
 
             if (query.HasMoreResults)

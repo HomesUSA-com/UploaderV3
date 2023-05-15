@@ -2,6 +2,7 @@
 
 namespace Husa.Uploader.Data.QuicklisterEntities.Sabor
 {
+    using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Enums.Sabor;
     using Husa.Uploader.Crosscutting.Extensions;
@@ -62,9 +63,11 @@ namespace Husa.Uploader.Data.QuicklisterEntities.Sabor
                 MarketPassword = marketPassword,
                 MarketID = 8,
                 MarketName = marketName,
+                MarketCode = MarketCode.SanAntonio,
                 ListPrice = (decimal)ListPrice,
                 MLSNum = ""/*this.MlsNumber*/,
-                MlsStatus = MlsStatus.ToString(),
+                MlsStatus = MlsStatus,
+                ListStatus = MlsStatus,
                 SysCreatedOn = CreatedOn,
                 SysCreatedBy = CreatedBy,
                 SysModifiedOn = ModifiedOn,
@@ -74,7 +77,6 @@ namespace Husa.Uploader.Data.QuicklisterEntities.Sabor
                 OwnerName = SaleProperty.OwnerName,
                 PlanProfileID = SaleProperty.PlanId,
                 CommunityProfileID = SaleProperty.CommunityId,
-                ListStatus = MlsStatus,
                 StreetNum = SaleProperty.AddressInfo.StreetNumber,
                 StreetName = SaleProperty.AddressInfo.StreetName,
                 CityCode = SaleProperty.AddressInfo.City,

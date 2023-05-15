@@ -1,6 +1,8 @@
 namespace Husa.Uploader.Data.QuicklisterEntities.Ctx
 {
     using Husa.Extensions.Common;
+    using Husa.Extensions.Common.Enums;
+    using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Enums.Ctx;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.QuicklisterEntities.Ctx.Records;
@@ -65,6 +67,7 @@ namespace Husa.Uploader.Data.QuicklisterEntities.Ctx
                 MarketPassword = marketPassword,
                 MarketID = 8,
                 MarketName = marketName,
+                MarketCode = MarketCode.CTX,
                 ListPrice = ListPrice,
                 MLSNum = ""/*this.MlsNumber*/,
                 MlsStatus = MlsStatus.ToString(),

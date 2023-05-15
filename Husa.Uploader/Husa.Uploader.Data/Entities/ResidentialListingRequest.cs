@@ -1,4 +1,5 @@
-﻿using Husa.Uploader.Crosscutting.Enums;
+﻿using Husa.Extensions.Common.Enums;
+using Husa.Uploader.Crosscutting.Enums;
 using Husa.Uploader.Crosscutting.Extensions;
 
 namespace Husa.Uploader.Data.Entities
@@ -7,7 +8,7 @@ namespace Husa.Uploader.Data.Entities
     {
         // Never remove this property
         public string WorkingBy { get; set; }
-
+        public bool IsNewListing => string.IsNullOrWhiteSpace(this.MLSNum);
         public string CommunityName { get; set; }
         public string CompanyName { get; set; }
         public Guid ResidentialListingRequestID { get; set; }
@@ -151,6 +152,7 @@ namespace Husa.Uploader.Data.Entities
         public string ReqdDocAgentInfor { get; set; }
         public string OwnerOtherPhone { get; set; }
         public string MarketName { get; set; }
+        public MarketCode MarketCode { get; set; }
         public string MarketUsername { get; set; }
         public string MarketPassword { get; set; }
         public string WaterfrontDesc { get; set; }
@@ -851,9 +853,9 @@ namespace Husa.Uploader.Data.Entities
             string workingStatus) => new()
             {
                 RequestId = this.ResidentialListingRequestID,
-                MlsNumber = string.IsNullOrEmpty(this.MLSNum) ? $"New {currentEntity}" : this.MLSNum,
+                MlsNumber = this.IsNewListing ? $"New {currentEntity}" : this.MLSNum,
                 Address = $"{this.StreetNum} {this.StreetName}",
-                Status = !string.IsNullOrEmpty(this.ListStatusName) ? this.ListStatusName.ToString() : "",
+                Status = !string.IsNullOrEmpty(this.ListStatus) ? this.ListStatus : string.Empty,
                 Market = this.MarketName,
                 CompanyName = this.CompanyName,
                 BuilderName = builderName,

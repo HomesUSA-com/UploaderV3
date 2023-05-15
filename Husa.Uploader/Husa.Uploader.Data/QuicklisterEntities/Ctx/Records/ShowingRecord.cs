@@ -14,29 +14,29 @@ namespace Husa.Uploader.Data.QuicklisterEntities.Ctx.Records
 
         public string SecondShowingPhone { get; set; }
 
-        public virtual decimal? BuyersAgentCommission { get; set; }
+        public decimal? BuyersAgentCommission { get; set; }
 
-        public virtual CommissionType BuyersAgentCommissionType { get; set; }
+        public CommissionType BuyersAgentCommissionType { get; set; }
 
-        public virtual LockboxType? LockboxType { get; set; }
+        public LockboxType? LockboxType { get; set; }
 
-        public virtual ICollection<LockboxLocationDescription> LockboxLocation { get; set; }
+        public ICollection<LockboxLocationDescription> LockboxLocation { get; set; }
 
-        public virtual ICollection<ShowingInstructionsDescription> ShowingInstrcutions { get; set; }
+        public ICollection<ShowingInstructionsDescription> ShowingInstrcutions { get; set; }
 
-        public virtual string Directions { get; set; }
+        public string Directions { get; set; }
 
-        public virtual string PropertyDescription { get; set; }
+        public string PropertyDescription { get; set; }
 
-        public virtual bool EnableOpenHouses { get; set; }
+        public bool? EnableOpenHouses { get; set; }
 
-        public virtual bool OpenHousesAgree { get; set; }
+        public bool? OpenHousesAgree { get; set; }
 
-        public virtual bool ShowOpenHousesPending { get; set; }
+        public bool? ShowOpenHousesPending { get; set; }
 
-        public bool HasAgentBonus { get; set; }
+        public bool? HasAgentBonus { get; set; }
 
-        public bool HasBonusWithAmount { get; set; }
+        public bool? HasBonusWithAmount { get; set; }
 
         public decimal? AgentBonusAmount { get; set; }
 
@@ -44,6 +44,6 @@ namespace Husa.Uploader.Data.QuicklisterEntities.Ctx.Records
 
         public DateTime? BonusExpirationDate { get; set; }
 
-        public bool HasBuyerIncentive { get; set; }
+        public bool? HasBuyerIncentive { get; set; }
     }
 }

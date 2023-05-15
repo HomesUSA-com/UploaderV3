@@ -4,6 +4,6 @@
     {
         Success,
         SuccessWithErrors,
-        Failure
+        Failure,
     }
 }

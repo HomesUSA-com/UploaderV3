@@ -8,48 +8,48 @@ namespace Husa.Uploader.Data.QuicklisterEntities.Ctx.Records
 
     public record SalePropertyRecord
     {
-        public virtual Guid Id { get; set; }
+        public Guid Id { get; set; }
 
-        public virtual string OwnerName { get; set; }
+        public string OwnerName { get; set; }
 
-        public virtual Guid? PlanId { get; set; }
+        public Guid? PlanId { get; set; }
 
-        public virtual Guid? CommunityId { get; set; }
+        public Guid? CommunityId { get; set; }
 
-        public virtual string Address { get; set; }
+        public string Address { get; set; }
 
-        public virtual DateTime SysCreatedOn { get; set; }
+        public DateTime SysCreatedOn { get; set; }
 
-        public virtual DateTime? SysModifiedOn { get; set; }
+        public DateTime? SysModifiedOn { get; set; }
 
-        public virtual bool IsDeleted { get; set; }
+        public bool IsDeleted { get; set; }
 
-        public virtual Guid? SysModifiedBy { get; set; }
+        public Guid? SysModifiedBy { get; set; }
 
-        public virtual Guid? SysCreatedBy { get; set; }
+        public Guid? SysCreatedBy { get; set; }
 
-        public virtual DateTime SysTimestamp { get; set; }
+        public DateTime SysTimestamp { get; set; }
 
-        public virtual Guid CompanyId { get; set; }
+        public Guid CompanyId { get; set; }
 
-        public virtual AddressRecord AddressInfo { get; set; }
+        public AddressRecord AddressInfo { get; set; }
 
-        public virtual PropertyRecord PropertyInfo { get; set; }
+        public PropertyRecord PropertyInfo { get; set; }
 
-        public virtual SpacesDimensionsRecord SpacesDimensionsInfo { get; set; }
+        public SpacesDimensionsRecord SpacesDimensionsInfo { get; set; }
 
-        public virtual FeaturesRecord FeaturesInfo { get; set; }
+        public FeaturesRecord FeaturesInfo { get; set; }
 
-        public virtual FinancialRecord FinancialInfo { get; set; }
+        public FinancialRecord FinancialInfo { get; set; }
 
-        public virtual ShowingRecord ShowingInfo { get; set; }
+        public ShowingRecord ShowingInfo { get; set; }
 
-        public virtual SchoolRecord SchoolsInfo { get; set; }
+        public SchoolRecord SchoolsInfo { get; set; }
 
-        public virtual SalesOfficeRecord SalesOfficeInfo { get; set; }
+        public SalesOfficeRecord SalesOfficeInfo { get; set; }
 
-        public virtual ICollection<RoomRecord> Rooms { get; set; }
+        public ICollection<RoomRecord> Rooms { get; set; }
 
-        public virtual ICollection<OpenHouseRecord> OpenHouses { get; set; }
+        public ICollection<OpenHouseRecord> OpenHouses { get; set; }
     }
 }

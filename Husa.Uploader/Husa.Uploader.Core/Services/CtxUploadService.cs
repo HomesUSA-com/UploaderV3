@@ -1,151 +1,245 @@
-﻿using Husa.Uploader.Core.BrowserTools;
+﻿using Husa.Extensions.Common.Enums;
+using Husa.Uploader.Core.BrowserTools;
 using Husa.Uploader.Core.Interfaces;
+using Husa.Uploader.Core.Interfaces.Services;
 using Husa.Uploader.Crosscutting.Enums;
+using Husa.Uploader.Crosscutting.Options;
 using Husa.Uploader.Data.Entities;
 using Husa.Uploader.Data.Interfaces;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
 using System.Text.RegularExpressions;
 
-namespace Husa.Uploader.Core.Uploaders
+namespace Husa.Uploader.Core.Services
 {
-    public class CTXUploader : ICTXUploader
+    public class CtxUploadService : ICtxUploadService
     {
-        public string RoomType { get; set; }
+        private readonly IUploaderClient uploaderClient;
+        private readonly ApplicationOptions options;
+        private readonly ILogger<CtxUploadService> logger;
 
-        public bool IsFlashRequired { get { return false; } }
-
-        public bool CanUpload(ResidentialListingRequest listing)
+        public CtxUploadService(
+            IUploaderClient uploaderClient,
+            IOptions<ApplicationOptions> options,
+            ILogger<CtxUploadService> logger)
         {
-            //This method must return true if the listing can be uploaded with this MarketSpecific Uploader
-            // UP-74
-            if (listing.MarketName == "San Antonio CTX")
-            {
-                listing.MarketUsername = "306362";
-                listing.MarketPassword = "1232";
-
-                return true;
-            }
-
-            return false;
+            this.uploaderClient = uploaderClient ?? throw new ArgumentNullException(nameof(uploaderClient));
+            this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public UploadResult Upload(CoreWebDriver driver, ResidentialListingRequest listing, Lazy<IEnumerable<IListingMedia>> media)
+        public bool IsFlashRequired => false;
+
+        public bool CanUpload(ResidentialListingRequest listing) => listing.MarketCode == MarketCode.CTX;
+
+        public void CancelOperation()
         {
+            throw new NotImplementedException();
+        }
+
+        public LoginResult Login()
+        {
+            var marketInfo = this.options.MarketInfo.Ctx;
+            this.uploaderClient.DeleteAllCookies();
+
+            // Connect to the login page
+            this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("loginbtn"));
+
+            this.uploaderClient.WriteTextbox(By.Name("username"), marketInfo.Username);
+            this.uploaderClient.WriteTextbox(By.Name("password"), marketInfo.Password);
+            this.uploaderClient.ClickOnElementById("loginbtn");
+
+            Thread.Sleep(2000);
+
+            // Use the same browser page NOT _blank
+            Thread.Sleep(2000);
+
+            if (this.uploaderClient.FindElementById("NewsDetailDismiss").Displayed)
+            {
+                this.uploaderClient.ClickOnElementById("NewsDetailDismiss");
+            }
+
+            this.uploaderClient.ClickOnElement(By.LinkText("Skip"), shouldWait: false, waitTime: 0, isElementOptional: true);
+            Thread.Sleep(2000);
+            this.uploaderClient.NavigateToUrl("https://matrix.ctxmls.com/Matrix/Default.aspx?c=AAEAAAD*****AQAAAAAAAAARAQAAAFIAAAAGAgAAAAQ4OTQwDRsGAwAAAAQLPCUSDTUL&f=");
+            Thread.Sleep(2000);
+
+            return LoginResult.Logged;
+        }
+
+        public UploadResult Logout()
+        {
+            this.uploaderClient.NavigateToUrl(this.options.MarketInfo.Ctx.LogoutUrl);
+            return UploadResult.Success;
+        }
+
+        public UploadResult Edit(ResidentialListingRequest listing)
+        {
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
+            this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
+
+            this.Login();
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"));
+            if (listing.IsNewListing)
+            {
+                this.NavigateToNewPropertyInput();
+            }
+            else
+            {
+                this.NavigateToQuickEdit(listing.MLSNum);
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"));
+                this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
+            }
+
+            return UploadResult.Success;
+        }
+
+        public UploadResult Upload(ResidentialListingRequest listing, Lazy<IEnumerable<IListingMedia>> media)
+        {
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
+            this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
+
+            this.Login();
+
+            Thread.Sleep(5000);
+
             try
             {
-                driver.UploadInformation.IsNewListing = string.IsNullOrWhiteSpace(listing.MLSNum);
 
-                Login(driver, listing);
-
-                #region navigateMenu
-                Thread.Sleep(5000);
-                #endregion
-
-                if (string.IsNullOrWhiteSpace(listing.MLSNum))
+                if (listing.IsNewListing)
                 {
-                    NewProperty(driver, listing);
+                    this.NavigateToNewPropertyInput();
                 }
                 else
                 {
-                    EditProperty(driver, listing);
-
-                    driver.wait.Until(webDriver => webDriver.FindElement(By.LinkText("Residential Input Form")).Displayed);
-                    driver.Click(By.LinkText("Residential Input Form"));
+                    this.NavigateToQuickEdit(listing.MLSNum);
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"));
+                    this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
                 }
 
-                // 1. Listing Information	
-                FillListingInformation(driver, listing);
-
-                // 2. Rooms
-                FillRooms(driver, listing);
-
-                // 3. Features
-                FillFeatures(driver, listing);
-
-                // 4. Lot/Environment/Utility Information
-                FillLotEnvironmentUtilityInformation(driver, listing);
-
-                // 5. Financial Information
-                FillFinancialInformation(driver, listing);
-
-                // 6. Showing Information
-                FillShowingInformation(driver, listing);
-
-                // 7. Remarks
-                FillRemarks(driver, listing);
-
-                //try { driver.Click(By.LinkText("Status")); } catch { }
-
-                return UploadResult.Success;
+                this.FillListingInformation(listing);
+                this.FillRooms(listing);
+                this.FillFeatures(listing);
+                this.FillLotEnvironmentUtilityInformation(listing);
+                this.FillFinancialInformation(listing);
+                this.FillShowingInformation(listing);
+                this.FillRemarks(listing);
+                //try { this.uploaderClient.Click(By.LinkText("Status")); } catch { }
             }
             catch
             {
                 return UploadResult.Failure;
             }
-        }
 
-        public UploadResult Edit(CoreWebDriver driver, ResidentialListingRequest listing)
-        {
-            driver.UploadInformation.IsNewListing = string.IsNullOrWhiteSpace(listing.MLSNum);
-
-            Login(driver, listing);
-
-            #region navigateMenu
-            driver.wait.Until(webDriver => webDriver.FindElement(By.Id("ctl03_m_divFooterContainer")).Displayed);
-            #endregion
-
-            if (string.IsNullOrWhiteSpace(listing.MLSNum))
-            {
-                NewProperty(driver, listing);
-            }
-            else
-            {
-                EditProperty(driver, listing);
-
-                driver.wait.Until(webDriver => webDriver.FindElement(By.LinkText("Residential Input Form")).Displayed);
-                driver.Click(By.LinkText("Residential Input Form"));
-            }
 
             return UploadResult.Success;
         }
 
-        public UploadResult UpdateCompletionDate(CoreWebDriver driver, ResidentialListingRequest listing)
+        public UploadResult UpdateCompletionDate(ResidentialListingRequest listing)
         {
-            driver.UploadInformation.IsNewListing = string.IsNullOrWhiteSpace(listing.MLSNum);
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
 
-            Login(driver, listing);
+            this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
+            this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
+            this.Login();
 
-            #region navigateMenu
-            driver.wait.Until(webDriver => webDriver.FindElement(By.Id("ctl03_m_divFooterContainer")).Displayed);
-            #endregion
-            EditProperty(driver, listing);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"));
+            this.NavigateToQuickEdit(listing.MLSNum);
 
-            driver.wait.Until(webDriver => webDriver.FindElement(By.LinkText("Residential Input Form")).Displayed);
-            driver.Click(By.LinkText("Residential Input Form"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"));
+            this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
 
-            UpdateYearBuiltDescriptionInGeneralTab(driver, listing);
+            this.UpdateYearBuiltDescriptionInGeneralTab(listing);
 
-            driver.Click(By.LinkText("Remarks"));
+            this.uploaderClient.ClickOnElement(By.LinkText("Remarks"));
 
-            UpdatePublicRemarksInRemarksTab(driver, listing);
+            this.UpdatePublicRemarksInRemarksTab(listing);
 
             return UploadResult.Success;
         }
 
-        public UploadResult UpdateStatus(CoreWebDriver driver, ResidentialListingRequest listing)
+        public UploadResult UpdateImages(ResidentialListingRequest listing, IEnumerable<IListingMedia> media)
         {
-            driver.UploadInformation.IsNewListing = false;
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
 
-            Login(driver, listing);
+            this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
+            this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
-            #region navigateMenu
-            driver.wait.Until(webDriver => webDriver.FindElement(By.Id("ctl03_m_divFooterContainer")).Displayed);
-            #endregion
+            this.Login();
+            this.NavigateToQuickEdit(listing.MLSNum);
 
-            EditProperty(driver, listing);
+            // Enter Manage Photos
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"));
+            this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
 
-            driver.wait.Until(webDriver => webDriver.FindElement(By.LinkText("Residential Input Form")).Displayed);
-            driver.Click(By.LinkText("Residential Input Form"));
+            //Prepare Media
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSave"));
+            this.DeleteAllImages();
+            this.UploadNewImages(media.OfType<ResidentialListingMedia>(), listing);
+
+            return UploadResult.Success;
+        }
+
+        public UploadResult UpdatePrice(ResidentialListingRequest listing)
+        {
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
+            this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
+
+            this.Login();
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"));
+
+            this.NavigateToQuickEdit(listing.MLSNum);
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"));
+            this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
+            this.uploaderClient.ScrollDown();
+            this.uploaderClient.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
+
+            return UploadResult.Success;
+        }
+
+        public UploadResult UpdateStatus(ResidentialListingRequest listing)
+        {
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
+            this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
+
+            this.Login();
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"));
+            this.NavigateToQuickEdit(listing.MLSNum);
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"));
+            this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
 
             //Login(driver, listing);
             //QuickEdit(driver, listing);
@@ -253,232 +347,108 @@ namespace Husa.Uploader.Core.Uploaders
             return UploadResult.Success;
         }
 
-        public UploadResult UpdateImages(CoreWebDriver driver, ResidentialListingRequest listing, IEnumerable<IListingMedia> media)
+        public UploadResult UploadVirtualTour(ResidentialListingRequest listing, IEnumerable<IListingMedia> media)
         {
-            driver.UploadInformation.IsNewListing = false;
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
 
-            Login(driver, listing);
-            QuickEdit(driver, listing);
+            this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
+            this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
+            
+            this.Login();
+            Thread.Sleep(1000);
 
-            // Enter Manage Photos
-            driver.wait.Until(webDriver => webDriver.FindElement(By.LinkText("Manage Photos")).Displayed);
-            driver.Click(By.LinkText("Manage Photos"));
+            this.uploaderClient.ClickOnElement(By.LinkText(@"Edit Listing Details"), shouldWait: false, waitTime: 0, isElementOptional: false);
+            this.NavigateToQuickEdit(listing.MLSNum);
 
-            //Prepare Media
-            driver.wait.Until(webDriver => webDriver.FindElement(By.Id("m_lbSave")).Displayed);
-            DeleteAllImages(driver);
-            UploadNewImages(driver, media.OfType<ResidentialListingMedia>(), listing);
+            this.uploaderClient.SwitchTo("main");
+            this.uploaderClient.SwitchTo("workspace");
+            Thread.Sleep(1000);
+
+            this.uploaderClient.ExecuteScript(" SP('7') ");
+            Thread.Sleep(2000);
+
+            var virtualTour = media.OfType<ResidentialListingVirtualTour>().FirstOrDefault();
+            if (virtualTour != null)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("VIRTTOUR"), virtualTour.VirtualTourAddress.Replace("http://", "").Replace("https://", "")); // Virtual Tour URL Unbranded
+            }
 
             return UploadResult.Success;
         }
 
-        #region Media Code
-        private void DeleteAllImages(CoreWebDriver driver)
+        private void NavigateToNewPropertyInput()
         {
-            if (driver.FindElements(By.Id("cbxCheckAll")).Count != 0)
-            {
-                driver.Click(By.Id("cbxCheckAll"));
-                driver.Click(By.Id("m_lbDeleteChecked"));
-                Thread.Sleep(1000);
-                driver.SwitchTo().Alert().Accept();
-            }
-        }
-
-        private void UploadNewImages(CoreWebDriver driver, IEnumerable<ResidentialListingMedia> media, ResidentialListingRequest listing)
-        {
-            var js = (IJavaScriptExecutor)driver.InternalWebDriver;
-            js.ExecuteScript("javascript:var btn = jQuery('#m_lbSave')[0]; btn.click();");
-
-            try
-            {
-                var alert = driver.SwitchTo().Alert();
-                alert.Accept();
-            }
-            catch { }
-
-            QuickEdit(driver, listing);
-
-            Thread.Sleep(400);
-
-            // Enter Manage Photos
-            driver.wait.Until(webDriver => webDriver.FindElement(By.LinkText("Manage Photos")).Displayed);
-            driver.Click(By.LinkText("Manage Photos"));
-
-            var i = 0;
-
-            //Upload Images
-            //foreach (var image in media.OrderBy(x => x.Order))
-            foreach (var image in media)
-            {
-                // MQ-311 - Uploader - Convert PNG for NTREIS and ACTRIS
-                if (!string.IsNullOrWhiteSpace(image.Extension) && (image.Extension.ToLower().Equals(".gif") || image.Extension.ToLower().Equals(".png")))
-                {
-                    image.Extension = ".jpg";
-                    string[] elements = Regex.Split(image.PathOnDisk, ".");
-                    if (elements.Length == 2)
-                    {
-                        var fileName = elements[0].ToString();
-                        image.PathOnDisk = fileName + ".jpg";
-                    }
-                }
-
-                driver.wait.Until(webDriver => webDriver.FindElement(By.Id("m_ucImageLoader_m_tblImageLoader")).Displayed);
-
-                driver.FindElement(By.Id("m_ucImageLoader_m_tblImageLoader")).FindElement(By.CssSelector("input[type=file]")).SendKeys(image.PathOnDisk);
-
-                driver.wait.Until(webDriver => webDriver.FindElement(By.Id("photoCell_" + i)).Displayed);
-
-                js.ExecuteScript("jQuery('#photoCell_" + i + " a')[0].click();");
-                Thread.Sleep(500);
-
-                js.ExecuteScript("jQuery('#m_tbxDescription').val('" + image.Caption + "');");
-
-                Thread.Sleep(500);
-
-                js.ExecuteScript("jQuery('#m_ucDetailsView_m_btnSave').parent().removeClass('disabled');");
-
-                driver.Click(By.Id("m_ucDetailsView_m_btnSave"));
-
-                i++;
-            }
-        }
-        #endregion
-
-        /// <summary>
-        /// Logs out an existing session from the MLS system
-        /// </summary>
-        /// <param name="driver">The Selenium Web Driver (wrapped in a CoreWebDriver instance) that is to be used to drive the web browser</param>
-        /// <returns>The final status of the logout operation and whether it succeeded or not</returns>
-        public UploadResult Logout(CoreWebDriver driver)
-        {
-            driver.Navigate("http://matrix.ctxmls.com/Matrix/Logout.aspx");
-            return UploadResult.Success;
-        }
-
-        /// <summary>
-        /// Login an session in the MLS system
-        /// </summary>
-        /// <param name="driver">The Selenium Web Driver (wrapped in a CoreWebDriver instance) that is to be used to drive the web browser</param>
-        /// <returns>The final status of the login operation and whether it succeeded or not</returns>
-        public LoginResult Login(CoreWebDriver driver, ResidentialListingRequest listing)
-        {
-            // Remove all cookies
-            driver.Manage().Cookies.DeleteAllCookies();
-
-            // Connect to the login page
-            driver.Navigate("https://matrix.ctxmls.com/Matrix/login.aspx");
-
-            driver.wait.Until(webDriver => webDriver.FindElement(By.Id("loginbtn")).Displayed);
-
-            driver.WriteTextbox(By.Name("username"), "bcaballero");
-            driver.WriteTextbox(By.Name("password"), "Mls#2021!");
-            driver.Click(By.Id("loginbtn"));
-
-            Thread.Sleep(2000);
-
-            // Use the same browser page NOT _blank
-            Thread.Sleep(2000);
-
-            if (driver.FindElement(By.Id("NewsDetailDismiss")).Displayed)
-            {
-                driver.Click(By.Id("NewsDetailDismiss"));
-            }
-
-            try { driver.Click(By.LinkText("Skip"), true); } catch { }
-            Thread.Sleep(2000);
-            driver.Navigate("https://matrix.ctxmls.com/Matrix/Default.aspx?c=AAEAAAD*****AQAAAAAAAAARAQAAAFIAAAAGAgAAAAQ4OTQwDRsGAwAAAAQLPCUSDTUL&f=");
-            Thread.Sleep(2000);
-
-            return LoginResult.Logged;
-        }
-
-        private void NewProperty(CoreWebDriver driver, ResidentialListingRequest listing)
-        {
-            driver.Navigate("https://matrix.ctxmls.com/Matrix/Input");
-            //driver.wait.Until(ExpectedConditions.ElementIsVisible(By.LinkText("Input")));
-            //driver.Click(By.LinkText("Input"));
-            driver.wait.Until(webDriver => webDriver.FindElement(By.LinkText("Add new")).Displayed);
-            driver.Click(By.LinkText("Add new"));
-            driver.wait.Until(webDriver => webDriver.FindElement(By.LinkText("Residential Input Form")).Displayed);
-            driver.Click(By.LinkText("Residential Input Form"));
-            driver.wait.Until(webDriver => webDriver.FindElement(By.PartialLinkText("Start with a blank Listing")).Displayed);
-            driver.Click(By.PartialLinkText("Start with a blank Listing"));
+            this.uploaderClient.NavigateToUrl("https://matrix.ctxmls.com/Matrix/Input");
+            //this.uploaderClient.wait.Until(ExpectedConditions.ElementIsVisible(By.LinkText("Input")));
+            //this.uploaderClient.Click(By.LinkText("Input"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Add new"));
+            this.uploaderClient.ClickOnElement(By.LinkText("Add new"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"));
+            this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.PartialLinkText("Start with a blank Listing"));
+            this.uploaderClient.ClickOnElement(By.PartialLinkText("Start with a blank Listing"));
 
             Thread.Sleep(1000);
         }
 
-        private void EditProperty(CoreWebDriver driver, ResidentialListingRequest listing)
+        private void NavigateToQuickEdit(string mlsNumber)
         {
-            QuickEdit(driver, listing);
+            this.uploaderClient.NavigateToUrl("https://matrix.ctxmls.com/Matrix/Input");
+            //this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Input"));
+            //this.uploaderClient.ClickOnElement(By.LinkText("Input"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Edit existing"));
+            this.uploaderClient.ClickOnElement(By.LinkText("Edit existing"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_txtSourceCommonID"));
+            this.uploaderClient.WriteTextbox(By.Id("m_txtSourceCommonID"), value: mlsNumber);
+            this.uploaderClient.ClickOnElement(By.Id("m_lbEdit")); // "Modify button"
         }
 
-        private void QuickEdit(CoreWebDriver driver, ResidentialListingRequest listing)
+        private void FillListingInformation(ResidentialListingRequest listing)
         {
-            driver.Navigate("https://matrix.ctxmls.com/Matrix/Input");
-            //driver.wait.Until(ExpectedConditions.ElementIsVisible(By.LinkText("Input")));
-            //driver.Click(By.LinkText("Input"));
-            driver.wait.Until(webDriver => webDriver.FindElement(By.LinkText("Edit existing")).Displayed);
-            driver.Click(By.LinkText("Edit existing"));
-            driver.wait.Until(webDriver => webDriver.FindElement(By.Id("m_txtSourceCommonID")).Displayed);
-            driver.WriteTextbox(By.Id("m_txtSourceCommonID"), listing.MLSNum);
-            driver.Click(By.Id("m_lbEdit")); // "Modify button"
-        }
+            const string tabName = "Listing Information";
+            this.uploaderClient.ClickOnElement(By.LinkText("Listing Information")); // click in tab Listing Information
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_107"));
 
-        /// <summary>
-        /// Fills the information for the Listing Information tab.
-        /// </summary>
-        /// <param name="driver">Webdriver Element for the current upload</param>
-        /// <param name="listing">Current listing being processed</param>
-        private void FillListingInformation(CoreWebDriver driver, ResidentialListingRequest listing)
-        {
-            string tabName = "Listing Information";
-            driver.Click(By.LinkText("Listing Information")); // click in tab Listing Information
-            driver.wait.Until(webDriver => webDriver.FindElement(By.Id("Input_107")).Displayed); 
+            this.uploaderClient.WriteTextbox(By.Id("Input_107"), listing.StreetNum); // Street Number
+            this.uploaderClient.SetSelect(By.Id("Input_108"), listing.StreetDir, "St Direction", tabName); // St Direction
+            this.uploaderClient.WriteTextbox(By.Id("Input_110"), listing.StreetName); // Street Name
+            this.uploaderClient.SetSelect(By.Id("Input_109"), listing.StreetType, "Street Type", tabName); // Street Type
+            this.uploaderClient.WriteTextbox(By.Id("Input_111"), listing.UnitNum); // Unit #
+            this.uploaderClient.SetSelectByText(By.Id("Input_112"), listing.City, "City", tabName); // City
+            this.uploaderClient.SetSelect(By.Id("Input_113"), listing.StateCode, "State", tabName); // State
+            this.uploaderClient.SetSelect(By.Id("Input_123"), "YES", "In City Limits", tabName); // In City Limits
+            string CTXETJ = listing.CTXETJ ? "1" : "0";
+            this.uploaderClient.SetSelect(By.Id("Input_124"), CTXETJ, "ETJ", tabName); // ETJ
+            this.uploaderClient.WriteTextbox(By.Id("Input_114"), listing.Zip); // Zip Code
+            this.uploaderClient.SetSelectByText(By.Id("Input_115"), listing.County, "County", tabName); // County
+            this.uploaderClient.WriteTextbox(By.Id("Input_396"), listing.Subdivision); // Subdivision
+            this.uploaderClient.WriteTextbox(By.Id("Input_528"), listing.Legal); // Legal Description
+            this.uploaderClient.WriteTextbox(By.Id("Input_529"), listing.TaxID); // Property ID
+            this.uploaderClient.WriteTextbox(By.Id("Input_766"), listing.CTXGeoID); // Geo ID
+            this.uploaderClient.SetSelect(By.Id("Input_530"), "NO", "FEMA Flood Plain", tabName); // FEMA Flood Plain
+            this.uploaderClient.SetSelect(By.Id("Input_531"), "NO", "Residential Flooded", tabName); // Residential Flooded
+            this.uploaderClient.WriteTextbox(By.Id("Input_532"), listing.LotNum); // Lot
+            this.uploaderClient.WriteTextbox(By.Id("Input_533"), listing.Block); // Block
 
-            #region Location Information
-            driver.WriteTextbox(By.Id("Input_107"), listing.StreetNum); // Street Number
-            driver.SetSelect(By.Id("Input_108"), listing.StreetDir, "St Direction", tabName); // St Direction
-            driver.WriteTextbox(By.Id("Input_110"), listing.StreetName); // Street Name
-            driver.SetSelect(By.Id("Input_109"), listing.StreetType, "Street Type", tabName); // Street Type
-            driver.WriteTextbox(By.Id("Input_111"), listing.UnitNum); // Unit #
-            driver.SetSelectByText(By.Id("Input_112"), listing.City, "City", tabName); // City
-            driver.SetSelect(By.Id("Input_113"), listing.StateCode, "State", tabName); // State
-            driver.SetSelect(By.Id("Input_123"), "YES", "In City Limits", tabName); // In City Limits
-            string CTXETJ = "0";
-            if (listing.CTXETJ == true)
-            {
-                CTXETJ = "1";
-            }
+            this.uploaderClient.SetSelect(By.Id("Input_535_TB"), listing.SchoolDistrict.ToUpper(), "School District", tabName); // School District
 
-            driver.SetSelect(By.Id("Input_124"), CTXETJ, "ETJ", tabName); // ETJ
-            driver.WriteTextbox(By.Id("Input_114"), listing.Zip); // Zip Code
-            driver.SetSelectByText(By.Id("Input_115"), listing.County, "County", tabName); // County
-            driver.WriteTextbox(By.Id("Input_396"), listing.Subdivision); // Subdivision
-            driver.WriteTextbox(By.Id("Input_528"), listing.Legal); // Legal Description
-            driver.WriteTextbox(By.Id("Input_529"), listing.TaxID); // Property ID
-            driver.WriteTextbox(By.Id("Input_766"), listing.CTXGeoID); // Geo ID
-            driver.SetSelect(By.Id("Input_530"), "NO", "FEMA Flood Plain", tabName); // FEMA Flood Plain
-            driver.SetSelect(By.Id("Input_531"), "NO", "Residential Flooded", tabName); // Residential Flooded
-            driver.WriteTextbox(By.Id("Input_532"), listing.LotNum); // Lot
-            driver.WriteTextbox(By.Id("Input_533"), listing.Block); // Block
-            
-            driver.SetSelect(By.Id("Input_535_TB"), listing.SchoolDistrict.ToUpper(), "School District", tabName); // School District
+            FillFieldSingleOption("Input_535", listing.SchoolDistrict.ToUpper());
 
-            FillFieldSingleOption(driver, "Input_535", listing.SchoolDistrict.ToUpper());
+            this.uploaderClient.SetSelect(By.Id("Input_658"), listing.SchoolName1.ToUpper(), "Elementary School", tabName); // Elementary School
+            this.uploaderClient.SetSelect(By.Id("Input_659"), listing.SchoolName2.ToUpper(), "Middle School", tabName); // Middle School
+            this.uploaderClient.SetSelect(By.Id("Input_660"), listing.SchoolName3.ToUpper(), "High School", tabName); // High School
 
-            driver.SetSelect(By.Id("Input_658"), listing.SchoolName1.ToUpper(), "Elementary School", tabName); // Elementary School
-            driver.SetSelect(By.Id("Input_659"), listing.SchoolName2.ToUpper(), "Middle School", tabName); // Middle School
-            driver.SetSelect(By.Id("Input_660"), listing.SchoolName3.ToUpper(), "High School", tabName); // High School
-
-            //driver.WriteTextbox(By.Id("Input_125"), listing.MapscoMapCoord); // Map Grid
-            //driver.WriteTextbox(By.Id("Input_126"), listing.MapscoMapPage); // Map Source
-            SetLongitudeAndLatitudeValues(driver, listing);
-            #endregion Location Information
+            //this.uploaderClient.WriteTextbox(By.Id("Input_125"), listing.MapscoMapCoord); // Map Grid
+            //this.uploaderClient.WriteTextbox(By.Id("Input_126"), listing.MapscoMapPage); // Map Source
+            SetLongitudeAndLatitudeValues(listing);
 
             #region Listing Information
-            driver.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
-            driver.WriteTextbox(By.Id("Input_133"), listing.OwnerName); // Owner Legal Name
-            driver.SetSelect(By.Id("Input_137"), "0", "Also For Rent", tabName); // Also For Rent
+            this.uploaderClient.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
+            this.uploaderClient.WriteTextbox(By.Id("Input_133"), listing.OwnerName); // Owner Legal Name
+            this.uploaderClient.SetSelect(By.Id("Input_137"), "0", "Also For Rent", tabName); // Also For Rent
 
             //'CNDMI',
             //'Condominium',
@@ -501,9 +471,9 @@ namespace Husa.Uploader.Core.Uploaders
                 "RE" => "SFM",
                 _ => string.Empty,
             };
-            driver.SetSelect(By.Id("Input_539"), propSubType, "Property Type", tabName); // Property Type
+            this.uploaderClient.SetSelect(By.Id("Input_539"), propSubType, "Property Type", tabName); // Property Type
 
-            if (driver.UploadInformation.IsNewListing)
+            if (this.uploaderClient.UploadInformation.IsNewListing)
             {
                 DateTime listDate = DateTime.Now;
                 if (listing.ListStatus == "P" || listing.ListStatus == "PO")
@@ -515,33 +485,33 @@ namespace Husa.Uploader.Core.Uploaders
                     listDate = DateTime.Now.AddDays(-4);
                 }
 
-                driver.WriteTextbox(By.Id("Input_129"), listDate.ToShortDateString()); // List Date
+                this.uploaderClient.WriteTextbox(By.Id("Input_129"), listDate.ToShortDateString()); // List Date
             }
 
             if (listing.ListDate != null)
             {
-                driver.WriteTextbox(By.Id("Input_130"), DateTime.Now.AddYears(1).ToShortDateString()); // Expiration Date
+                this.uploaderClient.WriteTextbox(By.Id("Input_130"), DateTime.Now.AddYears(1).ToShortDateString()); // Expiration Date
             }
             else
             {
-                driver.WriteTextbox(By.Id("Input_130"), (listing.ExpiredDate != null ? ((DateTime)listing.ExpiredDate).ToShortDateString() : "")); // Expiration Date
+                this.uploaderClient.WriteTextbox(By.Id("Input_130"), (listing.ExpiredDate != null ? ((DateTime)listing.ExpiredDate).ToShortDateString() : "")); // Expiration Date
             }
 
-            driver.SetSelect(By.Id("Input_544"), "NA", "First Right Refusal Option", tabName); // First Right Refusal Option (default hardcode "N/A")
+            this.uploaderClient.SetSelect(By.Id("Input_544"), "NA", "First Right Refusal Option", tabName); // First Right Refusal Option (default hardcode "N/A")
 
-            //driver.SetSelect(By.Id("Input_132"), "1", "Owner LREA", tabName); // Owner LREA (default hardcode "Yes")
-            
-            //driver.WriteTextbox(By.Id("Input_134"), listing.AgentListApptPhone.Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", "")); // Owner Phone
-            //driver.WriteTextbox(By.Id("Input_134"), listing.OwnerPhone.Remove('(').Remove(')').Remove('-').Trim()); // Owner Phone
-            //driver.SetSelect(By.Id("Input_135"), "NO", "Short Sale", tabName); // Short Sale
-            //driver.SetSelect(By.Id("Input_136"), "0", "Foreclosure", tabName); // Foreclosure
+            //this.uploaderClient.SetSelect(By.Id("Input_132"), "1", "Owner LREA", tabName); // Owner LREA (default hardcode "Yes")
 
-            // driver.WriteTextbox(By.Id("Input_138"), ??? ); // Additional MLS #
-            //driver.WriteTextbox(By.Id("Input_139"), listing.TaxRate); // Total Tax Rate
+            //this.uploaderClient.WriteTextbox(By.Id("Input_134"), listing.AgentListApptPhone.Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", "")); // Owner Phone
+            //this.uploaderClient.WriteTextbox(By.Id("Input_134"), listing.OwnerPhone.Remove('(').Remove(')').Remove('-').Trim()); // Owner Phone
+            //this.uploaderClient.SetSelect(By.Id("Input_135"), "NO", "Short Sale", tabName); // Short Sale
+            //this.uploaderClient.SetSelect(By.Id("Input_136"), "0", "Foreclosure", tabName); // Foreclosure
+
+            // this.uploaderClient.WriteTextbox(By.Id("Input_138"), ??? ); // Additional MLS #
+            //this.uploaderClient.WriteTextbox(By.Id("Input_139"), listing.TaxRate); // Total Tax Rate
             #endregion Listing Information
 
             #region General Listing Information
-            driver.SetSelect(By.Id("Input_531"), "0", "Res Flooded", tabName); // Res Flooded
+            this.uploaderClient.SetSelect(By.Id("Input_531"), "0", "Res Flooded", tabName); // Res Flooded
 
             string constructionStatus = "";
             switch (listing.YearBuiltDesc)
@@ -554,19 +524,19 @@ namespace Husa.Uploader.Core.Uploaders
                     break;
             }
 
-            driver.SetSelect(By.Id("Input_547"), constructionStatus, "Construction Status", tabName); // Construction Status
-            driver.WriteTextbox(By.Id("Input_548"), listing.OwnerName); // Builder Name
-            driver.WriteTextbox(By.Id("Input_549"), listing.BuildCompletionDate); // Estimated Completion Date
-            driver.WriteTextbox(By.Id("Input_553"), listing.YearBuilt); // Year Built
-            driver.SetSelect(By.Id("Input_186"), "OWNSE", "Year Built Source", tabName); // Year Built Source (default hardcode "Owner/Seller")
-            
-            driver.WriteTextbox(By.Id("Input_550"), listing.SqFtTotal); // Total SqFt
-            driver.SetSelect(By.Id("Input_551"), "BUILD", "Source SqFt", tabName); // Source SqFt
+            this.uploaderClient.SetSelect(By.Id("Input_547"), constructionStatus, "Construction Status", tabName); // Construction Status
+            this.uploaderClient.WriteTextbox(By.Id("Input_548"), listing.OwnerName); // Builder Name
+            this.uploaderClient.WriteTextbox(By.Id("Input_549"), listing.BuildCompletionDate); // Estimated Completion Date
+            this.uploaderClient.WriteTextbox(By.Id("Input_553"), listing.YearBuilt); // Year Built
+            this.uploaderClient.SetSelect(By.Id("Input_186"), "OWNSE", "Year Built Source", tabName); // Year Built Source (default hardcode "Owner/Seller")
 
-            //driver.SetMultipleCheckboxById("Input_551", listing, "Documents on File (Max 25)", tabName); //Documents on File (Max 25)
+            this.uploaderClient.WriteTextbox(By.Id("Input_550"), listing.SqFtTotal); // Total SqFt
+            this.uploaderClient.SetSelect(By.Id("Input_551"), "BUILD", "Source SqFt", tabName); // Source SqFt
+
+            //this.uploaderClient.SetMultipleCheckboxById("Input_551", listing, "Documents on File (Max 25)", tabName); //Documents on File (Max 25)
             #endregion 	General Listing Information
 
-            //driver.SetMultipleCheckboxById("Input_219", listing.RestrictionsDesc); // 	Documents On File
+            //this.uploaderClient.SetMultipleCheckboxById("Input_219", listing.RestrictionsDesc); // 	Documents On File
             var putOptionsRestrictionsDesc = new List<string>();
             var optionsRestrictionsDesc = string.IsNullOrWhiteSpace(listing.RestrictionsDesc) ? new List<string>() : listing.RestrictionsDesc.Split(',').ToList();
             foreach (string option in optionsRestrictionsDesc)
@@ -647,20 +617,20 @@ namespace Husa.Uploader.Core.Uploaders
 
             //if (putOptionsRestrictionsDesc.Count > 0)
             //{
-            //    driver.SetMultipleCheckboxById("Input_219", string.Join(",", putOptionsRestrictionsDesc.ToArray())); // 	Documents On File
+            //    this.uploaderClient.SetMultipleCheckboxById("Input_219", string.Join(",", putOptionsRestrictionsDesc.ToArray())); // 	Documents On File
             //}
-            driver.SetMultipleCheckboxById("Input_554", "NONE", "Documents On File", tabName); // Documents On File
+            this.uploaderClient.SetMultipleCheckboxById("Input_554", "NONE", "Documents On File", tabName); // Documents On File
         }
 
-        private void FillFieldSingleOption(CoreWebDriver driver, string fieldName, string value)
+        private void FillFieldSingleOption(string fieldName, string value)
         {
             if (!string.IsNullOrEmpty(value))
             {
-                var mainWindow = driver.WindowHandles.FirstOrDefault(c => c == driver.CurrentWindowHandle);
+                var mainWindow = this.uploaderClient.WindowHandles.FirstOrDefault(c => c == this.uploaderClient.CurrentWindowHandle);
 
-                driver.ExecuteScript("jQuery('#" + fieldName + "_TB').focus();");
-                driver.ExecuteScript("jQuery('#" + fieldName + "_A')[0].click();");
-                driver.SwitchTo().Window(driver.WindowHandles.Last());
+                this.uploaderClient.ExecuteScript("jQuery('#" + fieldName + "_TB').focus();");
+                this.uploaderClient.ExecuteScript("jQuery('#" + fieldName + "_A')[0].click();");
+                this.uploaderClient.SwitchTo().Window(this.uploaderClient.WindowHandles.Last());
                 Thread.Sleep(400);
 
                 char[] fieldValue = value.ToArray();
@@ -668,45 +638,40 @@ namespace Husa.Uploader.Core.Uploaders
                 foreach (var charact in fieldValue)
                 {
                     Thread.Sleep(400);
-                    driver.FindElement(By.Id("m_txtSearch")).SendKeys(charact.ToString().ToUpper());
+                    this.uploaderClient.FindElement(By.Id("m_txtSearch")).SendKeys(charact.ToString().ToUpper());
                 }
                 Thread.Sleep(400);
 
-                driver.ExecuteScript("jQuery(\"li[title=^'"+value+"'])");
+                this.uploaderClient.ExecuteScript("jQuery(\"li[title=^'" + value + "'])");
                 Thread.Sleep(400);
 
-                driver.ExecuteScript("let btnSave = jQuery(\"#cboxClose > button\")[0]; jQuery(btnSave).focus(); jQuery(btnSave).click();");
+                this.uploaderClient.ExecuteScript("let btnSave = jQuery(\"#cboxClose > button\")[0]; jQuery(btnSave).focus(); jQuery(btnSave).click();");
 
-                driver.SwitchTo().Window(mainWindow);
+                this.uploaderClient.SwitchTo().Window(mainWindow);
             }
         }
 
-        /// <summary>
-        /// Fills the information for the Rooms tab.
-        /// </summary>
-        /// <param name="driver">Webdriver Element for the current upload</param>
-        /// <param name="listing">Current listing being processed</param>
-        private void FillRooms(CoreWebDriver driver, ResidentialListingRequest listing)
+        private void FillRooms(ResidentialListingRequest listing)
         {
-            string tabName = "Rooms";
-            driver.ExecuteScript(" jQuery(document).scrollTop(0);");
+            const string tabName = "Rooms";
+            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
 
-            driver.Click(By.LinkText("Rooms")); // click in tab Listing Information
+            this.uploaderClient.ClickOnElement(By.LinkText("Rooms")); // click in tab Listing Information
 
-            //driver.Click(By.Id("m_rpPageList_ctl02_lbPageLink")); // Tab: Input | Subtab: Rooms
-            driver.wait.Until(webDriver => webDriver.FindElement(By.Id("ctl02_m_divFooterContainer")).Displayed); // Look if the footer elements has been loaded
+            //this.uploaderClient.Click(By.Id("m_rpPageList_ctl02_lbPageLink")); // Tab: Input | Subtab: Rooms
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer")); // Look if the footer elements has been loaded
             //Thread.Sleep(2000);
 
-            //driver.WriteTextbox(By.Id("Input_193"), (listing.NumBedsMainLevel != null ? listing.NumBedsMainLevel : 0) + (listing.NumBedsOtherLevels != null ? listing.NumBedsOtherLevels : 0)); // Bedrooms
-            driver.WriteTextbox(By.Id("Input_193"), listing.Beds); // Bedrooms
-            driver.WriteTextbox(By.Id("Input_194"), listing.BathsFull); // Full Baths
-            driver.WriteTextbox(By.Id("Input_195"), listing.BathsHalf); // Half Baths
+            //this.uploaderClient.WriteTextbox(By.Id("Input_193"), (listing.NumBedsMainLevel != null ? listing.NumBedsMainLevel : 0) + (listing.NumBedsOtherLevels != null ? listing.NumBedsOtherLevels : 0)); // Bedrooms
+            this.uploaderClient.WriteTextbox(By.Id("Input_193"), listing.Beds); // Bedrooms
+            this.uploaderClient.WriteTextbox(By.Id("Input_194"), listing.BathsFull); // Full Baths
+            this.uploaderClient.WriteTextbox(By.Id("Input_195"), listing.BathsHalf); // Half Baths
 
-            //driver.WriteTextbox(By.Id("Input_260"), listing.NumStories); // # Stories
+            //this.uploaderClient.WriteTextbox(By.Id("Input_260"), listing.NumStories); // # Stories
 
-            //driver.WriteTextbox(By.Id("Input_196"), listing.NumLivingAreas); // # Living Areas
+            //this.uploaderClient.WriteTextbox(By.Id("Input_196"), listing.NumLivingAreas); // # Living Areas
 
-            //driver.WriteTextbox(By.Id("Input_197"), listing.NumDiningAreas); // # Dining Areas
+            //this.uploaderClient.WriteTextbox(By.Id("Input_197"), listing.NumDiningAreas); // # Dining Areas
 
             List<string> optionsGarageDesc = string.IsNullOrWhiteSpace(listing.ParkingDesc) ? new List<string>() : listing.ParkingDesc.Split(',').ToList();
             foreach (string option in optionsGarageDesc)
@@ -714,7 +679,7 @@ namespace Husa.Uploader.Core.Uploaders
                 switch (option)
                 {
                     case "NONE":
-                        //driver.SetSelect(By.Id("Input_198"), "0", "Garage/Carport", tabName); // Garage/Carport
+                        //this.uploaderClient.SetSelect(By.Id("Input_198"), "0", "Garage/Carport", tabName); // Garage/Carport
                         break;
                 }
             }
@@ -724,21 +689,16 @@ namespace Husa.Uploader.Core.Uploaders
 
             //if (optionsGarageDesc.Count > 0)
             //{
-            //    driver.SetSelect(By.Id("Input_198"), "1", "Garage/Carport", tabName); // Garage/Carport
+            //    this.uploaderClient.SetSelect(By.Id("Input_198"), "1", "Garage/Carport", tabName); // Garage/Carport
             //}
 
-            string guestHouse = "0";
-            if (listing.CTXGuestHouse == true)
-            {
-                guestHouse = "1";
-            }
+            //var guestHouse = listing.CTXGuestHouse ? "1" : "0";
+            //this.uploaderClient.SetSelect(By.Id("Input_199"), guestHouse, "Guest House", tabName); // Garage/Carport
 
-            //driver.SetSelect(By.Id("Input_199"), guestHouse, "Guest House", tabName); // Garage/Carport
-
-            if (!driver.UploadInformation.IsNewListing)
+            if (!this.uploaderClient.UploadInformation.IsNewListing)
             {
-                var elems = driver.FindElements(By.CssSelector("table[id^=_Input_556__del_REPEAT] a"));
-                
+                var elems = this.uploaderClient.FindElements(By.CssSelector("table[id^=_Input_556__del_REPEAT] a"));
+
                 foreach (var elem in elems.Where(c => c.Displayed))
                 {
                     elem.Click();
@@ -747,10 +707,10 @@ namespace Husa.Uploader.Core.Uploaders
 
             var roomTypes = ReadRoomAndFeatures(listing);
 
-            //driver.Click(By.Id("m_rpPageList_ctl04_lbPageLink"));
-            driver.ExecuteScript(" jQuery(document).scrollTop(0);");
+            //this.uploaderClient.Click(By.Id("m_rpPageList_ctl04_lbPageLink"));
+            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
 
-            driver.Click(By.LinkText("Rooms")); // click in tab Listing Information
+            this.uploaderClient.ClickOnElement(By.LinkText("Rooms")); // click in tab Listing Information
             Thread.Sleep(400);
 
             var i = 0;
@@ -760,7 +720,7 @@ namespace Husa.Uploader.Core.Uploaders
             {
                 if (i > 0)
                 {
-                    driver.Click(By.Id("_Input_556_more"));
+                    this.uploaderClient.ClickOnElement(By.Id("_Input_556_more"));
                     Thread.Sleep(400);
                 }
 
@@ -800,36 +760,31 @@ namespace Husa.Uploader.Core.Uploaders
                 //'WORKS', 'Workshop        ',
                 //'GuestHse', 'Guest House'
 
-                driver.SetSelect(By.Id("_Input_190__REPEAT" + i + "_190"), roomType, "Name", tabName, true); // FieldName
+                this.uploaderClient.SetSelect(By.Id("_Input_190__REPEAT" + i + "_190"), roomType, "Name", tabName, true); // FieldName
                 Thread.Sleep(400);
-                //driver.ScrollDown();
-                //driver.SetSelect(By.Id("_Input_190__REPEAT" + i + "_491"), roomType.Level, true);
+                //this.uploaderClient.ScrollDown();
+                //this.uploaderClient.SetSelect(By.Id("_Input_190__REPEAT" + i + "_491"), roomType.Level, true);
                 //Thread.Sleep(400);
-                //driver.ScrollDown();
-                //driver.WriteTextbox(By.Id("_Input_190__REPEAT" + i + "_191"), roomType.Length, true);
+                //this.uploaderClient.ScrollDown();
+                //this.uploaderClient.WriteTextbox(By.Id("_Input_190__REPEAT" + i + "_191"), roomType.Length, true);
                 //Thread.Sleep(400);
-                //driver.ScrollDown();
+                //this.uploaderClient.ScrollDown();
 
                 i++;
             }
         }
 
-        /// <summary>
-        /// Fills the information for the Features tab.
-        /// </summary>
-        /// <param name="driver">Webdriver Element for the current upload</param>
-        /// <param name="listing">Current listing being processed</param>
-        private void FillFeatures(CoreWebDriver driver, ResidentialListingRequest listing)
+        private void FillFeatures(ResidentialListingRequest listing)
         {
             string tabName = "Features";
-            driver.ExecuteScript(" jQuery(document).scrollTop(0);");
+            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
 
-            driver.Click(By.LinkText("Features")); // click in tab Features
+            this.uploaderClient.ClickOnElement(By.LinkText("Features")); // click in tab Features
 
-            //driver.SetMultipleCheckboxById("Input_156", "TRADI", "Style", tabName); // Style (default hardcode "Traditional")
-            driver.SetMultipleCheckboxById("Input_557", listing.HousingTypeDesc, "Style", tabName); // Style
+            //this.uploaderClient.SetMultipleCheckboxById("Input_156", "TRADI", "Style", tabName); // Style (default hardcode "Traditional")
+            this.uploaderClient.SetMultipleCheckboxById("Input_557", listing.HousingTypeDesc, "Style", tabName); // Style
 
-            //driver.SetMultipleCheckboxById("Input_159", listing.FoundationDesc); // Foundation
+            //this.uploaderClient.SetMultipleCheckboxById("Input_159", listing.FoundationDesc); // Foundation
             var putFoundation = new List<string>();
             var optionsFoundation = string.IsNullOrWhiteSpace(listing.FoundationDesc) ? new List<string>() : listing.FoundationDesc.Split(',').ToList();
             foreach (string option in optionsFoundation)
@@ -860,10 +815,10 @@ namespace Husa.Uploader.Core.Uploaders
 
             if (putFoundation.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_558", string.Join(",", putFoundation.ToArray()), "Foundation", tabName); // Foundation
+                this.uploaderClient.SetMultipleCheckboxById("Input_558", string.Join(",", putFoundation.ToArray()), "Foundation", tabName); // Foundation
             }
 
-            //driver.SetMultipleCheckboxById("Input_161", listing.NumStories); // # Stories
+            //this.uploaderClient.SetMultipleCheckboxById("Input_161", listing.NumStories); // # Stories
             var putOptionsNumStories = new List<string>();
             var optionsNumStories = string.IsNullOrWhiteSpace(listing.NumStories) ? new List<string>() : listing.NumStories.Split(',').ToList();
             foreach (string option in optionsNumStories)
@@ -890,10 +845,10 @@ namespace Husa.Uploader.Core.Uploaders
 
             if (putOptionsNumStories.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_563", string.Join(",", putOptionsNumStories.ToArray()), "# Stories", tabName);
+                this.uploaderClient.SetMultipleCheckboxById("Input_563", string.Join(",", putOptionsNumStories.ToArray()), "# Stories", tabName);
             }
 
-            //driver.SetMultipleCheckboxById("Input_559", listing.RoofDesc); // Roof / Attic
+            //this.uploaderClient.SetMultipleCheckboxById("Input_559", listing.RoofDesc); // Roof / Attic
             var putOptionsRoofDesc = new List<string>();
             var optionsRoofDesc = string.IsNullOrWhiteSpace(listing.RoofDesc) ? new List<string>() : listing.RoofDesc.Split(',').ToList();
             foreach (string option in optionsRoofDesc)
@@ -944,7 +899,7 @@ namespace Husa.Uploader.Core.Uploaders
 
             if (putOptionsRoofDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_559", string.Join(",", putOptionsRoofDesc.ToArray()), "Roof / Attic", tabName);
+                this.uploaderClient.SetMultipleCheckboxById("Input_559", string.Join(",", putOptionsRoofDesc.ToArray()), "Roof / Attic", tabName);
             }
 
             var putOptionsConstructionDesc = new List<string>();
@@ -1006,10 +961,10 @@ namespace Husa.Uploader.Core.Uploaders
 
             if (putOptionsConstructionDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_561", string.Join(",", putOptionsConstructionDesc.ToArray()), "Construction/Exterior", tabName);
+                this.uploaderClient.SetMultipleCheckboxById("Input_561", string.Join(",", putOptionsConstructionDesc.ToArray()), "Construction/Exterior", tabName);
             }
 
-            //driver.SetMultipleCheckboxById("Input_163", listing.FireplaceDesc); // Fireplace
+            //this.uploaderClient.SetMultipleCheckboxById("Input_163", listing.FireplaceDesc); // Fireplace
             var putOptionsFireplaceDesc = new List<string>();
             var optionsFireplaceDesc = string.IsNullOrWhiteSpace(listing.FireplaceDesc) ? new List<string>() : listing.FireplaceDesc.Split(',').ToList();
             foreach (string option in optionsFireplaceDesc)
@@ -1096,10 +1051,10 @@ namespace Husa.Uploader.Core.Uploaders
 
             if (putOptionsFireplaceDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_562", string.Join(",", putOptionsFireplaceDesc.ToArray()), "Fireplace", tabName);
+                this.uploaderClient.SetMultipleCheckboxById("Input_562", string.Join(",", putOptionsFireplaceDesc.ToArray()), "Fireplace", tabName);
             }
 
-            //driver.SetMultipleCheckboxById("Input_160", listing.FloorsDesc); // Flooring
+            //this.uploaderClient.SetMultipleCheckboxById("Input_160", listing.FloorsDesc); // Flooring
             var putOptionsFloorsDesc = new List<string>();
             var optionsFloorsDesc = string.IsNullOrWhiteSpace(listing.FloorsDesc) ? new List<string>() : listing.FloorsDesc.Split(',').ToList();
             foreach (string option in optionsFloorsDesc)
@@ -1162,12 +1117,12 @@ namespace Husa.Uploader.Core.Uploaders
 
             if (putOptionsFloorsDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_565", string.Join(",", putOptionsFloorsDesc.ToArray()), "Flooring", tabName);
+                this.uploaderClient.SetMultipleCheckboxById("Input_565", string.Join(",", putOptionsFloorsDesc.ToArray()), "Flooring", tabName);
             }
 
 
 
-            //driver.SetMultipleCheckboxById("Input_164", listing.KitchenDesc); // Kitchen Features
+            //this.uploaderClient.SetMultipleCheckboxById("Input_164", listing.KitchenDesc); // Kitchen Features
             var putOptionsKitchenDesc = new List<string>();
             var optionsKitchenDesc = string.IsNullOrWhiteSpace(listing.KitchenDesc) ? new List<string>() : listing.KitchenDesc.Split(',').ToList();
             foreach (string option in optionsKitchenDesc)
@@ -1356,10 +1311,10 @@ namespace Husa.Uploader.Core.Uploaders
 
             if (optionsKitchenDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_566", string.Join(",", putOptionsKitchenDesc.ToArray()), "Kitchen Features", tabName);
+                this.uploaderClient.SetMultipleCheckboxById("Input_566", string.Join(",", putOptionsKitchenDesc.ToArray()), "Kitchen Features", tabName);
             }
 
-            //driver.SetMultipleCheckboxById("Input_165", listing.LaundryFacilityDesc); // Laundry
+            //this.uploaderClient.SetMultipleCheckboxById("Input_165", listing.LaundryFacilityDesc); // Laundry
             var putOptionsLaundryFacilityDesc = new List<string>();
             var optionsLaundryFacilityDesc = string.IsNullOrWhiteSpace(listing.LaundryFacilityDesc) ? new List<string>() : listing.LaundryFacilityDesc.Split(',').ToList();
             foreach (string option in optionsLaundryFacilityDesc)
@@ -1452,10 +1407,10 @@ namespace Husa.Uploader.Core.Uploaders
 
             if (putOptionsLaundryFacilityDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_567", string.Join(",", putOptionsLaundryFacilityDesc.ToArray()), "Laundry", tabName);
+                this.uploaderClient.SetMultipleCheckboxById("Input_567", string.Join(",", putOptionsLaundryFacilityDesc.ToArray()), "Laundry", tabName);
             }
 
-            //driver.SetMultipleCheckboxById("Input_166", listing.InteriorDesc); // Interior Features
+            //this.uploaderClient.SetMultipleCheckboxById("Input_166", listing.InteriorDesc); // Interior Features
             var putOptionsInteriorDesc = new List<string>();
             var optionsInteriorDesc = string.IsNullOrWhiteSpace(listing.InteriorDesc) ? new List<string>() : listing.InteriorDesc.Split(',').ToList();
             foreach (string option in optionsInteriorDesc)
@@ -1601,10 +1556,10 @@ namespace Husa.Uploader.Core.Uploaders
             //'WHIRL','Whirlpool',
             if (putOptionsInteriorDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_571", string.Join(",", putOptionsInteriorDesc.ToArray()), "Interior Features", tabName);
+                this.uploaderClient.SetMultipleCheckboxById("Input_571", string.Join(",", putOptionsInteriorDesc.ToArray()), "Interior Features", tabName);
             }
 
-            //driver.SetMultipleCheckboxById("Input_167", listing.GarageDesc); // Garage/Carport
+            //this.uploaderClient.SetMultipleCheckboxById("Input_167", listing.GarageDesc); // Garage/Carport
             var putOptionsGarageDesc = new List<string>();
             var optionsGarageDesc = string.IsNullOrWhiteSpace(listing.GarageDesc) ? new List<string>() : listing.GarageDesc.Split(',').ToList();
             foreach (string option in optionsGarageDesc)
@@ -1673,28 +1628,22 @@ namespace Husa.Uploader.Core.Uploaders
 
             if (putOptionsGarageDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_570", string.Join(",", putOptionsGarageDesc.ToArray()), "Garage/Carport", tabName);
+                this.uploaderClient.SetMultipleCheckboxById("Input_570", string.Join(",", putOptionsGarageDesc.ToArray()), "Garage/Carport", tabName);
             }
         }
 
-        /// <summary>
-        /// Fills the information for the [Lot/Environment/Utility Information] tab.
-        /// </summary>
-        /// <param name="driver">Webdriver Element for the current upload</param>
-        /// <param name="listing">Current listing being processed</param>
-        private void FillLotEnvironmentUtilityInformation(CoreWebDriver driver, ResidentialListingRequest listing)
+        private void FillLotEnvironmentUtilityInformation(ResidentialListingRequest listing)
         {
             string tabName = "Lot/Environment/Utility";
-            driver.ExecuteScript(" jQuery(document).scrollTop(0);");
+            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
 
-            driver.Click(By.LinkText("Lot/Environment/Utility")); // Lot/Environment/Utility
+            this.uploaderClient.ClickOnElement(By.LinkText("Lot/Environment/Utility")); // Lot/Environment/Utility
 
-            #region Lot Information
-            driver.WriteTextbox(By.Id("Input_576"), listing.LotDim); // Lot Dimensions
-            // driver.WriteTextbox(By.Id("Input_170"), ??? ); // Apx Acreage
-            driver.SetSelect(By.Id("Input_578"), "0", "Manufactured Allowed", tabName); // Manufactured Allowed (default hardcode "No")
+            this.uploaderClient.WriteTextbox(By.Id("Input_576"), listing.LotDim); // Lot Dimensions
+            // this.uploaderClient.WriteTextbox(By.Id("Input_170"), ??? ); // Apx Acreage
+            this.uploaderClient.SetSelect(By.Id("Input_578"), "0", "Manufactured Allowed", tabName); // Manufactured Allowed (default hardcode "No")
 
-            //driver.SetMultipleCheckboxById("Input_172", listing.FenceDesc); // Fencing
+            //this.uploaderClient.SetMultipleCheckboxById("Input_172", listing.FenceDesc); // Fencing
             var putOptionsFenceDesc = new List<string>();
             var optionsFenceDesc = string.IsNullOrWhiteSpace(listing.ExteriorDesc) ? new List<string>() : listing.ExteriorDesc.Split(',').ToList();
             foreach (string option in optionsFenceDesc)
@@ -1777,11 +1726,11 @@ namespace Husa.Uploader.Core.Uploaders
             }
             if (putOptionsFenceDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_581", string.Join(",", putOptionsFenceDesc.ToArray()), "Fencing", tabName);
+                this.uploaderClient.SetMultipleCheckboxById("Input_581", string.Join(",", putOptionsFenceDesc.ToArray()), "Fencing", tabName);
             }
 
-            driver.SetSelect(By.Id("Input_582"), listing.IsWaterFront, "Waterfront", tabName); // Waterfront
-            driver.SetMultipleCheckboxById("Input_585", "NONE", "Water Features", tabName); // Water Features
+            this.uploaderClient.SetSelect(By.Id("Input_582"), listing.IsWaterFront, "Waterfront", tabName); // Waterfront
+            this.uploaderClient.SetMultipleCheckboxById("Input_585", "NONE", "Water Features", tabName); // Water Features
             /*List<String> putOptionsWaterfrontDesc = new List<String>();
             List<String> optionsWaterfrontDesc = String.IsNullOrWhiteSpace(listing.WaterfrontDesc) ? new List<String>() : listing.WaterfrontDesc.Split(',').ToList();
             foreach (string option in optionsWaterfrontDesc)
@@ -1838,10 +1787,10 @@ namespace Husa.Uploader.Core.Uploaders
 
             /*if (putOptionsWaterfrontDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_585", string.Join(",", putOptionsWaterfrontDesc.ToArray())); // Water Features
+                this.uploaderClient.SetMultipleCheckboxById("Input_585", string.Join(",", putOptionsWaterfrontDesc.ToArray())); // Water Features
             }*/
 
-            //driver.SetMultipleCheckboxById("Input_171", "SPRIN"); // Exterior Features (default hardcode "Sprinkler System")
+            //this.uploaderClient.SetMultipleCheckboxById("Input_171", "SPRIN"); // Exterior Features (default hardcode "Sprinkler System")
             var putOptionsExteriorDesc = new List<string>();
             var optionsExteriorDesc = string.IsNullOrWhiteSpace(listing.ExteriorDesc) ? new List<string>() : listing.ExteriorDesc.Split(',').ToList();
             foreach (string option in optionsExteriorDesc)
@@ -1978,10 +1927,10 @@ namespace Husa.Uploader.Core.Uploaders
             }
             if (putOptionsExteriorDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_596", string.Join(",", putOptionsExteriorDesc.ToArray()), "Exterior Features", tabName);
+                this.uploaderClient.SetMultipleCheckboxById("Input_596", string.Join(",", putOptionsExteriorDesc.ToArray()), "Exterior Features", tabName);
             }
 
-            //driver.SetMultipleCheckboxById("Input_175", listing.LotDesc); // Topo/Land Description
+            //this.uploaderClient.SetMultipleCheckboxById("Input_175", listing.LotDesc); // Topo/Land Description
             var putOptionsLotDesc = new List<string>();
             var optionsLotDesc = string.IsNullOrWhiteSpace(listing.LotDesc) ? new List<string>() : listing.LotDesc.Split(',').ToList();
             foreach (string option in optionsLotDesc)
@@ -2082,9 +2031,9 @@ namespace Husa.Uploader.Core.Uploaders
 
             if (putOptionsLotDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_597", string.Join(",", putOptionsLotDesc.ToArray()), "Topo/Land Description", tabName); // Topo/Land Description
+                this.uploaderClient.SetMultipleCheckboxById("Input_597", string.Join(",", putOptionsLotDesc.ToArray()), "Topo/Land Description", tabName); // Topo/Land Description
             }
-            //driver.SetMultipleCheckboxById("Input_176", listing.CommonFeatures); // Neighborhood Amenities
+            //this.uploaderClient.SetMultipleCheckboxById("Input_176", listing.CommonFeatures); // Neighborhood Amenities
             var putOptionsCommonFeatures = new List<string>();
             var optionsLotCommonFeatures = string.IsNullOrWhiteSpace(listing.CommonFeatures) ? new List<string>() : listing.CommonFeatures.Split(',').ToList();
             foreach (string option in optionsLotCommonFeatures)
@@ -2188,10 +2137,10 @@ namespace Husa.Uploader.Core.Uploaders
 
             if (putOptionsCommonFeatures.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_599", string.Join(",", putOptionsCommonFeatures.ToArray()), "Neighborhood Amenities", tabName);  // Neighborhood Amenities
+                this.uploaderClient.SetMultipleCheckboxById("Input_599", string.Join(",", putOptionsCommonFeatures.ToArray()), "Neighborhood Amenities", tabName);  // Neighborhood Amenities
             }
 
-            //driver.SetMultipleCheckboxById("Input_177", listing.LotDesc); // Access/Road Surface
+            //this.uploaderClient.SetMultipleCheckboxById("Input_177", listing.LotDesc); // Access/Road Surface
             var putOptionsLotDescForAccessRoadSurface = new List<string>();
             foreach (string option in optionsLotDesc)
             {
@@ -2271,13 +2220,11 @@ namespace Husa.Uploader.Core.Uploaders
 
             //if (putOptionsLotDescForAccessRoadSurface.Count > 0)
             //{
-            //    driver.SetMultipleCheckboxById("Input_177", string.Join(",", putOptionsLotDescForAccessRoadSurface.ToArray())); // Access/Road Surface
+            //    this.uploaderClient.SetMultipleCheckboxById("Input_177", string.Join(",", putOptionsLotDescForAccessRoadSurface.ToArray())); // Access/Road Surface
             //}
-            driver.SetMultipleCheckboxById("Input_600", "CITYS", "Access/Road Surface", tabName); // Access/Road Surface
-            #endregion Lot Information
+            this.uploaderClient.SetMultipleCheckboxById("Input_600", "CITYS", "Access/Road Surface", tabName); // Access/Road Surface
 
-            #region Utility Information
-            //driver.SetMultipleCheckboxById("Input_178", listing.HeatSystemDesc); // Heat
+            //this.uploaderClient.SetMultipleCheckboxById("Input_178", listing.HeatSystemDesc); // Heat
             var putOptionsHeat = new List<string>();
             var optionsLotHeat = string.IsNullOrWhiteSpace(listing.HeatSystemDesc) ? new List<string>() : listing.HeatSystemDesc.Split(',').ToList();
             foreach (string option in optionsLotHeat)
@@ -2338,10 +2285,10 @@ namespace Husa.Uploader.Core.Uploaders
 
             if (putOptionsHeat.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_610", string.Join(",", putOptionsHeat.ToArray()), "Heat", tabName); // Heat
+                this.uploaderClient.SetMultipleCheckboxById("Input_610", string.Join(",", putOptionsHeat.ToArray()), "Heat", tabName); // Heat
             }
 
-            //driver.SetMultipleCheckboxById("Input_179", listing.CoolSystemDesc); // A/C 
+            //this.uploaderClient.SetMultipleCheckboxById("Input_179", listing.CoolSystemDesc); // A/C 
             var putOptionsCoolSystemDesc = new List<string>();
             var optionsLotCoolSystemDesc = string.IsNullOrWhiteSpace(listing.CoolSystemDesc) ? new List<string>() : listing.CoolSystemDesc.Split(',').ToList();
             foreach (string option in optionsLotCoolSystemDesc)
@@ -2398,10 +2345,10 @@ namespace Husa.Uploader.Core.Uploaders
 
             if (putOptionsCoolSystemDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_611", string.Join(",", putOptionsCoolSystemDesc.ToArray()), "A/C ", tabName); // A/C 
+                this.uploaderClient.SetMultipleCheckboxById("Input_611", string.Join(",", putOptionsCoolSystemDesc.ToArray()), "A/C ", tabName); // A/C 
             }
 
-            //driver.SetMultipleCheckboxById("Input_180", listing.SewerDesc); // Water/Sewer
+            //this.uploaderClient.SetMultipleCheckboxById("Input_180", listing.SewerDesc); // Water/Sewer
             var putOptionsSewerDesc = new List<string>();
             var optionsSewerDesc = string.IsNullOrWhiteSpace(listing.SewerDesc) ? new List<string>() : listing.SewerDesc.Split(',').ToList();
             foreach (string option in optionsSewerDesc)
@@ -2453,12 +2400,12 @@ namespace Husa.Uploader.Core.Uploaders
 
             if (putOptionsSewerDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_612", string.Join(",", putOptionsSewerDesc.ToArray()), "Water/Sewer", tabName); // Water/Sewer
+                this.uploaderClient.SetMultipleCheckboxById("Input_612", string.Join(",", putOptionsSewerDesc.ToArray()), "Water/Sewer", tabName); // Water/Sewer
             }
 
             //if (!String.IsNullOrWhiteSpace(listing.CTXRWaterHeater))
-            //    driver.SetMultipleCheckboxById("Input_181", listing.CTXRWaterHeater.Trim(), "Water/Heater", tabName); // Water/Heater
-            //driver.SetMultipleCheckboxById("Input_182", listing.UtilitiesDesc); // Other Utilities
+            //    this.uploaderClient.SetMultipleCheckboxById("Input_181", listing.CTXRWaterHeater.Trim(), "Water/Heater", tabName); // Water/Heater
+            //this.uploaderClient.SetMultipleCheckboxById("Input_182", listing.UtilitiesDesc); // Other Utilities
             var putOptionsUtilitiesDesc = new List<string>();
             var optionsUtilitiesDesc = string.IsNullOrWhiteSpace(listing.UtilitiesDesc) ? new List<string>() : listing.UtilitiesDesc.Split(',').ToList();
             foreach (string option in optionsUtilitiesDesc)
@@ -2539,117 +2486,89 @@ namespace Husa.Uploader.Core.Uploaders
             //'TELEP','Telephone'
             if (putOptionsUtilitiesDesc.Count > 0)
             {
-                driver.SetMultipleCheckboxById("Input_613", string.Join(",", putOptionsUtilitiesDesc.ToArray()), " Other Utilities", tabName); //  Other Utilities
+                this.uploaderClient.SetMultipleCheckboxById("Input_613", string.Join(",", putOptionsUtilitiesDesc.ToArray()), " Other Utilities", tabName); //  Other Utilities
             }
-            #endregion Utility Information
         }
 
-        /// <summary>
-        /// Fills the information for the [Financial Information] tab.
-        /// </summary>
-        /// <param name="driver">Webdriver Element for the current upload</param>
-        /// <param name="listing">Current listing being processed</param>
-        private void FillFinancialInformation(CoreWebDriver driver, ResidentialListingRequest listing)
+        private void FillFinancialInformation(ResidentialListingRequest listing)
         {
-            string tabName = "Financial Information";
-            driver.ExecuteScript(" jQuery(document).scrollTop(0);");
+            const string tabName = "Financial Information";
+            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
 
-            driver.Click(By.LinkText("Financial")); // Financial
+            this.uploaderClient.ClickOnElement(By.LinkText("Financial")); // Financial
 
-            // driver.SetMultipleCheckboxById("Input_149", ??? ); // Special
+            //this.uploaderClient.SetMultipleCheckboxById("Input_149", ??? ); // Special
+            //this.uploaderClient.WriteTextbox(By.Name("PROPSDTRMS"), listing.PROPSDTRMS);
+            //this.uploaderClient.SetMultipleCheckboxById("Input_150", "NEGOT,CASH,CONVE,FHA,TEXAS,VA"); // Proposed Terms
+            //this.uploaderClient.SetMultipleCheckboxById("Input_150", listing.PROPSDTRMS, "Proposed Terms", tabName); // Proposed Terms
 
-            //driver.WriteTextbox(By.Name("PROPSDTRMS"), listing.PROPSDTRMS);
-            //driver.SetMultipleCheckboxById("Input_150", "NEGOT,CASH,CONVE,FHA,TEXAS,VA"); // Proposed Terms
-            //driver.SetMultipleCheckboxById("Input_150", listing.PROPSDTRMS, "Proposed Terms", tabName); // Proposed Terms
 
-
-            //driver.SetSelect(By.Id("Input_624"), listing.HasHOA, "HOA", tabName); // HOA
+            //this.uploaderClient.SetSelect(By.Id("Input_624"), listing.HasHOA, "HOA", tabName); // HOA
             if (!string.IsNullOrEmpty(listing.HOA) && (listing.HOA == "MAND"))
             {
-                //driver.SetSelect(By.Id("Input_151"), "1", "HOA", tabName); // HOA
-                driver.SetSelect(By.Id("Input_622"), "MAN", "HOA Mandatory", tabName); // HOA Mandatory
+                //this.uploaderClient.SetSelect(By.Id("Input_151"), "1", "HOA", tabName); // HOA
+                this.uploaderClient.SetSelect(By.Id("Input_622"), "MAN", "HOA Mandatory", tabName); // HOA Mandatory
             }
             else
             {
-                driver.SetSelect(By.Id("Input_622"), "NONE", "HOA Mandatory", tabName); // HOA Mandatory
+                this.uploaderClient.SetSelect(By.Id("Input_622"), "NONE", "HOA Mandatory", tabName); // HOA Mandatory
             }
 
-            driver.WriteTextbox(By.Id("Input_623"), listing.AssocName); // HOA Name
-            driver.WriteTextbox(By.Id("Input_624"), listing.AssocFee); // HOA Amount
-            driver.SetSelect(By.Id("Input_625"), listing.AssocFeePaid, "HOA Term", tabName); // HOA Term
+            this.uploaderClient.WriteTextbox(By.Id("Input_623"), listing.AssocName); // HOA Name
+            this.uploaderClient.WriteTextbox(By.Id("Input_624"), listing.AssocFee); // HOA Amount
+            this.uploaderClient.SetSelect(By.Id("Input_625"), listing.AssocFeePaid, "HOA Term", tabName); // HOA Term
         }
 
-        /// <summary>
-        /// Fills the information for the [Showing Information] tab.
-        /// </summary>
-        /// <param name="driver">Webdriver Element for the current upload</param>
-        /// <param name="listing">Current listing being processed</param>
-        private void FillShowingInformation(CoreWebDriver driver, ResidentialListingRequest listing)
+        private void FillShowingInformation(ResidentialListingRequest listing)
         {
-            string tabName = "Showing Information";
-            driver.ExecuteScript(" jQuery(document).scrollTop(0);");
+            const string tabName = "Showing Information";
+            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
 
-            driver.Click(By.LinkText("Brokerage/Showing Information")); // Brokerage/Showing Information
+            this.uploaderClient.ClickOnElement(By.LinkText("Brokerage/Showing Information")); // Brokerage/Showing Information
 
-            #region Showing Information
-            //driver.WriteTextbox(By.Id("Input_209"), listing.AgentList); // List Agent MLS ID TODO: Verify the correct property
-            //driver.ExecuteScript("javascript:document.getElementById('Input_209_Refresh').value='1';RefreshToSamePage();"); // Refresh TODO: Veriry if necessary click in this button
+            //this.uploaderClient.WriteTextbox(By.Id("Input_209"), listing.AgentList); // List Agent MLS ID TODO: Verify the correct property
+            //this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_209_Refresh').value='1';RefreshToSamePage();"); // Refresh TODO: Veriry if necessary click in this button
 
-            //driver.WriteTextbox(By.Id("Input_211"), listing.AgentList); // List Agent MLS ID TODO: Verify the correct property
-            //driver.ExecuteScript("javascript:document.getElementById('Input_211_Refresh').value='1';RefreshToSamePage();"); // Refresh TODO: Veriry if necessary click in this button
-            #endregion Showing Information
+            //this.uploaderClient.WriteTextbox(By.Id("Input_211"), listing.AgentList); // List Agent MLS ID TODO: Verify the correct property
+            //this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_211_Refresh').value='1';RefreshToSamePage();"); // Refresh TODO: Veriry if necessary click in this button
 
-            #region Compensation/Showing Information
-            driver.SetSelect(By.Id("Input_632"), "Pct", "Buyer Agency $ or %", tabName); // Buyer Agency $ or %  (default hardcode "%")
-            driver.WriteTextbox(By.Id("Input_633"), "3"); // Buyer Agency Compensation (default hardcode "3")
-            // driver.SetSelect(By.Id("Input_213"), ??? ); // Variable Compensation
-            driver.SetMultipleCheckboxById("Input_645", "APPOI", "How to Show/Occupancy", tabName); // How to Show/Occupancy (default hardcode "Appointment Only")
-            driver.WriteTextbox(By.Id("Input_635"), "0"); // Buyer Agency Compensation (default hardcode "0")
-            driver.SetSelect(By.Id("Input_636"), "Pct", "Sub Agency $ or % ", tabName); // Sub Agency $ or % (default hardcode "%")
-            driver.SetSelect(By.Id("Input_637"), "0", "Prospects Exempt", tabName); // Prospects Exempt (default hardcode "No")
-            driver.WriteTextbox(By.Id("Input_638"), listing.TitleCo); // Pref Title Company
-            driver.WriteTextbox(By.Id("Input_639"), listing.CTXEarnestMoney); // Earnest Money
-            #endregion Compensation/Showing Information
+            this.uploaderClient.SetSelect(By.Id("Input_632"), "Pct", "Buyer Agency $ or %", tabName); // Buyer Agency $ or %  (default hardcode "%")
+            this.uploaderClient.WriteTextbox(By.Id("Input_633"), "3"); // Buyer Agency Compensation (default hardcode "3")
+            // this.uploaderClient.SetSelect(By.Id("Input_213"), ??? ); // Variable Compensation
+            this.uploaderClient.SetMultipleCheckboxById("Input_645", "APPOI", "How to Show/Occupancy", tabName); // How to Show/Occupancy (default hardcode "Appointment Only")
+            this.uploaderClient.WriteTextbox(By.Id("Input_635"), "0"); // Buyer Agency Compensation (default hardcode "0")
+            this.uploaderClient.SetSelect(By.Id("Input_636"), "Pct", "Sub Agency $ or % ", tabName); // Sub Agency $ or % (default hardcode "%")
+            this.uploaderClient.SetSelect(By.Id("Input_637"), "0", "Prospects Exempt", tabName); // Prospects Exempt (default hardcode "No")
+            this.uploaderClient.WriteTextbox(By.Id("Input_638"), listing.TitleCo); // Pref Title Company
+            this.uploaderClient.WriteTextbox(By.Id("Input_639"), listing.CTXEarnestMoney); // Earnest Money
         }
 
-        /// <summary>
-        /// Fills the information for the [Remarks] tab.
-        /// </summary>
-        /// <param name="driver">Webdriver Element for the current upload</param>
-        /// <param name="listing">Current listing being processed</param>
-        private void FillRemarks(CoreWebDriver driver, ResidentialListingRequest listing)
+        private void FillRemarks(ResidentialListingRequest listing)
         {
-            string tabName = "Remarks";
-            driver.ExecuteScript(" jQuery(document).scrollTop(0);");
+            const string tabName = "Remarks";
+            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
+            this.uploaderClient.ClickOnElement(By.LinkText("Remarks")); // Financial Information
 
-            driver.Click(By.LinkText("Remarks")); // Financial Information
+            this.uploaderClient.SetSelect(By.Id("Input_143"), "1", "IDX Opt In", tabName); // IDX Opt In (default hardcode "Yes")
+            this.uploaderClient.SetSelect(By.Id("Input_144"), "1", "Display on Internet", tabName); // Display on Internet (default hardcode "Yes")
+            this.uploaderClient.SetSelect(By.Id("Input_145"), "1", "Display Address", tabName); // Display Address (default hardcode "Yes")
+            this.uploaderClient.SetSelect(By.Id("Input_146"), "0", "Allow AVM", tabName); // Allow AVM (default hardcode "Yes")
+            this.uploaderClient.SetSelect(By.Id("Input_147"), "1", "Allow Comment", tabName); // Allow Comment (default hardcode "Yes")
 
-            #region Documents & Internet Display
-            driver.SetSelect(By.Id("Input_143"), "1", "IDX Opt In", tabName); // IDX Opt In (default hardcode "Yes")
-            driver.SetSelect(By.Id("Input_144"), "1", "Display on Internet", tabName); // Display on Internet (default hardcode "Yes")
-            driver.SetSelect(By.Id("Input_145"), "1", "Display Address", tabName); // Display Address (default hardcode "Yes")
-            driver.SetSelect(By.Id("Input_146"), "0", "Allow AVM", tabName); // Allow AVM (default hardcode "Yes")
-            driver.SetSelect(By.Id("Input_147"), "1", "Allow Comment", tabName); // Allow Comment (default hardcode "Yes")
-            #endregion Documents & Internet Display
-
-            #region Comments
-            UpdatePublicRemarksInRemarksTab(driver, listing); // Public Remarks
-            UpdatePrivateRemarksInRemarksTab(driver, listing); // Agent Remarks
-
-            // Directions
-            #endregion Comments
+            this.UpdatePublicRemarksInRemarksTab(listing); // Public Remarks
+            this.UpdatePrivateRemarksInRemarksTab(listing); // Agent Remarks
         }
 
-        private void UpdateYearBuiltDescriptionInGeneralTab(CoreWebDriver driver, ResidentialListingRequest listing)
+        private void UpdateYearBuiltDescriptionInGeneralTab(ResidentialListingRequest listing)
         {
-            string tabName = "General";
-            driver.wait.Until(webDriver => webDriver.FindElement(By.Id("Input_185")).Displayed);
-            driver.ScrollDown();
-            driver.SetSelect(By.Id("Input_184"), listing.YearBuiltDesc, "Construction Status", tabName); // Construction Status
-            driver.WriteTextbox(By.Id("Input_185"), listing.YearBuilt); // Year Built
+            const string tabName = "General";
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_185"));
+            this.uploaderClient.ScrollDown();
+            this.uploaderClient.SetSelect(By.Id("Input_184"), listing.YearBuiltDesc, "Construction Status", tabName); // Construction Status
+            this.uploaderClient.WriteTextbox(By.Id("Input_185"), listing.YearBuilt); // Year Built
         }
 
-        private void UpdatePublicRemarksInRemarksTab(CoreWebDriver driver, ResidentialListingRequest listing)
+        private void UpdatePublicRemarksInRemarksTab(ResidentialListingRequest listing)
         {
             BuiltStatus status = BuiltStatus.WithCompletion;
 
@@ -2668,11 +2587,11 @@ namespace Husa.Uploader.Core.Uploaders
 
             // driver.wait.Until(x => ExpectedConditions.ElementIsVisible(By.Id("Input_917")));
             Thread.Sleep(400);
-            driver.WriteTextbox(By.Id("Input_140"), listing.GetPublicRemarks(status)); // Internet / Remarks / Desc. of Property
-            driver.WriteTextbox(By.Id("Input_142"), listing.Directions); // Syndication Remarks
+            this.uploaderClient.WriteTextbox(By.Id("Input_140"), listing.GetPublicRemarks(status)); // Internet / Remarks / Desc. of Property
+            this.uploaderClient.WriteTextbox(By.Id("Input_142"), listing.Directions); // Syndication Remarks
         }
 
-        private void UpdatePrivateRemarksInRemarksTab(CoreWebDriver driver, ResidentialListingRequest listing)
+        private void UpdatePrivateRemarksInRemarksTab(ResidentialListingRequest listing)
         {
             var bonusMessage = string.Empty;
             if (listing.BonusCheckBox.Equals(true) && listing.BuyerCheckBox.Equals(true))
@@ -2707,54 +2626,22 @@ namespace Husa.Uploader.Core.Uploaders
                 !(bonusMessage + listing.GetPrivateRemarks()).ToLower().Contains("email contact") &&
                 !(bonusMessage + listing.GetPrivateRemarks()).ToLower().Contains(realtorContactEmail)) ? "Email contact: " + realtorContactEmail + ". " : "";
 
-            driver.WriteTextbox(By.Id("Input_141"), bonusMessage + listing.GetPrivateRemarks() + realtorContactEmail); // Agent Remarks
+            this.uploaderClient.WriteTextbox(By.Id("Input_141"), bonusMessage + listing.GetPrivateRemarks() + realtorContactEmail); // Agent Remarks
         }
 
-        /// <summary>
-        /// This method makes set of values to the Longitude and Latitud fields 
-        /// </summary>
-        /// <param name="driver"></param>
-        private void SetLongitudeAndLatitudeValues(CoreWebDriver driver, ResidentialListingRequest listing)
+        private void SetLongitudeAndLatitudeValues(ResidentialListingRequest listing)
         {
-            if (string.IsNullOrEmpty(listing.MLSNum))
+            if (!listing.IsNewListing)
             {
-                driver.WriteTextbox(By.Id("INPUT__93"), listing.Latitude); // Latitude
-                driver.WriteTextbox(By.Id("INPUT__94"), listing.Longitude); // Longitude
+                this.logger.LogInformation("Skipping configuration of latitude and longitude for listing {address} because it already has an mls number", $"{listing.StreetNum} {listing.StreetName}");
+                return;
             }
+
+            this.uploaderClient.WriteTextbox(By.Id("INPUT__93"), value: listing.Latitude); // Latitude
+            this.uploaderClient.WriteTextbox(By.Id("INPUT__94"), value: listing.Longitude); // Longitude
         }
 
-        public UploadResult UpdatePrice(CoreWebDriver driver, ResidentialListingRequest listing)
-        {
-            driver.UploadInformation.IsNewListing = string.IsNullOrWhiteSpace(listing.MLSNum);
-            Login(driver, listing);
-
-            #region navigateMenu
-            driver.wait.Until(webDriver => webDriver.FindElement(By.Id("ctl03_m_divFooterContainer")).Displayed);
-            #endregion
-
-            EditProperty(driver, listing);
-
-            driver.wait.Until(webDriver => webDriver.FindElement(By.LinkText("Residential Input Form")).Displayed);
-            driver.Click(By.LinkText("Residential Input Form"));
-
-            driver.ScrollDown();
-
-            driver.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
-
-            return UploadResult.Success;
-
-        }
-
-        private void UnSelectAllOptions(CoreWebDriver driver, string elementName)
-        {
-            //try
-            //{
-            ((IJavaScriptExecutor)driver).ExecuteScript("var elements = document.getElementsByName('" + elementName + "')[0].options; for (var i = 0; i < elements.length; i++) { elements[i].selected = false; } ");
-            //}
-            //catch { }
-        }
-
-        private List<string> ReadRoomAndFeatures(ResidentialListingRequest listing)
+        private static List<string> ReadRoomAndFeatures(ResidentialListingRequest listing)
         {
             var listRoomTypes = new List<string>();
 
@@ -2873,39 +2760,66 @@ namespace Husa.Uploader.Core.Uploaders
             return listRoomTypes;
         }
 
-        #region Virtual Tour
-
-        public UploadResult UploadVirtualTour(CoreWebDriver driver, ResidentialListingRequest listing, IEnumerable<IListingMedia> media)
+        private void DeleteAllImages()
         {
-            driver.UploadInformation.IsNewListing = false;
-
-            Login(driver, listing);
-            Thread.Sleep(1000);
-            driver.FindElement(By.LinkText(@"Edit Listing Details")).Click();
-            EditProperty(driver, listing);
-
-            driver.SwitchTo("main");
-            driver.SwitchTo("workspace");
-
-            Thread.Sleep(1000);
-
-            ((IJavaScriptExecutor)driver).ExecuteScript(" SP('7') ");
-            Thread.Sleep(2000);
-
-            var virtualTour = media.OfType<ResidentialListingVirtualTour>().FirstOrDefault();
-            if (virtualTour != null)
+            if (this.uploaderClient.FindElements(By.Id("cbxCheckAll")).Any())
             {
-                driver.WriteTextbox(By.Id("VIRTTOUR"), virtualTour.VirtualTourAddress.Replace("http://", "").Replace("https://", "")); // Virtual Tour URL Unbranded
+                this.uploaderClient.ClickOnElement(By.Id("cbxCheckAll"));
+                this.uploaderClient.ClickOnElement(By.Id("m_lbDeleteChecked"));
+                Thread.Sleep(1000);
+                this.uploaderClient.AcceptAlertWindow();
             }
-
-            return UploadResult.Success;
         }
 
-        public UploadResult UploadLeasing(CoreWebDriver driver, ResidentialListingRequest listing, Lazy<IEnumerable<IListingMedia>> media)
+        private void UploadNewImages(IEnumerable<ResidentialListingMedia> media, ResidentialListingRequest listing)
         {
-            throw new NotImplementedException();
-        }
+            this.uploaderClient.ExecuteScript(script: "javascript:var btn = jQuery('#m_lbSave')[0]; btn.click();");
+            this.uploaderClient.AcceptAlertWindow(isElementOptional: true);
+            this.NavigateToQuickEdit(listing.MLSNum);
 
-        #endregion
+            Thread.Sleep(400);
+
+            // Enter Manage Photos
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"));
+            this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
+
+            var i = 0;
+
+            //Upload Images
+            //foreach (var image in media.OrderBy(x => x.Order))
+            foreach (var image in media)
+            {
+                // MQ-311 - Uploader - Convert PNG for NTREIS and ACTRIS
+                if (!string.IsNullOrWhiteSpace(image.Extension) && (image.Extension.ToLower().Equals(".gif") || image.Extension.ToLower().Equals(".png")))
+                {
+                    image.Extension = ".jpg";
+                    string[] elements = Regex.Split(image.PathOnDisk, ".");
+                    if (elements.Length == 2)
+                    {
+                        var fileName = elements[0].ToString();
+                        image.PathOnDisk = fileName + ".jpg";
+                    }
+                }
+
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"));
+
+                this.uploaderClient.FindElement(By.Id("m_ucImageLoader_m_tblImageLoader")).FindElement(By.CssSelector("input[type=file]")).SendKeys(image.PathOnDisk);
+
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id($"photoCell_{i}"));
+
+                this.uploaderClient.ExecuteScript($"jQuery('#photoCell_{i} a')[0].click();");
+                Thread.Sleep(500);
+
+                this.uploaderClient.ExecuteScript($"jQuery('#m_tbxDescription').val('{image.Caption}');");
+
+                Thread.Sleep(500);
+
+                this.uploaderClient.ExecuteScript("jQuery('#m_ucDetailsView_m_btnSave').parent().removeClass('disabled');");
+
+                this.uploaderClient.ClickOnElementById("m_ucDetailsView_m_btnSave");
+
+                i++;
+            }
+        }
     }
 }

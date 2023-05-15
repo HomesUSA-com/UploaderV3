@@ -6,7 +6,6 @@ namespace Husa.Uploader.Views;
 
 public partial class ShellView : MetroWindow
 {
-
     public ShellView(ShellViewModel viewModel)
     {
         this.InitializeComponent();

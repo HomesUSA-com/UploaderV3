@@ -15,10 +15,10 @@ namespace Husa.Uploader.Data.QuicklisterEntities.Ctx.Records
 
         public TimeSpan EndTime { get; set; }
 
-        public bool Refreshments { get; set; }
+        public bool? Refreshments { get; set; }
 
-        public bool Lunch { get; set; }
+        public bool? Lunch { get; set; }
 
-        public bool IsDeleted { get; set; }
+        public bool? IsDeleted { get; set; }
     }
 }

@@ -17,7 +17,7 @@ namespace Husa.Uploader.Data.QuicklisterEntities.Ctx.Records
 
         public Guid? AgentId { get; set; }
 
-        public bool HasBuyerAgent { get; set; }
+        public bool? HasBuyerAgent { get; set; }
 
         public DateTime? BackOnMarketDate { get; set; }
 

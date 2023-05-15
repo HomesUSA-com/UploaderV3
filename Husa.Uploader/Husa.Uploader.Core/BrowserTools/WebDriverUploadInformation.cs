@@ -14,5 +14,22 @@ namespace Husa.Uploader.Core.BrowserTools
         {
             UploaderErrors = new List<UploaderError>();
         }
+
+        public void AddError(
+            string fieldFindBy,
+            string fieldLabel,
+            string fieldSection,
+            string friendlyErrorMessage,
+            string errorMessage = null)
+        {
+            var error = new UploaderError(
+                fieldFindBy,
+                fieldLabel,
+                fieldSection,
+                friendlyErrorMessage,
+                errorMessage: errorMessage ?? string.Empty);
+            this.UploaderErrors.Add(error);
+        }
+            
     }
 }
