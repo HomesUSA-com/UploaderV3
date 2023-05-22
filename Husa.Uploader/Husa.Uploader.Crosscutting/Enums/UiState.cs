@@ -5,6 +5,6 @@
         Issue,
         Fields,
         Error,
-        Creating
+        Creating,
     }
 }

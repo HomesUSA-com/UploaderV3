@@ -3,6 +3,6 @@
     public enum TypeOpenHouseHour
     {
         START,
-        END
+        END,
     }
 }

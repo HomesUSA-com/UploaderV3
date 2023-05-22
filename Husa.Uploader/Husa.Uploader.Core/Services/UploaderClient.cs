@@ -1,16 +1,14 @@
-﻿using Husa.Uploader.Core.BrowserTools;
-using Husa.Uploader.Core.Interfaces;
-using Husa.Uploader.Core.Models;
-using Microsoft.Extensions.Logging;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Support.UI;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Reflection;
-
 namespace Husa.Uploader.Core.Services
 {
+    using System;
+    using System.Collections.ObjectModel;
+    using System.Diagnostics;
+    using Husa.Uploader.Core.Interfaces;
+    using Husa.Uploader.Core.Models;
+    using Microsoft.Extensions.Logging;
+    using OpenQA.Selenium;
+    using OpenQA.Selenium.Support.UI;
+
     public class UploaderClient : IUploaderClient, IDisposable
     {
         private readonly IWebDriver driver;
@@ -23,7 +21,6 @@ namespace Husa.Uploader.Core.Services
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.driver = webDriver ?? throw new ArgumentNullException(nameof(webDriver));
-            this.driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromMinutes(10);
             this.internalJSScript = (IJavaScriptExecutor)this.driver;
             this.wait = new WebDriverWait(this.driver, timeout: TimeSpan.FromSeconds(10));
             this.UploadInformation = new();
@@ -35,7 +32,7 @@ namespace Husa.Uploader.Core.Services
             this.Dispose(disposing: false);
         }
 
-        public WebDriverUploadInformation UploadInformation { get; private set; }
+        public UploadCommandInfo UploadInformation { get; private set; }
 
         public string Url => this.driver.Url;
 
@@ -95,6 +92,13 @@ namespace Husa.Uploader.Core.Services
             return this.wait.Until(x => this.FindElement(findBy).Displayed);
         }
 
+        public bool WaitUntilElementIsDisplayed(By findBy, TimeSpan waitTime)
+        {
+            this.logger.LogDebug("Waiting for the element '{by}' to be displayed", findBy.ToString());
+            var customWait = new WebDriverWait(this.driver, waitTime);
+            return customWait.Until(driver => driver.FindElement(findBy).Displayed);
+        }
+
         public bool WaitUntilElementIsDisplayed(Func<IWebDriver, bool> waitCondition)
         {
             this.logger.LogDebug("Waiting for the condition '{@waitCondition}'", waitCondition);
@@ -107,22 +111,34 @@ namespace Husa.Uploader.Core.Services
             return this.wait.Until(x => this.ExecuteScript(script).Equals(expectedCompletedResult));
         }
 
-        public bool WaitUntilElementIsDisplayed(By findBy, TimeSpan waitTime)
+        public void WaitUntilElementExists(By findBy, TimeSpan waitTime)
         {
-            this.logger.LogInformation("Waiting for the element '{by}' to be displayed", findBy.ToString());
+            this.logger.LogInformation("Waiting for the element '{by}' to exist", findBy.ToString());
             var customWait = new WebDriverWait(this.driver, waitTime);
-            return customWait.Until(x => this.driver.FindElement(findBy).Displayed);
+            customWait.Until(driver => driver.FindElement(findBy));
         }
 
-        public bool IsElementPresent(By findBy)
+        public void WaitUntilElementExists(By findBy)
+        {
+            this.logger.LogInformation("Waiting for the element '{by}' to exist", findBy.ToString());
+            this.wait.Until(driver => driver.FindElement(findBy));
+        }
+
+        public bool IsElementPresent(By findBy, bool isVisible = false)
         {
             try
             {
-                this.FindElement(findBy, shouldWait: false, isElementOptional: false);
+                var element = this.FindElement(findBy, shouldWait: false, isElementOptional: false);
+                if (isVisible && element.Displayed)
+                {
+                    return true;
+                }
+
                 return true;
             }
             catch
             {
+                // Intentionally left empty because all fields are optional
             }
 
             return false;
@@ -164,15 +180,15 @@ namespace Husa.Uploader.Core.Services
             return this.driver.FindElements(by).FirstOrDefault();
         }
 
-        public ReadOnlyCollection<IWebElement> FindElements(By by, bool shouldWait = false)
+        public ReadOnlyCollection<IWebElement> FindElements(By findBy, bool shouldWait = false)
         {
-            this.logger.LogInformation("Finding elements by '{by}'", by.ToString());
+            this.logger.LogInformation("Finding elements by '{by}'", findBy.ToString());
             if (shouldWait)
             {
-                this.WaitUntilElementIsDisplayed(by);
+                this.WaitUntilElementIsDisplayed(findBy);
             }
 
-            return this.driver.FindElements(by);
+            return this.driver.FindElements(findBy);
         }
 
         public ReadOnlyCollection<IWebElement> FindElementsByName(string elementName, bool shouldWait = true)
@@ -188,8 +204,6 @@ namespace Husa.Uploader.Core.Services
             var filterBy = By.TagName(elementTagName);
             return this.FindElements(filterBy, shouldWait);
         }
-
-        public void ClickOnElement(By findBy) => this.ClickOnElement(findBy, shouldWait: false, waitTime: 0, isElementOptional: false, isSecondAttemp: false);
 
         public void ClickOnElement(By findBy, bool shouldWait, int waitTime, bool isElementOptional, bool isSecondAttemp = false)
         {
@@ -226,7 +240,6 @@ namespace Husa.Uploader.Core.Services
             {
                 if (!isSecondAttemp)
                 {
-
                     this.logger.LogWarning(staleElementException, "Stale reference while trying to click element {by} while processing the request.", findBy);
                     this.ClickOnElement(findBy, shouldWait: false, waitTime: 0, isElementOptional, isSecondAttemp: true);
                 }
@@ -236,9 +249,14 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public void ClickOnElementById(string elementId, bool shouldWait = false, int waitTime = 400, bool isElementOptional = false) => this.ClickOnElement(By.Id(elementId), shouldWait, waitTime, isElementOptional);
+        public void ClickOnElement(By findBy)
+            => this.ClickOnElement(findBy, shouldWait: false, waitTime: 0, isElementOptional: false, isSecondAttemp: false);
 
-        public void ClickOnElementByName(string elementName, bool shouldWait = false, int waitTime = 400, bool isElementOptional = false) => this.ClickOnElement(By.Name(elementName), shouldWait, waitTime, isElementOptional);
+        public void ClickOnElementById(string elementId, bool shouldWait = false, int waitTime = 400, bool isElementOptional = false)
+            => this.ClickOnElement(By.Id(elementId), shouldWait, waitTime, isElementOptional);
+
+        public void ClickOnElementByName(string elementName, bool shouldWait = false, int waitTime = 400, bool isElementOptional = false)
+            => this.ClickOnElement(By.Name(elementName), shouldWait, waitTime, isElementOptional);
 
         public void WriteTextbox(
             By findBy,
@@ -285,7 +303,6 @@ namespace Husa.Uploader.Core.Services
                 {
                     this.AcceptAlertWindow(isElementOptional: true, shouldWait: true);
                 }
-
             }
             catch (StaleElementReferenceException staleElementException)
             {
@@ -337,8 +354,6 @@ namespace Husa.Uploader.Core.Services
                     throw;
                 }
             }
-
-            return;
         }
 
         public void SetSelect(By findBy, string value, string fieldLabel, string fieldSection, bool isElementOptional = false)
@@ -397,7 +412,7 @@ namespace Husa.Uploader.Core.Services
         public void SetSelectWithScript(string fieldId, string containerClassName, int childIndex, string fieldValue, string fieldName, string fieldSection)
         {
             this.ExecuteScript($"$('.{containerClassName} select:eq({childIndex})').attr('id', '{fieldId}');");
-            this.WaitUntilElementIsDisplayed(By.Id(fieldId));
+            this.WaitUntilElementExists(By.Id(fieldId));
             this.SetSelect(By.Id(fieldId), fieldValue, fieldName, fieldSection);
         }
 
@@ -446,8 +461,6 @@ namespace Husa.Uploader.Core.Services
                     friendlyErrorMessage: friendlyErrorMessage,
                     errorMessage: exception.Message);
             }
-
-            return;
         }
 
         public void SetMultiSelect(By findBy, string csvValues, bool isElementOptional = false)
@@ -482,6 +495,7 @@ namespace Husa.Uploader.Core.Services
             }
             catch (Exception exception) when (exception is NoSuchElementException || exception is UnexpectedTagNameException)
             {
+                // Intentionally left empty because all fields are optional
             }
         }
 
@@ -525,7 +539,6 @@ namespace Husa.Uploader.Core.Services
                 }
             }
 
-
             var scriptResult = this.ExecuteScript(script: "  (function($) { $.fn.hasScrollBar = function() { return this.get(0).scrollHeight > this.height(); }  })(jQuery); return $('#" + id + "').hasScrollBar();  ");
             _ = bool.TryParse(scriptResult.ToString(), out var hasScrollBar);
             foreach (var value in splitValues)
@@ -546,14 +559,17 @@ namespace Husa.Uploader.Core.Services
                         this.ScrollDownPosition(positionOfItem);
                     }
                 }
-                catch { }
+                catch
+                {
+                    // Intentionally left empty because all fields are optional
+                }
 
                 Thread.Sleep(400);
                 this.ClickOnElementById(elementId, isElementOptional: true);
             }
         }
 
-        //FIXME: This method needs to be reviewed and reimplemented, it's too convoluted and overly defensive
+        // FIXME: This method needs to be reviewed and reimplemented, it's too convoluted and overly defensive
         public void SetMultipleCheckboxById(string id, string values, string fieldLabel, string fieldSection)
         {
             string friendlyErrorMessage = "Tried to transform an element with locator: {" + id + "} into a Select when processing the values {" + values + "}.";
@@ -620,7 +636,7 @@ namespace Husa.Uploader.Core.Services
                         try
                         {
                             int positionOfItem = 0;
-                            string posItemY = this.ExecuteScript(script: " var returnValue = 0; try { returnValue = jQuery('#" + elementId + "').position().top; } catch { } return returnValue; ").ToString();
+                            string posItemY = this.ExecuteScript(script: " var returnValue = 0; try { returnValue = jQuery('#" + elementId + "').position().top; } catch { } return returnValue; ", isScriptOptional: true).ToString();
                             if (!string.IsNullOrEmpty(posItemY) && !hasScrollBar)
                             {
                                 var positionYDecimal = decimal.Parse(posItemY);
@@ -630,18 +646,17 @@ namespace Husa.Uploader.Core.Services
                                 this.ScrollDownPosition(positionOfItem);
                             }
                         }
-                        catch { }
+                        catch
+                        {
+                            // Intentionally left empty because all fields are optional
+                        }
 
                         Thread.Sleep(400);
                         this.ClickOnElementById(elementId);
                     }
                     catch (Exception exception)
                     {
-                        try
-                        {
-                            this.ExecuteScript(script: "jQuery('#" + id + " [value=\"" + value + "\"]').attr('selected', 'selected');");
-                        }
-                        catch { }
+                        this.ExecuteScript(script: "jQuery('#" + id + " [value=\"" + value + "\"]').attr('selected', 'selected');", isScriptOptional: true);
                         this.UploadInformation.UploaderErrors.Add(new UploaderError(id, fieldLabel, fieldSection, friendlyErrorMessage, errorMessage: string.Empty));
                         this.logger.LogError(exception, "Error when processing the request {requestId}.", this.UploadInformation.RequestId);
                     }
@@ -660,18 +675,16 @@ namespace Husa.Uploader.Core.Services
             try
             {
                 var entry = value ?? string.Empty;
-                var option = this.FindElement(findBy);
                 var links = this.driver.FindElements(findBy).ToList();
 
                 for (int linkIndex = 0; linkIndex < links.Count; linkIndex++)
                 {
                     if (links[linkIndex].GetAttribute("value") == entry.ToString())
                     {
-                        option = links[linkIndex];
+                        var option = links[linkIndex];
                         option.Click();
                     }
                 }
-
             }
             catch (NoSuchElementException exception)
             {
@@ -768,8 +781,9 @@ namespace Husa.Uploader.Core.Services
 
         public object ExecuteScriptAsync(string script, bool isScriptOptional = false, params object[] args)
         {
-            this.logger.LogInformation("Executing async script '{script}'", script); try
+            try
             {
+                this.logger.LogInformation("Executing async script '{script}'", script);
                 return this.internalJSScript.ExecuteAsyncScript(script, args);
             }
             catch (Exception exception)
@@ -794,13 +808,13 @@ namespace Husa.Uploader.Core.Services
 
         public ITargetLocator SwitchTo() => this.driver.SwitchTo();
 
-        public void SwitchTo(string frame, bool switchToParent = false)
+        public void SwitchTo(string frame, bool switchToParent)
         {
             try
             {
                 if (switchToParent)
                 {
-                    driver.SwitchTo().ParentFrame();
+                    this.driver.SwitchTo().ParentFrame();
                 }
 
                 this.SwitchTo().Frame(frame);
@@ -815,20 +829,24 @@ namespace Husa.Uploader.Core.Services
 
         public void CloseDriver()
         {
-            if (this.driver != null)
+            if (this.driver == null)
             {
-                this.logger.LogInformation("Finalizing driver session");
-                this.driver.Quit();
+                return;
+            }
 
-                try
+            this.logger.LogInformation("Finalizing driver session");
+            this.driver.Quit();
+
+            try
+            {
+                foreach (var process in Process.GetProcessesByName("chromedriver"))
                 {
-                    foreach (var process in Process.GetProcessesByName("chromedriver"))
-                    {
-                        process.Kill();
-                    }
-
+                    process.Kill();
                 }
-                catch { }
+            }
+            catch
+            {
+                // Intentionally left empty because the result is not important
             }
         }
 
@@ -854,6 +872,20 @@ namespace Husa.Uploader.Core.Services
                 this.CloseDriver();
                 this.disposedValue = true;
             }
+        }
+
+        private void SetValueToSelectField(string fieldId, string containerClassName, int childIndex, string fieldValue, string fieldName, string fieldSection)
+        {
+            this.ExecuteScript("$('." + containerClassName + " select:eq(" + childIndex + ")').attr('id', '" + fieldId + "');");
+            this.WaitUntilElementIsDisplayed(By.Id(fieldId));
+            this.SetSelect(By.Id(fieldId), fieldValue, fieldName, fieldSection);
+        }
+
+        private void SetValueToTextField(string fieldId, string containerClassName, int childIndex, string fieldValue)
+        {
+            this.ExecuteScript("$('." + containerClassName + " input[type=\"text\"]:eq(" + childIndex + ")').attr('id', '" + fieldId + "');");
+            this.WaitUntilElementIsDisplayed(By.Id(fieldId));
+            this.WriteTextbox(By.Id(fieldId), fieldValue);
         }
     }
 }

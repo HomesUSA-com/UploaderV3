@@ -1,11 +1,11 @@
-﻿using Husa.Uploader.Data.Entities;
-using Husa.Uploader.ViewModels;
-using Husa.Uploader.Views;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-
-namespace Husa.Uploader.Factories
+﻿namespace Husa.Uploader.Factories
 {
+    using System;
+    using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.ViewModels;
+    using Husa.Uploader.Views;
+    using Microsoft.Extensions.DependencyInjection;
+
     public class ChildViewFactory : IChildViewFactory
     {
         private readonly IServiceProvider serviceProvider;

@@ -1,22 +1,22 @@
-﻿using Husa.Uploader.Core.Interfaces;
-using Husa.Uploader.Core.Models;
-using Husa.Uploader.Crosscutting.Options;
-using Microsoft.Extensions.Options;
-using System.Net;
-using System.Net.Http.Json;
-
 namespace Husa.Uploader.Core.Services
 {
-    public class AuthenticationClient : IAuthenticationClient
+    using System.Net;
+    using System.Net.Http.Json;
+    using Husa.Extensions.Api.Client;
+    using Husa.Uploader.Core.Interfaces;
+    using Husa.Uploader.Core.Models;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Options;
+
+    public class AuthenticationClient : HusaStandardClient, IAuthenticationClient
     {
         private readonly HttpClient httpClient;
-        private readonly IOptions<ApplicationOptions> options;
         private readonly string baseUri;
 
-        public AuthenticationClient(HttpClient httpClient, IOptions<ApplicationOptions> options)
+        public AuthenticationClient(HttpClient httpClient, IOptions<JsonOptions> jsonOptions)
+            : base(httpClient, jsonOptions)
         {
             this.httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-            this.options = options ?? throw new ArgumentNullException(nameof(options));
             this.baseUri = "api/v1/Authentication/login";
         }
 

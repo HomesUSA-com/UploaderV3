@@ -165,15 +165,17 @@
                             </Button>
 
                             <TextBlock x:Name="ErrorMessage" 
-                               Grid.Row="5" Grid.Column="2" 
-                               Foreground="Red" MaxWidth="300"
+                               Grid.Row="5"
+                               Grid.Column="2" 
+                               Foreground="Red"
+                               MaxWidth="300"
                                Margin="10,57,152,81"
                                Visibility="{Binding IsErrorVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                Text="{Binding ErrorMessage, UpdateSourceTrigger=PropertyChanged}">
                             </TextBlock>
 
                             <StackPanel Orientation="Horizontal" Grid.Row="5" Grid.Column="2" Margin="0,162,60,10" >
-                                <TextBlock  Foreground="#FF1B3861" Margin="0 2 0 0 " Name="ApplicationBuildDateLogin" Text="Version: " />
+                                <TextBlock Foreground="#FF1B3861" Margin="0 2 0 0 " Name="ApplicationBuildDateLogin" Text="{Binding ApplicationBuildDate}" />
                                 <Button Name="ReleaseNotesLogIn" Width="15" Height="25"  Margin="10 2 0 0 " Padding=" 0 0 0 0 " Background="Transparent" BorderBrush="Transparent">
                                     <materialDesign:PackIcon Kind="NewReleases" VerticalAlignment="Center" Width="15" Height="20" Foreground="#FF1B3861" Margin="0 -10 0 0 " Padding=" 0 0 0 0 "/>
                                 </Button>
@@ -206,7 +208,7 @@
                         </Grid>
                         <TextBlock Grid.Row="2" Grid.Column="0" Foreground="#FFFFFF" Name="LastUpdated" Background="#555555" Height="30" VerticalAlignment="Bottom" Padding="5,5,0,0" Margin="5,20,10,0" Text="{Binding LastUpdated, UpdateSourceTrigger=PropertyChanged}" />
                         <StackPanel Grid.Row="2" Grid.Column="2"  Orientation="Horizontal" HorizontalAlignment="Right">
-                            <TextBlock VerticalAlignment="Bottom" HorizontalAlignment="Left" Foreground="#FFFFFF" x:Name="ApplicationBuildDate" Background="#555555" Padding="10,5,0,0" Height="29" Margin="0,0,0,0"  >
+                            <TextBlock VerticalAlignment="Bottom" HorizontalAlignment="Left" Foreground="#FFFFFF" x:Name="ApplicationBuildDate" Background="#555555" Padding="10,5,0,0" Height="29" Margin="0,0,0,0" Text="{Binding ApplicationBuildDate}">
                                 <Run Text="Version: "/>
                             </TextBlock>
                             <Button HorizontalAlignment="Right" Name="ReleaseNotesMainScreen" Width="27" Height="auto" Margin="0,15,10,0" Padding=" 10 0 0 0 " Background="Transparent" BorderBrush="Transparent" BorderThickness="0" >
@@ -230,7 +232,7 @@
                             IsEnabled="{Binding NoUploadInProgress}"
                             Style="{DynamicResource ListViewStyle}"
                             ItemsSource="{Binding ListingRequests}" 
-                            SelectedItem="{Binding SelectedListingRequest, Mode=TwoWay}">
+                            SelectedItem="{Binding SelectedListingRequest, Mode=TwoWay}" Background="White" BorderBrush="Black">
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="{x:Type ListViewItem}">
                                     <Setter Property="Background" Value="#FFFFFF" />
@@ -238,11 +240,12 @@
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="{x:Type ListViewItem}">
-                                                <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" 
-                                                        BorderThickness="{TemplateBinding BorderThickness}" 
-                                                        Background="{TemplateBinding Background}" 
-                                                        Padding="{TemplateBinding Padding}"
-                                                        SnapsToDevicePixels="true">
+                                                <Border x:Name="Bd"
+                                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                                    Background="{TemplateBinding Background}" 
+                                                    Padding="{TemplateBinding Padding}"
+                                                    SnapsToDevicePixels="true">
                                                     <GridViewRowPresenter 
                                                         HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
                                                         SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"

@@ -1,14 +1,19 @@
-﻿using Husa.Uploader.Configuration;
+namespace Husa.Uploader;
+using System;
+using System.IO;
+using System.Threading;
+using System.Windows;
+using System.Windows.Threading;
+using Husa.Uploader.Configuration;
 using Husa.Uploader.Crosscutting.Options;
+using Husa.Uploader.Data.Repositories;
+using Husa.Uploader.Deployment;
+using Husa.Uploader.Factories;
 using Husa.Uploader.Views;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using System;
-using System.Windows;
-
-namespace Husa.Uploader;
 
 public partial class App : Application
 {
@@ -55,25 +60,55 @@ public partial class App : Application
                 services.ConfigureDataAccess();
                 services.ConfigureServices();
                 services.ConfigureWebDriver();
+                VersionManager.ConfigureVersionInfo(isDevelopment: host.HostingEnvironment.IsDevelopment());
             })
             .Build();
     }
 
     public static IHost AppHost { get; private set; }
 
-    protected override async void OnStartup(StartupEventArgs args)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         await AppHost.StartAsync();
+
+        CleanTempFolder();
 
         var startupForm = AppHost.Services.GetRequiredService<ShellView>();
         startupForm.Show();
 
-        base.OnStartup(args);
+        base.OnStartup(e);
     }
 
-    protected override async void OnExit(ExitEventArgs args)
+    protected override async void OnExit(ExitEventArgs e)
     {
         await AppHost.StopAsync();
-        base.OnExit(args);
+        var uploadFactory = AppHost.Services.GetRequiredService<IUploadFactory>();
+        uploadFactory.CloseDriver();
+        base.OnExit(e);
+    }
+
+    protected void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        Log.Fatal(e.Exception, "The uploader CRASHED with an UnhandledException");
+        var uploadFactory = AppHost.Services.GetRequiredService<IUploadFactory>();
+        uploadFactory.CloseDriver();
+        Thread.Sleep(TimeSpan.FromSeconds(2));
+        e.Handled = true;
+    }
+
+    private static void CleanTempFolder()
+    {
+        try
+        {
+            var folder = Path.Combine(Path.GetTempPath(), MediaRepository.MediaFolderName);
+            if (Directory.Exists(folder))
+            {
+                Directory.Delete(folder, recursive: true);
+            }
+        }
+        catch
+        {
+            // Ignoring error because the outcome of the delete is not important
+        }
     }
 }

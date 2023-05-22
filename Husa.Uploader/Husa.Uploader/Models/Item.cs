@@ -1,9 +1,9 @@
-﻿using Husa.Uploader.Crosscutting.Enums;
-using Husa.Uploader.Crosscutting.Extensions;
-using System;
-
 namespace Husa.Uploader.Models
 {
+    using System;
+    using Husa.Extensions.Common;
+    using Husa.Uploader.Crosscutting.Enums;
+
     public class Item
     {
         public Item(string selectedItemId, UploaderState uploaderStatus)

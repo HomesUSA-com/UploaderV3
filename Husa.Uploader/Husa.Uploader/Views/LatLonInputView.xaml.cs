@@ -1,9 +1,9 @@
-﻿using Husa.Uploader.ViewModels;
-using System;
-using System.Windows;
-
-namespace Husa.Uploader.Views
+﻿namespace Husa.Uploader.Views
 {
+    using System;
+    using System.Windows;
+    using Husa.Uploader.ViewModels;
+
     /// <summary>
     /// Interaction logic for LatLonInputView.xaml
     /// </summary>
@@ -11,7 +11,7 @@ namespace Husa.Uploader.Views
     {
         public LatLonInputView(LatLonInputViewModel viewModel)
         {
-            InitializeComponent();
+            this.InitializeComponent();
             this.DataContext = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         }
     }

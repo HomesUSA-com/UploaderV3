@@ -1,7 +1,7 @@
-﻿using Husa.Uploader.Crosscutting.Enums;
-
 namespace Husa.Uploader.Crosscutting.Extensions
 {
+    using Husa.Uploader.Crosscutting.Enums;
+
     public static class OpenHouseExtensions
     {
         public static List<DateTime> GetNextDate(int max)
@@ -20,7 +20,8 @@ namespace Husa.Uploader.Crosscutting.Extensions
         public static List<DateTime> GetDatesToUpdate(int max)
         {
             var date = new List<DateTime>();
-            // TODO : Calls method to get the System Holidays
+
+            //// TODO: Calls method to get the System Holidays
             var holidays = new List<DateTime>();
             var start = DateTime.Today;
             var end = start.AddDays(max);
@@ -32,6 +33,7 @@ namespace Husa.Uploader.Crosscutting.Extensions
                     date.Add(nextDay);
                 }
             }
+
             return date;
         }
 

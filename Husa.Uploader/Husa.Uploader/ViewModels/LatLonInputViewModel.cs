@@ -1,14 +1,12 @@
-﻿using Husa.Uploader.Commands;
-using Husa.Uploader.Crosscutting.Enums;
-using Husa.Uploader.Models;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Windows;
-using System.Windows.Input;
-
 namespace Husa.Uploader.ViewModels
 {
+    using System.Linq;
+    using System.Windows;
+    using System.Windows.Input;
+    using Husa.Uploader.Commands;
+    using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Models;
+
     public class LatLonInputViewModel : ViewModel
     {
         private UiState state;
@@ -19,18 +17,6 @@ namespace Husa.Uploader.ViewModels
 
         private ICommand continueCommand;
         private ICommand cancelCommand;
-
-        private bool CanContinue => decimal.TryParse(this.Latitude, out _) && decimal.TryParse(this.Longitude, out _);
-
-        private UiState State
-        {
-            get => this.state;
-            set
-            {
-                this.state = value;
-                this.OnPropertyChanged(name: nameof(ShowError));
-            }
-        }
 
         public string Latitude
         {
@@ -43,7 +29,7 @@ namespace Husa.Uploader.ViewModels
                 }
 
                 this.latitude = value;
-                OnPropertyChanged();
+                this.OnPropertyChanged();
             }
         }
 
@@ -58,7 +44,7 @@ namespace Husa.Uploader.ViewModels
                 }
 
                 this.longitude = value;
-                OnPropertyChanged();
+                this.OnPropertyChanged();
             }
         }
 
@@ -82,6 +68,18 @@ namespace Husa.Uploader.ViewModels
             }
         }
 
+        private bool CanContinue => decimal.TryParse(this.Latitude, out _) && decimal.TryParse(this.Longitude, out _);
+
+        private UiState State
+        {
+            get => this.state;
+            set
+            {
+                this.state = value;
+                this.OnPropertyChanged(name: nameof(this.ShowError));
+            }
+        }
+
         public void Cancel()
         {
             var currentWindow = Application.Current.Windows.OfType<Window>().SingleOrDefault(window => window.DataContext == this);
@@ -102,7 +100,7 @@ namespace Husa.Uploader.ViewModels
             else
             {
                 this.State = UiState.Error;
-                OnPropertyChanged(name: nameof(ShowError));
+                this.OnPropertyChanged(name: nameof(this.ShowError));
             }
         }
 

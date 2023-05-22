@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace Husa.Uploader.Factories
+﻿namespace Husa.Uploader.Factories
 {
+    using System;
+
     public class AbstractFactory<T> : IAbstractFactory<T>
     {
         private readonly Func<T> factory;

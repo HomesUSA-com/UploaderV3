@@ -1,4 +1,4 @@
-﻿namespace Husa.Uploader.Crosscutting.Extensions
+namespace Husa.Uploader.Crosscutting.Extensions
 {
     public static class StringExtensions
     {
@@ -11,15 +11,15 @@
 
             if (stringWithSlashes.Contains('/'))
             {
-                stringWithSlashes = stringWithSlashes.Replace('/', '-');
+                stringWithSlashes = stringWithSlashes.Replace('/', newChar: '-');
             }
             else if (stringWithSlashes.Contains('\\'))
             {
-                stringWithSlashes = stringWithSlashes.Replace('\\', '-');
+                stringWithSlashes = stringWithSlashes.Replace('\\', newChar: '-');
             }
             else if (stringWithSlashes.Contains('"'))
             {
-                stringWithSlashes = stringWithSlashes.Replace("\"", "");
+                stringWithSlashes = stringWithSlashes.Replace("\"", newValue: string.Empty);
             }
 
             return stringWithSlashes;

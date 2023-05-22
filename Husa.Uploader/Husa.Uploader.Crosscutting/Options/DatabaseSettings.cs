@@ -1,7 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-
 namespace Husa.Uploader.Crosscutting.Options
 {
+    using System.ComponentModel.DataAnnotations;
+
     public class DatabaseSettings
     {
         [Required(AllowEmptyStrings = false)]

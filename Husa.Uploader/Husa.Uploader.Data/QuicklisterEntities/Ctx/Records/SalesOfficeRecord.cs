@@ -1,7 +1,7 @@
-using Husa.Uploader.Crosscutting.Enums.Ctx;
-
 namespace Husa.Uploader.Data.QuicklisterEntities.Ctx.Records
 {
+    using Husa.Uploader.Crosscutting.Enums.Ctx;
+
     public record SalesOfficeRecord
     {
         public string StreetNumber { get; set; }

@@ -1,20 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-
 namespace Husa.Uploader.SignalR.WebApp.Pages
 {
-    public class IndexModel : PageModel
-    {
-        private readonly ILogger<IndexModel> _logger;
+    using Microsoft.AspNetCore.Mvc.RazorPages;
 
-        public IndexModel(ILogger<IndexModel> logger)
+    public class Index : PageModel
+    {
+        private readonly ILogger<Index> logger;
+
+        public Index(ILogger<Index> logger)
         {
-            _logger = logger;
+            this.logger = logger;
         }
 
         public void OnGet()
         {
-
+            this.logger.LogInformation("Getting Information");
         }
     }
 }

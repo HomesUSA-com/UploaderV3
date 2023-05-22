@@ -1,39 +1,40 @@
-﻿using Elasticsearch.Net;
-using Husa.Uploader.Commands;
-using Husa.Uploader.Core;
-using Husa.Uploader.Core.Interfaces;
-using Husa.Uploader.Core.Interfaces.Services;
-using Husa.Uploader.Core.Models;
-using Husa.Uploader.Crosscutting.Enums;
-using Husa.Uploader.Crosscutting.Extensions;
-using Husa.Uploader.Crosscutting.Options;
-using Husa.Uploader.Data;
-using Husa.Uploader.Data.Entities;
-using Husa.Uploader.Data.Interfaces;
-using Husa.Uploader.Factories;
-using Husa.Uploader.Models;
-using Husa.Uploader.Views;
-using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Threading;
-
 namespace Husa.Uploader.ViewModels
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using System.Windows;
+    using System.Windows.Input;
+    using System.Windows.Threading;
+    using Husa.Uploader.Commands;
+    using Husa.Uploader.Core.Interfaces;
+    using Husa.Uploader.Core.Interfaces.ServiceActions;
+    using Husa.Uploader.Core.Models;
+    using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Crosscutting.Options;
+    using Husa.Uploader.Data;
+    using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Deployment;
+    using Husa.Uploader.Factories;
+    using Husa.Uploader.Models;
+    using Husa.Uploader.Views;
+    using Microsoft.AspNetCore.SignalR.Client;
+    using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Options;
+
     public class ShellViewModel : ViewModel
     {
+        public static readonly IEnumerable<UploaderState> NoUploadInProgressStatuses = new[]
+        {
+            UploaderState.UploadInProgress,
+            UploaderState.UploadSucceeded,
+            UploaderState.UploadSucceededWithErrors,
+            UploaderState.UploadFailed,
+        };
+
         private const int MaxSignalRReconnectAttempts = 50;
 
         private readonly IOptions<ApplicationOptions> options;
@@ -45,11 +46,10 @@ namespace Husa.Uploader.ViewModels
         private readonly IUploadFactory uploadFactory;
         private readonly ILogger<ShellView> logger;
 
-        private DispatcherTimer dispatcherTimer;
-        private DispatcherTimer dispatcherTimerSignalR;
+        private CancellationTokenSource cancellationTokenSource;
 
         private Entity currentEntity;
-        private int SignalRConnectionTriesError = 0;
+        private int signalRConnectionTriesError = 0;
         private DataBaseStatus databaseOnline;
         private SignalRStatus signalROnline;
         private UploaderState state;
@@ -65,18 +65,10 @@ namespace Husa.Uploader.ViewModels
         private string correlationIdBox;
         private string lastUpdated;
         private bool loadFailed;
+        private bool updateAvailable;
 
         private UploadListingItem selectedListingRequest;
-        private IEnumerable<ResidentialListingRequest> CurrentResidentialListingRequest;
         private ObservableCollection<UploadListingItem> listingRequests;
-
-        public static readonly IEnumerable<UploaderState> NoUploadInProgressStatuses = new[]
-        {
-            UploaderState.UploadInProgress,
-            UploaderState.UploadSucceeded,
-            UploaderState.UploadSucceededWithErrors,
-            UploaderState.UploadFailed,
-        };
 
         private ICommand loginCommand;
         private ICommand searchListingCommand;
@@ -105,7 +97,6 @@ namespace Husa.Uploader.ViewModels
             ILogger<ShellView> logger)
             : this()
         {
-
             this.options = options ?? throw new ArgumentNullException(nameof(options));
             this.sqlDataLoader = sqlDataLoader ?? throw new ArgumentNullException(nameof(sqlDataLoader));
             this.authenticationClient = authenticationClient ?? throw new ArgumentNullException(nameof(authenticationClient));
@@ -128,9 +119,8 @@ namespace Husa.Uploader.ViewModels
             this.CorrelationIdBox = "Address";
             this.LastUpdated = "Last Updated: 12/12/12 22:22:22";
             this.State = UploaderState.Ready;
+            this.ConfigureVersionCheck();
         }
-
-        private UploadResult UploadResult { get; set; }
 
         public int SelectedTabItem
         {
@@ -157,23 +147,22 @@ namespace Husa.Uploader.ViewModels
             }
         }
 
-        ////public string ApplicationBuildDate
-        ////{
-        ////    get
-        ////    {
-        ////        var version = VersionManager.ApplicationBuildDate + " - " + VersionManager.ApplicationBuildVersion;
-        ////        return version;
-        ////    }
-        ////}
+        public string ApplicationBuildDate => $"{VersionManager.ApplicationBuildDate} - {VersionManager.ApplicationBuildVersion}";
 
-        ////public string ApplicationBuildDateLogin
-        ////{
-        ////    get
-        ////    {
-        ////        var version = VersionManager.ApplicationBuildDate + " - " + VersionManager.ApplicationBuildVersion;
-        ////        return version;
-        ////    }
-        ////}
+        public bool UpdateAvailable
+        {
+            get => this.updateAvailable;
+            set
+            {
+                if (value == this.updateAvailable)
+                {
+                    return;
+                }
+
+                this.updateAvailable = value;
+                this.OnPropertyChanged();
+            }
+        }
 
         public string LastUpdated
         {
@@ -204,10 +193,10 @@ namespace Husa.Uploader.ViewModels
 
         public bool LoadFailed
         {
-            get => loadFailed;
+            get => this.loadFailed;
             set
             {
-                loadFailed = value;
+                this.loadFailed = value;
                 this.OnPropertyChanged();
             }
         }
@@ -236,7 +225,7 @@ namespace Husa.Uploader.ViewModels
 
         public string UserName
         {
-            get { return this.userName; }
+            get => this.userName;
             set
             {
                 if (value == this.userName)
@@ -251,7 +240,7 @@ namespace Husa.Uploader.ViewModels
 
         public string Password
         {
-            get { return this.password; }
+            get => this.password;
             set
             {
                 if (value == this.password)
@@ -266,7 +255,7 @@ namespace Husa.Uploader.ViewModels
 
         public string UserFullName
         {
-            get { return this.userFullName; }
+            get => this.userFullName;
             set
             {
                 if (value == this.userFullName)
@@ -306,11 +295,11 @@ namespace Husa.Uploader.ViewModels
 
         public bool IsListingButtonActive
         {
-            get => isListingButtonActive;
+            get => this.isListingButtonActive;
             set
             {
-                isListingButtonActive = value;
-                isLotButtonActive = !isLotButtonActive;
+                this.isListingButtonActive = value;
+                this.isLotButtonActive = !this.isLotButtonActive;
                 this.OnPropertyChanged();
             }
         }
@@ -330,8 +319,8 @@ namespace Husa.Uploader.ViewModels
                 if (this.currentEntity != Entity.Empty)
                 {
                     this.Workers = null;
-                    this.SignalRConnectionTriesError = 0;
-                    Task.Run(() => LoadData(this.currentEntity));
+                    this.signalRConnectionTriesError = 0;
+                    Task.Run(() => this.LoadData(this.currentEntity));
                 }
             }
         }
@@ -358,8 +347,8 @@ namespace Husa.Uploader.ViewModels
                     this.ShowDataBaseError = false;
                 }
 
-                this.OnPropertyChanged(name: nameof(ShowDataBaseOnline));
-                this.OnPropertyChanged(name: nameof(ShowDataBaseError));
+                this.OnPropertyChanged(name: nameof(this.ShowDataBaseOnline));
+                this.OnPropertyChanged(name: nameof(this.ShowDataBaseError));
             }
         }
 
@@ -419,7 +408,7 @@ namespace Husa.Uploader.ViewModels
         {
             get
             {
-                this.loginCommand ??= new RelayCommand(param => this.LogIn(), canExecute: param => true);
+                this.loginCommand ??= new RelayAsyncCommand(param => this.LogIn(), canExecute: param => true);
                 return this.loginCommand;
             }
         }
@@ -543,39 +532,40 @@ namespace Husa.Uploader.ViewModels
 
         public bool CanStartEdit => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IEditListing>(this.SelectedListingRequest.FullListing.MarketCode);
 
-        public bool CanStartUpload => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IUploadListing>(SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartUpload => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IUploadListing>(this.SelectedListingRequest.FullListing.MarketCode);
 
-        public bool CanStartImageUpdate => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IUpdateImages>(SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartImageUpdate => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IUpdateImages>(this.SelectedListingRequest.FullListing.MarketCode);
 
-        public bool CanStartStatusUpdate => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdateStatus>(SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartStatusUpdate => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdateStatus>(this.SelectedListingRequest.FullListing.MarketCode);
 
-        public bool CanStartPriceUpdate => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdatePrice>(SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartPriceUpdate => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdatePrice>(this.SelectedListingRequest.FullListing.MarketCode);
 
-        public bool CanStartCompletionDateUpdate => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdateCompletionDate>(SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartCompletionDateUpdate => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdateCompletionDate>(this.SelectedListingRequest.FullListing.MarketCode);
 
-        public bool CanStartUploadVirtualTour => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IUpdateImages>(SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartUploadVirtualTour => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IUpdateImages>(this.SelectedListingRequest.FullListing.MarketCode);
 
         public bool CanStartOHUpdate
         {
             get
             {
-                if (this.SelectedListingRequest == null || !UploaderFactory.IsActionSupported<IUpdateOpenHouse>(SelectedListingRequest.FullListing.MarketCode))
+                if (this.SelectedListingRequest == null || !UploaderFactory.IsActionSupported<IUpdateOpenHouse>(this.SelectedListingRequest.FullListing.MarketCode))
                 {
                     return false;
                 }
 
-                var isPending = (this.SelectedListingRequest.FullListing.ListStatus == "PEND" || this.SelectedListingRequest.FullListing.ListStatus == "PND");
+                var isPending = this.SelectedListingRequest.FullListing.ListStatus == "PEND" || this.SelectedListingRequest.FullListing.ListStatus == "PND";
                 var showOHPending = this.SelectedListingRequest.FullListing.AllowPendingList == "Y";
                 bool isPendingWithOHPending = isPending && showOHPending;
                 return !this.SelectedListingRequest.FullListing.IsNewListing &&
-                    (isPendingWithOHPending ||
-                    !isPendingWithOHPending && this.SelectedListingRequest.FullListing.EnableOpenHouse);
+                    (isPendingWithOHPending || this.SelectedListingRequest.FullListing.EnableOpenHouse);
             }
         }
 
-        private void Refresh() => OnPropertyChanged(name: string.Empty);
+        private UploadResult UploadResult { get; set; }
 
-        private async void LogIn()
+        private void Refresh() => this.OnPropertyChanged(name: string.Empty);
+
+        private async Task LogIn()
         {
             await this.DoLoginAction();
 
@@ -600,7 +590,7 @@ namespace Husa.Uploader.ViewModels
                     this.UserFullName = userResponse.FullName;
                 }
 
-                if (!HasPermission)
+                if (!this.HasPermission)
                 {
                     this.logger.LogWarning("Username {username} or password incorrect. Please, try again.", this.UserName);
                     this.ShowError(friendlyMessage: "Username or password incorrect. Please, try again.");
@@ -621,18 +611,36 @@ namespace Husa.Uploader.ViewModels
 
         private void ConfigureSignalR()
         {
-            this.dispatcherTimerSignalR = new DispatcherTimer();
-            this.dispatcherTimerSignalR.Tick += ReloadSignalR;
-            this.dispatcherTimerSignalR.Interval = TimeSpan.FromSeconds(this.options.Value.SingalRRefreshIntervalSeconds);
-            this.dispatcherTimerSignalR.Start();
+            var dispatcherTimerSignalR = new DispatcherTimer();
+            dispatcherTimerSignalR.Tick += this.ReloadSignalR;
+            dispatcherTimerSignalR.Interval = TimeSpan.FromSeconds(this.options.Value.SignalRRefreshIntervalSeconds);
+            dispatcherTimerSignalR.Start();
         }
 
         private void ConfigureReload()
         {
-            this.dispatcherTimer = new DispatcherTimer();
-            this.dispatcherTimer.Tick += ReloadTick;
-            this.dispatcherTimer.Interval = TimeSpan.FromSeconds(this.options.Value.DataRefreshIntervalInSeconds);
-            this.dispatcherTimer.Start();
+            var reloadDispatcher = new DispatcherTimer();
+            reloadDispatcher.Tick += this.ReloadTick;
+            reloadDispatcher.Interval = TimeSpan.FromSeconds(this.options.Value.DataRefreshIntervalInSeconds);
+            reloadDispatcher.Start();
+        }
+
+        private void ConfigureVersionCheck()
+        {
+            var versionCheckDispatcher = new DispatcherTimer();
+            versionCheckDispatcher.Tick += this.VersionCheck;
+            versionCheckDispatcher.Interval = TimeSpan.FromMinutes(15);
+            versionCheckDispatcher.Start();
+
+            this.VersionCheck(sender: null, e: null);
+        }
+
+        private void VersionCheck(object sender, EventArgs e)
+        {
+            if (!this.UpdateAvailable)
+            {
+                Task.Run(() => this.UpdateAvailable = VersionManager.InstallUpdateSyncWithInfo());
+            }
         }
 
         private async void ReloadTick(object sender, EventArgs e)
@@ -657,55 +665,47 @@ namespace Husa.Uploader.ViewModels
                 return;
             }
 
-            if (this.SignalRConnectionTriesError > MaxSignalRReconnectAttempts)
+            if (this.signalRConnectionTriesError > MaxSignalRReconnectAttempts)
             {
-                this.logger.LogWarning("Too many retries {retryCount} to connect with signalr, stopping retry", this.SignalRConnectionTriesError);
+                this.logger.LogWarning("Too many retries {retryCount} to connect with signalr, stopping retry", this.signalRConnectionTriesError);
                 return;
             }
 
             try
             {
-                await ReceiveWorkerList();
-                this.SignalRConnectionTriesError = 0;
+                await this.ReceiveWorkerList();
+                this.signalRConnectionTriesError = 0;
             }
             catch
             {
-                this.SignalRConnectionTriesError++;
+                this.signalRConnectionTriesError++;
             }
         }
 
         private async Task SearchCorrelationId()
         {
-            LastUpdated = "Updating Listings...";
+            this.LastUpdated = "Updating Listings...";
             int recordsCount = 0;
 
             IEnumerable<ResidentialListingRequest> fullListings;
             try
             {
-                switch (CurrentEntity)
+                switch (this.CurrentEntity)
                 {
                     case Entity.Listing:
-                        fullListings = await this.sqlDataLoader.GetListingRequest(CorrelationIdBox);
-                        this.CurrentResidentialListingRequest = fullListings;
-                        recordsCount = fullListings.Count();
-                        this.ProcessListingData(fullListings);
-                        break;
-                        ////case Entity.Leasing:
-                        ////    fullListings = await _loader.GetLeasing(CorrelationIdBox);
-                        ////    CurrentResidentialLeasing = fullListings;
-                        ////    recordsCount = fullListings.Count();
-                        ////    await ProcessLeasingData(fullListings);
+                        var requestId = new Guid(this.CorrelationIdBox);
+                        var pendingRequest = await this.sqlDataLoader.GetListingRequest(requestId, this.cancellationTokenSource.Token);
+                        if (pendingRequest != null)
+                        {
+                            fullListings = new List<ResidentialListingRequest> { pendingRequest };
+                            recordsCount = 1;
+                            this.ProcessListingData(fullListings);
+                        }
 
-                        ////    break;
-                        ////case Entity.Lot:
-                        ////    fullListings = await _loader.GetLot(CorrelationIdBox);
-                        ////    CurrentLots = fullListings;
-                        ////    recordsCount = fullListings.Count();
-                        ////    await ProcessLotsData(fullListings);
-                        ////    break;
+                        break;
                 }
 
-                this.LastUpdated = "Total " + CurrentEntity.ToString() + " records: [" + recordsCount + "]. Last Updated: " + DateTime.Now.ToString("MM/dd/yyyy h:mm:ss tt");
+                this.LastUpdated = $"Total {this.CurrentEntity} records: [{recordsCount}]. Last Updated: {DateTime.Now:MM/dd/yyyy h:mm:ss tt}";
             }
             catch (Exception ex)
             {
@@ -722,18 +722,13 @@ namespace Husa.Uploader.ViewModels
             switch (entity)
             {
                 case Entity.Listing:
-                    IEnumerable<ResidentialListingRequest> fullListings;
                     try
                     {
-                        fullListings = await this.sqlDataLoader.GetListingData();
-
-                        this.CurrentResidentialListingRequest = fullListings;
+                        var fullListings = await this.sqlDataLoader.GetListingData();
                         this.DatabaseOnline = DataBaseStatus.Online;
                         this.ProcessListingData(fullListings);
                         // TODO : Add refresh data with workers
-
-                        var recordsCount = fullListings.Count();
-                        this.LastUpdated = $"Total {entity} records: [{recordsCount}]. Last Updated: {DateTime.Now:MM/dd/yyyy h:mm:ss tt}";
+                        this.LastUpdated = $"Total {entity} records: [{fullListings.Count()}]. Last Updated: {DateTime.Now:MM/dd/yyyy h:mm:ss tt}";
                     }
                     catch (Exception ex)
                     {
@@ -743,54 +738,14 @@ namespace Husa.Uploader.ViewModels
                         this.DatabaseOnline = DataBaseStatus.Failed;
                         this.Refresh();
                     }
-                    break;
-                    ////case Entity.Leasing:
-                    ////    IEnumerable<ResidentialListingRequest> fullLeasing;
-                    ////    try
-                    ////    {
-                    ////        fullLeasing = await _loader.GetLeasingData();
-                    ////        CurrentResidentialLeasing = fullLeasing;
-                    ////        DatabaseOnline = DataBaseStatus.Online;
-                    ////        await ProcessLeasingData(fullLeasing);
-                    ////        recordsCount = fullLeasing.Count();
-                    ////        LastUpdated = "Total " + entity + " records: [" + recordsCount + "]. Last Updated: " + DateTime.Now.ToString("MM/dd/yyyy h:mm:ss tt");
-                    ////    }
-                    ////    catch (Exception ex)
-                    ////    {
-                    ////        LastUpdated = "Failed to Connect to Database Server.";
-                    ////        EventLogWriter.Write(SystemLog.UploaderApp, "UploaderApp", 0, "Failed to Connect to Server.\n\n" + ex.Message + "\n\n" + ex.StackTrace, System.Diagnostics.EventLogEntryType.Error);
-                    ////        LoadFailed = true;
-                    ////        DatabaseOnline = DataBaseStatus.Failed;
-                    ////        this.Refresh();
-                    ////    }
-                    ////    break;
-                    ////case Entity.Lot:
-                    ////    IEnumerable<ResidentialListingRequest> fullLots;
-                    ////    try
-                    ////    {
-                    ////        fullLots = await _loader.GetLotsData();
-                    ////        CurrentLots = fullLots;
-                    ////        DatabaseOnline = DataBaseStatus.Online;
-                    ////        await ProcessLotsData(fullLots);
-                    ////        recordsCount = fullLots.Count();
-                    ////        LastUpdated = "Total " + entity + " records: [" + recordsCount + "]. Last Updated: " + DateTime.Now.ToString("MM/dd/yyyy h:mm:ss tt");
-                    ////    }
-                    ////    catch (Exception ex)
-                    ////    {
-                    ////        LastUpdated = "Failed to Connect to Database Server.";
-                    ////        EventLogWriter.Write(SystemLog.UploaderApp, "UploaderApp", 0, "Failed to Connect to Server.\n\n" + ex.Message + "\n\n" + ex.StackTrace, System.Diagnostics.EventLogEntryType.Error);
-                    ////        LoadFailed = true;
-                    ////        DatabaseOnline = DataBaseStatus.Failed;
-                    ////        this.Refresh();
-                    ////    }
 
-                    ////    break;
+                    break;
             }
         }
 
         private async Task ReceiveWorkerList()
         {
-            if (this.SignalRConnectionTriesError > MaxSignalRReconnectAttempts)
+            if (this.signalRConnectionTriesError > MaxSignalRReconnectAttempts)
             {
                 this.SignalROnline = SignalRStatus.Failed;
                 this.logger.LogWarning("Skipping the retrieval action of the workers. The maximum of attempts {maxAttempts} to reconnect with SignalR has been reached setting signalR status to {status}", MaxSignalRReconnectAttempts, this.SignalROnline);
@@ -838,7 +793,7 @@ namespace Husa.Uploader.ViewModels
                         foreach (var worker in this.Workers)
                         {
                             UploadListingItem contains = null;
-                            switch (CurrentEntity)
+                            switch (this.CurrentEntity)
                             {
                                 case Entity.Listing:
                                 case Entity.Leasing:
@@ -882,7 +837,7 @@ namespace Husa.Uploader.ViewModels
 
                 await connection.StopAsync();
 
-                this.SignalRConnectionTriesError = 0;
+                this.signalRConnectionTriesError = 0;
             }
             catch (Exception exception)
             {
@@ -915,7 +870,7 @@ namespace Husa.Uploader.ViewModels
                     var uploadItem = listingRequest.AsUploadItem(
                         builderName: "Ben Caballero",
                         brokerOffice: "HHRE00",
-                        isLeasing: "",
+                        isLeasing: string.Empty,
                         isLot: "No",
                         this.CurrentEntity,
                         worker,
@@ -944,7 +899,6 @@ namespace Husa.Uploader.ViewModels
                         {
                             this.SelectedListingRequest = null;
                         }
-
                     }
                 }
 
@@ -956,9 +910,9 @@ namespace Husa.Uploader.ViewModels
             }
         }
 
-        public async Task BroadcastSelectedList(Guid? selectedId = null)
+        private async Task BroadcastSelectedList(Guid? selectedId = null)
         {
-            if (this.SignalRConnectionTriesError > MaxSignalRReconnectAttempts)
+            if (this.signalRConnectionTriesError > MaxSignalRReconnectAttempts)
             {
                 this.SignalROnline = SignalRStatus.Failed;
                 this.logger.LogWarning("Skipping the broadcast action of the selected listing. The maximum of attempts {maxAttempts} to reconnect with SignalR has been reached setting signalR status to {status}", MaxSignalRReconnectAttempts, this.SignalROnline);
@@ -990,7 +944,7 @@ namespace Husa.Uploader.ViewModels
         {
             UploadListingItem selectedListingItem = null;
             List<UploadListingItem> availableListingsToUpload = this.ListingRequests.ToList();
-            switch (CurrentEntity)
+            switch (this.CurrentEntity)
             {
                 case Entity.Listing:
                 case Entity.Leasing:
@@ -1012,19 +966,20 @@ namespace Husa.Uploader.ViewModels
             availableListingsToUpload[selectedIndex].WorkingStatus = responseItem.Status;
             try
             {
-                ListingRequests = await Task.Run(() => new ObservableCollection<UploadListingItem>(availableListingsToUpload));
+                this.ListingRequests = await Task.Run(() => new ObservableCollection<UploadListingItem>(availableListingsToUpload));
             }
             catch
             {
+                // Intentionally left empty to disregard any failures running this task
             }
         }
 
-        private async Task StartUpload(UploadType opType, Func<ResidentialListingRequest, UploadResult> action)
+        private async Task Start(UploadType opType, Func<ResidentialListingRequest, CancellationToken, Task<UploadResult>> action)
         {
             var listing = this.SelectedListingRequest.FullListing;
             this.ShowCancelButton = true;
             var entityID = Guid.Empty;
-            switch (CurrentEntity)
+            switch (this.CurrentEntity)
             {
                 case Entity.Listing:
                 case Entity.Leasing:
@@ -1037,18 +992,17 @@ namespace Husa.Uploader.ViewModels
 
             try
             {
-                this.SignalRConnectionTriesError = 0;
+                this.signalRConnectionTriesError = 0;
                 this.State = UploaderState.UploadInProgress;
 
                 // 1. Broadcast the current seleted request ID to other users
                 await this.BroadcastSelectedList(selectedId: entityID);
 
                 // 2. Refresh the table
-                var item = new Item(listing.ResidentialListingRequestID, this.State);
-                await this.RefreshWorkersOnTable(UserFullName, item);
+                await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(listing.ResidentialListingRequestID, this.State));
 
-                //2. Execute de action
-                var response = await Task.Run(() => action(listing));
+                // 2. Execute de action
+                var response = await Task.Run(() => this.RunAction(action));
                 this.HandleUploadExecutionResult(response);
             }
             catch (Exception exception)
@@ -1077,8 +1031,7 @@ namespace Husa.Uploader.ViewModels
                 await this.BroadcastSelectedList(selectedId: entityID);
 
                 // 2. Refresh the table
-                var item = new Item(listing.ResidentialListingRequestID, uploaderStatus: this.State);
-                await this.RefreshWorkersOnTable(this.UserFullName, item);
+                await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(listing.ResidentialListingRequestID, this.State));
 
                 try
                 {
@@ -1091,21 +1044,35 @@ namespace Husa.Uploader.ViewModels
             }
         }
 
+        private async Task<UploadResult> RunAction(
+            Func<ResidentialListingRequest, CancellationToken, Task<UploadResult>> action)
+        {
+            this.cancellationTokenSource = new CancellationTokenSource();
+            try
+            {
+                this.logger.LogInformation("Starting the requested upload operation");
+                return await Task.Run(() => action(this.SelectedListingRequest.FullListing, this.cancellationTokenSource.Token));
+            }
+            catch (OperationCanceledException)
+            {
+                this.State = UploaderState.Cancelled;
+                return UploadResult.Success;
+            }
+            finally
+            {
+                this.cancellationTokenSource = null;
+            }
+        }
+
         private async Task StartEdit()
         {
             var uploader = this.uploadFactory.Create<IEditListing>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.StartUpload(opType: UploadType.Edit, action: uploader.Edit);
+            await this.Start(opType: UploadType.Edit, action: uploader.Edit);
         }
 
         private async Task StartUpload()
         {
-            var media = new Lazy<IEnumerable<IListingMedia>>(() =>
-            {
-                var request = this.SelectedListingRequest.FullListing;
-                return this.sqlDataLoader.GetListingMedia(request.ResidentialListingRequestID, request.MarketName);
-            });
-
-            if (string.IsNullOrEmpty(SelectedListingRequest.FullListing.MLSNum))
+            if (string.IsNullOrEmpty(this.SelectedListingRequest.FullListing.MLSNum))
             {
                 var locationInfo = this.RequestLocationInfo();
                 if (locationInfo.IsValidLocation)
@@ -1122,79 +1089,70 @@ namespace Husa.Uploader.ViewModels
 
             this.ShowCancelButton = true;
             var uploader = this.uploadFactory.Create<IUploadListing>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.StartUpload(opType: UploadType.InserOrUpdate, action: listing => uploader.Upload(listing, media));
+            await this.Start(opType: UploadType.InserOrUpdate, action: uploader.Upload);
         }
 
         private async Task StartStatusUpdate()
         {
             var uploader = this.uploadFactory.Create<IUpdateStatus>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.StartUpload(opType: UploadType.Status, action: uploader.UpdateStatus);
+            await this.Start(opType: UploadType.Status, action: uploader.UpdateStatus);
         }
 
         private async Task StartPriceUpdate()
         {
             var uploader = this.uploadFactory.Create<IUpdatePrice>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.StartUpload(opType: UploadType.Price, action: uploader.UpdatePrice);
+            await this.Start(opType: UploadType.Price, action: uploader.UpdatePrice);
         }
 
         private async Task StartCompletionDateUpdate()
         {
             var uploader = this.uploadFactory.Create<IUpdateCompletionDate>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.StartUpload(opType: UploadType.CompletionDate, action: uploader.UpdateCompletionDate);
-        }
-
-        private async Task StartImageUpdate()
-        {
-            var request = this.SelectedListingRequest.FullListing;
-            var media = this.sqlDataLoader.GetListingMedia(request.ResidentialListingRequestID, request.MarketName);
-
-            if (string.IsNullOrWhiteSpace(this.SelectedListingRequest.FullListing.MLSNum) ||
-                string.IsNullOrWhiteSpace(this.SelectedListingRequest.MlsNumber) ||
-                this.SelectedListingRequest.MlsNumber == "New Listing")
-            {
-                var mlsNum = this.RequestMlsNumber();
-                if (string.IsNullOrWhiteSpace(mlsNum))
-                {
-                    request.MLSNum = mlsNum;
-                }
-                else
-                {
-                    return;
-                }
-            }
-
-            var uploader = this.uploadFactory.Create<IUpdateImages>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.StartUpload(opType: UploadType.Image, action: listing => uploader.UpdateImages(listing, media));
+            await this.Start(opType: UploadType.CompletionDate, action: uploader.UpdateCompletionDate);
         }
 
         private async Task StartOHUpdate()
         {
             var uploader = this.uploadFactory.Create<IUpdateOpenHouse>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.StartUpload(opType: UploadType.OpenHouse, action: uploader.UpdateOpenHouse);
+            await this.Start(opType: UploadType.OpenHouse, action: uploader.UpdateOpenHouse);
+        }
+
+        private async Task StartImageUpdate()
+        {
+            if (!this.MediaUpload())
+            {
+                return;
+            }
+
+            var uploader = this.uploadFactory.Create<IUpdateImages>(this.SelectedListingRequest.FullListing.MarketCode);
+            await this.Start(opType: UploadType.Image, action: uploader.UpdateImages);
         }
 
         private async Task StartVTUpload()
         {
-            var request = this.SelectedListingRequest.FullListing;
-            var media = this.sqlDataLoader.GetListingMedia(request.ResidentialListingRequestID, request.MarketName);
-
-            if (string.IsNullOrWhiteSpace(this.SelectedListingRequest.FullListing.MLSNum) ||
-                string.IsNullOrWhiteSpace(this.SelectedListingRequest.MlsNumber) ||
-                this.SelectedListingRequest.MlsNumber == "New Listing")
+            if (!this.MediaUpload())
             {
-                var mlsNum = this.RequestMlsNumber();
-                if (string.IsNullOrWhiteSpace(mlsNum))
-                {
-                    request.MLSNum = mlsNum;
-                }
-                else
-                {
-                    return;
-                }
+                return;
             }
 
             var uploader = this.uploadFactory.Create<IUpdateVirtualTour>(this.SelectedListingRequest.FullListing.MarketCode);
-            await StartUpload(opType: UploadType.VirtualTour, action: listing => uploader.UploadVirtualTour(listing, media));
+            await this.Start(opType: UploadType.VirtualTour, action: uploader.UploadVirtualTour);
+        }
+
+        private bool MediaUpload()
+        {
+            if (!this.SelectedListingRequest.IsNewListing)
+            {
+                return false;
+            }
+
+            var mlsNum = this.RequestMlsNumber();
+            if (!string.IsNullOrWhiteSpace(mlsNum))
+            {
+                this.SelectedListingRequest.FullListing.MLSNum = mlsNum;
+                return true;
+            }
+
+            return false;
         }
 
         private async Task FinishUpload()
@@ -1220,8 +1178,7 @@ namespace Husa.Uploader.ViewModels
             await this.BroadcastSelectedList(selectedId: this.SelectedListingRequest.RequestId);
 
             // 2. Refresh the table
-            var item = new Item(this.SelectedListingRequest.RequestId, this.State);
-            await this.RefreshWorkersOnTable(UserFullName, item);
+            await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new Item(this.SelectedListingRequest.RequestId, this.State));
         }
 
         private async Task MarkCompleted()
@@ -1234,6 +1191,7 @@ namespace Husa.Uploader.ViewModels
             this.ShowCancelButton = false;
             try
             {
+                this.cancellationTokenSource?.Cancel();
                 this.uploadFactory.Uploader.CancelOperation();
             }
             catch (Exception exception)
@@ -1246,8 +1204,7 @@ namespace Husa.Uploader.ViewModels
             await this.BroadcastSelectedList(selectedId: null);
 
             // 2. Refresh the table
-            var item = new Item(SelectedListingRequest.RequestId, uploaderStatus: UploaderState.Cancelled);
-            await this.RefreshWorkersOnTable(UserFullName, item);
+            await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(this.SelectedListingRequest.RequestId, uploaderStatus: UploaderState.Cancelled));
         }
 
         private string RequestMlsNumber()

@@ -1,8 +1,8 @@
-﻿using System.Globalization;
-using System.Windows.Controls;
-
-namespace Husa.Uploader.Validators
+﻿namespace Husa.Uploader.Validators
 {
+    using System.Globalization;
+    using System.Windows.Controls;
+
     public class DecimalValidationRule : ValidationRule
     {
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)

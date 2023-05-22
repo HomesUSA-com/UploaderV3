@@ -1,9 +1,9 @@
 ﻿namespace Husa.Uploader.Crosscutting.Enums
 {
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Converters;
     using System.ComponentModel;
     using System.Runtime.Serialization;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
 
     [JsonConverter(typeof(StringEnumConverter))]
     public enum ListingRequestState
@@ -28,6 +28,6 @@
         Processing,
         [EnumMember(Value = "Approved")]
         [Description("Approved")]
-        Approved
+        Approved,
     }
 }

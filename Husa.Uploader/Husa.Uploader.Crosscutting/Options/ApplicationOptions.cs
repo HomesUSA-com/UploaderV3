@@ -1,7 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-
 namespace Husa.Uploader.Crosscutting.Options
 {
+    using System.ComponentModel.DataAnnotations;
+
     public class ApplicationOptions
     {
         public const string Section = "Application";
@@ -16,7 +16,7 @@ namespace Husa.Uploader.Crosscutting.Options
         public string SignalRURLServer { get; set; }
 
         [MinLength(length: 1)]
-        public int SingalRRefreshIntervalSeconds { get; set; }
+        public int SignalRRefreshIntervalSeconds { get; set; }
 
         [MinLength(length: 45)]
         public int DataRefreshIntervalInSeconds { get; set; }
@@ -28,8 +28,11 @@ namespace Husa.Uploader.Crosscutting.Options
 
         [Required]
         public MarketConfiguration MarketInfo { get; set; }
-        
+
         [Required]
         public UploaderSettings Uploader { get; set; }
+
+        [Required]
+        public ServiceSettings Services { get; set; }
     }
 }

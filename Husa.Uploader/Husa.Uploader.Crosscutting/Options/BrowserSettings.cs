@@ -1,12 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Husa.Uploader.Crosscutting.Options
+﻿namespace Husa.Uploader.Crosscutting.Options
 {
+    using System.ComponentModel.DataAnnotations;
+
     public class BrowserSettings
     {
-        [Required(AllowEmptyStrings = false)]
-        public string DriverPath { get; set; }
-
         [Required]
         public IReadOnlyList<UserProfilePreference> UserProfilePreferences { get; set; }
 

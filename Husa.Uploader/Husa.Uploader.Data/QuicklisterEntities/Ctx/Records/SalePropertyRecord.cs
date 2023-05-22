@@ -1,10 +1,7 @@
 namespace Husa.Uploader.Data.QuicklisterEntities.Ctx.Records
 {
-    using Husa.Extensions.Common;
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
-    using System.Linq;
 
     public record SalePropertyRecord
     {

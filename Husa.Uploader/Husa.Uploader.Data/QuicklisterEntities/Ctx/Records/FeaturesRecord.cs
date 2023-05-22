@@ -1,7 +1,7 @@
 namespace Husa.Uploader.Data.QuicklisterEntities.Ctx.Records
 {
-    using Husa.Uploader.Crosscutting.Enums.Ctx;
     using System.Collections.Generic;
+    using Husa.Uploader.Crosscutting.Enums.Ctx;
 
     public record FeaturesRecord
     {

@@ -1,6 +1,6 @@
-﻿namespace Husa.Uploader.Factories
+namespace Husa.Uploader.Factories
 {
-    public interface IAbstractFactory<T>
+    public interface IAbstractFactory<out T>
     {
         T Create();
     }

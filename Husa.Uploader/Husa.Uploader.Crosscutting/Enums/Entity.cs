@@ -5,6 +5,6 @@
         Listing,
         Leasing,
         Lot,
-        Empty
+        Empty,
     }
 }

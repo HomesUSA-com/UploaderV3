@@ -1,4 +1,4 @@
-﻿namespace Husa.Uploader.Crosscutting.Options
+namespace Husa.Uploader.Crosscutting.Options
 {
     public class MarketConfiguration
     {

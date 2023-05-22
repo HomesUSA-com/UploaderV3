@@ -1,14 +1,11 @@
-﻿using Husa.Uploader.Data.Entities;
-using Husa.Uploader.Data.Interfaces;
-
 namespace Husa.Uploader.Data
 {
+    using Husa.Uploader.Data.Entities;
+
     public interface ISqlDataLoader
     {
         Task<IEnumerable<ResidentialListingRequest>> GetListingData(CancellationToken token = default);
-        
-        IEnumerable<IListingMedia> GetListingMedia(Guid residentialListingRequestID, string marketName);
 
-        Task<IEnumerable<ResidentialListingRequest>> GetListingRequest(string residentialListingRequestId, CancellationToken token = default);
+        Task<ResidentialListingRequest> GetListingRequest(Guid residentialListingRequestId, CancellationToken token = default);
     }
 }

@@ -4,6 +4,6 @@
     {
         Failed = 0,
         Online = 1,
-        Unknow = 2
+        Unknow = 2,
     }
 }

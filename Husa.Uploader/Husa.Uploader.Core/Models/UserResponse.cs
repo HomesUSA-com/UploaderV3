@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
-using System.Text.Json.Serialization;
-
-namespace Husa.Uploader.Core.Models
+﻿namespace Husa.Uploader.Core.Models
 {
+    using System.Text.Json.Serialization;
+    using Newtonsoft.Json;
+
     public class UserResponse
     {
         public int UserID { get; set; }
@@ -48,6 +48,4 @@ namespace Husa.Uploader.Core.Models
         public DateTime SysTimestamp { get; set; }
         public int SysOwnedBy { get; set; }
     }
-
-
 }

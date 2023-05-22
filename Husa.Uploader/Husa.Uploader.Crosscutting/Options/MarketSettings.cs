@@ -1,8 +1,8 @@
-﻿using Husa.Extensions.Common.Enums;
-using System.ComponentModel.DataAnnotations;
-
-namespace Husa.Uploader.Crosscutting.Options
+﻿namespace Husa.Uploader.Crosscutting.Options
 {
+    using System.ComponentModel.DataAnnotations;
+    using Husa.Extensions.Common.Enums;
+
     public class MarketSettings
     {
         public bool IsEnabled { get; set; }
@@ -17,9 +17,6 @@ namespace Husa.Uploader.Crosscutting.Options
 
         [Required(AllowEmptyStrings = false)]
         public string Password { get; set; }
-
-        [Required(AllowEmptyStrings = false)]
-        public string ServiceUrl { get; set; }
 
         [Required(AllowEmptyStrings = false)]
         public string LoginUrl { get; set; }

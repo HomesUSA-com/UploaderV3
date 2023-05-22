@@ -1,27 +1,31 @@
-﻿using Husa.Uploader.Core.Interfaces;
-using Husa.Uploader.Core.Interfaces.Services;
-using Husa.Uploader.Core.Services;
-using Husa.Uploader.Crosscutting.Options;
-using Husa.Uploader.Data;
-using Husa.Uploader.Factories;
-using Husa.Uploader.ViewModels;
-using Husa.Uploader.Views;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Interactions;
-using Serilog;
-using Serilog.Events;
-using Serilog.Sinks.Elasticsearch;
-using System;
-using System.IO;
-using System.Reflection;
-
 namespace Husa.Uploader.Configuration
 {
+    using System;
+    using System.IO;
+    using System.Reflection;
+    using Husa.Extensions.Api.Client;
+    using Husa.Extensions.Api.Handlers;
+    using Husa.MediaService.Client;
+    using Husa.Quicklister.Sabor.Api.Client;
+    using Husa.Uploader.Core.Interfaces;
+    using Husa.Uploader.Core.Services;
+    using Husa.Uploader.Crosscutting.Options;
+    using Husa.Uploader.Data;
+    using Husa.Uploader.Data.Interfaces;
+    using Husa.Uploader.Data.Repositories;
+    using Husa.Uploader.Factories;
+    using Husa.Uploader.ViewModels;
+    using Husa.Uploader.Views;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
+    using Microsoft.Extensions.Options;
+    using OpenQA.Selenium;
+    using OpenQA.Selenium.Chrome;
+    using Serilog;
+    using Serilog.Events;
+    using Serilog.Sinks.Elasticsearch;
+
     public static class ApplicationBootstrapper
     {
         public static IServiceCollection ConfigureApplicationOptions(this IServiceCollection services)
@@ -30,6 +34,8 @@ namespace Husa.Uploader.Configuration
                 .AddOptions<ApplicationOptions>()
                 .Configure<IConfiguration>((settings, config) => config.GetSection(ApplicationOptions.Section).Bind(settings))
                 .ValidateOnStart();
+
+            services.BindIdentitySettings();
 
             return services;
         }
@@ -67,7 +73,7 @@ namespace Husa.Uploader.Configuration
                     AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv6,
                     IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name!.ToLower().Replace(".", "-")}-{environmentName?.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
                     MinimumLogEventLevel = LogEventLevel.Information,
-                    Period = TimeSpan.FromMilliseconds(200)
+                    Period = TimeSpan.FromMilliseconds(200),
                 });
 
             return loggerConfiguration;
@@ -90,6 +96,7 @@ namespace Husa.Uploader.Configuration
 
         public static void ConfigureDataAccess(this IServiceCollection services)
         {
+            services.AddTransient<IMediaRepository, MediaRepository>();
             services.AddTransient<ISqlDataLoader, SqlDataLoader>();
         }
 
@@ -101,6 +108,20 @@ namespace Husa.Uploader.Configuration
                 var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
                 client.BaseAddress = new Uri(options.AuthenticateServerUrl);
             });
+
+            services.AddHttpClient<HusaClient<IMediaServiceClient>>((provider, client) =>
+            {
+                var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
+                client.BaseAddress = new Uri(options.Services.Media);
+            }).AddHttpMessageHandler<AuthTokenHandler>();
+
+            services.AddHttpClient<IQuicklisterSaborClient, QuicklisterSaborClient>((provider, client) =>
+            {
+                var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
+                client.BaseAddress = new Uri(options.Services.QuicklisterSabor);
+            }).AddHttpMessageHandler<AuthTokenHandler>();
+
+            services.AddTransient<IMediaServiceClient, MediaServiceClient>();
         }
 
         public static IServiceCollection ConfigureWebDriver(this IServiceCollection services)

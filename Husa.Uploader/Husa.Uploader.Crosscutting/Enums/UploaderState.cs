@@ -1,7 +1,7 @@
-using System.ComponentModel;
-
 namespace Husa.Uploader.Crosscutting.Enums
 {
+    using System.ComponentModel;
+
     public enum UploaderState
     {
         [Description("Loaded")]

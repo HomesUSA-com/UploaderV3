@@ -1,5 +1,3 @@
-﻿using Newtonsoft.Json.Linq;
-
 namespace Husa.Uploader.Crosscutting.Enums
 {
     public enum UploadType
@@ -11,6 +9,6 @@ namespace Husa.Uploader.Crosscutting.Enums
         CompletionDate,
         Edit,
         OpenHouse,
-        VirtualTour
+        VirtualTour,
     }
 }

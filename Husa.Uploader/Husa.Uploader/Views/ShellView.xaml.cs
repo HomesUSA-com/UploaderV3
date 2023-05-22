@@ -1,8 +1,7 @@
-﻿using Husa.Uploader.ViewModels;
-using MahApps.Metro.Controls;
+﻿namespace Husa.Uploader.Views;
 using System;
-
-namespace Husa.Uploader.Views;
+using Husa.Uploader.ViewModels;
+using MahApps.Metro.Controls;
 
 public partial class ShellView : MetroWindow
 {

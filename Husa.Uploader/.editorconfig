@@ -1,0 +1,84 @@
+root = true
+
+[*]
+charset = utf-8
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+time_trailing_whitespace = true
+
+[*.cs]
+csharp_using_directive_placement = inside_namespace:error
+dotnet_sort_system_directives_first = true
+
+# IDE specific rules
+
+# IDE0090: Use 'new(...)'
+csharp_style_implicit_object_creation_when_type_is_apparent = true
+# IDE0017: Simplify object initialization
+dotnet_style_object_initializer = true
+# IDE0005: Using directive is unnecessary.
+dotnet_diagnostic.IDE0005.severity = error
+
+# XML Analysis enabled
+dotnet_diagnostic.SA0001.severity = none
+
+# Files headers are useless
+dotnet_diagnostic.SA1633.severity = none
+
+# Methods should only be documented if shipped as a public API, the best documentation is the code implementation
+dotnet_diagnostic.SA1516.severity = none
+dotnet_diagnostic.SA1600.severity = none
+dotnet_diagnostic.SA1601.severity = none
+dotnet_diagnostic.SA1602.severity = none
+dotnet_diagnostic.SA1611.severity = none
+dotnet_diagnostic.SA1615.severity = none
+dotnet_diagnostic.SA1618.severity = none
+dotnet_diagnostic.SA1619.severity = none
+
+# SA1401: Fields should be private
+dotnet_diagnostic.SA1401.severity = suggestion
+
+# S4487: Unread "private" fields should be removed
+dotnet_diagnostic.S4487.severity = error
+
+# SA1309: Field names should not begin with underscore
+dotnet_diagnostic.SA1309.severity = error
+
+# SA1310: Field names should not contain underscore
+dotnet_diagnostic.SA1310.severity = error
+
+# S1128: Unused "using" should be removed
+dotnet_diagnostic.S1128.severity = error
+
+# SA1400: Access modifier must be declared
+dotnet_diagnostic.SA1400.severity = error
+
+# CA1707: Identifiers should not contain underscores
+dotnet_diagnostic.CA1707.severity = suggestion
+
+# S4581: "new Guid()" should not be used
+dotnet_diagnostic.S4581.severity = suggestion
+
+# CA1416: Validate platform compatibility
+dotnet_diagnostic.CA1416.severity = silent
+
+# These rules must be activated later when the comments can removed
+
+# S125: Sections of code should not be commented out
+dotnet_diagnostic.S125.severity = suggestion
+
+# SA1515: Single-line comment should be preceded by blank line
+dotnet_diagnostic.SA1515.severity = suggestion
+
+# S1135: Track uses of "TODO" tags
+dotnet_diagnostic.S1135.severity = suggestion
+
+# S1134: Track uses of "FIXME" tags
+dotnet_diagnostic.S1134.severity = suggestion
+
+# S1075: URIs should not be hardcoded
+dotnet_diagnostic.S1075.severity = suggestion
+
+# S1066: Collapsible "if" statements should be merged
+dotnet_diagnostic.S1066.severity = suggestion

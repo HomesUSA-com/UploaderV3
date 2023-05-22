@@ -1,12 +1,12 @@
-﻿using Husa.Uploader.Core.BrowserTools;
-using OpenQA.Selenium;
-using System.Collections.ObjectModel;
-
 namespace Husa.Uploader.Core.Interfaces
 {
+    using System.Collections.ObjectModel;
+    using Husa.Uploader.Core.Models;
+    using OpenQA.Selenium;
+
     public interface IUploaderClient
     {
-        WebDriverUploadInformation UploadInformation { get; }
+        UploadCommandInfo UploadInformation { get; }
         string Url { get; }
         string Title { get; }
         string PageSource { get; }
@@ -17,7 +17,11 @@ namespace Husa.Uploader.Core.Interfaces
         bool AcceptAlertWindow(bool isElementOptional = false, bool shouldWait = false);
         bool WaitUntilElementIsDisplayed(By findBy);
         bool WaitUntilElementIsDisplayed(By findBy, TimeSpan waitTime);
-        bool IsElementPresent(By findBy);
+        bool WaitUntilElementIsDisplayed(Func<IWebDriver, bool> waitCondition);
+        bool WaitUntilScriptIsComplete(string script, string expectedCompletedResult);
+        void WaitUntilElementExists(By findBy);
+        void WaitUntilElementExists(By findBy, TimeSpan waitTime);
+        bool IsElementPresent(By findBy, bool isVisible = false);
         IWebElement FindElement(By findBy, bool shouldWait = false, bool isElementOptional = false);
         IWebElement FindElementById(string elementId);
         IWebElement FindFirstElement(By by);
@@ -50,12 +54,10 @@ namespace Husa.Uploader.Core.Interfaces
         void NavigateToUrl(string url);
         INavigation Navigate();
         ITargetLocator SwitchTo();
-        void SwitchTo(string frame, bool switchToParent = false);
+        void SwitchTo(string frame, bool switchToParent);
         void SwitchTo(string windowName);
         void CloseDriver();
         void FinalizeSession();
         void DeleteAllCookies();
-        bool WaitUntilScriptIsComplete(string script, string expectedCompletedResult);
-        bool WaitUntilElementIsDisplayed(Func<IWebDriver, bool> waitCondition);
     }
 }

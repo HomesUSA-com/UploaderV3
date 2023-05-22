@@ -1,9 +1,12 @@
-﻿using Husa.Extensions.Common.Enums;
-using Husa.Uploader.Crosscutting.Enums;
-using Husa.Uploader.Crosscutting.Extensions;
-
 namespace Husa.Uploader.Data.Entities
 {
+    using Husa.Extensions.Common;
+    using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Sabor.Api.Contracts.Response.ListingRequest.SaleRequest;
+    using Husa.Quicklister.Sabor.Domain.Enums;
+    using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Crosscutting.Extensions;
+
     public class ResidentialListingRequest
     {
         // Never remove this property
@@ -12,13 +15,13 @@ namespace Husa.Uploader.Data.Entities
         public string CommunityName { get; set; }
         public string CompanyName { get; set; }
         public Guid ResidentialListingRequestID { get; set; }
+        public Guid ResidentialListingID { get; set; }
         public short? SysStatusID { get; set; }
         public string SysState { get; set; }
         public Guid? SysCreatedBy { get; set; }
         public DateTime? SysCreatedOn { get; set; }
         public Guid? SysModifiedBy { get; set; }
         public DateTime? SysModifiedOn { get; set; }
-        public int? ResidentialListingID { get; set; }
         public int? MarketID { get; set; }
         public string Zip { get; set; }
         public string YearBuiltDesc { get; set; }
@@ -36,6 +39,7 @@ namespace Husa.Uploader.Data.Entities
         public string StreetNumDisplay { get; set; }
         public string StreetNum { get; set; }
         public string StreetName { get; set; }
+        public string Address { get; set; }
         public DateTime? StatusChangeDate { get; set; }
         public string State { get; set; }
         public int? SqFtTotal { get; set; }
@@ -80,7 +84,7 @@ namespace Husa.Uploader.Data.Entities
         public string ListStatus { get; set; }
         public string ListStatusName { get; set; }
         public string OldListStatus { get; set; }
-        public decimal ListPrice { get; set; }
+        public int ListPrice { get; set; }
         public string ListOninternetDesc { get; set; }
         public DateTime? ListDate { get; set; }
         public DateTime? ExpiredDate { get; set; }
@@ -430,78 +434,58 @@ namespace Husa.Uploader.Data.Entities
         public string SellingAgentUIDOFFICE { get; set; }
         public string BrokerName { get; set; }
         public string BrokerOffice { get; set; }
-        /*FIXME These fields are no longer used by San Antonio. We need to figure out if they are actually needed.
-        public string Assoc2Name { get; set; }
-        public string Assoc2Fee { get; set; }
-        public string Assoc2FeePaid { get; set; }
-        public string Assoc2TransferFee { get; set; }
-        public string Assoc3Name { get; set; }
-        public string Assoc3Fee { get; set; }
-        public string Assoc3FeePaid { get; set; }
-        public string Assoc3TransferFee { get; set; }*/
 
-        // MQ-253 -> MLS.RealtorContactEmail
+        //// FIXME These fields are no longer used by San Antonio. We need to figure out if they are actually needed.
+        //// public string Assoc2Name { get; set; }
+        //// public string Assoc2Fee { get; set; }
+        //// public string Assoc2FeePaid { get; set; }
+        //// public string Assoc2TransferFee { get; set; }
+        //// public string Assoc3Name { get; set; }
+        //// public string Assoc3Fee { get; set; }
+        //// public string Assoc3FeePaid { get; set; }
+        //// public string Assoc3TransferFee { get; set; }
+        //// MQ-253 -> MLS.RealtorContactEmail
         public string RealtorContactEmail { get; set; }
-        //public string CommunityProfileRealtorContactEmail { get; set; }
+        //// public string CommunityProfileRealtorContactEmail { get; set; }
 
-        // HY-105
         public string StreetSuffixFQ { get; set; }
 
-        //HY-277 and HY-278
         public string OtherParking { get; set; }
+
         public int? ClosetWidth { get; set; }
+
         public int? ClosetLength { get; set; }
 
-        //HY-429
         public string LegalsubdivisionDisp { get; set; }
 
-        // UP-50
         public string Category { get; set; }
 
-        // UP-51
         public bool? IncludeRemarks { get; set; }
 
-        // UP-60
         public string CityCodeName { get; set; }
 
-        // QLIST-45
         public string AgentListApptPhoneFromCompany { get; set; }
 
-        // BEGIN UP-73 <- (QLIST-75)
         public string AgentListApptPhoneFromCommunityProfile { get; set; }
-        public string AlternatePhoneFromCompany { get; set; }
-        public string OtherPhoneFromCommunityProfile { get; set; }
-        public string ContactEmailFromCompany { get; set; }
-        public string RealtorContactEmailFromCommunityProfile { get; set; }
-        // END UP-73
 
-        // UP-77
+        public string AlternatePhoneFromCompany { get; set; }
+
+        public string OtherPhoneFromCommunityProfile { get; set; }
+
+        public string ContactEmailFromCompany { get; set; }
+
+        public string RealtorContactEmailFromCommunityProfile { get; set; }
+
         public string RemarksFormatFromCompany { get; set; }
 
-        // UP-80
         public string HurricanePropertyFlooded { get; set; }
+
         public string HurricaneHomeFlooded { get; set; }
 
-        // UP-74
-        public string bxlManaged { get; set; }
+        public string BxlManaged { get; set; }
+
         public int ServiceSubscription { get; set; }
-        public string isCTX { get; set; }
-        public string CTXGeoID { get; set; }
-        public bool CTXETJ { get; set; }
-        public bool CTXGuestHouse { get; set; }
-        public bool CTXManufacturedAllowed { get; set; }
-        public string CTXEarnestMoney { get; set; }
-        public bool CTXProspectsExempt { get; set; }
-        public string CTXRWaterHeater { get; set; }
 
-        // CTX fields
-        public string CTXMLSNum { get; set; }
-        public string CTXUser { get; set; }
-        public string CTXPass { get; set; }
-        public bool CTXUploadAustinRLR { get; set; }
-        public bool CTXUploadAustinCTXRLR { get; set; }
-
-        // UP-96
         public string OtherFeesInclude { get; set; }
         public string VirtualTourLink { get; set; }
 
@@ -511,219 +495,332 @@ namespace Husa.Uploader.Data.Entities
 
         public string GolfCourseFullName { get; set; }
 
-        // UP-114
         public bool RemoveCompletionDate { get; set; }
 
-        // Emergency Minor fix for DFW
         public string BrokerLicenseNum { get; set; }
 
-        // UP-119
         public bool AutopopulateExpirationDate { get; set; }
 
-        // UP-127
         public DateTime? ContractDate { get; set; }
 
-        //UP-126
         public string ContingencyInfo { get; set; }
 
-        // UP-143
         public DateTime? WithdrawnDate { get; set; }
 
-        // UP-145
         public string OHStartTimeSun { get; set; }
+
         public string OHStartTimeMon { get; set; }
+
         public string OHStartTimeTue { get; set; }
+
         public string OHStartTimeWed { get; set; }
+
         public string OHStartTimeThu { get; set; }
+
         public string OHStartTimeFri { get; set; }
+
         public string OHStartTimeSat { get; set; }
+
         public string OHEndTimeSun { get; set; }
+
         public string OHEndTimeMon { get; set; }
+
         public string OHEndTimeTue { get; set; }
+
         public string OHEndTimeWed { get; set; }
+
         public string OHEndTimeThu { get; set; }
+
         public string OHEndTimeFri { get; set; }
+
         public string OHEndTimeSat { get; set; }
+
         public string OHTypeSun { get; set; }
+
         public string OHTypeMon { get; set; }
+
         public string OHTypeTue { get; set; }
+
         public string OHTypeWed { get; set; }
+
         public string OHTypeThu { get; set; }
+
         public string OHTypeFri { get; set; }
+
         public string OHTypeSat { get; set; }
+
         public string OHRefreshmentsSun { get; set; }
+
         public string OHRefreshmentsMon { get; set; }
+
         public string OHRefreshmentsTue { get; set; }
+
         public string OHRefreshmentsWed { get; set; }
+
         public string OHRefreshmentsThu { get; set; }
+
         public string OHRefreshmentsFri { get; set; }
+
         public string OHRefreshmentsSat { get; set; }
+
         public string OHLunchSun { get; set; }
+
         public string OHLunchMon { get; set; }
+
         public string OHLunchTue { get; set; }
+
         public string OHLunchWed { get; set; }
+
         public string OHLunchThu { get; set; }
+
         public string OHLunchFri { get; set; }
+
         public string OHLunchSat { get; set; }
+
         public string OHCommentsSun { get; set; }
+
         public string OHCommentsMon { get; set; }
+
         public string OHCommentsTue { get; set; }
+
         public string OHCommentsWed { get; set; }
+
         public string OHCommentsThu { get; set; }
+
         public string OHCommentsFri { get; set; }
+
         public string OHCommentsSat { get; set; }
 
         public string OHStartTimeSunOH { get; set; }
+
         public string OHStartTimeMonOH { get; set; }
+
         public string OHStartTimeTueOH { get; set; }
+
         public string OHStartTimeWedOH { get; set; }
+
         public string OHStartTimeThuOH { get; set; }
+
         public string OHStartTimeFriOH { get; set; }
+
         public string OHStartTimeSatOH { get; set; }
+
         public string OHEndTimeSunOH { get; set; }
+
         public string OHEndTimeMonOH { get; set; }
+
         public string OHEndTimeTueOH { get; set; }
+
         public string OHEndTimeWedOH { get; set; }
+
         public string OHEndTimeThuOH { get; set; }
+
         public string OHEndTimeFriOH { get; set; }
+
         public string OHEndTimeSatOH { get; set; }
+
         public string OHTypeSunOH { get; set; }
+
         public string OHTypeMonOH { get; set; }
+
         public string OHTypeTueOH { get; set; }
+
         public string OHTypeWedOH { get; set; }
+
         public string OHTypeThuOH { get; set; }
+
         public string OHTypeFriOH { get; set; }
+
         public string OHTypeSatOH { get; set; }
+
         public string OHRefreshmentsSunOH { get; set; }
+
         public string OHRefreshmentsMonOH { get; set; }
+
         public string OHRefreshmentsTueOH { get; set; }
+
         public string OHRefreshmentsWedOH { get; set; }
+
         public string OHRefreshmentsThuOH { get; set; }
+
         public string OHRefreshmentsFriOH { get; set; }
+
         public string OHRefreshmentsSatOH { get; set; }
+
         public string OHLunchSunOH { get; set; }
+
         public string OHLunchMonOH { get; set; }
+
         public string OHLunchTueOH { get; set; }
+
         public string OHLunchWedOH { get; set; }
+
         public string OHLunchThuOH { get; set; }
+
         public string OHLunchFriOH { get; set; }
+
         public string OHLunchSatOH { get; set; }
+
         public string OHCommentsSunOH { get; set; }
+
         public string OHCommentsMonOH { get; set; }
+
         public string OHCommentsTueOH { get; set; }
+
         public string OHCommentsWedOH { get; set; }
+
         public string OHCommentsThuOH { get; set; }
+
         public string OHCommentsFriOH { get; set; }
+
         public string OHCommentsSatOH { get; set; }
 
-        // UP-149
         public string Bed6Dim { get; set; }
 
-        // UP-141
         public string Bonus { get; set; }
+
         public DateTime? BonusEndDate { get; set; }
 
-        // UP-156
         public string Bed1Location { get; set; }
+
         public string Bed2Location { get; set; }
+
         public string Bed3Location { get; set; }
+
         public string Bed4Location { get; set; }
+
         public string Bed5Location { get; set; }
+
         public string BreakfastLocation { get; set; }
+
         public string DenLocation { get; set; }
+
         public string DiningLocation { get; set; }
+
         public string ExtraRoomLocation { get; set; }
+
         public string GameroomLocation { get; set; }
+
         public string KitchenLocation { get; set; }
+
         public string LivingRoomLocation { get; set; }
+
         public string MediaRoomLocation { get; set; }
+
         public string StudyLocation { get; set; }
+
         public string UtilityLocation { get; set; }
 
-        // QLIST-505
         public bool BonusWAmountCheckBox { get; set; }
 
-        // UP-177
         public string AgentBonusAmount { get; set; }
 
-        // UP-184
         public string AgentPrivateRemarks { get; set; }
 
-        // QLIST-553
         public string SMARTFEATURESAPP { get; set; }
 
-        //QLIST-580
         public string PROPSDTRMS { get; set; }
 
-        // QLIST-597
         public string DistanceToWaterAccess { get; set; }
 
-        // QLIST-554
         public string Bath1Dim { get; set; }
+
         public string Bath1Location { get; set; }
 
-        // HCS-1
         public string RoomDescription { get; set; }
 
         public string BedroomDescription { get; set; }
 
         public string KitchenDescription { get; set; }
 
-        // HCS-71	
         public string SellingAgent2ID { get; set; }
+
         public string SellTeamID { get; set; }
+
         public string SellingAgentSupervisor { get; set; }
 
-        // HNF-56 (Leasing fields)
         public int? ResidentialLeaseID { get; set; }
+
         public Guid ResidentialLeaseRequestID { get; set; }
+
         public string AppFee { get; set; }
+
         public string LotSizeAcres { get; set; }
+
         public string NonRefunPetFee { get; set; }
+
         public string PetPolicy { get; set; }
+
         public string Date { get; set; }
+
         public DateTime? MoveInDate { get; set; }
+
         public string ApplicationFeePay { get; set; }
+
         public string WillSubdivide { get; set; }
+
         public string NumberGuestAllowed { get; set; }
+
         public string LeaseTerms { get; set; }
+
         public string NumberOfVehicles { get; set; }
+
         public string AppFeeAmount { get; set; }
+
         public string NumberOfPetsAllowed { get; set; }
+
         public string DepositPet { get; set; }
+
         public DateTime? LeasedDate { get; set; }
+
         public decimal LeasedPrice { get; set; }
+
         public int? Furnished { get; set; }
+
         public string FloorLocationNumber { get; set; }
+
         public string DepositAmount { get; set; }
+
         public string LeaseConditions { get; set; }
+
         public string TenantPays { get; set; }
+
         public string MoniesRequired { get; set; }
+
         public string LeaseType { get; set; }
+
         public string MonthlyPetFee { get; set; }
+
         public int AppliancesYN { get; set; }
+
         public string CompensationPaid { get; set; }
+
         public string CancelledOptionLease { get; set; }
-        public string individualOH { get; set; }
+
+        public string IndividualOH { get; set; }
+
         public string AllowPendingList { get; set; }
+
         public bool? FencedYard { get; set; }
+
         public string TypeFence { get; set; }
+
         public string CommissionLease { get; set; }
+
         public bool? AgentCommissionPercentYN { get; set; }
+
         public bool? AgentCommissionDollarsYN { get; set; }
 
-        // HCS-201
         public string YearBuiltLease { get; set; }
 
         public string LeaseStatus { get; set; }
 
-        // Open Houses
         public bool? ChangeOpenHouseHours { get; set; }
-        
-        public string communityCSS { get; set; }
-        
+
+        public string CommunityCSS { get; set; }
+
         public int InternalLotRequestID { get; set; }
-        
+
         public Guid InternalLotRequestGUID { get; set; }
 
         public int? InternalLotID { get; set; }
@@ -733,20 +830,29 @@ namespace Husa.Uploader.Data.Entities
         public string RoadFrontageDesc { get; set; }
 
         public string AssociationFeeFrequency { get; set; }
+
         public string LotFeatures { get; set; }
+
         public string ProposedUse { get; set; }
+
         public string Documents { get; set; }
 
         public string Development { get; set; }
 
         public string Topography { get; set; }
+
         public string WaterfrontFeatures { get; set; }
+
         public string Easements { get; set; }
+
         public string ZoningLot { get; set; }
+
         public string Utilities { get; set; }
+
         public string UtilitiesOther { get; set; }
 
         public bool? WaterfrontYN { get; set; }
+
         public bool? RoadAssessmentYN { get; set; }
 
         public string ParcelNumber { get; set; }
@@ -754,94 +860,427 @@ namespace Husa.Uploader.Data.Entities
         public string KeyboxNumber { get; set; }
 
         public int? NumberOfLakes { get; set; }
+
         public int? NumberOfWaterMeters { get; set; }
 
-        public string isFutureUse { get; set; }
-        public DateTime? estimatedFutureDate { get; set; }
-
         public string CancelledOption { get; set; }
+
         public string KickOutInfo { get; set; }
+
         public string MLSNumLot { get; set; }
+
         public string RateYear { get; set; }
+
         public string ETJDesc { get; set; }
+
         public bool? HasGas { get; set; }
+
         public string WaterExtras { get; set; }
+
         public string WaterView { get; set; }
+
         public string BedRoom2Level { get; set; }
+
         public string BedRoom3Level { get; set; }
+
         public string BedRoom4Level { get; set; }
+
         public string BedRoom2Dim { get; set; }
+
         public string BedRoom3Dim { get; set; }
+
         public string BedRoom4Dim { get; set; }
 
-        //HNF-158
         public string RentIncludes { get; set; }
+
         public string ExteriorFeatures { get; set; }
+
         public string MinNumMonths { get; set; }
+
         public string MaxNumMonths { get; set; }
+
         public string DepositSecurity { get; set; }
+
         public string DepositClean { get; set; }
+
         public string PetDepositRefund { get; set; }
+
         public string PetsAllowed { get; set; }
+
         public string ApplyAt { get; set; }
+
         public string ApplForm { get; set; }
+
         public string PersonalChecksAccepted { get; set; }
+
         public string CashAccepted { get; set; }
 
-        //HNF-159
         public string CountyTax { get; set; }
-        public string CityTAx { get; set; }
+
+        public string CityTax { get; set; }
+
         public string SchoolTax { get; set; }
+
         public string OtherTax { get; set; }
 
-        //HCS-526
         public bool EnableOpenHouse { get; set; }
 
-        // HCS-742
         public string ListingFinancing { get; set; }
 
-        // MLS-40
         public string InsulationDesc { get; set; }
 
-        // MLS-117
         public string EmailRealtorsContact { get; set; }
 
-        // MLS-135
         public string SeniorCommunity { get; set; }
 
-        // MLS-166
         public bool AgreeOpenHouseConditions { get; set; }
 
-        // MLS-195
         public int? Mbr2Len { get; set; }
+
         public int? Mbr2Wid { get; set; }
+
         public string MBR2LEVEL { get; set; }
 
-        // HI-54
         public string IsSmokingAllowed { get; set; }
+
         public string RentalTerms { get; set; }
+
         public int? ManagementCoYN { get; set; }
+
         public string Pets { get; set; }
+
         public int? ApprovalRequired { get; set; }
+
         public string ManagementCompany { get; set; }
+
         public string PhoneMgmtCo { get; set; }
 
-        // MLS-228
         public string AgentID_SELL2 { get; set; }
+
         public string SellingAgent2UID { get; set; }
 
-        // MLS-235
         public int? SolarPanels_YN { get; set; }
+
         public string SolarPanels { get; set; }
 
         public string AgentPrivateRemarks2 { get; set; }
 
-        // HI-54
         public string RentalType { get; set; }
 
         public int? SmokingAllowed { get; set; }
 
         public string Bed6Location { get; set; }
+
+        public bool CTXETJ { get; set; }
+        public string CTXGeoID { get; set; }
+        public string CTXEarnestMoney { get; set; }
+
+        public static ResidentialListingRequest CreateFromApiResponse(ListingSaleRequestQueryResponse listingResponse, MarketCode marketCode) => new()
+        {
+            ResidentialListingRequestID = listingResponse.Id,
+            OwnerName = listingResponse.OwnerName,
+            CompanyName = listingResponse.OwnerName,
+            MLSNum = listingResponse.MlsNumber,
+            MarketCode = marketCode,
+            MarketName = listingResponse.Market,
+            CityCode = listingResponse.City.ToStringFromEnumMember(),
+            Subdivision = listingResponse.Subdivision,
+            Zip = listingResponse.ZipCode,
+            Address = listingResponse.Address,
+            ListPrice = (int)listingResponse.ListPrice,
+            SysCreatedOn = listingResponse.SysCreatedOn,
+            SysCreatedBy = listingResponse.SysCreatedBy,
+        };
+
+        public static ResidentialListingRequest CreateFromApiResponseDetail(ListingSaleRequestDetailResponse listingResponse, MarketCode marketCode)
+        {
+            var residentialListingRequest = new ResidentialListingRequest
+            {
+                ResidentialListingRequestID = listingResponse.Id,
+                ResidentialListingRequestGUID = listingResponse.Id,
+                ResidentialListingID = listingResponse.ListingSaleId,
+                MarketID = 8,
+                MarketName = marketCode.GetEnumDescription(),
+                MarketCode = marketCode,
+                ListPrice = (int)listingResponse.ListPrice,
+                MLSNum = string.Empty, // listingResponse.MlsNumber,
+                MlsStatus = listingResponse.MlsStatus.ToStringFromEnumMember(),
+                ListStatus = listingResponse.MlsStatus.ToStringFromEnumMember(),
+                SysCreatedOn = listingResponse.SysCreatedOn,
+                SysCreatedBy = listingResponse.SysCreatedBy,
+                SysModifiedOn = listingResponse.SysModifiedOn,
+                SysModifiedBy = listingResponse.SysModifiedBy,
+                BuilderName = listingResponse.SaleProperty.SalePropertyInfo.OwnerName,
+                CompanyName = listingResponse.SaleProperty.SalePropertyInfo.OwnerName,
+                OwnerName = listingResponse.SaleProperty.SalePropertyInfo.OwnerName,
+                PlanProfileID = listingResponse.SaleProperty.SalePropertyInfo.PlanId,
+                CommunityProfileID = listingResponse.SaleProperty.SalePropertyInfo.CommunityId,
+                StreetNum = listingResponse.SaleProperty.AddressInfo.StreetNumber,
+                StreetName = listingResponse.SaleProperty.AddressInfo.StreetName,
+                CityCode = listingResponse.SaleProperty.AddressInfo.City.ToStringFromEnumMember(),
+                State = listingResponse.SaleProperty.AddressInfo.State?.ToStringFromEnumMember(),
+                Zip = listingResponse.SaleProperty.AddressInfo.ZipCode,
+                County = listingResponse.SaleProperty.AddressInfo.County?.ToStringFromEnumMember(),
+                LotNum = listingResponse.SaleProperty.AddressInfo.LotNum,
+                Block = listingResponse.SaleProperty.AddressInfo.Block,
+                Subdivision = listingResponse.SaleProperty.AddressInfo.Subdivision,
+                BuildCompletionDate = listingResponse.SaleProperty.PropertyInfo.ConstructionCompletionDate, // check
+                YearBuiltDesc = listingResponse.SaleProperty.PropertyInfo.ConstructionStage.ToString(),
+                YearBuilt = listingResponse.SaleProperty.PropertyInfo.ConstructionStartYear,
+                //// ConstructionStage
+                //// ConstructionYear
+                Legal = listingResponse.SaleProperty.PropertyInfo.LegalDescription, // check
+                TaxID = listingResponse.SaleProperty.PropertyInfo.TaxId,
+                MLSArea = listingResponse.SaleProperty.PropertyInfo.MlsArea?.ToStringFromEnumMember(),
+                MapscoMapBook = listingResponse.SaleProperty.PropertyInfo.MapscoGrid, // check
+                MapscoMapCoord = listingResponse.SaleProperty.PropertyInfo.MapscoGrid,
+                LotDim = listingResponse.SaleProperty.PropertyInfo.LotDimension,
+                LotSize = listingResponse.SaleProperty.PropertyInfo.LotSize,
+                LotDesc = listingResponse.SaleProperty.PropertyInfo.LotDescription.ToStringFromEnumMembers(),
+                Occupancy = listingResponse.SaleProperty.PropertyInfo.Occupancy.ToStringFromEnumMembers(),
+                //// UpdateGeoCodes
+                Latitude = listingResponse.SaleProperty.PropertyInfo.Latitude,
+                Longitude = listingResponse.SaleProperty.PropertyInfo.Longitude,
+                //// isBxlManaged
+                Category = listingResponse.SaleProperty.SpacesDimensionsInfo.TypeCategory.ToStringFromEnumMember(), // check
+                NumStories = listingResponse.SaleProperty.SpacesDimensionsInfo.Stories?.ToStringFromEnumMember(),
+                SqFtTotal = listingResponse.SaleProperty.SpacesDimensionsInfo.SqFtTotal,
+                SqFtSource = listingResponse.SaleProperty.SpacesDimensionsInfo.SqFtSource?.ToStringFromEnumMember(),
+                //// EntryLength
+                //// EntryWidth
+                //// SpecialtyRooms
+                //// MasterBedrrom
+                //// numBedrooms
+                InteriorDesc = listingResponse.SaleProperty.SpacesDimensionsInfo.SpecialtyRooms.ToStringFromEnumMembers(),
+                BathsFull = listingResponse.SaleProperty.SpacesDimensionsInfo.BathsFull,
+                BathsHalf = listingResponse.SaleProperty.SpacesDimensionsInfo.BathsHalf,
+                //// masterBathDescription
+                //// GarageDesc = listingResponse.this.SaleProperty.SpacesDimensionsInfo.GarageDescription.ToString(),
+                //// ParkingDesc = listingResponse.this.SaleProperty.SpacesDimensionsInfo.GarageDescription.ToString(),
+                OtherParking = listingResponse.SaleProperty.SpacesDimensionsInfo.OtherParking?.ToStringFromEnumMembers(),
+                Beds = listingResponse.SaleProperty.SpacesDimensionsInfo.NumBedrooms,
+                //// PropertyDescription
+                InclusionsDesc = listingResponse.SaleProperty.FeaturesInfo.Inclusions?.ToStringFromEnumMembers(),
+                NumFireplaces = listingResponse.SaleProperty.FeaturesInfo.Fireplaces,
+                FireplaceDesc = listingResponse.SaleProperty.FeaturesInfo.FireplaceDescription.ToStringFromEnumMembers(),
+                FloorsDesc = listingResponse.SaleProperty.FeaturesInfo.Floors?.ToStringFromEnumMembers(),
+                WindowCoverings = listingResponse.SaleProperty.FeaturesInfo.WindowCoverings?.ToStringFromEnumMembers(),
+                //// HasAccessibility
+                AccessibilityDesc = listingResponse.SaleProperty.FeaturesInfo.Accessibility.ToStringFromEnumMembers(),
+                HousingStyleDesc = listingResponse.SaleProperty.FeaturesInfo.HousingStyle.ToStringFromEnumMembers(),
+                ExteriorFeatures = listingResponse.SaleProperty.FeaturesInfo.ExteriorFeatures.ToStringFromEnumMembers(),
+                RoofDesc = listingResponse.SaleProperty.FeaturesInfo.RoofDescription.ToStringFromEnumMembers(),
+                FoundationDesc = listingResponse.SaleProperty.FeaturesInfo.Foundation.ToStringFromEnumMembers(),
+                ExteriorDesc = listingResponse.SaleProperty.FeaturesInfo.Exterior.ToStringFromEnumMembers(),
+                HasPool = listingResponse.SaleProperty.FeaturesInfo.HasPrivatePool,
+                PoolDesc = listingResponse.SaleProperty.FeaturesInfo.PrivatePool.ToStringFromEnumMembers(),
+                FacesDesc = listingResponse.SaleProperty.FeaturesInfo.HomeFaces.ToStringFromEnumMembers(), // check
+                SupElectricity = listingResponse.SaleProperty.FeaturesInfo.SupplierElectricity,
+                SupWater = listingResponse.SaleProperty.FeaturesInfo.SupplierWater,
+                SupGarbage = listingResponse.SaleProperty.FeaturesInfo.SupplierGarbage,
+                SupGas = listingResponse.SaleProperty.FeaturesInfo.SupplierGas,
+                SupSewer = listingResponse.SaleProperty.FeaturesInfo.SupplierSewer,
+                SupOther = listingResponse.SaleProperty.FeaturesInfo.SupplierOther,
+                HeatSystemDesc = listingResponse.SaleProperty.FeaturesInfo.HeatSystem.ToStringFromEnumMembers(),
+                CoolSystemDesc = listingResponse.SaleProperty.FeaturesInfo.CoolingSystem.ToStringFromEnumMembers(),
+                HeatingFuel = listingResponse.SaleProperty.FeaturesInfo.HeatingFuel.ToStringFromEnumMembers(),
+                WaterAccessDesc = listingResponse.SaleProperty.FeaturesInfo.WaterSewer.ToStringFromEnumMembers(), // check
+                GreenCerts = listingResponse.SaleProperty.FeaturesInfo.GreenCertification.ToStringFromEnumMembers(),
+                EnergyDesc = listingResponse.SaleProperty.FeaturesInfo.EnergyFeatures.ToStringFromEnumMembers(), // check
+                GreenFeatures = listingResponse.SaleProperty.FeaturesInfo.GreenFeatures.ToStringFromEnumMembers(),
+                //// CommonFeatures = listingResponse.this.SaleProperty.FeaturesInfo.NeighborhoodAmenities, //check
+                //// lotImprovements
+                TaxRate = listingResponse.SaleProperty.FinancialInfo.TaxRate,
+                TaxYear = listingResponse.SaleProperty.FinancialInfo.TaxYear,
+                IsMultiParcel = listingResponse.SaleProperty.FinancialInfo.IsMultipleTaxed.ToString(), // check
+                TitleCo = listingResponse.SaleProperty.FinancialInfo.TitleCompany,
+                PROPSDTRMS = listingResponse.SaleProperty.FinancialInfo.ProposedTerms.ToStringFromEnumMembers(),
+                HasMultipleHOA = listingResponse.SaleProperty.FinancialInfo.HasMultipleHOA.ToString(),
+                AgentBonusAmount = listingResponse.SaleProperty.FinancialInfo.AgentBonusAmount.ToString(),
+                CompBuyBonusExpireDate = listingResponse.SaleProperty.FinancialInfo.BonusExpirationDate, // check
+                BuyerIncentive = listingResponse.SaleProperty.FinancialInfo.HasBuyerIncentive.ToString(), // check
+                CompBuy = listingResponse.SaleProperty.FinancialInfo.BuyersAgentCommission?.ToString(),
+                AltPhoneCommunity = listingResponse.SaleProperty.ShowingInfo.AltPhoneCommunity,
+                AgentListApptPhone = listingResponse.SaleProperty.ShowingInfo.AgentListApptPhone,
+                Showing = listingResponse.SaleProperty.ShowingInfo.Showing?.ToStringFromEnumMember(),
+                RealtorContactEmail = listingResponse.SaleProperty.ShowingInfo.RealtorContactEmail,
+                Directions = listingResponse.SaleProperty.ShowingInfo.Directions,
+                AgentPrivateRemarks = listingResponse.SaleProperty.ShowingInfo.AgentPrivateRemarks,
+                SchoolDistrict = listingResponse.SaleProperty.SchoolsInfo.SchoolDistrict?.ToStringFromEnumMember(),
+                SchoolName1 = listingResponse.SaleProperty.SchoolsInfo.ElementarySchool?.ToStringFromEnumMember(),
+                SchoolName2 = listingResponse.SaleProperty.SchoolsInfo.MiddleSchool?.ToStringFromEnumMember(),
+                SchoolName3 = listingResponse.SaleProperty.SchoolsInfo.HighSchool?.ToStringFromEnumMember(),
+            };
+
+            foreach (var room in listingResponse.SaleProperty.Rooms)
+            {
+                var width = room.Width;
+                var length = room.Length;
+                var level = room.Level.ToStringFromEnumMember();
+                switch (room.RoomType)
+                {
+                    case RoomType.MasterBedroom:
+                        residentialListingRequest.Bed1Level = level;
+                        residentialListingRequest.Bed1Length = length;
+                        residentialListingRequest.Bed1Width = width;
+                        residentialListingRequest.Bed1Desc = room.Features.ToStringFromEnumMembers();
+                        break;
+                    case RoomType.Bed:
+                        if (residentialListingRequest.Bed2Level == null)
+                        {
+                            residentialListingRequest.Bed2Level = level;
+                            residentialListingRequest.Bed2Length = length;
+                            residentialListingRequest.Bed2Width = width;
+                            break;
+                        }
+
+                        if (residentialListingRequest.Bed3Level == null)
+                        {
+                            residentialListingRequest.Bed3Level = level;
+                            residentialListingRequest.Bed3Length = length;
+                            residentialListingRequest.Bed3Width = width;
+                            break;
+                        }
+
+                        if (residentialListingRequest.Bed4Level == null)
+                        {
+                            residentialListingRequest.Bed4Level = level;
+                            residentialListingRequest.Bed4Length = length;
+                            residentialListingRequest.Bed4Width = width;
+                            break;
+                        }
+
+                        if (residentialListingRequest.Bed5Level == null)
+                        {
+                            residentialListingRequest.Bed5Level = level;
+                            residentialListingRequest.Bed5Length = length;
+                            residentialListingRequest.Bed5Width = width;
+                            break;
+                        }
+
+                        break;
+                    case RoomType.Breakfast:
+                        residentialListingRequest.BreakfastLevel = level;
+                        residentialListingRequest.BreakfastLength = length;
+                        residentialListingRequest.BreakfastWidth = width;
+                        break;
+                    case RoomType.Dining:
+                        residentialListingRequest.DiningRoomLevel = level;
+                        residentialListingRequest.BreakfastLength = length;
+                        residentialListingRequest.DiningRoomWidth = width;
+                        break;
+                    case RoomType.Entry:
+                        residentialListingRequest.LivingRoom3Level = level;
+                        residentialListingRequest.LivingRoom3Length = length;
+                        residentialListingRequest.LivingRoom3Width = width;
+                        break;
+                    case RoomType.Family:
+                        residentialListingRequest.LivingRoom2Level = level;
+                        residentialListingRequest.LivingRoom2Length = length;
+                        residentialListingRequest.LivingRoom2Width = width;
+                        break;
+                    case RoomType.Game:
+                        residentialListingRequest.OtherRoom1Level = level;
+                        residentialListingRequest.OtherRoom1Length = length;
+                        residentialListingRequest.OtherRoom1Width = width;
+                        break;
+                    case RoomType.Kitchen:
+                        residentialListingRequest.KitchenLevel = level;
+                        residentialListingRequest.KitchenLength = length;
+                        residentialListingRequest.KitchenWidth = width;
+                        break;
+                    case RoomType.Living:
+                        residentialListingRequest.LivingRoom1Level = level;
+                        residentialListingRequest.LivingRoom1Length = length;
+                        residentialListingRequest.LivingRoom1Width = width;
+                        break;
+                    case RoomType.MasterBath:
+                        residentialListingRequest.Bath1Level = level;
+                        residentialListingRequest.Bath1Length = length;
+                        residentialListingRequest.Bath1Width = width;
+                        residentialListingRequest.BedBathDesc = room.Features.ToStringFromEnumMembers();
+                        break;
+                    case RoomType.MasterBedroomCloset:
+                        residentialListingRequest.ClosetLength = length;
+                        residentialListingRequest.ClosetWidth = width;
+                        break;
+                    case RoomType.Media:
+                        residentialListingRequest.OtherRoom2Level = level;
+                        residentialListingRequest.OtherRoom2Length = length;
+                        residentialListingRequest.OtherRoom2Width = width;
+                        break;
+                    case RoomType.Study:
+                        residentialListingRequest.StudyLevel = level;
+                        residentialListingRequest.StudyLength = length;
+                        residentialListingRequest.StudyWidth = width;
+                        break;
+                    case RoomType.Utility:
+                        residentialListingRequest.UtilityRoomLevel = level;
+                        residentialListingRequest.UtilityRoomLength = length;
+                        residentialListingRequest.UtilityRoomWidth = width;
+                        break;
+                    case RoomType.Student:
+                    case RoomType.Other:
+                    case RoomType.Office:
+                    case RoomType.HalfBath:
+                    case RoomType.FullBath:
+                    default:
+                        break;
+                }
+            }
+
+            foreach (var openHouse in listingResponse.SaleProperty.OpenHouses)
+            {
+                switch (openHouse.Type)
+                {
+                    case OpenHouseType.Saturday:
+                        //// residentialListingRequest.OHRefreshmentsSat = openHouse.Refreshments;
+                        residentialListingRequest.OHStartTimeSat = openHouse.StartTime.ToString();
+                        residentialListingRequest.OHEndTimeSat = openHouse.EndTime.ToString();
+                        //// residentialListingRequest.OHCommentsSat = openHouse.Comments;
+                        break;
+                    case OpenHouseType.Sunday:
+                        //// residentialListingRequest.OHRefreshmentsSun = openHouse.Refreshments;
+                        residentialListingRequest.OHStartTimeSun = openHouse.StartTime.ToString();
+                        residentialListingRequest.OHEndTimeSun = openHouse.EndTime.ToString();
+                        //// residentialListingRequest.OHCommentsSun = openHouse.Comments;
+                        break;
+                    case OpenHouseType.Monday:
+                        //// residentialListingRequest.OHRefreshmentsMon = openHouse.Refreshments;
+                        residentialListingRequest.OHStartTimeMon = openHouse.StartTime.ToString();
+                        residentialListingRequest.OHEndTimeMon = openHouse.EndTime.ToString();
+                        //// residentialListingRequest.OHCommentsMon = openHouse.Comments;
+                        break;
+                    case OpenHouseType.Tuesday:
+                        //// residentialListingRequest.OHRefreshmentsTue = openHouse.Refreshments;
+                        residentialListingRequest.OHStartTimeTue = openHouse.StartTime.ToString();
+                        residentialListingRequest.OHEndTimeTue = openHouse.EndTime.ToString();
+                        //// residentialListingRequest.OHCommentsTue = openHouse.Comments;
+                        break;
+                    case OpenHouseType.Wednesday:
+                        //// residentialListingRequest.OHRefreshmentsWed = openHouse.Refreshments;
+                        residentialListingRequest.OHStartTimeWed = openHouse.StartTime.ToString();
+                        residentialListingRequest.OHEndTimeWed = openHouse.EndTime.ToString();
+                        //// residentialListingRequest.OHCommentsWed = openHouse.Comments;
+                        break;
+                    case OpenHouseType.Thursday:
+                        //// residentialListingRequest.OHRefreshmentsThu = openHouse.Refreshments;
+                        residentialListingRequest.OHStartTimeThu = openHouse.StartTime.ToString();
+                        residentialListingRequest.OHEndTimeThu = openHouse.EndTime.ToString();
+                        //// residentialListingRequest.OHCommentsThu = openHouse.Comments;
+                        break;
+                    case OpenHouseType.Friday:
+                        //// residentialListingRequest.OHRefreshmentsFri = openHouse.Refreshments;
+                        residentialListingRequest.OHStartTimeFri = openHouse.StartTime.ToString();
+                        residentialListingRequest.OHEndTimeFri = openHouse.EndTime.ToString();
+                        //// residentialListingRequest.OHCommentsFri = openHouse.Comments;
+                        break;
+                    default: break;
+                }
+            }
+
+            return residentialListingRequest;
+        }
 
         public UploadListingItem AsUploadItem(
             string builderName,
@@ -854,7 +1293,7 @@ namespace Husa.Uploader.Data.Entities
             {
                 RequestId = this.ResidentialListingRequestID,
                 MlsNumber = this.IsNewListing ? $"New {currentEntity}" : this.MLSNum,
-                Address = $"{this.StreetNum} {this.StreetName}",
+                Address = this.Address, //// $"{this.StreetNum} {this.StreetName}",
                 Status = !string.IsNullOrEmpty(this.ListStatus) ? this.ListStatus : string.Empty,
                 Market = this.MarketName,
                 CompanyName = this.CompanyName,
@@ -866,9 +1305,8 @@ namespace Husa.Uploader.Data.Entities
                 IsLot = isLot,
                 InternalLotRequestId = this.InternalLotRequestID,
                 WorkingBy = worker,
-                WorkingStatus = workingStatus
+                WorkingStatus = workingStatus,
             };
-
 
         public string GetPrivateRemarks(bool useExtendedRemarks = true, bool addPlanName = true)
         {
@@ -881,12 +1319,11 @@ namespace Husa.Uploader.Data.Entities
                 extendedRemarks = this.GetExtendedRemarks();
             }
 
-            var fieldRemarks = extendedRemarks + privateRemarks.Replace("\"", "");
+            var fieldRemarks = extendedRemarks + privateRemarks.Replace("\"", string.Empty);
 
             if (addPlanName)
             {
-                const string prex = "Plan: ";
-                fieldRemarks = fieldRemarks.TrimEnd() + " " + prex + this.PlanProfileName + ". ";
+                fieldRemarks = $"{fieldRemarks.TrimEnd()} Plan: {this.PlanProfileName}. ";
             }
 
             return fieldRemarks;
@@ -948,10 +1385,6 @@ namespace Husa.Uploader.Data.Entities
 
                     if (!string.IsNullOrEmpty(this.RemarksFormatFromCompany) && this.RemarksFormatFromCompany == "SD")
                     {
-                        // UP-114 (code commented)
-                        /*if (listing.RemoveCompletionDate)
-                            builtNote += ". NEW HOME ~ ";
-                        else*/
                         builtNote += "CONST. COMPLETED " + this.BuildCompletionDate.Value.ToString(dateFormat) + " ~ ";
                     }
                     else
@@ -966,19 +1399,18 @@ namespace Husa.Uploader.Data.Entities
                     {
                         builtNote += this.BuildCompletionDate.Value.ToString("MMMM") + " completion! ~ ";
                     }
+
                     break;
 
                 default:
                     break;
-
             }
-
 
             string remark;
 
             if (this.IncludeRemarks != null && this.IncludeRemarks == false)
             {
-                builtNote = "";
+                builtNote = string.Empty;
             }
 
             if (!this.PublicRemarks.Contains('~'))
@@ -992,7 +1424,7 @@ namespace Husa.Uploader.Data.Entities
                 remark = (builtNote + temp).RemoveSlash();
             }
 
-            return remark.Replace("\t", "").Replace("\n", " ");
+            return remark.Replace("\t", string.Empty).Replace("\n", " ");
         }
 
         private string GetExtendedRemarks()
@@ -1009,11 +1441,11 @@ namespace Husa.Uploader.Data.Entities
                                    + (!string.IsNullOrWhiteSpace(soCity) ? ", " + soCity : string.Empty)
                                    + (!string.IsNullOrWhiteSpace(soZip) ? ", " + soZip : string.Empty);
             }
+
             var commPhone = this.CommunityProfilePhone ?? string.Empty;
 
             string extendedRemarks = string.Format("Call Sales Associate {0}. {1}. ", commPhone, salesOfficeAddr);
 
-            // BEGIN UP-73
             var apptPhone = string.Empty;
             var alternatePhone = string.Empty;
 
@@ -1052,12 +1484,10 @@ namespace Husa.Uploader.Data.Entities
             {
                 alternatePhone = this.AltPhoneCommunity;
             }
-            // END UP-73
 
-
-            switch (this.MarketName)
+            switch (this.MarketCode)
             {
-                case "Austin":
+                case MarketCode.Austin:
                     if (!string.IsNullOrEmpty(this.OtherPhone))
                     {
                         extendedRemarks = string.Format("Call Sales Associate {0}. ", this.OtherPhone);
@@ -1069,7 +1499,7 @@ namespace Husa.Uploader.Data.Entities
                     }
 
                     break;
-                case "San Antonio":
+                case MarketCode.SanAntonio:
                     if (!string.IsNullOrEmpty(apptPhone) && alternatePhone != apptPhone)
                     {
                         extendedRemarks = string.Format("Call Sales Associate {0}. ", apptPhone);
@@ -1081,7 +1511,7 @@ namespace Husa.Uploader.Data.Entities
                     }
 
                     break;
-                case "Houston":
+                case MarketCode.Houston:
                     if (!string.IsNullOrEmpty(apptPhone) && alternatePhone != apptPhone)
                     {
                         extendedRemarks = string.Format("Call Sales Associate {0}. ", apptPhone);

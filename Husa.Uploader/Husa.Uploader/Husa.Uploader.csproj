@@ -3,7 +3,6 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net7.0-windows</TargetFramework>
-		<Nullable>disable</Nullable>
 		<UseWPF>true</UseWPF>
 		<UserSecretsId>ff3c0fa4-605c-4c31-ad66-aaad071f0246</UserSecretsId>
 	</PropertyGroup>
@@ -35,6 +34,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Husa.Extensions.Api" Version="4.0.1" />
 		<PackageReference Include="MahApps.Metro" Version="2.4.9" />
 		<PackageReference Include="MaterialDesignColors" Version="2.1.4" />
 		<PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
@@ -55,7 +55,7 @@
 		<PackageReference Include="Serilog.Sinks.Elasticsearch" Version="9.0.1" />
 		<PackageReference Include="Serilog.Sinks.EventLog" Version="3.1.0" />
 		<PackageReference Include="Serilog.Sinks.Trace" Version="3.0.0" />
-		<PackageReference Include="Husa.Extensions.Common" Version="3.5.0" />
+		<PackageReference Include="Husa.Extensions.Common" Version="3.7.0" />
 	</ItemGroup>
 
 	<ItemGroup>

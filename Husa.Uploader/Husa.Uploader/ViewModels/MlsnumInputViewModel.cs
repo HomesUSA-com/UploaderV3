@@ -1,10 +1,10 @@
-﻿using Husa.Uploader.Commands;
-using System.Linq;
-using System.Windows;
-using System.Windows.Input;
-
 namespace Husa.Uploader.ViewModels
 {
+    using System.Linq;
+    using System.Windows;
+    using System.Windows.Input;
+    using Husa.Uploader.Commands;
+
     public class MlsnumInputViewModel : ViewModel
     {
         private string mlsNum;
@@ -12,11 +12,9 @@ namespace Husa.Uploader.ViewModels
         private ICommand continueCommand;
         private ICommand cancelCommand;
 
-        private bool CanContinue => !string.IsNullOrEmpty(this.mlsNum);
-
         public string MlsNum
         {
-            get { return this.mlsNum; }
+            get => this.mlsNum;
             set
             {
                 if (value == this.mlsNum)
@@ -46,6 +44,8 @@ namespace Husa.Uploader.ViewModels
                 return this.cancelCommand;
             }
         }
+
+        private bool CanContinue => !string.IsNullOrEmpty(this.mlsNum);
 
         private void Cancel()
         {

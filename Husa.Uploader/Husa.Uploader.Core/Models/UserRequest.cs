@@ -1,7 +1,7 @@
-﻿using System.Text;
-
-namespace Husa.Uploader.Core.Models
+﻿namespace Husa.Uploader.Core.Models
 {
+    using System.Text;
+
     public class UserRequest
     {
         public UserRequest(string username, string password)
@@ -16,8 +16,8 @@ namespace Husa.Uploader.Core.Models
                 throw new ArgumentException($"'{nameof(password)}' cannot be null or empty.", nameof(password));
             }
 
-            UserName = username;
-            Password = password;
+            this.UserName = username;
+            this.Password = password;
         }
 
         public string UserName { get; set; }
@@ -25,10 +25,10 @@ namespace Husa.Uploader.Core.Models
         public string Password { get; set; }
 
         public StringContent AsContent() => new(
-            content: ToString(),
+            content: this.ToString(),
             encoding: Encoding.UTF8,
             mediaType: "application/json");
 
-        public override string ToString() => $"{{ \"username\": \"{UserName}\", \"password\": \"{Password}\" }}";
+        public override string ToString() => $"{{ \"username\": \"{this.UserName}\", \"password\": \"{this.Password}\" }}";
     }
 }
