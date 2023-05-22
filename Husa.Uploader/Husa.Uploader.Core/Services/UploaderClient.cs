@@ -86,42 +86,48 @@ namespace Husa.Uploader.Core.Services
             return isAlertPresent;
         }
 
-        public bool WaitUntilElementIsDisplayed(By findBy)
+        public bool WaitUntilElementIsDisplayed(By findBy, CancellationToken token = default)
         {
             this.logger.LogInformation("Waiting for the element '{by}' to be displayed", findBy.ToString());
-            return this.wait.Until(x => this.FindElement(findBy).Displayed);
+            return this.wait.Until(x => this.FindElement(findBy).Displayed, token);
         }
 
-        public bool WaitUntilElementIsDisplayed(By findBy, TimeSpan waitTime)
+        public bool WaitUntilElementIsDisplayed(By findBy, TimeSpan waitTime, CancellationToken token = default)
         {
             this.logger.LogDebug("Waiting for the element '{by}' to be displayed", findBy.ToString());
             var customWait = new WebDriverWait(this.driver, waitTime);
-            return customWait.Until(driver => driver.FindElement(findBy).Displayed);
+            return customWait.Until(driver => driver.FindElement(findBy).Displayed, token);
         }
 
-        public bool WaitUntilElementIsDisplayed(Func<IWebDriver, bool> waitCondition)
+        public bool WaitUntilElementIsDisplayed(Func<IWebDriver, bool> waitCondition, CancellationToken token = default)
         {
             this.logger.LogDebug("Waiting for the condition '{@waitCondition}'", waitCondition);
-            return this.wait.Until(waitCondition);
+            return this.wait.Until(waitCondition, token);
         }
 
-        public bool WaitUntilScriptIsComplete(string script, string expectedCompletedResult)
+        public bool WaitUntilElementDisappears(By findBy, CancellationToken token = default)
+        {
+            this.logger.LogInformation("Waiting for the element '{by}' to disappear", findBy.ToString());
+            return this.wait.Until(x => !this.FindElement(findBy).Displayed, token);
+        }
+
+        public bool WaitUntilScriptIsComplete(string script, string expectedCompletedResult, CancellationToken token = default)
         {
             this.logger.LogInformation("Waiting for the script '{script}' to execute with the result {result}", script, expectedCompletedResult);
-            return this.wait.Until(x => this.ExecuteScript(script).Equals(expectedCompletedResult));
+            return this.wait.Until(x => this.ExecuteScript(script).Equals(expectedCompletedResult), token);
         }
 
-        public void WaitUntilElementExists(By findBy, TimeSpan waitTime)
+        public void WaitUntilElementExists(By findBy, TimeSpan waitTime, CancellationToken token = default)
         {
             this.logger.LogInformation("Waiting for the element '{by}' to exist", findBy.ToString());
             var customWait = new WebDriverWait(this.driver, waitTime);
-            customWait.Until(driver => driver.FindElement(findBy));
+            customWait.Until(driver => driver.FindElement(findBy), token);
         }
 
-        public void WaitUntilElementExists(By findBy)
+        public void WaitUntilElementExists(By findBy, CancellationToken token = default)
         {
             this.logger.LogInformation("Waiting for the element '{by}' to exist", findBy.ToString());
-            this.wait.Until(driver => driver.FindElement(findBy));
+            this.wait.Until(driver => driver.FindElement(findBy), token);
         }
 
         public bool IsElementPresent(By findBy, bool isVisible = false)
@@ -129,12 +135,7 @@ namespace Husa.Uploader.Core.Services
             try
             {
                 var element = this.FindElement(findBy, shouldWait: false, isElementOptional: false);
-                if (isVisible && element.Displayed)
-                {
-                    return true;
-                }
-
-                return true;
+                return isVisible && element.Displayed;
             }
             catch
             {
@@ -268,11 +269,17 @@ namespace Husa.Uploader.Core.Services
         {
             if (string.IsNullOrEmpty(entry))
             {
-                this.logger.LogInformation("Tried to write a null value to textbox with locator: {by} when processing request.", findBy);
+                this.logger.LogInformation("Tried to write a null value to textbox with locator: {by} when processing the request.", findBy);
                 return;
             }
 
             var element = this.FindElement(findBy, isElementOptional: isElementOptional);
+            if (isElementOptional && element is null)
+            {
+                this.logger.LogInformation("Textbox {by} not found, skipping process.", findBy);
+                return;
+            }
+
             if (!this.UploadInformation.IsNewListing && !doNotClear)
             {
                 try
@@ -281,7 +288,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (InvalidElementStateException ex)
                 {
-                    this.logger.LogError(ex, "The element with locator: {by} was in an invalid state when processing request.", findBy);
+                    this.logger.LogError(ex, "The element with locator: {by} was in an invalid state when processing the request.", findBy);
                     return;
                 }
 

@@ -1,6 +1,7 @@
 namespace Husa.Uploader.Core.Services
 {
     using System.Text.RegularExpressions;
+    using System.Threading;
     using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Crosscutting.Enums;
@@ -96,10 +97,9 @@ namespace Husa.Uploader.Core.Services
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, cancellationToken);
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-
                 this.Login();
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
                 if (listing.IsNewListing)
                 {
                     this.NavigateToNewPropertyInput();
@@ -107,7 +107,7 @@ namespace Husa.Uploader.Core.Services
                 else
                 {
                     this.NavigateToQuickEdit(listing.MLSNum);
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"));
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
                     this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
                 }
 
@@ -141,7 +141,7 @@ namespace Husa.Uploader.Core.Services
                     else
                     {
                         this.NavigateToQuickEdit(listing.MLSNum);
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"));
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
                         this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
                     }
 
@@ -161,7 +161,7 @@ namespace Husa.Uploader.Core.Services
 
                 if (listing.IsNewListing)
                 {
-                    await this.ProcessImages(listing);
+                    await this.ProcessImages(listing, cancellationToken);
                     // FinalizeInsert(listing);
                 }
 
@@ -185,10 +185,10 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 this.Login();
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
                 this.NavigateToQuickEdit(listing.MLSNum);
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
                 this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
 
                 this.UpdateYearBuiltDescriptionInGeneralTab(listing);
@@ -219,13 +219,13 @@ namespace Husa.Uploader.Core.Services
                 this.NavigateToQuickEdit(listing.MLSNum);
 
                 // Enter Manage Photos
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"), cancellationToken);
                 this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
 
                 // Prepare Media
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSave"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSave"), cancellationToken);
                 this.DeleteAllImages();
-                await this.ProcessImages(listing);
+                await this.ProcessImages(listing, cancellationToken);
                 return UploadResult.Success;
             }
         }
@@ -246,11 +246,11 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
                 this.Login();
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
 
                 this.NavigateToQuickEdit(listing.MLSNum);
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
                 this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
                 this.uploaderClient.ScrollDown();
                 this.uploaderClient.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
@@ -276,10 +276,10 @@ namespace Husa.Uploader.Core.Services
 
                 this.Login();
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
                 this.NavigateToQuickEdit(listing.MLSNum);
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
                 this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
 
                 // Login(driver, listing);
@@ -416,7 +416,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ExecuteScript(" SP('7') ");
                 Thread.Sleep(2000);
 
-                var virtualTourResponse = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.SanAntonio);
+                var virtualTourResponse = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.SanAntonio, cancellationToken);
                 var virtualTour = virtualTourResponse.FirstOrDefault();
                 if (virtualTour != null)
                 {
@@ -2742,7 +2742,7 @@ namespace Husa.Uploader.Core.Services
 
         private void UpdatePublicRemarksInRemarksTab(ResidentialListingRequest listing)
         {
-            BuiltStatus status = BuiltStatus.WithCompletion;
+            var status = BuiltStatus.WithCompletion;
 
             switch (listing.YearBuiltDesc)
             {
@@ -2759,7 +2759,7 @@ namespace Husa.Uploader.Core.Services
 
             // driver.wait.Until(x => ExpectedConditions.ElementIsVisible(By.Id("Input_917")));
             Thread.Sleep(400);
-            this.uploaderClient.WriteTextbox(By.Id("Input_140"), listing.GetPublicRemarks(status)); // Internet / Remarks / Desc. of Property
+            this.uploaderClient.WriteTextbox(By.Id("Input_140"), listing.GetCtxPublicRemarks(status)); // Internet / Remarks / Desc. of Property
             this.uploaderClient.WriteTextbox(By.Id("Input_142"), listing.Directions); // Syndication Remarks
         }
 
@@ -2824,7 +2824,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        private async Task ProcessImages(ResidentialListingRequest listing)
+        private async Task ProcessImages(ResidentialListingRequest listing, CancellationToken cancellationToken)
         {
             this.uploaderClient.ExecuteScript(script: "javascript:var btn = jQuery('#m_lbSave')[0]; btn.click();");
             this.uploaderClient.AcceptAlertWindow(isElementOptional: true);
@@ -2833,10 +2833,10 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(400);
 
             // Enter Manage Photos
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"), cancellationToken);
             this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
 
-            var media = await this.mediaRepository.GetListingImages(listing.ResidentialListingRequestID, market: MarketCode.CTX);
+            var media = await this.mediaRepository.GetListingImages(listing.ResidentialListingRequestID, market: MarketCode.CTX, cancellationToken);
             var i = 0;
             // Upload Images
             // foreach (var image in media.OrderBy(x => x.Order))
@@ -2854,11 +2854,11 @@ namespace Husa.Uploader.Core.Services
                     }
                 }
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
 
                 this.uploaderClient.FindElement(By.Id("m_ucImageLoader_m_tblImageLoader")).FindElement(By.CssSelector("input[type=file]")).SendKeys(image.PathOnDisk);
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id($"photoCell_{i}"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id($"photoCell_{i}"), cancellationToken);
 
                 this.uploaderClient.ExecuteScript($"jQuery('#photoCell_{i} a')[0].click();");
                 Thread.Sleep(500);

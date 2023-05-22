@@ -33,9 +33,9 @@ namespace Husa.Uploader.Data.Repositories
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IEnumerable<IListingMedia>> GetListingMedia(Guid residentialListingRequestId, MarketCode market)
+        public async Task<IEnumerable<IListingMedia>> GetListingMedia(Guid residentialListingRequestId, MarketCode market, CancellationToken token)
         {
-            var listingMedia = await this.mediaServiceClient.GetResources(entityId: residentialListingRequestId, type: MediaType.ListingRequest);
+            var listingMedia = await this.mediaServiceClient.GetResources(entityId: residentialListingRequestId, type: MediaType.ListingRequest, token);
             var consolidatedMedia = ConsolidateImages(listingMedia.Media);
             var result = new List<IListingMedia>();
             int count = 0;
@@ -64,7 +64,8 @@ namespace Husa.Uploader.Data.Repositories
 
             await this.PrepareImages(
                 requestMedia: result.OfType<ResidentialListingMedia>(),
-                market);
+                market,
+                token);
 
             foreach (var virtualTourDetail in listingMedia.VirtualTour)
             {
@@ -81,9 +82,9 @@ namespace Husa.Uploader.Data.Repositories
             return result;
         }
 
-        public async Task<IEnumerable<ResidentialListingMedia>> GetListingImages(Guid residentialListingRequestId, MarketCode market)
+        public async Task<IEnumerable<ResidentialListingMedia>> GetListingImages(Guid residentialListingRequestId, MarketCode market, CancellationToken token)
         {
-            var listingMedia = await this.mediaServiceClient.GetResources(entityId: residentialListingRequestId, type: MediaType.ListingRequest);
+            var listingMedia = await this.mediaServiceClient.GetResources(entityId: residentialListingRequestId, type: MediaType.ListingRequest, token);
             var consolidatedMedia = ConsolidateImages(listingMedia.Media);
             var result = new List<ResidentialListingMedia>();
             int count = 0;
@@ -112,13 +113,14 @@ namespace Husa.Uploader.Data.Repositories
 
             await this.PrepareImages(
                 requestMedia: result,
-                market);
+                market,
+                token);
             return result;
         }
 
-        public async Task<IEnumerable<ResidentialListingVirtualTour>> GetListingVirtualTours(Guid residentialListingRequestId, MarketCode market)
+        public async Task<IEnumerable<ResidentialListingVirtualTour>> GetListingVirtualTours(Guid residentialListingRequestId, MarketCode market, CancellationToken token)
         {
-            var listingMedia = await this.mediaServiceClient.GetResources(entityId: residentialListingRequestId, type: MediaType.ListingRequest);
+            var listingMedia = await this.mediaServiceClient.GetResources(entityId: residentialListingRequestId, type: MediaType.ListingRequest, token);
             var result = new List<ResidentialListingVirtualTour>();
             foreach (var virtualTourDetail in listingMedia.VirtualTour)
             {
@@ -160,7 +162,7 @@ namespace Husa.Uploader.Data.Repositories
             return mlsResToReturn;
         }
 
-        private Task<string> DownloadImageAsync(ResidentialListingMedia media, string savePath)
+        private Task<string> DownloadImageAsync(ResidentialListingMedia media, string savePath, CancellationToken token)
         {
             if (media is null)
             {
@@ -171,21 +173,21 @@ namespace Husa.Uploader.Data.Repositories
 
             async Task<string> DownloadImages()
             {
-                var response = await this.httpClient.GetAsync(media.MediaUri.ToString());
+                var response = await this.httpClient.GetAsync(media.MediaUri.ToString(), token);
 
                 response.EnsureSuccessStatusCode();
                 media.MediaType = response.Content.Headers.ContentType.MediaType;
 
-                using var contentStream = await response.Content.ReadAsStreamAsync();
+                using var contentStream = await response.Content.ReadAsStreamAsync(token);
                 using var imageAsFileStream = File.Create(path: $"{savePath}{media.Extension}");
                 contentStream.Seek(0, SeekOrigin.Begin);
-                await contentStream.CopyToAsync(imageAsFileStream);
+                await contentStream.CopyToAsync(imageAsFileStream, token);
 
                 return response.Content.Headers.ContentType.MediaType;
             }
         }
 
-        private async Task PrepareImages(IEnumerable<ResidentialListingMedia> requestMedia, MarketCode marketName)
+        private async Task PrepareImages(IEnumerable<ResidentialListingMedia> requestMedia, MarketCode marketName, CancellationToken token)
         {
             var folder = Path.Combine(Path.GetTempPath(), MediaFolderName, Path.GetRandomFileName());
             Directory.CreateDirectory(folder);
@@ -197,7 +199,8 @@ namespace Husa.Uploader.Data.Repositories
                 {
                     await this.DownloadImageAsync(
                         media: image,
-                        savePath: filePath);
+                        savePath: filePath,
+                        token);
 
                     if (image.MediaType == ManagedMediaTypes.Gif || image.MediaType == ManagedMediaTypes.Png)
                     {

@@ -1056,7 +1056,9 @@ namespace Husa.Uploader.ViewModels
             catch (OperationCanceledException)
             {
                 this.State = UploaderState.Cancelled;
-                return UploadResult.Success;
+                this.uploadFactory.Uploader.Logout();
+                this.uploadFactory.CloseDriver();
+                return UploadResult.Failure;
             }
             finally
             {
@@ -1191,7 +1193,7 @@ namespace Husa.Uploader.ViewModels
             this.ShowCancelButton = false;
             try
             {
-                this.cancellationTokenSource?.Cancel();
+                this.cancellationTokenSource?.Cancel(throwOnFirstException: true);
                 this.uploadFactory.Uploader.CancelOperation();
             }
             catch (Exception exception)

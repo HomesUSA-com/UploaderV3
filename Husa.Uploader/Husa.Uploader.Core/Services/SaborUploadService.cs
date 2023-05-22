@@ -1,5 +1,6 @@
 namespace Husa.Uploader.Core.Services
 {
+    using System.Threading;
     using Husa.Extensions.Common.Enums;
     using Husa.Extensions.Common.Exceptions;
     using Husa.Uploader.Core.Interfaces;
@@ -157,7 +158,7 @@ namespace Husa.Uploader.Core.Services
             {
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
-                this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: string.IsNullOrWhiteSpace(listing.MLSNum));
+                this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: listing.IsNewListing);
                 this.Login();
                 if (listing.IsNewListing)
                 {
@@ -183,17 +184,11 @@ namespace Husa.Uploader.Core.Services
                 this.FillOfficeInformation(listing);
                 this.FillRemarksInformation(listing);
 
-                // FIXME still need to complete this method
                 if (listing.IsNewListing)
                 {
-                    await this.ProcessImages(listing.ResidentialListingRequestID);
-                    //// FinalizeInsert(listing);
+                    await this.FillMedia(listing.ResidentialListingRequestID, cancellationToken);
                 }
 
-                // else
-                //// FinalizeUpdate(driver);
-
-                this.SetLongitudeAndLatitudeValues(listing);
                 return UploadResult.Success;
             }
         }
@@ -220,7 +215,7 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(2000);
                 this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(26) > a:first').click();");
                 Thread.Sleep(1000);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
                 this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[0].click();");
                 Thread.Sleep(1000);
 
@@ -228,13 +223,13 @@ namespace Husa.Uploader.Core.Services
                     script: "jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();",
                     isScriptOptional: true);
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("csframe"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("csframe"), cancellationToken);
                 this.uploaderClient.SwitchTo("csframe");
                 this.uploaderClient.SetSelect(By.Id("statuses"), listing.ListStatus, "Listing Status", tabName);
 
                 if (listing.ListStatus == "SLD")
                 {
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("HOWSOLD"));
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("HOWSOLD"), cancellationToken);
                     this.uploaderClient.WriteTextbox(By.Name("HOWSOLD"), listing.MFinancing); // How Sold/Sale Terms
                     this.uploaderClient.WriteTextbox(By.Name("CLOSEDATE"), listing.ClosedDate.Value.ToString("MM/dd/yyyy")); // Closing Date
                     this.uploaderClient.WriteTextbox(By.Name("SOLDPRICE"), listing.SalesPrice); // Sold Price
@@ -245,7 +240,7 @@ namespace Husa.Uploader.Core.Services
 
                 if (listing.ListStatus == "PDB" || listing.ListStatus == "PND" || listing.ListStatus == "SLD")
                 {
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("CONTDATE"));
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("CONTDATE"), cancellationToken);
                     this.uploaderClient.WriteTextbox(By.Name("CONTDATE"), listing.PendingDate.Value.ToString("MM/dd/yyyy")); // Contract Date
                     this.uploaderClient.WriteTextbox(By.Name("SELLAGT1"), listing.SellingAgentLicenseNum); // Selling / Buyer's Agent ID
                 }
@@ -274,11 +269,11 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(1000);
                 this.uploaderClient.ExecuteScript("jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(26) > a:first').click();");
                 Thread.Sleep(1000);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
                 this.uploaderClient.ExecuteScript("jQuery('.modal-body > .inner-modal-body > div').find('button')[1].click();");
                 Thread.Sleep(1000);
                 this.uploaderClient.ExecuteScript("jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("csframe"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("csframe"), cancellationToken);
                 this.uploaderClient.SwitchTo("csframe");
                 try
                 {
@@ -318,11 +313,11 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(1000);
                 this.uploaderClient.ExecuteScript($"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(26) > a:first').click();");
                 Thread.Sleep(1000);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
                 this.uploaderClient.ExecuteScript("jQuery('.modal-body > .inner-modal-body > div').find('button')[5].click();");
                 Thread.Sleep(1000);
                 this.uploaderClient.ExecuteScript("jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
-                await this.ProcessImages(listing.ResidentialListingRequestID);
+                await this.ProcessImages(listing.ResidentialListingRequestID, cancellationToken);
                 return UploadResult.Success;
             }
         }
@@ -350,7 +345,7 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(1000);
                 this.uploaderClient.ExecuteScript("jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(26) > a:first').click();");
                 Thread.Sleep(1000);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
                 Thread.Sleep(1000);
                 this.uploaderClient.ExecuteScript(
                     script: "jQuery('#dcModal >.modal-dialog > .modal-content > .modal-body > .inner-modal-body >div > button:contains(\"Edit Listing Details\") ')[0].click();",
@@ -386,7 +381,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(26) > a:first').click();");
                 Thread.Sleep(1000);
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
                 this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[7].click();");
                 Thread.Sleep(1000);
                 this.uploaderClient.ExecuteScript(
@@ -397,7 +392,7 @@ namespace Husa.Uploader.Core.Services
 
                 this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(26) > a:first').click();");
                 Thread.Sleep(1000);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
                 this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[7].click();");
                 Thread.Sleep(1000);
 
@@ -432,18 +427,18 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(1000);
                 this.uploaderClient.ExecuteScript(script: $"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(26) > a:first').click();");
                 Thread.Sleep(1000);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
                 this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[6].click();");
                 Thread.Sleep(1000);
 
                 this.uploaderClient.ExecuteScript(script: "jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("main"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("main"), cancellationToken);
                 this.uploaderClient.SwitchTo("main");
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("workspace"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("workspace"), cancellationToken);
                 this.uploaderClient.SwitchTo("workspace");
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("VIRTTOUR"));
-                var virtualTourResponse = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.SanAntonio);
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("VIRTTOUR"), cancellationToken);
+                var virtualTourResponse = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.SanAntonio, cancellationToken);
                 var virtualTour = virtualTourResponse.FirstOrDefault();
                 if (virtualTour != null)
                 {
@@ -1117,7 +1112,7 @@ namespace Husa.Uploader.Core.Services
             // this.uploaderClient.WriteTextbox(By.Name("BONUS"), listing.CompBuyBonus);
             this.uploaderClient.WriteTextbox(By.Name("LREAORLREB"), "NO"); // Owner LREA/LREB
             this.uploaderClient.WriteTextbox(By.Name("PRFTITLECO"), listing.TitleCo); // Preferred Title Company
-            this.uploaderClient.WriteTextbox(By.Name("POT_SS_YNID"), "NO", true); // Potential Short Sale
+            this.uploaderClient.WriteTextbox(By.Name("POT_SS_YNID"), "NO", isElementOptional: true); // Potential Short Sale
         }
 
         private void FillRemarksInformation(ResidentialListingRequest listing, bool isCompletionUpdate = false)
@@ -1177,51 +1172,12 @@ namespace Husa.Uploader.Core.Services
                     isElementOptional: true); // Agent Confidential Rmrks
             }
 
-            var remark = string.Empty;
-            var builtNote = "MLS# " + listing.MLSNum + " - Built by " + listing.CompanyName + " - ";
-            if (listing.YearBuiltDesc == "Complete")
-            {
-                string dateFormat = "MMM dd";
-                int diffDays = DateTime.Now.Subtract((DateTime)listing.BuildCompletionDate).Days;
-                if (diffDays > 365)
-                {
-                    dateFormat = "MMM dd yyyy";
-                }
-
-                if (!string.IsNullOrEmpty(listing.RemarksFormatFromCompany) && listing.RemarksFormatFromCompany == "SD")
-                {
-                    builtNote += "CONST. COMPLETED " + listing.BuildCompletionDate.Value.ToString(dateFormat) + " ~ ";
-                }
-                else
-                {
-                    builtNote += "Ready Now! ~ ";
-                }
-            }
-            else
-            {
-                builtNote += listing.GetCompletionText() + " completion! ~ ";
-            }
-
-            if (listing.IncludeRemarks != null && !listing.IncludeRemarks.Value)
-            {
-                builtNote = string.Empty;
-            }
-
-            if (!string.IsNullOrEmpty(listing.PublicRemarks) && listing.PublicRemarks.Contains('~'))
-            {
-                int tempIndex = listing.PublicRemarks.IndexOf('~') + 1;
-                remark = builtNote + listing.PublicRemarks[tempIndex..].Trim().RemoveSlash();
-            }
-            else
-            {
-                remark = builtNote + listing.PublicRemarks.RemoveSlash();
-            }
-
+            var remarks = listing.GetSaborPublicRemarks();
             Thread.Sleep(2000);
-            this.uploaderClient.WriteTextbox(By.Name("REMARKS"), remark, isElementOptional: true); // Public Remarks
+            this.uploaderClient.WriteTextbox(By.Name("REMARKS"), remarks, isElementOptional: true); // Public Remarks
         }
 
-        private async Task FillMedia(Guid residentialListingRequestID)
+        private async Task FillMedia(Guid residentialListingRequestID, CancellationToken cancellationToken)
         {
             Thread.Sleep(1000);
             this.uploaderClient.ExecuteScript(script: " SP('7') ");
@@ -1230,9 +1186,9 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Name("RTS"), entry: "NO"); // Are any property photos virtually staged?
             this.uploaderClient.FindElement(By.Id("managephotosbutton")).Click();
             Thread.Sleep(1000);
-            await this.ProcessImages(residentialListingRequestID);
+            await this.ProcessImages(residentialListingRequestID, cancellationToken);
             Thread.Sleep(2500);
-            // this.uploaderClient.ExecuteScript("javascript:saveImages();");
+            this.uploaderClient.ExecuteScript(script: "javascript:saveImages();");
             Thread.Sleep(3000);
         }
 
@@ -1260,9 +1216,9 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.FindElements(By.Name("    OK    "))[1].Click();
         }
 
-        private async Task ProcessImages(Guid residentialListingRequestID)
+        private async Task ProcessImages(Guid residentialListingRequestID, CancellationToken token)
         {
-            this.uploaderClient.WaitUntilElementExists(By.Id("photo-browser"));
+            this.uploaderClient.WaitUntilElementExists(By.Id("photo-browser"), token);
             if (!this.uploaderClient.UploadInformation.IsNewListing)
             {
                 this.DeleteResources();
@@ -1270,20 +1226,21 @@ namespace Husa.Uploader.Core.Services
 
             Thread.Sleep(1000);
 
-            var mediaFiles = await this.mediaRepository.GetListingImages(residentialListingRequestID, market: MarketCode.SanAntonio);
+            var mediaFiles = await this.mediaRepository.GetListingImages(residentialListingRequestID, market: MarketCode.SanAntonio, token);
             foreach (var photo in mediaFiles)
             {
                 Thread.Sleep(500);
                 this.uploaderClient.FindElement(By.Name("files[]")).SendKeys(photo.PathOnDisk);
             }
 
-            bool isUploadInProgress = false;
-            while (!isUploadInProgress)
+            var isUploadInProgress = true;
+            while (isUploadInProgress)
             {
                 try
                 {
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("fileupload-progress"));
-                    break;
+                    this.uploaderClient.WaitUntilElementDisappears(By.ClassName("fileupload-progress"), token);
+                    isUploadInProgress = false;
+                    this.logger.LogInformation("The images upload for listing request {listingRequestId} is complete.", residentialListingRequestID);
                 }
                 catch
                 {

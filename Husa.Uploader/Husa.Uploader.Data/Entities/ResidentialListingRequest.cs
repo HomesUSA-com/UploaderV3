@@ -1110,7 +1110,18 @@ namespace Husa.Uploader.Data.Entities
                 SchoolName1 = listingResponse.SaleProperty.SchoolsInfo.ElementarySchool?.ToStringFromEnumMember(),
                 SchoolName2 = listingResponse.SaleProperty.SchoolsInfo.MiddleSchool?.ToStringFromEnumMember(),
                 SchoolName3 = listingResponse.SaleProperty.SchoolsInfo.HighSchool?.ToStringFromEnumMember(),
+                HOA = listingResponse.SaleProperty.FinancialInfo.HOARequirement?.ToStringFromEnumMember(),
             };
+
+            if (listingResponse.SaleProperty.Hoas != null && listingResponse.SaleProperty.Hoas.Any())
+            {
+                var hoa = listingResponse.SaleProperty.Hoas.First();
+                residentialListingRequest.AssocFee = (int)hoa.Fee;
+                residentialListingRequest.AssocName = hoa.Name;
+                residentialListingRequest.AssocFeePaid = hoa.BillingFrequency.ToStringFromEnumMember();
+                residentialListingRequest.AssocTransferFee = (int)hoa.TransferFee;
+                residentialListingRequest.AssocPhone = hoa.ContactPhone;
+            }
 
             foreach (var room in listingResponse.SaleProperty.Rooms)
             {
@@ -1329,33 +1340,7 @@ namespace Husa.Uploader.Data.Entities
             return fieldRemarks;
         }
 
-        public string GetCompletionText()
-        {
-            const string defaultMonth = "January";
-
-            if (!this.BuildCompletionDate.HasValue)
-            {
-                return defaultMonth;
-            }
-
-            return this.BuildCompletionDate.Value.Month switch
-            {
-                2 => "February",
-                3 => "March",
-                4 => "April",
-                5 => "May",
-                6 => "June",
-                7 => "July",
-                8 => "August",
-                9 => "September",
-                10 => "October",
-                11 => "November",
-                12 => "December",
-                _ => "January",
-            };
-        }
-
-        public string GetPublicRemarks(BuiltStatus status)
+        public string GetCtxPublicRemarks(BuiltStatus status)
         {
             var builtNote = "MLS# " + this.MLSNum;
 
@@ -1425,6 +1410,72 @@ namespace Husa.Uploader.Data.Entities
             }
 
             return remark.Replace("\t", string.Empty).Replace("\n", " ");
+        }
+
+        public string GetSaborPublicRemarks()
+        {
+            var builtNote = "MLS# " + this.MLSNum + " - Built by " + this.CompanyName + " - ";
+            if (this.YearBuiltDesc == "Complete")
+            {
+                string dateFormat = "MMM dd";
+                int diffDays = DateTime.Now.Subtract((DateTime)this.BuildCompletionDate).Days;
+                if (diffDays > 365)
+                {
+                    dateFormat = "MMM dd yyyy";
+                }
+
+                if (!string.IsNullOrEmpty(this.RemarksFormatFromCompany) && this.RemarksFormatFromCompany == "SD")
+                {
+                    builtNote += "CONST. COMPLETED " + this.BuildCompletionDate.Value.ToString(dateFormat) + " ~ ";
+                }
+                else
+                {
+                    builtNote += "Ready Now! ~ ";
+                }
+            }
+            else
+            {
+                builtNote += this.GetCompletionText() + " completion! ~ ";
+            }
+
+            if (this.IncludeRemarks != null && !this.IncludeRemarks.Value)
+            {
+                builtNote = string.Empty;
+            }
+
+            if (!string.IsNullOrEmpty(this.PublicRemarks) && this.PublicRemarks.Contains('~'))
+            {
+                int tempIndex = this.PublicRemarks.IndexOf('~') + 1;
+                return builtNote + this.PublicRemarks[tempIndex..].Trim().RemoveSlash();
+            }
+
+            return builtNote + this.PublicRemarks.RemoveSlash();
+        }
+
+        private string GetCompletionText()
+        {
+            const string defaultMonth = "January";
+
+            if (!this.BuildCompletionDate.HasValue)
+            {
+                return defaultMonth;
+            }
+
+            return this.BuildCompletionDate.Value.Month switch
+            {
+                2 => "February",
+                3 => "March",
+                4 => "April",
+                5 => "May",
+                6 => "June",
+                7 => "July",
+                8 => "August",
+                9 => "September",
+                10 => "October",
+                11 => "November",
+                12 => "December",
+                _ => "January",
+            };
         }
 
         private string GetExtendedRemarks()

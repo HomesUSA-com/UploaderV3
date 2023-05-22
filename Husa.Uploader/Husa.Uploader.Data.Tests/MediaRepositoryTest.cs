@@ -56,7 +56,7 @@ namespace Husa.Uploader.Data.Tests
             var repository = this.GetSut();
 
             // Act
-            var result = await repository.GetListingMedia(residentialListingRequestId: listingRequestId, market: MarketCode.SanAntonio);
+            var result = await repository.GetListingMedia(residentialListingRequestId: listingRequestId, market: MarketCode.SanAntonio, token: default);
 
             // Assert
             Assert.NotEmpty(result);
