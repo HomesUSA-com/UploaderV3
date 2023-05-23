@@ -16,11 +16,11 @@ namespace Husa.Uploader.ViewModels.ListingRequestSaleSubClass
 
         public int? EntryWidth { get; set; }
 
-        public string SpecialtyRooms { get; set; }
+        public ICollection<SpecialtyRooms> SpecialtyRooms { get; set; }
 
         public string MasterBedroom { get; set; }
 
-        public string OtherParking { get; set; }
+        public ICollection<OtherParking> OtherParking { get; set; }
 
         public string Stories { get; set; }
 

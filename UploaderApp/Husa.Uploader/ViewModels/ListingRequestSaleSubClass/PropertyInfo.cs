@@ -2,6 +2,8 @@
 {
     using Husa.Uploader.ViewModels.Enum;
     using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
 
     public class PropertyInfo
     {
@@ -20,12 +22,11 @@
         public string MapscoGrid { get; set; }
 
         public string LotDimension { get; set; }
-
         public string LotSize { get; set; }
 
-        public string LotDescription { get; set; }
+        public ICollection<LotDescription> LotDescription { get; set; }
 
-        public string Occupancy { get; set; }
+        public ICollection<Occupancy> Occupancy { get; set; }
 
         public bool UpdateGeocodes { get; set; }
 
