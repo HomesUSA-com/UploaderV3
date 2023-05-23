@@ -1,4 +1,4 @@
-﻿namespace Husa.Uploader.Core.Models
+namespace Husa.Uploader.Core.Models
 {
     using System.Text.Json.Serialization;
     using Newtonsoft.Json;
@@ -32,7 +32,7 @@
         public DateTime LastActivityOn { get; set; }
         public object LastDisabledOn { get; set; }
         public object Oid { get; set; }
-        public int PrimaryPhone { get; set; }
+        public int? PrimaryPhone { get; set; }
         public bool AccountVerified { get; set; }
         public string VerificationHash { get; set; }
         public DateTime LastPasswordChange { get; set; }
