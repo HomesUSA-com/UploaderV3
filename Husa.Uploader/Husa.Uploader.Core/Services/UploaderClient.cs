@@ -89,7 +89,7 @@ namespace Husa.Uploader.Core.Services
         public bool WaitUntilElementIsDisplayed(By findBy, CancellationToken token = default)
         {
             this.logger.LogInformation("Waiting for the element '{by}' to be displayed", findBy.ToString());
-            return this.wait.Until(x => this.FindElement(findBy).Displayed, token);
+            return this.wait.Until(driver => driver.FindElement(findBy).Displayed, token);
         }
 
         public bool WaitUntilElementIsDisplayed(By findBy, TimeSpan waitTime, CancellationToken token = default)
@@ -108,7 +108,7 @@ namespace Husa.Uploader.Core.Services
         public bool WaitUntilElementDisappears(By findBy, CancellationToken token = default)
         {
             this.logger.LogInformation("Waiting for the element '{by}' to disappear", findBy.ToString());
-            return this.wait.Until(x => !this.FindElement(findBy).Displayed, token);
+            return this.wait.Until(driver => !driver.FindElement(findBy).Displayed, token);
         }
 
         public bool WaitUntilScriptIsComplete(string script, string expectedCompletedResult, CancellationToken token = default)

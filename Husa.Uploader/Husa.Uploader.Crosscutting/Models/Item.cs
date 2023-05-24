@@ -1,4 +1,4 @@
-namespace Husa.Uploader.Models
+namespace Husa.Uploader.Crosscutting.Models
 {
     using System;
     using Husa.Extensions.Common;
@@ -21,12 +21,14 @@ namespace Husa.Uploader.Models
         public Item(Guid? selectedItemId, UploaderState uploaderStatus)
             : this()
         {
-            if (selectedItemId.HasValue)
+            if (!selectedItemId.HasValue)
             {
-                this.SelectedItemID = selectedItemId.Value.ToString();
-                this.Status = uploaderStatus.GetEnumDescription();
-                this.UploaderStatus = uploaderStatus;
+                return;
             }
+
+            this.SelectedItemID = selectedItemId.Value.ToString();
+            this.Status = uploaderStatus.GetEnumDescription();
+            this.UploaderStatus = uploaderStatus;
         }
 
         public Item()
@@ -36,10 +38,12 @@ namespace Husa.Uploader.Models
             this.UploaderStatus = UploaderState.None;
         }
 
-        public string SelectedItemID { get; private set; }
+        public string SelectedItemID { get; set; }
 
-        public string Status { get; private set; }
+        public string Status { get; set; }
 
-        public UploaderState UploaderStatus { get; private set; }
+        public UploaderState UploaderStatus { get; set; }
+
+        public string StatusInfo => $"SelectedItemID: {this.SelectedItemID} - Status: {this.Status}";
     }
 }

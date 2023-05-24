@@ -16,6 +16,7 @@ namespace Husa.Uploader.Configuration
     using Husa.Uploader.Factories;
     using Husa.Uploader.ViewModels;
     using Husa.Uploader.Views;
+    using Microsoft.AspNetCore.SignalR.Client;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
@@ -174,6 +175,18 @@ namespace Husa.Uploader.Configuration
             services.AddTransient<TModel>();
             services.AddTransient<Func<TForm>>(serviceProvider => () => serviceProvider.GetService<TForm>());
             services.AddSingleton<IAbstractFactory<TForm>, AbstractFactory<TForm>>();
+        }
+
+        public static void ConfigureSignalR(this IServiceCollection services)
+        {
+            services.AddSingleton(provider =>
+            {
+                var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
+
+                return new HubConnectionBuilder()
+                .WithUrl($"{options.SignalRURLServer}/uploaderHub")
+                .Build();
+            });
         }
     }
 }

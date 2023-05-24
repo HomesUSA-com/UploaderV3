@@ -10,6 +10,7 @@ using Husa.Uploader.Data.Repositories;
 using Husa.Uploader.Deployment;
 using Husa.Uploader.Factories;
 using Husa.Uploader.Views;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -60,6 +61,7 @@ public partial class App : Application
                 services.ConfigureDataAccess();
                 services.ConfigureServices();
                 services.ConfigureWebDriver();
+                services.ConfigureSignalR();
                 VersionManager.ConfigureVersionInfo(isDevelopment: host.HostingEnvironment.IsDevelopment());
             })
             .Build();
@@ -82,16 +84,14 @@ public partial class App : Application
     protected override async void OnExit(ExitEventArgs e)
     {
         await AppHost.StopAsync();
-        var uploadFactory = AppHost.Services.GetRequiredService<IUploadFactory>();
-        uploadFactory.CloseDriver();
+        await GracefulShutdown();
         base.OnExit(e);
     }
 
-    protected void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    protected async void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         Log.Fatal(e.Exception, "The uploader CRASHED with an UnhandledException");
-        var uploadFactory = AppHost.Services.GetRequiredService<IUploadFactory>();
-        uploadFactory.CloseDriver();
+        await GracefulShutdown();
         Thread.Sleep(TimeSpan.FromSeconds(2));
         e.Handled = true;
     }
@@ -110,5 +110,14 @@ public partial class App : Application
         {
             // Ignoring error because the outcome of the delete is not important
         }
+    }
+
+    private static async Task GracefulShutdown()
+    {
+        var uploadFactory = AppHost.Services.GetRequiredService<IUploadFactory>();
+        uploadFactory.CloseDriver();
+
+        var hubConnection = AppHost.Services.GetRequiredService<HubConnection>();
+        await hubConnection.StopAsync();
     }
 }

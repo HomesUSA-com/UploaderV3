@@ -1233,18 +1233,17 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.FindElement(By.Name("files[]")).SendKeys(photo.PathOnDisk);
             }
 
-            var isUploadInProgress = true;
-            while (isUploadInProgress)
+            var isUploadInProgress = false;
+            while (!isUploadInProgress)
             {
                 try
                 {
-                    this.uploaderClient.WaitUntilElementDisappears(By.ClassName("fileupload-progress"), token);
-                    isUploadInProgress = false;
+                    isUploadInProgress = this.uploaderClient.WaitUntilElementDisappears(By.ClassName("fileupload-progress"), token);
                     this.logger.LogInformation("The images upload for listing request {listingRequestId} is complete.", residentialListingRequestID);
                 }
                 catch
                 {
-                    // Ignoring exception because the fields are optional
+                    isUploadInProgress = false;
                 }
             }
         }

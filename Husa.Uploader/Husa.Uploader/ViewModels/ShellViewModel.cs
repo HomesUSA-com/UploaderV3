@@ -14,6 +14,7 @@ namespace Husa.Uploader.ViewModels
     using Husa.Uploader.Core.Interfaces.ServiceActions;
     using Husa.Uploader.Core.Models;
     using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Crosscutting.Models;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data;
     using Husa.Uploader.Data.Entities;
@@ -44,6 +45,7 @@ namespace Husa.Uploader.ViewModels
         private readonly IAbstractFactory<LatLonInputView> locationViewFactory;
         private readonly IAbstractFactory<MlsnumInputView> mlsNumberInputFactory;
         private readonly IUploadFactory uploadFactory;
+        private readonly HubConnection hubConnection;
         private readonly ILogger<ShellView> logger;
 
         private CancellationTokenSource cancellationTokenSource;
@@ -94,6 +96,7 @@ namespace Husa.Uploader.ViewModels
             IAbstractFactory<LatLonInputView> locationViewFactory,
             IAbstractFactory<MlsnumInputView> mlsNumberInputFactory,
             IUploadFactory uploadFactory,
+            HubConnection hubConnection,
             ILogger<ShellView> logger)
             : this()
         {
@@ -104,6 +107,7 @@ namespace Husa.Uploader.ViewModels
             this.locationViewFactory = locationViewFactory ?? throw new ArgumentNullException(nameof(locationViewFactory));
             this.mlsNumberInputFactory = mlsNumberInputFactory ?? throw new ArgumentNullException(nameof(mlsNumberInputFactory));
             this.uploadFactory = uploadFactory ?? throw new ArgumentNullException(nameof(uploadFactory));
+            this.hubConnection = hubConnection ?? throw new ArgumentNullException(nameof(hubConnection));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -116,7 +120,7 @@ namespace Husa.Uploader.ViewModels
             this.CurrentEntity = Entity.Empty;
             this.IsErrorVisible = false;
             this.ErrorMessage = "Username or password incorrect.";
-            this.CorrelationIdBox = "Address";
+            this.CorrelationIdBox = string.Empty;
             this.LastUpdated = "Last Updated: 12/12/12 22:22:22";
             this.State = UploaderState.Ready;
             this.ConfigureVersionCheck();
@@ -754,95 +758,92 @@ namespace Husa.Uploader.ViewModels
 
             try
             {
-                var connection = new HubConnectionBuilder()
-                    .WithUrl($"{this.options.Value.SignalRURLServer}/uploaderHub")
-                    .Build();
-
                 // receiving data from other users
-                connection.On<Dictionary<string, Item>>("updateWorkerList", response =>
-                {
-                    try
-                    {
-                        var workerListHasChanged = false;
-                        if (this.Workers == null)
-                        {
-                            this.Workers = response;
-                            workerListHasChanged = true;
-                        }
-                        else
-                        {
-                            var diff = response
-                                .Where(entry => this.Workers.ContainsKey(entry.Key) &&
-                                    (this.Workers[entry.Key].SelectedItemID != entry.Value.SelectedItemID || this.Workers[entry.Key].Status != entry.Value.Status))
-                                .ToDictionary(entry => entry.Key, entry => entry.Value);
-                            if (diff.Any())
-                            {
-                                this.Workers = response;
-                                workerListHasChanged = true;
-                            }
-                        }
-
-                        if (!workerListHasChanged)
-                        {
-                            return;
-                        }
-
-                        var updateTable = false;
-                        // Updating table data
-                        var uploadListItems = this.ListingRequests.ToList();
-                        foreach (var worker in this.Workers)
-                        {
-                            UploadListingItem contains = null;
-                            switch (this.CurrentEntity)
-                            {
-                                case Entity.Listing:
-                                case Entity.Leasing:
-                                    contains = uploadListItems.FirstOrDefault(uploadItem => uploadItem.RequestId.ToString() == worker.Value.SelectedItemID);
-                                    break;
-                                case Entity.Lot:
-                                    contains = uploadListItems.FirstOrDefault(uploadItem => uploadItem.InternalLotRequestId.ToString() == worker.Value.SelectedItemID);
-                                    break;
-                            }
-
-                            if (contains != null)
-                            {
-                                updateTable = true;
-
-                                var itemIndex = uploadListItems.IndexOf(contains);
-                                uploadListItems[itemIndex].WorkingBy = worker.Key;
-                                uploadListItems[itemIndex].WorkingStatus = worker.Value.Status;
-                            }
-                        }
-
-                        if (!updateTable)
-                        {
-                            return;
-                        }
-
-                        this.ListingRequests = new ObservableCollection<UploadListingItem>(uploadListItems);
-                    }
-                    catch (Exception exception)
-                    {
-                        this.logger.LogError(exception, "Error updating data (from other users) after running SignalR service.");
-                    }
-                });
+                this.hubConnection.On<Dictionary<string, Item>>("updateWorkerList", this.HandleWorkerItems);
 
                 // Start signalR service
-                await connection.StartAsync();
-
-                this.SignalROnline = SignalRStatus.Online;
+                if (this.SignalROnline != SignalRStatus.Online)
+                {
+                    await this.hubConnection.StartAsync();
+                    this.SignalROnline = SignalRStatus.Online;
+                }
 
                 // send message
-                await connection.InvokeAsync("GetWorkerItems");
-
-                await connection.StopAsync();
-
+                await this.hubConnection.InvokeAsync("GetWorkerItems");
                 this.signalRConnectionTriesError = 0;
             }
             catch (Exception exception)
             {
                 this.logger.LogError(exception, "Error connecting to SignalR service GetWorkerItems.");
                 this.SignalROnline = SignalRStatus.Failed;
+            }
+        }
+
+        private void HandleWorkerItems(Dictionary<string, Item> response)
+        {
+            try
+            {
+                var workerListHasChanged = false;
+                if (this.Workers == null)
+                {
+                    this.Workers = response;
+                    workerListHasChanged = true;
+                }
+                else
+                {
+                    var diff = response
+                        .Where(entry => this.Workers.ContainsKey(entry.Key) &&
+                            (this.Workers[entry.Key].SelectedItemID != entry.Value.SelectedItemID || this.Workers[entry.Key].Status != entry.Value.Status))
+                        .ToDictionary(entry => entry.Key, entry => entry.Value);
+                    if (diff.Any())
+                    {
+                        this.Workers = response;
+                        workerListHasChanged = true;
+                    }
+                }
+
+                if (!workerListHasChanged)
+                {
+                    return;
+                }
+
+                var updateTable = false;
+                // Updating table data
+                var uploadListItems = this.ListingRequests.ToList();
+                foreach (var worker in this.Workers)
+                {
+                    UploadListingItem contains = null;
+                    switch (this.CurrentEntity)
+                    {
+                        case Entity.Listing:
+                        case Entity.Leasing:
+                            contains = uploadListItems.FirstOrDefault(uploadItem => uploadItem.RequestId.ToString() == worker.Value.SelectedItemID);
+                            break;
+                        case Entity.Lot:
+                            contains = uploadListItems.FirstOrDefault(uploadItem => uploadItem.InternalLotRequestId.ToString() == worker.Value.SelectedItemID);
+                            break;
+                    }
+
+                    if (contains != null)
+                    {
+                        updateTable = true;
+
+                        var itemIndex = uploadListItems.IndexOf(contains);
+                        uploadListItems[itemIndex].WorkingBy = worker.Key;
+                        uploadListItems[itemIndex].WorkingStatus = worker.Value.Status;
+                    }
+                }
+
+                if (!updateTable)
+                {
+                    return;
+                }
+
+                this.ListingRequests = new ObservableCollection<UploadListingItem>(uploadListItems);
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, "Error updating data (from other users) after running SignalR service.");
             }
         }
 
@@ -921,17 +922,16 @@ namespace Husa.Uploader.ViewModels
 
             try
             {
-                var connection = new HubConnectionBuilder()
-                    .WithUrl($"{this.options.Value.SignalRURLServer}/uploaderHub")
-                    .Build();
-
-                // Start signalr service
-                await connection.StartAsync();
-                this.SignalROnline = SignalRStatus.Online;
+                if (this.SignalROnline != SignalRStatus.Online)
+                {
+                    // Start signalr service
+                    await this.hubConnection.StartAsync();
+                    this.SignalROnline = SignalRStatus.Online;
+                }
 
                 // send message
                 var item = new Item(selectedId, uploaderStatus: this.State);
-                await connection.InvokeAsync("SendSelectedItem", this.UserFullName, item);
+                await this.hubConnection.InvokeAsync("SendSelectedItem", this.UserFullName, item);
             }
             catch (Exception exception)
             {

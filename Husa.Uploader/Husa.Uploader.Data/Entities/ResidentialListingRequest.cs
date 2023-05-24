@@ -1055,8 +1055,8 @@ namespace Husa.Uploader.Data.Entities
                 BathsFull = listingResponse.SaleProperty.SpacesDimensionsInfo.BathsFull,
                 BathsHalf = listingResponse.SaleProperty.SpacesDimensionsInfo.BathsHalf,
                 //// masterBathDescription
-                //// GarageDesc = listingResponse.this.SaleProperty.SpacesDimensionsInfo.GarageDescription.ToString(),
-                //// ParkingDesc = listingResponse.this.SaleProperty.SpacesDimensionsInfo.GarageDescription.ToString(),
+                //// GarageDesc = listingResponse.SaleProperty.SpacesDimensionsInfo.GarageDescription.ToStringFromEnumMembers(),
+                ParkingDesc = listingResponse.SaleProperty.SpacesDimensionsInfo.GarageDescription.ToStringFromEnumMembers(),
                 OtherParking = listingResponse.SaleProperty.SpacesDimensionsInfo.OtherParking?.ToStringFromEnumMembers(),
                 Beds = listingResponse.SaleProperty.SpacesDimensionsInfo.NumBedrooms,
                 //// PropertyDescription
@@ -1111,6 +1111,7 @@ namespace Husa.Uploader.Data.Entities
                 SchoolName2 = listingResponse.SaleProperty.SchoolsInfo.MiddleSchool?.ToStringFromEnumMember(),
                 SchoolName3 = listingResponse.SaleProperty.SchoolsInfo.HighSchool?.ToStringFromEnumMember(),
                 HOA = listingResponse.SaleProperty.FinancialInfo.HOARequirement?.ToStringFromEnumMember(),
+                PublicRemarks = listingResponse.SaleProperty.FeaturesInfo.PropertyDescription,
             };
 
             if (listingResponse.SaleProperty.Hoas != null && listingResponse.SaleProperty.Hoas.Any())

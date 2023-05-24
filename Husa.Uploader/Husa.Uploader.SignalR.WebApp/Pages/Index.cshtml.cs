@@ -8,7 +8,7 @@ namespace Husa.Uploader.SignalR.WebApp.Pages
 
         public Index(ILogger<Index> logger)
         {
-            this.logger = logger;
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public void OnGet()
