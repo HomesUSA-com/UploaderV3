@@ -1187,8 +1187,6 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.FindElement(By.Id("managephotosbutton")).Click();
             Thread.Sleep(1000);
             await this.ProcessImages(residentialListingRequestID, cancellationToken);
-            Thread.Sleep(2500);
-            this.uploaderClient.ExecuteScript(script: "javascript:saveImages();");
             Thread.Sleep(3000);
         }
 

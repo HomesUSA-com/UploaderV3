@@ -1084,7 +1084,7 @@ namespace Husa.Uploader.Data.Entities
                 HeatSystemDesc = listingResponse.SaleProperty.FeaturesInfo.HeatSystem.ToStringFromEnumMembers(),
                 CoolSystemDesc = listingResponse.SaleProperty.FeaturesInfo.CoolingSystem.ToStringFromEnumMembers(),
                 HeatingFuel = listingResponse.SaleProperty.FeaturesInfo.HeatingFuel.ToStringFromEnumMembers(),
-                WaterAccessDesc = listingResponse.SaleProperty.FeaturesInfo.WaterSewer.ToStringFromEnumMembers(), // check
+                WaterDesc = listingResponse.SaleProperty.FeaturesInfo.WaterSewer.ToStringFromEnumMembers(),
                 GreenCerts = listingResponse.SaleProperty.FeaturesInfo.GreenCertification.ToStringFromEnumMembers(),
                 EnergyDesc = listingResponse.SaleProperty.FeaturesInfo.EnergyFeatures.ToStringFromEnumMembers(), // check
                 GreenFeatures = listingResponse.SaleProperty.FeaturesInfo.GreenFeatures.ToStringFromEnumMembers(),
