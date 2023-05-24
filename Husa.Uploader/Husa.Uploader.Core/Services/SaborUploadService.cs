@@ -1043,9 +1043,9 @@ namespace Husa.Uploader.Core.Services
 
                 if (!string.IsNullOrEmpty(listing.AssocPhone))
                 {
-                    this.uploaderClient.WriteTextbox(By.Name("HOAPHONE1"), listing.AssocPhone.Substring(1, 3), isElementOptional: true); // HOA Contact form number 1
-                    this.uploaderClient.WriteTextbox(By.Name("HOAPHONE2"), listing.AssocPhone.Substring(6, 3), isElementOptional: true); // HOA Contact form number 2
-                    this.uploaderClient.WriteTextbox(By.Name("HOAPHONE3"), listing.AssocPhone.Substring(10, 4), isElementOptional: true); // HOA Contact form number 3
+                    this.uploaderClient.WriteTextbox(By.Name("HOAPHONE1"), listing.AssocPhone.Substring(0, 3), isElementOptional: true); // HOA Contact form number 1
+                    this.uploaderClient.WriteTextbox(By.Name("HOAPHONE2"), listing.AssocPhone.Substring(3, 3), isElementOptional: true); // HOA Contact form number 2
+                    this.uploaderClient.WriteTextbox(By.Name("HOAPHONE3"), listing.AssocPhone.Substring(6, 4), isElementOptional: true); // HOA Contact form number 3
                 }
             }
         }
