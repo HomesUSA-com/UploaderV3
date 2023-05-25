@@ -1066,6 +1066,7 @@ namespace Husa.Uploader.Data.Entities
                 FloorsDesc = listingResponse.SaleProperty.FeaturesInfo.Floors?.ToStringFromEnumMembers(),
                 WindowCoverings = listingResponse.SaleProperty.FeaturesInfo.WindowCoverings?.ToStringFromEnumMembers(),
                 //// HasAccessibility
+                HasHandicapAmenities = listingResponse.SaleProperty.FeaturesInfo.HasAccessibility.BoolToString(),
                 AccessibilityDesc = listingResponse.SaleProperty.FeaturesInfo.Accessibility.ToStringFromEnumMembers(),
                 HousingStyleDesc = listingResponse.SaleProperty.FeaturesInfo.HousingStyle.ToStringFromEnumMembers(),
                 ExteriorFeatures = listingResponse.SaleProperty.FeaturesInfo.ExteriorFeatures.ToStringFromEnumMembers(),
@@ -1088,7 +1089,7 @@ namespace Husa.Uploader.Data.Entities
                 GreenCerts = listingResponse.SaleProperty.FeaturesInfo.GreenCertification.ToStringFromEnumMembers(),
                 EnergyDesc = listingResponse.SaleProperty.FeaturesInfo.EnergyFeatures.ToStringFromEnumMembers(), // check
                 GreenFeatures = listingResponse.SaleProperty.FeaturesInfo.GreenFeatures.ToStringFromEnumMembers(),
-                //// CommonFeatures = listingResponse.this.SaleProperty.FeaturesInfo.NeighborhoodAmenities, //check
+                CommonFeatures = listingResponse.SaleProperty.FeaturesInfo.NeighborhoodAmenities.ToStringFromEnumMembers(),
                 //// lotImprovements
                 TaxRate = listingResponse.SaleProperty.FinancialInfo.TaxRate,
                 TaxYear = listingResponse.SaleProperty.FinancialInfo.TaxYear,

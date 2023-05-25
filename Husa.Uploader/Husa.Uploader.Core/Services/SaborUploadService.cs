@@ -570,8 +570,7 @@ namespace Husa.Uploader.Core.Services
         private void FillGeneralListingInformation(ResidentialListingRequest listing)
         {
             Thread.Sleep(1000);
-            string propertyType = listing.Category == "RE" ? "SFD" : "TWNHM";
-            this.uploaderClient.SetAttribute(By.Name("TYPE"), propertyType, "value"); // Type
+            this.uploaderClient.SetAttribute(By.Name("TYPE"), listing.Category, "value"); // Type
 
             this.uploaderClient.WriteTextbox(By.Name("BLOCK"), listing.Block); // Block
             this.uploaderClient.WriteTextbox(By.Name("LGLDSCLOT"), listing.LotNum); // Legal Desc-Lot
