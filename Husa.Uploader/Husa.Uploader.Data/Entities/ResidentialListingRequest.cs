@@ -4,6 +4,7 @@ namespace Husa.Uploader.Data.Entities
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Sabor.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.Sabor.Domain.Enums;
+    using Husa.Uploader.Crosscutting.Converters;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
 
@@ -69,7 +70,6 @@ namespace Husa.Uploader.Data.Entities
         public string Occupancy { get; set; }
         public string NumStories { get; set; }
         public int? NumLivingAreas { get; set; }
-        public int? NumFireplaces { get; set; }
         public int? NumDiningAreas { get; set; }
         public int? NumBedsOtherLevels { get; set; }
         public int? NumBedsMainLevel { get; set; }
@@ -1061,7 +1061,7 @@ namespace Husa.Uploader.Data.Entities
                 Beds = listingResponse.SaleProperty.SpacesDimensionsInfo.NumBedrooms,
                 //// PropertyDescription
                 InclusionsDesc = listingResponse.SaleProperty.FeaturesInfo.Inclusions?.ToStringFromEnumMembers(),
-                NumFireplaces = listingResponse.SaleProperty.FeaturesInfo.Fireplaces,
+                NumberFireplaces = FireplacesConverter.FireplacesToString(listingResponse.SaleProperty.FeaturesInfo.Fireplaces),
                 FireplaceDesc = listingResponse.SaleProperty.FeaturesInfo.FireplaceDescription.ToStringFromEnumMembers(),
                 FloorsDesc = listingResponse.SaleProperty.FeaturesInfo.Floors?.ToStringFromEnumMembers(),
                 WindowCoverings = listingResponse.SaleProperty.FeaturesInfo.WindowCoverings?.ToStringFromEnumMembers(),
@@ -1179,7 +1179,7 @@ namespace Husa.Uploader.Data.Entities
                         break;
                     case RoomType.Dining:
                         residentialListingRequest.DiningRoomLevel = level;
-                        residentialListingRequest.BreakfastLength = length;
+                        residentialListingRequest.DiningRoomLength = length;
                         residentialListingRequest.DiningRoomWidth = width;
                         break;
                     case RoomType.Entry:
