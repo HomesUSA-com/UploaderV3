@@ -572,8 +572,7 @@ namespace Husa.Uploader.Core.Services
         private void FillGeneralListingInformation(ResidentialListingRequest listing)
         {
             Thread.Sleep(1000);
-            this.uploaderClient.SetAttribute(By.Name("TYPE"), listing.Category, "value"); // Type
-
+            this.uploaderClient.SetAttribute(By.Name("TYPE"), listing.Category, attributeName: "value"); // Type
             this.uploaderClient.WriteTextbox(By.Name("BLOCK"), listing.Block); // Block
             this.uploaderClient.WriteTextbox(By.Name("LGLDSCLOT"), listing.LotNum); // Legal Desc-Lot
             // this.uploaderClient.WriteTextbox(By.Name("CBORNCB"), listing.CBNCB), newListing);
