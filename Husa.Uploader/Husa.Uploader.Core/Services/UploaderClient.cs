@@ -145,6 +145,20 @@ namespace Husa.Uploader.Core.Services
             return false;
         }
 
+        public bool IsElementVisible(By findBy)
+        {
+            try
+            {
+                var element = this.FindElement(findBy, shouldWait: false, isElementOptional: false);
+                return element.Displayed;
+            }
+            catch (Exception exception) when (exception is NoSuchElementException || exception is StaleElementReferenceException)
+            {
+                this.logger.LogDebug(exception, "Skipping exception because is expected for element {findBy}", findBy);
+                return false;
+            }
+        }
+
         public IWebElement FindElement(By findBy, bool shouldWait = false, bool isElementOptional = false)
         {
             if (shouldWait)
@@ -229,7 +243,10 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(waitTime);
                 }
             }
-            catch (Exception exception) when (exception is NoSuchElementException || exception is ElementNotVisibleException)
+            catch (Exception exception)
+                when (exception is NoSuchElementException ||
+                      exception?.InnerException is NoSuchElementException ||
+                      exception is ElementNotVisibleException)
             {
                 this.logger.LogWarning(exception, "Element by '{by}' was not found or is not visible", findBy.ToString());
                 if (!isElementOptional)
@@ -506,9 +523,9 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public void SetMultipleCheckboxById(string id, string values)
+        public void SetMultipleCheckboxById(string id, string csvValues)
         {
-            if (string.IsNullOrWhiteSpace(values))
+            if (string.IsNullOrWhiteSpace(csvValues))
             {
                 this.logger.LogWarning("Tried to use a null value in MultiCheckbox with locator: {id} when processing request {requestId}.", id, this.UploadInformation.RequestId);
                 return;
@@ -525,7 +542,7 @@ namespace Husa.Uploader.Core.Services
                 this.ScrollDownPosition(positionParentElement);
             }
 
-            var splitValues = values.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var splitValues = csvValues.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             if (!this.UploadInformation.IsNewListing)
             {
                 try
@@ -577,12 +594,12 @@ namespace Husa.Uploader.Core.Services
         }
 
         // FIXME: This method needs to be reviewed and reimplemented, it's too convoluted and overly defensive
-        public void SetMultipleCheckboxById(string id, string values, string fieldLabel, string fieldSection)
+        public void SetMultipleCheckboxById(string id, string csvValues, string fieldLabel, string fieldSection)
         {
-            string friendlyErrorMessage = "Tried to transform an element with locator: {" + id + "} into a Select when processing the values {" + values + "}.";
+            string friendlyErrorMessage = "Tried to transform an element with locator: {" + id + "} into a Select when processing the values {" + csvValues + "}.";
             try
             {
-                if (string.IsNullOrWhiteSpace(values))
+                if (string.IsNullOrWhiteSpace(csvValues))
                 {
                     this.logger.LogWarning("Tried to use a null value in MultiCheckbox with locator: {id} when processing Request with {ResidentialListingRequestId}.", id, this.UploadInformation.RequestId);
                     this.ExecuteScript(" jQuery('input[id^=" + id + "]').each( function () { jQuery(this).prop('checked', false) }); ");
@@ -600,7 +617,7 @@ namespace Husa.Uploader.Core.Services
                     this.ScrollDownPosition(positionParentElement);
                 }
 
-                var splitValues = values.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                var splitValues = csvValues.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                 if (!this.UploadInformation.IsNewListing)
                 {
                     try

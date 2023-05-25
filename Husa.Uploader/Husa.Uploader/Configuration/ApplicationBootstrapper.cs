@@ -6,6 +6,7 @@ namespace Husa.Uploader.Configuration
     using Husa.Extensions.Api.Client;
     using Husa.Extensions.Api.Handlers;
     using Husa.MediaService.Client;
+    using Husa.Quicklister.CTX.Api.Client;
     using Husa.Quicklister.Sabor.Api.Client;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
@@ -120,6 +121,12 @@ namespace Husa.Uploader.Configuration
             {
                 var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
                 client.BaseAddress = new Uri(options.Services.QuicklisterSabor);
+            }).AddHttpMessageHandler<AuthTokenHandler>();
+
+            services.AddHttpClient<IQuicklisterCtxClient, QuicklisterCtxClient>((provider, client) =>
+            {
+                var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
+                client.BaseAddress = new Uri(options.Services.QuicklisterCtx);
             }).AddHttpMessageHandler<AuthTokenHandler>();
 
             services.AddTransient<IMediaServiceClient, MediaServiceClient>();

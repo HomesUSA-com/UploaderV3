@@ -9,6 +9,7 @@ namespace Husa.Uploader.ViewModels
     using System.Windows;
     using System.Windows.Input;
     using System.Windows.Threading;
+    using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Commands;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.ServiceActions;
@@ -698,7 +699,10 @@ namespace Husa.Uploader.ViewModels
                 {
                     case Entity.Listing:
                         var requestId = new Guid(this.CorrelationIdBox);
-                        var pendingRequest = await this.sqlDataLoader.GetListingRequest(requestId, this.cancellationTokenSource.Token);
+                        var pendingRequest = await this.sqlDataLoader.GetListingRequest(
+                            requestId,
+                            marketCode: MarketCode.SanAntonio,
+                            this.cancellationTokenSource.Token);
                         if (pendingRequest != null)
                         {
                             fullListings = new List<ResidentialListingRequest> { pendingRequest };

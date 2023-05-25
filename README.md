@@ -25,5 +25,10 @@ This README would normally document whatever steps are necessary to get your app
 
 ### Who do I talk to? ###
 
-* Repo owner or admin
-* Other community or team contact
+* Andy Nuñez
+* Marco Roa
+* HomesUSA V3 Dev Team
+
+### For more information review the following presentation
+
+[Uploader Presentation](https://homesusa.atlassian.net/wiki/spaces/V3/pages/2130214917/V3+Uploader)

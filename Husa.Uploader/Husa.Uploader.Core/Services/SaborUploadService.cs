@@ -38,9 +38,11 @@ namespace Husa.Uploader.Core.Services
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        public MarketCode CurrentMarket => MarketCode.SanAntonio;
+
         public bool IsFlashRequired => false;
 
-        public bool CanUpload(ResidentialListingRequest listing) => listing.MarketCode == MarketCode.SanAntonio;
+        public bool CanUpload(ResidentialListingRequest listing) => listing.MarketCode == this.CurrentMarket;
 
         public void CancelOperation()
         {
@@ -119,7 +121,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> EditListing()
             {
-                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
+                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 this.Login();
@@ -156,7 +158,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UploadListing()
             {
-                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
+                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: listing.IsNewListing);
                 this.Login();
@@ -204,7 +206,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UpdateListingStatus()
             {
-                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
+                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 const string tabName = "General";
                 this.logger.LogInformation("Updating the status of the listing {requestId} in the {tabName} tab.", listing.ResidentialListingRequestID, tabName);
                 this.Login();
@@ -259,7 +261,7 @@ namespace Husa.Uploader.Core.Services
             return UpdateListingPrice();
             async Task<UploadResult> UpdateListingPrice()
             {
-                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
+                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Updating the price of the listing {requestId} to {listPrice}.", listing.ResidentialListingRequestID, listing.ListPrice);
                 this.Login();
                 Thread.Sleep(1000);
@@ -302,7 +304,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UpdateListingImages()
             {
-                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
+                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Updating the images of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
                 this.Login();
@@ -333,7 +335,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UpdateListingCompletionDate()
             {
-                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
+                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Updating the completion date of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
 
@@ -369,7 +371,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UpdateListingOpenHouse()
             {
-                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
+                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Updating the open house information of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
                 this.Login();
@@ -416,7 +418,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UploadListingVirtualTour()
             {
-                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
+                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Updating the virtual tours of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
 
@@ -1171,7 +1173,7 @@ namespace Husa.Uploader.Core.Services
                     isElementOptional: true); // Agent Confidential Rmrks
             }
 
-            var remarks = listing.GetSaborPublicRemarks();
+            var remarks = listing.GetPublicRemarks();
             Thread.Sleep(2000);
             this.uploaderClient.WriteTextbox(By.Name("REMARKS"), remarks, isElementOptional: true); // Public Remarks
         }

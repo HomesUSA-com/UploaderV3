@@ -1,64 +1,52 @@
 namespace Husa.Uploader.Data
 {
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.CTX.Api.Client;
     using Husa.Quicklister.Sabor.Api.Client;
-    using Husa.Quicklister.Sabor.Api.Contracts.Request.SaleRequest;
-    using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
-    using Husa.Uploader.Data.QuicklisterEntities.Ctx;
-    using Husa.Uploader.Data.QuicklisterEntities.Sabor;
-    using Microsoft.Azure.Cosmos;
-    using Microsoft.Azure.Cosmos.Linq;
+    using Husa.Uploader.Data.Entities.MarketRequests;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
+    using CtxContracts = Husa.Quicklister.CTX.Api.Contracts;
     using QuickliserStatus = Husa.Quicklister.Extensions.Domain.Enums.ListingRequestState;
+    using SaborContracts = Husa.Quicklister.Sabor.Api.Contracts;
 
     public class SqlDataLoader : ISqlDataLoader
     {
-        private readonly CosmosClient cosmosClient;
-        private readonly IOptions<CosmosDbOptions> options;
         private readonly IQuicklisterSaborClient quicklisterSaborClient;
+        private readonly IQuicklisterCtxClient quicklisterCtxClient;
         private readonly ILogger<SqlDataLoader> logger;
         private readonly MarketConfiguration marketConfiguration;
 
         public SqlDataLoader(
-            CosmosClient cosmosClient,
-            IOptions<CosmosDbOptions> options,
             IOptions<ApplicationOptions> applicationOptions,
             IQuicklisterSaborClient quicklisterSaborClient,
+            IQuicklisterCtxClient quicklisterCtxClient,
             ILogger<SqlDataLoader> logger)
         {
-            if (applicationOptions is null)
-            {
-                throw new ArgumentNullException(nameof(applicationOptions));
-            }
-
-            this.cosmosClient = cosmosClient ?? throw new ArgumentNullException(nameof(cosmosClient));
-            this.options = options ?? throw new ArgumentNullException(nameof(options));
             this.quicklisterSaborClient = quicklisterSaborClient ?? throw new ArgumentNullException(nameof(quicklisterSaborClient));
+            this.quicklisterCtxClient = quicklisterCtxClient ?? throw new ArgumentNullException(nameof(quicklisterCtxClient));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.marketConfiguration = applicationOptions?.Value?.MarketInfo ?? throw new ArgumentNullException(nameof(applicationOptions));
         }
 
-        //// FIXME: This method is incomplete, we should get the listings from the API, not cosmos DB directly
         public async Task<IEnumerable<ResidentialListingRequest>> GetListingData(CancellationToken token = default)
         {
             var pendingRequests = new List<ResidentialListingRequest>();
             if (this.marketConfiguration.Sabor.IsEnabled)
             {
-                this.logger.LogInformation("Getting all pending requests for San Antonio");
-                var filter = new ListingSaleRequestFilter
+                this.logger.LogInformation("Getting all pending requests for {marketCode}", MarketCode.SanAntonio);
+                var filter = new SaborContracts.Request.SaleRequest.ListingSaleRequestFilter
                 {
                     RequestState = QuickliserStatus.Pending,
                 };
 
                 var requests = await this.quicklisterSaborClient.ListingSaleRequest.GetListRequestAsync(filter, token);
-
                 if (requests.Data.Any())
                 {
                     var internalSARLRCosmo = requests.Data
-                        .Select(request => ResidentialListingRequest.CreateFromApiResponse(request, MarketCode.SanAntonio))
+                        .Select(request => new SaborListingRequest(request).CreateFromApiResponse())
                         .ToList();
 
                     pendingRequests.AddRange(internalSARLRCosmo);
@@ -67,63 +55,58 @@ namespace Husa.Uploader.Data
 
             if (this.marketConfiguration.Ctx.IsEnabled)
             {
-                this.logger.LogInformation("Getting all pending requests for CTX");
-                var internalSACTXRLRCosmo = await this.GetMarketData<CtxListingRequest>(
-                    this.marketConfiguration.Ctx,
-                    this.options.Value.Databases.CtxDatabase,
-                    token);
-                if (internalSACTXRLRCosmo != null)
+                this.logger.LogInformation("Getting all pending requests for {marketCode}", MarketCode.CTX);
+
+                var filter = new CtxContracts.Request.SaleRequest.ListingSaleRequestFilter
                 {
-                    pendingRequests.AddRange(internalSACTXRLRCosmo);
+                    RequestState = QuickliserStatus.Pending,
+                };
+                var requests = await this.quicklisterCtxClient.ListingSaleRequest.GetListRequestAsync(filter, token);
+                if (requests.Data.Any())
+                {
+                    var internalSARLRCosmo = requests.Data
+                        .Select(request => new CtxListingRequest(request).CreateFromApiResponse())
+                        .ToList();
+
+                    pendingRequests.AddRange(internalSARLRCosmo);
                 }
             }
 
             return pendingRequests.Distinct();
         }
 
-        public Task<ResidentialListingRequest> GetListingRequest(Guid residentialListingRequestId, CancellationToken token = default)
+        public Task<ResidentialListingRequest> GetListingRequest(Guid residentialListingRequestId, MarketCode marketCode, CancellationToken token = default)
         {
             if (residentialListingRequestId == Guid.Empty)
             {
                 throw new ArgumentException($"'{nameof(residentialListingRequestId)}' cannot be null or empty.", nameof(residentialListingRequestId));
             }
 
-            return GetRequestById();
-
-            async Task<ResidentialListingRequest> GetRequestById()
-            {
-                var request = await this.quicklisterSaborClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
-                return request != null ?
-                    ResidentialListingRequest.CreateFromApiResponseDetail(request, MarketCode.SanAntonio) :
-                    null;
-            }
+            return this.GetRequestById(residentialListingRequestId, marketCode, token);
         }
 
-        private async Task<IEnumerable<ResidentialListingRequest>> GetMarketData<T>(
-            MarketSettings marketInfo,
-            string databaseName,
-            CancellationToken token = default)
-            where T : IConvertToUploaderRequest
+        private async Task<ResidentialListingRequest> GetRequestById(Guid residentialListingRequestId, MarketCode marketCode, CancellationToken token)
         {
-            var saleContainer = this.cosmosClient.GetContainer(databaseName, this.options.Value.SaleCollectionName);
-            using var query =
-                saleContainer.GetItemLinqQueryable<T>(allowSynchronousQueryExecution: false)
-                .Where(listingRequest => !listingRequest.IsDeleted)
-                .Where(listingRequest => listingRequest.RequestState == ListingRequestState.Pending)
-                .ToFeedIterator();
-
-            if (query.HasMoreResults)
+            ResidentialListingRequest listingRequest = marketCode switch
             {
-                var results = (await query.ReadNextAsync(token)).ToList();
-                return results
-                    .Select(request => request.ConvertFromCosmos(
-                        marketName: marketInfo.Name,
-                        marketUser: marketInfo.Username,
-                        marketPassword: marketInfo.Password))
-                    .ToList();
+                MarketCode.SanAntonio => await GetFromSabor(),
+                MarketCode.CTX => await GetFromCtx(),
+                _ => throw new NotSupportedException($"The market {marketCode} is not yet supported"),
+            };
+
+            return listingRequest ?? null;
+
+            async Task<ResidentialListingRequest> GetFromSabor()
+            {
+                var request = await this.quicklisterSaborClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
+                return new SaborListingRequest(request).CreateFromApiResponseDetail();
             }
 
-            return null;
+            async Task<ResidentialListingRequest> GetFromCtx()
+            {
+                var request = await this.quicklisterCtxClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
+                return new CtxListingRequest(request).CreateFromApiResponseDetail();
+            }
         }
     }
 }

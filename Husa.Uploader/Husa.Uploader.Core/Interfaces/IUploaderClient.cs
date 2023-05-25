@@ -24,6 +24,7 @@ namespace Husa.Uploader.Core.Interfaces
         void WaitUntilElementExists(By findBy, TimeSpan waitTime, CancellationToken token = default);
 
         bool IsElementPresent(By findBy, bool isVisible = false);
+        bool IsElementVisible(By findBy);
 
         IWebElement FindElement(By findBy, bool shouldWait = false, bool isElementOptional = false);
         IWebElement FindElementById(string elementId);
@@ -47,8 +48,8 @@ namespace Husa.Uploader.Core.Interfaces
         void SetSelectByText(By findBy, string value, string fieldLabel, string fieldSection, bool isElementOptional = false);
         void SetMultiSelect(By findBy, string csvValues, bool isElementOptional = false);
 
-        void SetMultipleCheckboxById(string id, string values);
-        void SetMultipleCheckboxById(string id, string values, string fieldLabel, string fieldSection);
+        void SetMultipleCheckboxById(string id, string csvValues);
+        void SetMultipleCheckboxById(string id, string csvValues, string fieldLabel, string fieldSection);
 
         void SetRadioButton(By findBy, object value, bool isElementOptional = false);
         void SetAttribute(By findBy, object value, string attributeName, bool isOptional = false, bool handleAlerts = false);
@@ -65,8 +66,10 @@ namespace Husa.Uploader.Core.Interfaces
         void NavigateToUrl(string url);
         INavigation Navigate();
         ITargetLocator SwitchTo();
+
         void SwitchTo(string frame, bool switchToParent);
         void SwitchTo(string windowName);
+
         void CloseDriver();
         void FinalizeSession();
         void DeleteAllCookies();

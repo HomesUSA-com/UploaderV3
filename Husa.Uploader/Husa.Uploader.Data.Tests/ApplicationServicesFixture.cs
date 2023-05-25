@@ -9,35 +9,14 @@ namespace Husa.Uploader.Data.Tests
     {
         public ApplicationServicesFixture()
         {
-            this.CosmosDbOptions = new Mock<IOptions<CosmosDbOptions>>();
             this.ApplicationOptions = new Mock<IOptions<ApplicationOptions>>();
-
-            this.CosmosDbOptions
-                .SetupGet(o => o.Value)
-                .Returns(GetCosmosDbOptions());
 
             this.ApplicationOptions
                 .SetupGet(o => o.Value)
                 .Returns(GetApplicationOptions());
         }
 
-        public Mock<IOptions<CosmosDbOptions>> CosmosDbOptions { get; set; }
-
         public Mock<IOptions<ApplicationOptions>> ApplicationOptions { get; set; }
-
-        private static CosmosDbOptions GetCosmosDbOptions() => new()
-        {
-            AuthToken = "some-token",
-            Databases = new DatabaseSettings
-            {
-                CtxDatabase = "ctx",
-                SaborDatabase = "sabor",
-            },
-            Endpoint = "https://cosmosdb-fake-endpoint:443/",
-            LeaseCollectionName = "leaseCollection",
-            LotCollectionName = "lotCollection",
-            SaleCollectionName = "saleCollection",
-        };
 
         private static ApplicationOptions GetApplicationOptions() => new()
         {

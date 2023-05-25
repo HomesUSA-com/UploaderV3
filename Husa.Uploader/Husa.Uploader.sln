@@ -18,11 +18,13 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EAD83611-BD28-49EA-AE6D-FF0BCFB71ADB}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		..\.gitignore = ..\.gitignore
 		Directory.Build.props = Directory.Build.props
+		..\README.md = ..\README.md
 		stylecop.json = stylecop.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Uploader.SignalR.WebApp", "Husa.Uploader.SignalR.WebApp\Husa.Uploader.SignalR.WebApp.csproj", "{62BAB59C-E4A4-4CFB-AE77-43E5121F3802}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Husa.Uploader.SignalR.WebApp", "Husa.Uploader.SignalR.WebApp\Husa.Uploader.SignalR.WebApp.csproj", "{62BAB59C-E4A4-4CFB-AE77-43E5121F3802}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

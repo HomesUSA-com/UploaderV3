@@ -1,14 +1,9 @@
 namespace Husa.Uploader.Data.Entities
 {
-    using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
-    using Husa.Quicklister.Sabor.Api.Contracts.Response.ListingRequest.SaleRequest;
-    using Husa.Quicklister.Sabor.Domain.Enums;
-    using Husa.Uploader.Crosscutting.Converters;
     using Husa.Uploader.Crosscutting.Enums;
-    using Husa.Uploader.Crosscutting.Extensions;
 
-    public class ResidentialListingRequest
+    public abstract class ResidentialListingRequest
     {
         // Never remove this property
         public string WorkingBy { get; set; }
@@ -23,7 +18,6 @@ namespace Husa.Uploader.Data.Entities
         public DateTime? SysCreatedOn { get; set; }
         public Guid? SysModifiedBy { get; set; }
         public DateTime? SysModifiedOn { get; set; }
-        public int? MarketID { get; set; }
         public string Zip { get; set; }
         public string YearBuiltDesc { get; set; }
         public int? YearBuilt { get; set; }
@@ -156,7 +150,9 @@ namespace Husa.Uploader.Data.Entities
         public string ReqdDocAgentInfor { get; set; }
         public string OwnerOtherPhone { get; set; }
         public string MarketName { get; set; }
-        public MarketCode MarketCode { get; set; }
+
+        public abstract MarketCode MarketCode { get; }
+
         public string MarketUsername { get; set; }
         public string MarketPassword { get; set; }
         public string WaterfrontDesc { get; set; }
@@ -971,329 +967,21 @@ namespace Husa.Uploader.Data.Entities
 
         public string Bed6Location { get; set; }
 
-        public bool CTXETJ { get; set; }
-        public string CTXGeoID { get; set; }
-        public string CTXEarnestMoney { get; set; }
+        public bool InExtraTerritorialJurisdiction { get; set; }
 
-        public static ResidentialListingRequest CreateFromApiResponse(ListingSaleRequestQueryResponse listingResponse, MarketCode marketCode) => new()
-        {
-            ResidentialListingRequestID = listingResponse.Id,
-            OwnerName = listingResponse.OwnerName,
-            CompanyName = listingResponse.OwnerName,
-            MLSNum = listingResponse.MlsNumber,
-            MarketCode = marketCode,
-            MarketName = listingResponse.Market,
-            CityCode = listingResponse.City.ToStringFromEnumMember(),
-            Subdivision = listingResponse.Subdivision,
-            Zip = listingResponse.ZipCode,
-            Address = listingResponse.Address,
-            ListPrice = (int)listingResponse.ListPrice,
-            SysCreatedOn = listingResponse.SysCreatedOn,
-            SysCreatedBy = listingResponse.SysCreatedBy,
-        };
+        public bool IsManufacturedAllowed { get; set; }
 
-        public static ResidentialListingRequest CreateFromApiResponseDetail(ListingSaleRequestDetailResponse listingResponse, MarketCode marketCode)
-        {
-            var residentialListingRequest = new ResidentialListingRequest
-            {
-                ResidentialListingRequestID = listingResponse.Id,
-                ResidentialListingRequestGUID = listingResponse.Id,
-                ResidentialListingID = listingResponse.ListingSaleId,
-                MarketID = 8,
-                MarketName = marketCode.GetEnumDescription(),
-                MarketCode = marketCode,
-                ListPrice = (int)listingResponse.ListPrice,
-                MLSNum = string.Empty, // listingResponse.MlsNumber,
-                MlsStatus = listingResponse.MlsStatus.ToStringFromEnumMember(),
-                ListStatus = listingResponse.MlsStatus.ToStringFromEnumMember(),
-                SysCreatedOn = listingResponse.SysCreatedOn,
-                SysCreatedBy = listingResponse.SysCreatedBy,
-                SysModifiedOn = listingResponse.SysModifiedOn,
-                SysModifiedBy = listingResponse.SysModifiedBy,
-                BuilderName = listingResponse.SaleProperty.SalePropertyInfo.OwnerName,
-                CompanyName = listingResponse.SaleProperty.SalePropertyInfo.OwnerName,
-                OwnerName = listingResponse.SaleProperty.SalePropertyInfo.OwnerName,
-                PlanProfileID = listingResponse.SaleProperty.SalePropertyInfo.PlanId,
-                CommunityProfileID = listingResponse.SaleProperty.SalePropertyInfo.CommunityId,
-                StreetNum = listingResponse.SaleProperty.AddressInfo.StreetNumber,
-                StreetName = listingResponse.SaleProperty.AddressInfo.StreetName,
-                CityCode = listingResponse.SaleProperty.AddressInfo.City.ToStringFromEnumMember(),
-                State = listingResponse.SaleProperty.AddressInfo.State?.ToStringFromEnumMember(),
-                Zip = listingResponse.SaleProperty.AddressInfo.ZipCode,
-                County = listingResponse.SaleProperty.AddressInfo.County?.ToStringFromEnumMember(),
-                LotNum = listingResponse.SaleProperty.AddressInfo.LotNum,
-                Block = listingResponse.SaleProperty.AddressInfo.Block,
-                Subdivision = listingResponse.SaleProperty.AddressInfo.Subdivision,
-                BuildCompletionDate = listingResponse.SaleProperty.PropertyInfo.ConstructionCompletionDate, // check
-                YearBuiltDesc = listingResponse.SaleProperty.PropertyInfo.ConstructionStage.ToString(),
-                YearBuilt = listingResponse.SaleProperty.PropertyInfo.ConstructionStartYear,
-                //// ConstructionStage
-                //// ConstructionYear
-                Legal = listingResponse.SaleProperty.PropertyInfo.LegalDescription, // check
-                TaxID = listingResponse.SaleProperty.PropertyInfo.TaxId,
-                MLSArea = listingResponse.SaleProperty.PropertyInfo.MlsArea?.ToStringFromEnumMember(),
-                MapscoMapBook = listingResponse.SaleProperty.PropertyInfo.MapscoGrid, // check
-                MapscoMapCoord = listingResponse.SaleProperty.PropertyInfo.MapscoGrid,
-                LotDim = listingResponse.SaleProperty.PropertyInfo.LotDimension,
-                LotSize = listingResponse.SaleProperty.PropertyInfo.LotSize,
-                LotDesc = listingResponse.SaleProperty.PropertyInfo.LotDescription.ToStringFromEnumMembers(),
-                Occupancy = listingResponse.SaleProperty.PropertyInfo.Occupancy.ToStringFromEnumMembers(),
-                //// UpdateGeoCodes
-                Latitude = listingResponse.SaleProperty.PropertyInfo.Latitude,
-                Longitude = listingResponse.SaleProperty.PropertyInfo.Longitude,
-                //// isBxlManaged
-                Category = listingResponse.SaleProperty.SpacesDimensionsInfo.TypeCategory.ToStringFromEnumMember(), // check
-                NumStories = listingResponse.SaleProperty.SpacesDimensionsInfo.Stories?.ToStringFromEnumMember(),
-                SqFtTotal = listingResponse.SaleProperty.SpacesDimensionsInfo.SqFtTotal,
-                SqFtSource = listingResponse.SaleProperty.SpacesDimensionsInfo.SqFtSource?.ToStringFromEnumMember(),
-                //// EntryLength
-                //// EntryWidth
-                //// SpecialtyRooms
-                //// MasterBedrrom
-                //// numBedrooms
-                InteriorDesc = listingResponse.SaleProperty.SpacesDimensionsInfo.SpecialtyRooms.ToStringFromEnumMembers(),
-                BathsFull = listingResponse.SaleProperty.SpacesDimensionsInfo.BathsFull,
-                BathsHalf = listingResponse.SaleProperty.SpacesDimensionsInfo.BathsHalf,
-                //// masterBathDescription
-                //// GarageDesc = listingResponse.SaleProperty.SpacesDimensionsInfo.GarageDescription.ToStringFromEnumMembers(),
-                ParkingDesc = listingResponse.SaleProperty.SpacesDimensionsInfo.GarageDescription.ToStringFromEnumMembers(),
-                OtherParking = listingResponse.SaleProperty.SpacesDimensionsInfo.OtherParking?.ToStringFromEnumMembers(),
-                Beds = listingResponse.SaleProperty.SpacesDimensionsInfo.NumBedrooms,
-                //// PropertyDescription
-                InclusionsDesc = listingResponse.SaleProperty.FeaturesInfo.Inclusions?.ToStringFromEnumMembers(),
-                NumberFireplaces = FireplacesConverter.FireplacesToString(listingResponse.SaleProperty.FeaturesInfo.Fireplaces),
-                FireplaceDesc = listingResponse.SaleProperty.FeaturesInfo.FireplaceDescription.ToStringFromEnumMembers(),
-                FloorsDesc = listingResponse.SaleProperty.FeaturesInfo.Floors?.ToStringFromEnumMembers(),
-                WindowCoverings = listingResponse.SaleProperty.FeaturesInfo.WindowCoverings?.ToStringFromEnumMembers(),
-                //// HasAccessibility
-                HasHandicapAmenities = listingResponse.SaleProperty.FeaturesInfo.HasAccessibility.BoolToString(),
-                AccessibilityDesc = listingResponse.SaleProperty.FeaturesInfo.Accessibility.ToStringFromEnumMembers(),
-                HousingStyleDesc = listingResponse.SaleProperty.FeaturesInfo.HousingStyle.ToStringFromEnumMembers(),
-                ExteriorFeatures = listingResponse.SaleProperty.FeaturesInfo.ExteriorFeatures.ToStringFromEnumMembers(),
-                RoofDesc = listingResponse.SaleProperty.FeaturesInfo.RoofDescription.ToStringFromEnumMembers(),
-                FoundationDesc = listingResponse.SaleProperty.FeaturesInfo.Foundation.ToStringFromEnumMembers(),
-                ExteriorDesc = listingResponse.SaleProperty.FeaturesInfo.Exterior.ToStringFromEnumMembers(),
-                HasPool = listingResponse.SaleProperty.FeaturesInfo.HasPrivatePool,
-                PoolDesc = listingResponse.SaleProperty.FeaturesInfo.PrivatePool.ToStringFromEnumMembers(),
-                FacesDesc = listingResponse.SaleProperty.FeaturesInfo.HomeFaces.ToStringFromEnumMembers(), // check
-                SupElectricity = listingResponse.SaleProperty.FeaturesInfo.SupplierElectricity,
-                SupWater = listingResponse.SaleProperty.FeaturesInfo.SupplierWater,
-                SupGarbage = listingResponse.SaleProperty.FeaturesInfo.SupplierGarbage,
-                SupGas = listingResponse.SaleProperty.FeaturesInfo.SupplierGas,
-                SupSewer = listingResponse.SaleProperty.FeaturesInfo.SupplierSewer,
-                SupOther = listingResponse.SaleProperty.FeaturesInfo.SupplierOther,
-                HeatSystemDesc = listingResponse.SaleProperty.FeaturesInfo.HeatSystem.ToStringFromEnumMembers(),
-                CoolSystemDesc = listingResponse.SaleProperty.FeaturesInfo.CoolingSystem.ToStringFromEnumMembers(),
-                HeatingFuel = listingResponse.SaleProperty.FeaturesInfo.HeatingFuel.ToStringFromEnumMembers(),
-                WaterDesc = listingResponse.SaleProperty.FeaturesInfo.WaterSewer.ToStringFromEnumMembers(),
-                GreenCerts = listingResponse.SaleProperty.FeaturesInfo.GreenCertification.ToStringFromEnumMembers(),
-                EnergyDesc = listingResponse.SaleProperty.FeaturesInfo.EnergyFeatures.ToStringFromEnumMembers(), // check
-                GreenFeatures = listingResponse.SaleProperty.FeaturesInfo.GreenFeatures.ToStringFromEnumMembers(),
-                CommonFeatures = listingResponse.SaleProperty.FeaturesInfo.NeighborhoodAmenities.ToStringFromEnumMembers(),
-                //// lotImprovements
-                TaxRate = listingResponse.SaleProperty.FinancialInfo.TaxRate,
-                TaxYear = listingResponse.SaleProperty.FinancialInfo.TaxYear,
-                IsMultiParcel = listingResponse.SaleProperty.FinancialInfo.IsMultipleTaxed.ToString(), // check
-                TitleCo = listingResponse.SaleProperty.FinancialInfo.TitleCompany,
-                PROPSDTRMS = listingResponse.SaleProperty.FinancialInfo.ProposedTerms.ToStringFromEnumMembers(),
-                HasMultipleHOA = listingResponse.SaleProperty.FinancialInfo.HasMultipleHOA.ToString(),
-                AgentBonusAmount = listingResponse.SaleProperty.FinancialInfo.AgentBonusAmount.ToString(),
-                CompBuyBonusExpireDate = listingResponse.SaleProperty.FinancialInfo.BonusExpirationDate, // check
-                BuyerIncentive = listingResponse.SaleProperty.FinancialInfo.HasBuyerIncentive.ToString(), // check
-                CompBuy = listingResponse.SaleProperty.FinancialInfo.BuyersAgentCommission?.ToString(),
-                AltPhoneCommunity = listingResponse.SaleProperty.ShowingInfo.AltPhoneCommunity,
-                AgentListApptPhone = listingResponse.SaleProperty.ShowingInfo.AgentListApptPhone,
-                Showing = listingResponse.SaleProperty.ShowingInfo.Showing?.ToStringFromEnumMember(),
-                RealtorContactEmail = listingResponse.SaleProperty.ShowingInfo.RealtorContactEmail,
-                Directions = listingResponse.SaleProperty.ShowingInfo.Directions,
-                AgentPrivateRemarks = listingResponse.SaleProperty.ShowingInfo.AgentPrivateRemarks,
-                SchoolDistrict = listingResponse.SaleProperty.SchoolsInfo.SchoolDistrict?.ToStringFromEnumMember(),
-                SchoolName1 = listingResponse.SaleProperty.SchoolsInfo.ElementarySchool?.ToStringFromEnumMember(),
-                SchoolName2 = listingResponse.SaleProperty.SchoolsInfo.MiddleSchool?.ToStringFromEnumMember(),
-                SchoolName3 = listingResponse.SaleProperty.SchoolsInfo.HighSchool?.ToStringFromEnumMember(),
-                HOA = listingResponse.SaleProperty.FinancialInfo.HOARequirement?.ToStringFromEnumMember(),
-                PublicRemarks = listingResponse.SaleProperty.FeaturesInfo.PropertyDescription,
-            };
+        public string GeographicID { get; set; }
 
-            if (listingResponse.SaleProperty.Hoas != null && listingResponse.SaleProperty.Hoas.Any())
-            {
-                var hoa = listingResponse.SaleProperty.Hoas.First();
-                residentialListingRequest.AssocFee = (int)hoa.Fee;
-                residentialListingRequest.AssocName = hoa.Name;
-                residentialListingRequest.AssocFeePaid = hoa.BillingFrequency.ToStringFromEnumMember();
-                residentialListingRequest.AssocTransferFee = (int)hoa.TransferFee;
-                residentialListingRequest.AssocPhone = hoa.ContactPhone;
-            }
+        public string EarnestMoney { get; set; }
 
-            foreach (var room in listingResponse.SaleProperty.Rooms)
-            {
-                var width = room.Width;
-                var length = room.Length;
-                var level = room.Level.ToStringFromEnumMember();
-                switch (room.RoomType)
-                {
-                    case RoomType.MasterBedroom:
-                        residentialListingRequest.Bed1Level = level;
-                        residentialListingRequest.Bed1Length = length;
-                        residentialListingRequest.Bed1Width = width;
-                        residentialListingRequest.Bed1Desc = room.Features.ToStringFromEnumMembers();
-                        break;
-                    case RoomType.Bed:
-                        if (residentialListingRequest.Bed2Level == null)
-                        {
-                            residentialListingRequest.Bed2Level = level;
-                            residentialListingRequest.Bed2Length = length;
-                            residentialListingRequest.Bed2Width = width;
-                            break;
-                        }
+        public string ProspectsExempt { get; set; }
 
-                        if (residentialListingRequest.Bed3Level == null)
-                        {
-                            residentialListingRequest.Bed3Level = level;
-                            residentialListingRequest.Bed3Length = length;
-                            residentialListingRequest.Bed3Width = width;
-                            break;
-                        }
+        public abstract ResidentialListingRequest CreateFromApiResponse();
 
-                        if (residentialListingRequest.Bed4Level == null)
-                        {
-                            residentialListingRequest.Bed4Level = level;
-                            residentialListingRequest.Bed4Length = length;
-                            residentialListingRequest.Bed4Width = width;
-                            break;
-                        }
+        public abstract ResidentialListingRequest CreateFromApiResponseDetail();
 
-                        if (residentialListingRequest.Bed5Level == null)
-                        {
-                            residentialListingRequest.Bed5Level = level;
-                            residentialListingRequest.Bed5Length = length;
-                            residentialListingRequest.Bed5Width = width;
-                            break;
-                        }
-
-                        break;
-                    case RoomType.Breakfast:
-                        residentialListingRequest.BreakfastLevel = level;
-                        residentialListingRequest.BreakfastLength = length;
-                        residentialListingRequest.BreakfastWidth = width;
-                        break;
-                    case RoomType.Dining:
-                        residentialListingRequest.DiningRoomLevel = level;
-                        residentialListingRequest.DiningRoomLength = length;
-                        residentialListingRequest.DiningRoomWidth = width;
-                        break;
-                    case RoomType.Entry:
-                        residentialListingRequest.LivingRoom3Level = level;
-                        residentialListingRequest.LivingRoom3Length = length;
-                        residentialListingRequest.LivingRoom3Width = width;
-                        break;
-                    case RoomType.Family:
-                        residentialListingRequest.LivingRoom2Level = level;
-                        residentialListingRequest.LivingRoom2Length = length;
-                        residentialListingRequest.LivingRoom2Width = width;
-                        break;
-                    case RoomType.Game:
-                        residentialListingRequest.OtherRoom1Level = level;
-                        residentialListingRequest.OtherRoom1Length = length;
-                        residentialListingRequest.OtherRoom1Width = width;
-                        break;
-                    case RoomType.Kitchen:
-                        residentialListingRequest.KitchenLevel = level;
-                        residentialListingRequest.KitchenLength = length;
-                        residentialListingRequest.KitchenWidth = width;
-                        break;
-                    case RoomType.Living:
-                        residentialListingRequest.LivingRoom1Level = level;
-                        residentialListingRequest.LivingRoom1Length = length;
-                        residentialListingRequest.LivingRoom1Width = width;
-                        break;
-                    case RoomType.MasterBath:
-                        residentialListingRequest.Bath1Level = level;
-                        residentialListingRequest.Bath1Length = length;
-                        residentialListingRequest.Bath1Width = width;
-                        residentialListingRequest.BedBathDesc = room.Features.ToStringFromEnumMembers();
-                        break;
-                    case RoomType.MasterBedroomCloset:
-                        residentialListingRequest.ClosetLength = length;
-                        residentialListingRequest.ClosetWidth = width;
-                        break;
-                    case RoomType.Media:
-                        residentialListingRequest.OtherRoom2Level = level;
-                        residentialListingRequest.OtherRoom2Length = length;
-                        residentialListingRequest.OtherRoom2Width = width;
-                        break;
-                    case RoomType.Study:
-                        residentialListingRequest.StudyLevel = level;
-                        residentialListingRequest.StudyLength = length;
-                        residentialListingRequest.StudyWidth = width;
-                        break;
-                    case RoomType.Utility:
-                        residentialListingRequest.UtilityRoomLevel = level;
-                        residentialListingRequest.UtilityRoomLength = length;
-                        residentialListingRequest.UtilityRoomWidth = width;
-                        break;
-                    case RoomType.Student:
-                    case RoomType.Other:
-                    case RoomType.Office:
-                    case RoomType.HalfBath:
-                    case RoomType.FullBath:
-                    default:
-                        break;
-                }
-            }
-
-            foreach (var openHouse in listingResponse.SaleProperty.OpenHouses)
-            {
-                switch (openHouse.Type)
-                {
-                    case OpenHouseType.Saturday:
-                        //// residentialListingRequest.OHRefreshmentsSat = openHouse.Refreshments;
-                        residentialListingRequest.OHStartTimeSat = openHouse.StartTime.ToString();
-                        residentialListingRequest.OHEndTimeSat = openHouse.EndTime.ToString();
-                        //// residentialListingRequest.OHCommentsSat = openHouse.Comments;
-                        break;
-                    case OpenHouseType.Sunday:
-                        //// residentialListingRequest.OHRefreshmentsSun = openHouse.Refreshments;
-                        residentialListingRequest.OHStartTimeSun = openHouse.StartTime.ToString();
-                        residentialListingRequest.OHEndTimeSun = openHouse.EndTime.ToString();
-                        //// residentialListingRequest.OHCommentsSun = openHouse.Comments;
-                        break;
-                    case OpenHouseType.Monday:
-                        //// residentialListingRequest.OHRefreshmentsMon = openHouse.Refreshments;
-                        residentialListingRequest.OHStartTimeMon = openHouse.StartTime.ToString();
-                        residentialListingRequest.OHEndTimeMon = openHouse.EndTime.ToString();
-                        //// residentialListingRequest.OHCommentsMon = openHouse.Comments;
-                        break;
-                    case OpenHouseType.Tuesday:
-                        //// residentialListingRequest.OHRefreshmentsTue = openHouse.Refreshments;
-                        residentialListingRequest.OHStartTimeTue = openHouse.StartTime.ToString();
-                        residentialListingRequest.OHEndTimeTue = openHouse.EndTime.ToString();
-                        //// residentialListingRequest.OHCommentsTue = openHouse.Comments;
-                        break;
-                    case OpenHouseType.Wednesday:
-                        //// residentialListingRequest.OHRefreshmentsWed = openHouse.Refreshments;
-                        residentialListingRequest.OHStartTimeWed = openHouse.StartTime.ToString();
-                        residentialListingRequest.OHEndTimeWed = openHouse.EndTime.ToString();
-                        //// residentialListingRequest.OHCommentsWed = openHouse.Comments;
-                        break;
-                    case OpenHouseType.Thursday:
-                        //// residentialListingRequest.OHRefreshmentsThu = openHouse.Refreshments;
-                        residentialListingRequest.OHStartTimeThu = openHouse.StartTime.ToString();
-                        residentialListingRequest.OHEndTimeThu = openHouse.EndTime.ToString();
-                        //// residentialListingRequest.OHCommentsThu = openHouse.Comments;
-                        break;
-                    case OpenHouseType.Friday:
-                        //// residentialListingRequest.OHRefreshmentsFri = openHouse.Refreshments;
-                        residentialListingRequest.OHStartTimeFri = openHouse.StartTime.ToString();
-                        residentialListingRequest.OHEndTimeFri = openHouse.EndTime.ToString();
-                        //// residentialListingRequest.OHCommentsFri = openHouse.Comments;
-                        break;
-                    default: break;
-                }
-            }
-
-            return residentialListingRequest;
-        }
+        public abstract string GetPublicRemarks();
 
         public UploadListingItem AsUploadItem(
             string builderName,
@@ -1306,7 +994,7 @@ namespace Husa.Uploader.Data.Entities
             {
                 RequestId = this.ResidentialListingRequestID,
                 MlsNumber = this.IsNewListing ? $"New {currentEntity}" : this.MLSNum,
-                Address = this.Address, //// $"{this.StreetNum} {this.StreetName}",
+                Address = this.Address,
                 Status = !string.IsNullOrEmpty(this.ListStatus) ? this.ListStatus : string.Empty,
                 Market = this.MarketName,
                 CompanyName = this.CompanyName,
@@ -1340,144 +1028,6 @@ namespace Husa.Uploader.Data.Entities
             }
 
             return fieldRemarks;
-        }
-
-        public string GetCtxPublicRemarks(BuiltStatus status)
-        {
-            var builtNote = "MLS# " + this.MLSNum;
-
-            if (!string.IsNullOrWhiteSpace(this.CompanyName))
-            {
-                if (!string.IsNullOrWhiteSpace(builtNote))
-                {
-                    builtNote += " - ";
-                }
-
-                builtNote += "Built by " + this.CompanyName + " - ";
-            }
-
-            switch (status)
-            {
-                case BuiltStatus.ToBeBuilt:
-                    builtNote += "To Be Built! ~ ";
-                    break;
-
-                case BuiltStatus.ReadyNow:
-                    string dateFormat = "MMM dd";
-                    int diffDays = DateTime.Now.Subtract((DateTime)this.BuildCompletionDate).Days;
-                    if (diffDays > 365)
-                    {
-                        dateFormat = "MMM dd yyyy";
-                    }
-
-                    if (!string.IsNullOrEmpty(this.RemarksFormatFromCompany) && this.RemarksFormatFromCompany == "SD")
-                    {
-                        builtNote += "CONST. COMPLETED " + this.BuildCompletionDate.Value.ToString(dateFormat) + " ~ ";
-                    }
-                    else
-                    {
-                        builtNote += "Ready Now! ~ ";
-                    }
-
-                    break;
-
-                case BuiltStatus.WithCompletion:
-                    if (this.BuildCompletionDate != null)
-                    {
-                        builtNote += this.BuildCompletionDate.Value.ToString("MMMM") + " completion! ~ ";
-                    }
-
-                    break;
-
-                default:
-                    break;
-            }
-
-            string remark;
-
-            if (this.IncludeRemarks != null && this.IncludeRemarks == false)
-            {
-                builtNote = string.Empty;
-            }
-
-            if (!this.PublicRemarks.Contains('~'))
-            {
-                remark = (builtNote + this.PublicRemarks).RemoveSlash();
-            }
-            else
-            {
-                var tempIndex = this.PublicRemarks.IndexOf("~", StringComparison.Ordinal) + 1;
-                var temp = this.PublicRemarks.Substring(tempIndex).Trim();
-                remark = (builtNote + temp).RemoveSlash();
-            }
-
-            return remark.Replace("\t", string.Empty).Replace("\n", " ");
-        }
-
-        public string GetSaborPublicRemarks()
-        {
-            var builtNote = "MLS# " + this.MLSNum + " - Built by " + this.CompanyName + " - ";
-            if (this.YearBuiltDesc == "Complete")
-            {
-                string dateFormat = "MMM dd";
-                int diffDays = DateTime.Now.Subtract((DateTime)this.BuildCompletionDate).Days;
-                if (diffDays > 365)
-                {
-                    dateFormat = "MMM dd yyyy";
-                }
-
-                if (!string.IsNullOrEmpty(this.RemarksFormatFromCompany) && this.RemarksFormatFromCompany == "SD")
-                {
-                    builtNote += "CONST. COMPLETED " + this.BuildCompletionDate.Value.ToString(dateFormat) + " ~ ";
-                }
-                else
-                {
-                    builtNote += "Ready Now! ~ ";
-                }
-            }
-            else
-            {
-                builtNote += this.GetCompletionText() + " completion! ~ ";
-            }
-
-            if (this.IncludeRemarks != null && !this.IncludeRemarks.Value)
-            {
-                builtNote = string.Empty;
-            }
-
-            if (!string.IsNullOrEmpty(this.PublicRemarks) && this.PublicRemarks.Contains('~'))
-            {
-                int tempIndex = this.PublicRemarks.IndexOf('~') + 1;
-                return builtNote + this.PublicRemarks[tempIndex..].Trim().RemoveSlash();
-            }
-
-            return builtNote + this.PublicRemarks.RemoveSlash();
-        }
-
-        private string GetCompletionText()
-        {
-            const string defaultMonth = "January";
-
-            if (!this.BuildCompletionDate.HasValue)
-            {
-                return defaultMonth;
-            }
-
-            return this.BuildCompletionDate.Value.Month switch
-            {
-                2 => "February",
-                3 => "March",
-                4 => "April",
-                5 => "May",
-                6 => "June",
-                7 => "July",
-                8 => "August",
-                9 => "September",
-                10 => "October",
-                11 => "November",
-                12 => "December",
-                _ => "January",
-            };
         }
 
         private string GetExtendedRemarks()

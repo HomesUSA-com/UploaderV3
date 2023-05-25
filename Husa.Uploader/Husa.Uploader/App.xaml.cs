@@ -57,7 +57,6 @@ public partial class App : Application
             {
                 services.RegisterViews();
                 services.ConfigureApplicationOptions();
-                services.ConfigureCosmosDb();
                 services.ConfigureDataAccess();
                 services.ConfigureServices();
                 services.ConfigureWebDriver();
