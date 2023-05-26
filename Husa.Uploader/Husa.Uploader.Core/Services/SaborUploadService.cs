@@ -1018,7 +1018,8 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(2000);
 
             this.uploaderClient.WriteTextbox(By.Name("MTPLCNTY"), "NO"); // Taxed by Mltpl Counties
-            this.uploaderClient.WriteTextbox(By.Name("TAX_YEAR"), listing.YearBuilt); // Certified Tax Year
+            this.uploaderClient.WriteTextbox(By.Name("TAX_YEAR"), listing.TaxYear); // Certified Tax Year
+
             this.uploaderClient.WriteTextbox(By.Name("HOAMNDTRY"), listing.HOA); // HOA
             this.uploaderClient.FindElement(By.Name("HOAMNDTRY")).SendKeys(Keys.Tab);
             Thread.Sleep(1000);
@@ -1029,12 +1030,12 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ExecuteScript("openPicklist('HOAMNDTRY')");
             this.uploaderClient.ExecuteScript("selectVals('HOAMNDTRY'); ; HOAMNDTRYActions(); closeDiv();");
             Thread.Sleep(1000);
-            this.uploaderClient.WriteTextbox(By.Name("TOTALTAX"), listing.TaxRate == null ? string.Empty : listing.TaxRate.ToString()); // Total Tax (Without Exemptions)
+            this.uploaderClient.WriteTextbox(By.Name("TOTALTAX"), listing.TaxRate); // Total Tax (Without Exemptions)
             if (!string.IsNullOrEmpty(listing.HOA) && (listing.HOA.Trim() == "MAND" || listing.HOA.Trim() == "VOLNT"))
             {
                 this.uploaderClient.ExecuteScript("openPicklist('HOAMNDTRY')");
 
-                this.uploaderClient.WriteTextbox(By.Name("MLTPLHOA"), "NO"); // Multiple HOA
+                this.uploaderClient.WriteTextbox(By.Name("MLTPLHOA"), listing.HasMultipleHOA); // Multiple HOA
                 this.uploaderClient.WriteTextbox(By.Name("HOAFEE"), listing.AssocFee); // HOA Fee
                 this.uploaderClient.WriteTextbox(By.Name("HOANAME"), listing.AssocName); // HOA Name
                 this.uploaderClient.WriteTextbox(By.Name("PYMNTFREQ"), listing.AssocFeePaid); // Payment Frequency

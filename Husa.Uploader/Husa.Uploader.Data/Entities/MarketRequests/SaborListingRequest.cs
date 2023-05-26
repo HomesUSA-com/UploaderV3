@@ -202,12 +202,11 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     throw new ArgumentNullException(nameof(financialInfo));
                 }
 
-                residentialListingRequest.TaxRate = financialInfo.TaxRate;
-                residentialListingRequest.TaxYear = financialInfo.TaxYear;
+                residentialListingRequest.TaxRate = financialInfo.TaxRate.ToSafeString();
+                residentialListingRequest.TaxYear = financialInfo.TaxYear.ToSafeString();
                 residentialListingRequest.IsMultiParcel = financialInfo.IsMultipleTaxed.ToString();
                 residentialListingRequest.TitleCo = financialInfo.TitleCompany;
                 residentialListingRequest.PROPSDTRMS = financialInfo.ProposedTerms.ToStringFromEnumMembers();
-                residentialListingRequest.HasMultipleHOA = financialInfo.HasMultipleHOA.ToString();
                 residentialListingRequest.AgentBonusAmount = financialInfo.AgentBonusAmount.ToString();
                 residentialListingRequest.CompBuyBonusExpireDate = financialInfo.BonusExpirationDate;
                 residentialListingRequest.BuyerIncentive = financialInfo.HasBuyerIncentive.ToString();
@@ -256,6 +255,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.AssocFeePaid = hoa.BillingFrequency.ToStringFromEnumMember();
                 residentialListingRequest.AssocTransferFee = (int)hoa.TransferFee;
                 residentialListingRequest.AssocPhone = hoa.ContactPhone;
+                residentialListingRequest.HasMultipleHOA = hoas.Count().ToStringFromHasMultipleHOA();
             }
 
             void FillRoomsInfo(IEnumerable<RoomResponse> rooms)
@@ -319,7 +319,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                             break;
                         case RoomType.Dining:
                             residentialListingRequest.DiningRoomLevel = level;
-                            residentialListingRequest.BreakfastLength = length;
+                            residentialListingRequest.DiningRoomLength = length;
                             residentialListingRequest.DiningRoomWidth = width;
                             break;
                         case RoomType.Entry:

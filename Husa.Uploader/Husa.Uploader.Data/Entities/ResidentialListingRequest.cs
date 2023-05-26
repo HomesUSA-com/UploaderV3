@@ -26,8 +26,8 @@ namespace Husa.Uploader.Data.Entities
         public string UtilitiesDesc { get; set; }
         public string UID { get; set; }
         public string TitleCo { get; set; }
-        public int? TaxYear { get; set; }
-        public decimal? TaxRate { get; set; }
+        public string TaxYear { get; set; }
+        public string TaxRate { get; set; }
         public string TaxID { get; set; }
         public string Subdivision { get; set; }
         public string StreetType { get; set; }

@@ -24,5 +24,7 @@ namespace Husa.Uploader.Crosscutting.Extensions
 
             return stringWithSlashes;
         }
+
+        public static string ToSafeString<T>(this T value) => (value is null) ? string.Empty : value.ToString();
     }
 }
