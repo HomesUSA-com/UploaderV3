@@ -1,0 +1,48 @@
+pr:
+  branches:
+    include:
+    - develop
+    - release/*
+    - hotfix/*
+    - master
+    
+trigger:
+- develop
+- release/*
+- hotfix/*
+- master
+
+pool:
+  vmImage: windows-latest
+
+variables:
+    chromeDriverVersion: 113.0.5672.63
+
+steps:
+- powershell: |
+    $(Build.SourcesDirectory)\Husa.Uploader\Scripts\DownloadChromeDriver.ps1 -version "$(chromeDriverVersion)" -path "$(Build.SourcesDirectory)\Husa.Uploader\Husa.Uploader"
+  displayName: 'Download ChromeDriver'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet restore'
+  inputs:
+    command: restore
+    projects: '**/Husa.Uploader/Husa.Uploader.sln'
+    restoreArguments: '/property:Configuration=Release'
+    feedsToUse: 'select'
+    vstsFeed: 'f820f957-6781-4cd6-b5f5-e720c189507f/891ce0ed-37b7-4336-b1fe-079c0525a171'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build'
+  inputs:
+    projects: '**/Husa.Uploader/Husa.Uploader.sln'
+    arguments: '--configuration Release --no-restore'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet test'
+  continueOnError: false
+  inputs:
+    command: test
+    projects: '**/Husa.Uploader/Husa.Uploader.sln'
+    arguments: '--configuration Release --no-build --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura,opencover --logger trx'
+    publishTestResults: true

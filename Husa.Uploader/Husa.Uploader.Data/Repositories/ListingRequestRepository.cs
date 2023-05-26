@@ -1,4 +1,4 @@
-namespace Husa.Uploader.Data
+namespace Husa.Uploader.Data.Repositories
 {
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.CTX.Api.Client;
@@ -6,24 +6,25 @@ namespace Husa.Uploader.Data
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.MarketRequests;
+    using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
     using CtxContracts = Husa.Quicklister.CTX.Api.Contracts;
-    using QuickliserStatus = Husa.Quicklister.Extensions.Domain.Enums.ListingRequestState;
+    using QuicklisterStatus = Husa.Quicklister.Extensions.Domain.Enums.ListingRequestState;
     using SaborContracts = Husa.Quicklister.Sabor.Api.Contracts;
 
-    public class SqlDataLoader : ISqlDataLoader
+    public class ListingRequestRepository : IListingRequestRepository
     {
         private readonly IQuicklisterSaborClient quicklisterSaborClient;
         private readonly IQuicklisterCtxClient quicklisterCtxClient;
-        private readonly ILogger<SqlDataLoader> logger;
+        private readonly ILogger<ListingRequestRepository> logger;
         private readonly MarketConfiguration marketConfiguration;
 
-        public SqlDataLoader(
+        public ListingRequestRepository(
             IOptions<ApplicationOptions> applicationOptions,
             IQuicklisterSaborClient quicklisterSaborClient,
             IQuicklisterCtxClient quicklisterCtxClient,
-            ILogger<SqlDataLoader> logger)
+            ILogger<ListingRequestRepository> logger)
         {
             this.quicklisterSaborClient = quicklisterSaborClient ?? throw new ArgumentNullException(nameof(quicklisterSaborClient));
             this.quicklisterCtxClient = quicklisterCtxClient ?? throw new ArgumentNullException(nameof(quicklisterCtxClient));
@@ -39,7 +40,7 @@ namespace Husa.Uploader.Data
                 this.logger.LogInformation("Getting all pending requests for {marketCode}", MarketCode.SanAntonio);
                 var filter = new SaborContracts.Request.SaleRequest.ListingSaleRequestFilter
                 {
-                    RequestState = QuickliserStatus.Pending,
+                    RequestState = QuicklisterStatus.Pending,
                 };
 
                 var requests = await this.quicklisterSaborClient.ListingSaleRequest.GetListRequestAsync(filter, token);
@@ -59,7 +60,7 @@ namespace Husa.Uploader.Data
 
                 var filter = new CtxContracts.Request.SaleRequest.ListingSaleRequestFilter
                 {
-                    RequestState = QuickliserStatus.Pending,
+                    RequestState = QuicklisterStatus.Pending,
                 };
                 var requests = await this.quicklisterCtxClient.ListingSaleRequest.GetListRequestAsync(filter, token);
                 if (requests.Data.Any())

@@ -7,7 +7,6 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
-    using Husa.Uploader.Data;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
@@ -20,7 +19,7 @@ namespace Husa.Uploader.Core.Services
 
         private readonly IUploaderClient uploaderClient;
         private readonly IMediaRepository mediaRepository;
-        private readonly ISqlDataLoader sqlDataLoader;
+        private readonly IListingRequestRepository sqlDataLoader;
         private readonly ApplicationOptions options;
         private readonly ILogger<SaborUploadService> logger;
 
@@ -28,7 +27,7 @@ namespace Husa.Uploader.Core.Services
             IUploaderClient uploaderClient,
             IOptions<ApplicationOptions> options,
             IMediaRepository mediaRepository,
-            ISqlDataLoader sqlDataLoader,
+            IListingRequestRepository sqlDataLoader,
             ILogger<SaborUploadService> logger)
         {
             this.uploaderClient = uploaderClient ?? throw new ArgumentNullException(nameof(uploaderClient));

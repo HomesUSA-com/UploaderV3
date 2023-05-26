@@ -17,8 +17,8 @@ namespace Husa.Uploader.ViewModels
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Models;
     using Husa.Uploader.Crosscutting.Options;
-    using Husa.Uploader.Data;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Interfaces;
     using Husa.Uploader.Deployment;
     using Husa.Uploader.Factories;
     using Husa.Uploader.Models;
@@ -40,7 +40,7 @@ namespace Husa.Uploader.ViewModels
         private const int MaxSignalRReconnectAttempts = 50;
 
         private readonly IOptions<ApplicationOptions> options;
-        private readonly ISqlDataLoader sqlDataLoader;
+        private readonly IListingRequestRepository sqlDataLoader;
         private readonly IAuthenticationClient authenticationClient;
         private readonly IChildViewFactory mlsIssueReportFactory;
         private readonly IAbstractFactory<LatLonInputView> locationViewFactory;
@@ -91,7 +91,7 @@ namespace Husa.Uploader.ViewModels
 
         public ShellViewModel(
             IOptions<ApplicationOptions> options,
-            ISqlDataLoader sqlDataLoader,
+            IListingRequestRepository sqlDataLoader,
             IAuthenticationClient authenticationClient,
             IChildViewFactory mlsIssueReportFactory,
             IAbstractFactory<LatLonInputView> locationViewFactory,

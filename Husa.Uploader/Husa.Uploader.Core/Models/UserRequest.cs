@@ -1,10 +1,11 @@
-﻿namespace Husa.Uploader.Core.Models
+namespace Husa.Uploader.Core.Models
 {
     using System.Text;
 
     public class UserRequest
     {
         public UserRequest(string username, string password)
+            : this()
         {
             if (string.IsNullOrEmpty(username))
             {
@@ -18,6 +19,10 @@
 
             this.UserName = username;
             this.Password = password;
+        }
+
+        public UserRequest()
+        {
         }
 
         public string UserName { get; set; }

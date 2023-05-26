@@ -11,7 +11,6 @@ namespace Husa.Uploader.Configuration
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Options;
-    using Husa.Uploader.Data;
     using Husa.Uploader.Data.Interfaces;
     using Husa.Uploader.Data.Repositories;
     using Husa.Uploader.Factories;
@@ -62,7 +61,11 @@ namespace Husa.Uploader.Configuration
                     .WriteTo.Debug(restrictedToMinimumLevel: LogEventLevel.Verbose);
             }
 
-            loggerConfiguration.ConfigureEventLog(environment);
+            loggerConfiguration.ConfigureEventLog(
+                isDevelopment: environment.IsDevelopment(),
+                environmentName: environment.EnvironmentName,
+                machineName: Environment.MachineName);
+
             loggerConfiguration.ReadFrom.Configuration(configuration);
         }
 
@@ -81,14 +84,14 @@ namespace Husa.Uploader.Configuration
             return loggerConfiguration;
         }
 
-        public static LoggerConfiguration ConfigureEventLog(this LoggerConfiguration loggerConfiguration, IHostEnvironment environment)
+        public static LoggerConfiguration ConfigureEventLog(this LoggerConfiguration loggerConfiguration, bool isDevelopment, string environmentName, string machineName)
         {
-            var minimumLogLevel = !environment.IsDevelopment() ? LogEventLevel.Information : LogEventLevel.Debug;
-            var loggingTemplate = $"[{Assembly.GetExecutingAssembly().GetName().Name}-{environment.EnvironmentName}][{{Timestamp:HH:mm:ss}} {{Level}}] {{SourceContext}}{{NewLine}}{{Message:lj}}{{NewLine}}{{Exception}}{{NewLine}}";
+            var minimumLogLevel = !isDevelopment ? LogEventLevel.Information : LogEventLevel.Debug;
+            var loggingTemplate = $"[{Assembly.GetExecutingAssembly().GetName().Name}-{environmentName}][{{Timestamp:HH:mm:ss}} {{Level}}] {{SourceContext}}{{NewLine}}{{Message:lj}}{{NewLine}}{{Exception}}{{NewLine}}";
             loggerConfiguration.WriteTo.EventLog(
                 source: "UploaderApp",
                 logName: "uploader-v3",
-                machineName: Environment.MachineName,
+                machineName: machineName,
                 manageEventSource: true,
                 outputTemplate: loggingTemplate,
                 restrictedToMinimumLevel: minimumLogLevel);
@@ -99,7 +102,7 @@ namespace Husa.Uploader.Configuration
         public static void ConfigureDataAccess(this IServiceCollection services)
         {
             services.AddTransient<IMediaRepository, MediaRepository>();
-            services.AddTransient<ISqlDataLoader, SqlDataLoader>();
+            services.AddTransient<IListingRequestRepository, ListingRequestRepository>();
         }
 
         public static void ConfigureServices(this IServiceCollection services)

@@ -1,9 +1,9 @@
-namespace Husa.Uploader.Data
+﻿namespace Husa.Uploader.Data.Interfaces
 {
     using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Data.Entities;
 
-    public interface ISqlDataLoader
+    public interface IListingRequestRepository
     {
         Task<IEnumerable<ResidentialListingRequest>> GetListingData(CancellationToken token = default);
 
