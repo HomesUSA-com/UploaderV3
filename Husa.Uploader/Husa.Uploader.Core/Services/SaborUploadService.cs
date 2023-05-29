@@ -1083,7 +1083,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WriteTextbox(By.Name("EXPDATE"), DateTime.Now.AddYears(1).Date.ToString("MM/dd/yyyy")); // Expiration Date
             }
 
-            this.uploaderClient.WriteTextbox(By.Name("PROPSDTRMS"), listing.PROPSDTRMS); // Proposed Terms
+            this.uploaderClient.WriteTextbox(By.Name("PROPSDTRMS"), listing.ProposedTerms); // Proposed Terms
             Thread.Sleep(400);
             this.uploaderClient.WriteTextbox(By.Name("POSSESSION"), "NEGO"); // Possession
             this.uploaderClient.WriteTextbox(By.Name("PHTOSHOW"), listing.AgentListApptPhone); // Ph to Show
@@ -1128,7 +1128,7 @@ namespace Husa.Uploader.Core.Services
                 this.ClickNextButton();
 
                 var bonusMessage = string.Empty;
-                if (listing.BonusCheckBox.HasValue && listing.BonusCheckBox.Value)
+                if (listing.HasAgentBonus.HasValue && listing.HasAgentBonus.Value)
                 {
                     bonusMessage = "Contact Builder for Bonus Information. ";
                 }

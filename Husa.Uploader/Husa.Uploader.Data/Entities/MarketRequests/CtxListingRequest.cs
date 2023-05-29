@@ -1,13 +1,19 @@
 namespace Husa.Uploader.Data.Entities.MarketRequests
 {
+    using System.Collections.Generic;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.CTX.Api.Contracts.Response;
     using Husa.Quicklister.CTX.Api.Contracts.Response.ListingRequest.SaleRequest;
+    using Husa.Quicklister.CTX.Api.Contracts.Response.SalePropertyDetail;
+    using Husa.Quicklister.CTX.Domain.Enums;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
 
     public class CtxListingRequest : ResidentialListingRequest
     {
+        private const string DefaultIntegerAsStringValue = "0";
+
         private readonly ListingSaleRequestQueryResponse listingResponse;
         private readonly ListingSaleRequestDetailResponse listingDetailResponse;
 
@@ -28,9 +34,10 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
         {
             this.InExtraTerritorialJurisdiction = false;
             this.IsManufacturedAllowed = false;
-            this.GeographicID = "0";
-            this.EarnestMoney = "0";
-            this.ProspectsExempt = "0";
+            this.GeographicID = DefaultIntegerAsStringValue;
+            this.EarnestMoney = DefaultIntegerAsStringValue;
+            this.ProspectsExempt = DefaultIntegerAsStringValue;
+            this.Rooms = new List<ResidentialListingRequestRoom>();
         }
 
         public override MarketCode MarketCode => MarketCode.CTX;
@@ -67,98 +74,273 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 SysCreatedBy = this.listingDetailResponse.SysCreatedBy,
                 SysModifiedOn = this.listingDetailResponse.SysModifiedOn,
                 SysModifiedBy = this.listingDetailResponse.SysModifiedBy,
-                BuilderName = this.listingDetailResponse.SaleProperty.SalePropertyInfo.OwnerName,
-                CompanyName = this.listingDetailResponse.SaleProperty.SalePropertyInfo.OwnerName,
-                OwnerName = this.listingDetailResponse.SaleProperty.SalePropertyInfo.OwnerName,
-                PlanProfileID = this.listingDetailResponse.SaleProperty.SalePropertyInfo.PlanId,
-                CommunityProfileID = this.listingDetailResponse.SaleProperty.SalePropertyInfo.CommunityId,
-                StreetNum = this.listingDetailResponse.SaleProperty.AddressInfo.StreetNumber,
-                StreetName = this.listingDetailResponse.SaleProperty.AddressInfo.StreetName,
-                City = this.listingDetailResponse.SaleProperty.AddressInfo.City.GetEnumDescription(),
-                CityCode = this.listingDetailResponse.SaleProperty.AddressInfo.City.ToStringFromEnumMember(),
-                State = this.listingDetailResponse.SaleProperty.AddressInfo.State.GetEnumDescription(),
-                StateCode = this.listingDetailResponse.SaleProperty.AddressInfo.State.ToStringFromEnumMember(),
-                Zip = this.listingDetailResponse.SaleProperty.AddressInfo.ZipCode,
-                County = this.listingDetailResponse.SaleProperty.AddressInfo.County?.ToStringFromEnumMember(),
-                LotNum = this.listingDetailResponse.SaleProperty.AddressInfo.LotNum,
-                Block = this.listingDetailResponse.SaleProperty.AddressInfo.Block,
-                Subdivision = this.listingDetailResponse.SaleProperty.AddressInfo.Subdivision,
-                BuildCompletionDate = this.listingDetailResponse.SaleProperty.PropertyInfo.ConstructionCompletionDate,
-                YearBuiltDesc = this.listingDetailResponse.SaleProperty.PropertyInfo.ConstructionStage.ToString(),
-                YearBuilt = this.listingDetailResponse.SaleProperty.PropertyInfo.ConstructionStartYear,
-                Legal = this.listingDetailResponse.SaleProperty.PropertyInfo.LegalDescription,
-                TaxID = this.listingDetailResponse.SaleProperty.PropertyInfo.TaxId,
-                MLSArea = this.listingDetailResponse.SaleProperty.PropertyInfo.MlsArea,
-                ////MapscoMapBook = this.listingDetailResponse.SaleProperty.PropertyInfo.MapscoGrid,
-                ////MapscoMapCoord = this.listingDetailResponse.SaleProperty.PropertyInfo.MapscoGrid,
-                ////LotDim = this.listingDetailResponse.SaleProperty.PropertyInfo.LotDimension,
-                ////LotSize = this.listingDetailResponse.SaleProperty.PropertyInfo.LotSize,
-                ////LotDesc = this.listingDetailResponse.SaleProperty.PropertyInfo.LotDescription.ToStringFromEnumMembers(),
-                ////Occupancy = this.listingDetailResponse.SaleProperty.PropertyInfo.Occupancy.ToStringFromEnumMembers(),
-                Latitude = this.listingDetailResponse.SaleProperty.PropertyInfo.Latitude,
-                Longitude = this.listingDetailResponse.SaleProperty.PropertyInfo.Longitude,
-                ////Category = this.listingDetailResponse.SaleProperty.SpacesDimensionsInfo.TypeCategory.ToStringFromEnumMember(),
-                ////NumStories = this.listingDetailResponse.SaleProperty.SpacesDimensionsInfo.Stories?.ToStringFromEnumMember(),
-                ////SqFtTotal = this.listingDetailResponse.SaleProperty.SpacesDimensionsInfo.SqFtTotal,
-                ////SqFtSource = this.listingDetailResponse.SaleProperty.SpacesDimensionsInfo.SqFtSource?.ToStringFromEnumMember(),
-                ////InteriorDesc = this.listingDetailResponse.SaleProperty.SpacesDimensionsInfo.SpecialtyRooms.ToStringFromEnumMembers(),
-                BathsFull = this.listingDetailResponse.SaleProperty.SpacesDimensionsInfo.BathsFull,
-                BathsHalf = this.listingDetailResponse.SaleProperty.SpacesDimensionsInfo.BathsHalf,
-                ////ParkingDesc = this.listingDetailResponse.SaleProperty.SpacesDimensionsInfo.GarageDescription.ToStringFromEnumMembers(),
-                ////OtherParking = this.listingDetailResponse.SaleProperty.SpacesDimensionsInfo.OtherParking?.ToStringFromEnumMembers(),
-                Beds = this.listingDetailResponse.SaleProperty.SpacesDimensionsInfo.NumBedrooms,
-                InclusionsDesc = this.listingDetailResponse.SaleProperty.FeaturesInfo.Inclusions?.ToStringFromEnumMembers(),
-                ////NumFireplaces = this.listingDetailResponse.SaleProperty.FeaturesInfo.Fireplaces,
-                FireplaceDesc = this.listingDetailResponse.SaleProperty.FeaturesInfo.FireplaceDescription.ToStringFromEnumMembers(),
-                FloorsDesc = this.listingDetailResponse.SaleProperty.FeaturesInfo.Floors?.ToStringFromEnumMembers(),
-                ////WindowCoverings = this.listingDetailResponse.SaleProperty.FeaturesInfo.WindowCoverings?.ToStringFromEnumMembers(),
-                ////AccessibilityDesc = this.listingDetailResponse.SaleProperty.FeaturesInfo.Accessibility.ToStringFromEnumMembers(),
-                HousingStyleDesc = this.listingDetailResponse.SaleProperty.FeaturesInfo.HousingStyle.ToStringFromEnumMembers(),
-                ExteriorFeatures = this.listingDetailResponse.SaleProperty.FeaturesInfo.ExteriorFeatures.ToStringFromEnumMembers(),
-                RoofDesc = this.listingDetailResponse.SaleProperty.FeaturesInfo.RoofDescription.ToStringFromEnumMembers(),
-                FoundationDesc = this.listingDetailResponse.SaleProperty.FeaturesInfo.Foundation.ToStringFromEnumMembers(),
-                ////ExteriorDesc = this.listingDetailResponse.SaleProperty.FeaturesInfo.Exterior.ToStringFromEnumMembers(),
-                ////HasPool = this.listingDetailResponse.SaleProperty.FeaturesInfo.HasPrivatePool,
-                ////PoolDesc = this.listingDetailResponse.SaleProperty.FeaturesInfo.PrivatePool.ToStringFromEnumMembers(),
-                ////FacesDesc = this.listingDetailResponse.SaleProperty.FeaturesInfo.HomeFaces.ToStringFromEnumMembers(),
-                ////SupElectricity = this.listingDetailResponse.SaleProperty.FeaturesInfo.SupplierElectricity,
-                ////SupWater = this.listingDetailResponse.SaleProperty.FeaturesInfo.SupplierWater,
-                ////SupGarbage = this.listingDetailResponse.SaleProperty.FeaturesInfo.SupplierGarbage,
-                ////SupGas = this.listingDetailResponse.SaleProperty.FeaturesInfo.SupplierGas,
-                ////SupSewer = this.listingDetailResponse.SaleProperty.FeaturesInfo.SupplierSewer,
-                ////SupOther = this.listingDetailResponse.SaleProperty.FeaturesInfo.SupplierOther,
-                HeatSystemDesc = this.listingDetailResponse.SaleProperty.FeaturesInfo.HeatSystem.ToStringFromEnumMembers(),
-                CoolSystemDesc = this.listingDetailResponse.SaleProperty.FeaturesInfo.CoolingSystem.ToStringFromEnumMembers(),
-                ////HeatingFuel = this.listingDetailResponse.SaleProperty.FeaturesInfo.HeatingFuel.ToStringFromEnumMembers(),
-                WaterDesc = this.listingDetailResponse.SaleProperty.FeaturesInfo.WaterSewer.ToStringFromEnumMembers(),
-                ////GreenCerts = this.listingDetailResponse.SaleProperty.FeaturesInfo.GreenCertification.ToStringFromEnumMembers(),
-                EnergyDesc = this.listingDetailResponse.SaleProperty.FeaturesInfo.EnergyFeatures.ToStringFromEnumMembers(),
-                ////GreenFeatures = this.listingDetailResponse.SaleProperty.FeaturesInfo.GreenFeatures.ToStringFromEnumMembers(),
-                TaxRate = this.listingDetailResponse.SaleProperty.FinancialInfo.TaxRate.ToSafeString(),
-                TaxYear = this.listingDetailResponse.SaleProperty.FinancialInfo.TaxYear.ToSafeString(),
-                ////IsMultiParcel = this.listingDetailResponse.SaleProperty.FinancialInfo.IsMultipleTaxed.ToString(),
-                TitleCo = this.listingDetailResponse.SaleProperty.FinancialInfo.TitleCompany,
-                PROPSDTRMS = this.listingDetailResponse.SaleProperty.FinancialInfo.ProposedTerms.ToStringFromEnumMembers(),
-                ////HasMultipleHOA = this.listingDetailResponse.SaleProperty.FinancialInfo.HasMultipleHOA.ToString(),
-                ////AgentBonusAmount = this.listingDetailResponse.SaleProperty.FinancialInfo.AgentBonusAmount.ToString(),
-                ////CompBuyBonusExpireDate = this.listingDetailResponse.SaleProperty.FinancialInfo.BonusExpirationDate,
-                ////BuyerIncentive = this.listingDetailResponse.SaleProperty.FinancialInfo.HasBuyerIncentive.ToString(),
-                ////CompBuy = this.listingDetailResponse.SaleProperty.FinancialInfo.BuyersAgentCommission?.ToString(),
-                ////AltPhoneCommunity = this.listingDetailResponse.SaleProperty.ShowingInfo.AltPhoneCommunity,
-                ////AgentListApptPhone = this.listingDetailResponse.SaleProperty.ShowingInfo.AgentListApptPhone,
-                ////Showing = this.listingDetailResponse.SaleProperty.ShowingInfo.Showing?.ToStringFromEnumMember(),
-                ////RealtorContactEmail = this.listingDetailResponse.SaleProperty.ShowingInfo.RealtorContactEmail,
-                Directions = this.listingDetailResponse.SaleProperty.ShowingInfo.Directions,
-                AgentPrivateRemarks = this.listingDetailResponse.SaleProperty.ShowingInfo.AgentPrivateRemarks,
-                SchoolDistrict = this.listingDetailResponse.SaleProperty.SchoolsInfo.SchoolDistrict?.GetEnumDescription(),
-                SchoolName1 = this.listingDetailResponse.SaleProperty.SchoolsInfo.ElementarySchool?.ToStringFromEnumMember(),
-                SchoolName2 = this.listingDetailResponse.SaleProperty.SchoolsInfo.MiddleSchool?.ToStringFromEnumMember(),
-                SchoolName3 = this.listingDetailResponse.SaleProperty.SchoolsInfo.HighSchool?.ToStringFromEnumMember(),
-                ////HOA = this.listingDetailResponse.SaleProperty.FinancialInfo.HOARequirement?.ToStringFromEnumMember(),
-                ////PublicRemarks = this.listingDetailResponse.SaleProperty.FeaturesInfo.PropertyDescription,
             };
 
+            FillSalePropertyInfo(this.listingDetailResponse.SaleProperty.SalePropertyInfo);
+            FillAddressInfo(this.listingDetailResponse.SaleProperty.AddressInfo);
+            FillPropertyInfo(this.listingDetailResponse.SaleProperty.PropertyInfo);
+            FillSpacesDimensionsInfo(this.listingDetailResponse.SaleProperty.SpacesDimensionsInfo);
+            FillFeaturesInfo(this.listingDetailResponse.SaleProperty.FeaturesInfo);
+            FillFinancialInfo(this.listingDetailResponse.SaleProperty.FinancialInfo);
+            FillShowingInfo(this.listingDetailResponse.SaleProperty.ShowingInfo);
+            FillSchoolsInfo(this.listingDetailResponse.SaleProperty.SchoolsInfo);
+            FillRoomsInfo(this.listingDetailResponse.SaleProperty.Rooms);
+            FillOpenHouseInfo(this.listingDetailResponse.SaleProperty.OpenHouses);
+
             return residentialListingRequest;
+
+            void FillSalePropertyInfo(SalePropertyResponse salePropertyInfo)
+            {
+                if (salePropertyInfo is null)
+                {
+                    throw new ArgumentNullException(nameof(salePropertyInfo));
+                }
+
+                residentialListingRequest.BuilderName = this.listingDetailResponse.SaleProperty.SalePropertyInfo.OwnerName;
+                residentialListingRequest.CompanyName = this.listingDetailResponse.SaleProperty.SalePropertyInfo.OwnerName;
+                residentialListingRequest.OwnerName = this.listingDetailResponse.SaleProperty.SalePropertyInfo.OwnerName;
+            }
+
+            void FillAddressInfo(AddressInfoResponse addressInfo)
+            {
+                if (addressInfo is null)
+                {
+                    throw new ArgumentNullException(nameof(addressInfo));
+                }
+
+                residentialListingRequest.StreetNum = addressInfo.StreetNumber;
+                residentialListingRequest.StreetName = addressInfo.StreetName;
+                residentialListingRequest.StreetDir = addressInfo.StreetDirection?.ToStringFromEnumMember();
+                residentialListingRequest.StreetType = addressInfo.StreetType.ToStringFromEnumMember();
+                residentialListingRequest.UnitNum = addressInfo.UnitNumber;
+                residentialListingRequest.City = addressInfo.City.GetEnumDescription();
+                residentialListingRequest.CityCode = addressInfo.City.ToStringFromEnumMember();
+                residentialListingRequest.State = addressInfo.State.GetEnumDescription();
+                residentialListingRequest.StateCode = addressInfo.State.ToStringFromEnumMember();
+                residentialListingRequest.Zip = addressInfo.ZipCode;
+                residentialListingRequest.County = addressInfo.County?.ToStringFromEnumMember();
+                residentialListingRequest.LotNum = addressInfo.LotNum;
+                residentialListingRequest.Block = addressInfo.Block;
+                residentialListingRequest.Subdivision = addressInfo.Subdivision;
+            }
+
+            void FillPropertyInfo(PropertyInfoResponse propertyInfo)
+            {
+                if (propertyInfo is null)
+                {
+                    throw new ArgumentNullException(nameof(propertyInfo));
+                }
+
+                residentialListingRequest.BuildCompletionDate = propertyInfo.ConstructionCompletionDate;
+                residentialListingRequest.YearBuiltDesc = propertyInfo.ConstructionStage?.ToStringFromEnumMember();
+                residentialListingRequest.YearBuilt = propertyInfo.ConstructionStartYear;
+                residentialListingRequest.YearBuiltSrc = propertyInfo.YearBuiltSource?.ToStringFromEnumMember();
+                residentialListingRequest.Legal = propertyInfo.LegalDescription;
+                residentialListingRequest.TaxID = propertyInfo.TaxId;
+                residentialListingRequest.Category = propertyInfo.TypeCategory?.ToStringFromEnumMember();
+                residentialListingRequest.MLSArea = propertyInfo.MlsArea;
+                residentialListingRequest.ListType = propertyInfo.ListingType?.ToStringFromEnumMember();
+                residentialListingRequest.Occupancy = propertyInfo.Occupancy;
+                residentialListingRequest.UpdateGeocodes = propertyInfo.UpdateGeocodes;
+                residentialListingRequest.Latitude = propertyInfo.Latitude;
+                residentialListingRequest.Longitude = propertyInfo.Longitude;
+                residentialListingRequest.LotNum = propertyInfo.Lot.IntegerToString();
+                residentialListingRequest.FacesDesc = propertyInfo.FrontFaces?.ToStringFromEnumMember();
+                residentialListingRequest.SqFtTotal = propertyInfo.SqFtTotal;
+                residentialListingRequest.SqFtSource = propertyInfo.SqFtSource?.ToStringFromEnumMember();
+                residentialListingRequest.AvailableDocumentsDesc = propertyInfo.DocumentsAvailable.ToStringFromEnumMembers();
+            }
+
+            void FillSpacesDimensionsInfo(SpacesDimensionsResponse spacesDimensionsInfo)
+            {
+                if (spacesDimensionsInfo is null)
+                {
+                    throw new ArgumentNullException(nameof(spacesDimensionsInfo));
+                }
+
+                residentialListingRequest.NumberFireplaces = spacesDimensionsInfo.Fireplaces.IntegerToString();
+                residentialListingRequest.NumDiningAreas = spacesDimensionsInfo.DiningAreas;
+                residentialListingRequest.NumLivingAreas = spacesDimensionsInfo.LivingAreas;
+                residentialListingRequest.BathsFull = spacesDimensionsInfo.BathsFull;
+                residentialListingRequest.BathsHalf = spacesDimensionsInfo.BathsHalf;
+                residentialListingRequest.Beds = spacesDimensionsInfo.NumBedrooms;
+            }
+
+            void FillFeaturesInfo(FeaturesResponse featuresInfo)
+            {
+                if (featuresInfo is null)
+                {
+                    throw new ArgumentNullException(nameof(featuresInfo));
+                }
+
+                residentialListingRequest.HousingStyleDesc = featuresInfo.HousingStyle.ToStringFromEnumMembers();
+                residentialListingRequest.FoundationDesc = featuresInfo.Foundation.ToStringFromEnumMembers();
+                residentialListingRequest.NumStories = featuresInfo.Stories?.ToStringFromEnumMember();
+                residentialListingRequest.AtticRoom = featuresInfo.SpecialtyRooms.ToStringFromEnumMembers();
+                residentialListingRequest.RoofDesc = featuresInfo.RoofDescription.ToStringFromEnumMembers();
+                residentialListingRequest.ExteriorDesc = featuresInfo.ConstructionExterior.ToStringFromEnumMembers();
+                residentialListingRequest.FireplaceDesc = featuresInfo.FireplaceDescription.ToStringFromEnumMembers();
+                residentialListingRequest.FloorsDesc = featuresInfo.Floors.ToStringFromEnumMembers();
+                residentialListingRequest.KitchenDesc = featuresInfo.Kitchen.ToStringFromEnumMembers();
+                residentialListingRequest.LaundryFacilityDesc = featuresInfo.Laundry.ToStringFromEnumMembers();
+                residentialListingRequest.Bed1Desc = featuresInfo.MasterBedroom.ToStringFromEnumMembers();
+                residentialListingRequest.GarageCarportDesc = featuresInfo.Garage?.ToStringFromEnumMember();
+                residentialListingRequest.CarportDesc = featuresInfo.Carport?.ToStringFromEnumMember();
+                residentialListingRequest.GarageDesc = featuresInfo.GarageDescription.ToStringFromEnumMembers();
+                residentialListingRequest.InclusionsDesc = featuresInfo.Inclusions.ToStringFromEnumMembers();
+                residentialListingRequest.LaundryFacilityDesc = featuresInfo.AppliancesEquipment.ToStringFromEnumMembers();
+                residentialListingRequest.LotDim = featuresInfo.LotDimension;
+                residentialListingRequest.LotSize = featuresInfo.LotSize;
+                residentialListingRequest.FenceDesc = featuresInfo.Fencing.ToStringFromEnumMembers();
+                residentialListingRequest.HasWaterAccess = featuresInfo.WaterAccess.BoolToNumericBool();
+                residentialListingRequest.WaterAccessDesc = featuresInfo.WaterAccessType.ToStringFromEnumMembers();
+                residentialListingRequest.WaterfrontYN = featuresInfo.WaterFront;
+                residentialListingRequest.WaterfrontFeatures = featuresInfo.WaterFeatures.ToStringFromEnumMembers();
+                residentialListingRequest.IsGatedCommunity = featuresInfo.GatedCommunity.BoolToNumericBool();
+                residentialListingRequest.HasSprinklerSys = featuresInfo.SprinklerSystem.BoolToNumericBool();
+                residentialListingRequest.SprinklerSysDesc = featuresInfo.SprinklerSystemDescription.ToStringFromEnumMembers();
+                residentialListingRequest.PoolDesc = featuresInfo.Pool.ToStringFromEnumMembers();
+                residentialListingRequest.RestrictionsDesc = featuresInfo.RestrictionsType.ToStringFromEnumMembers();
+                residentialListingRequest.ExteriorFeatures = featuresInfo.ExteriorFeatures.ToStringFromEnumMembers();
+                residentialListingRequest.TopoLandDescription = featuresInfo.TopoLandDescription.ToStringFromEnumMembers();
+                residentialListingRequest.CommonFeatures = featuresInfo.NeighborhoodAmenities.ToStringFromEnumMembers();
+                residentialListingRequest.RoadFrontageDesc = featuresInfo.AccessRoadSurface.ToStringFromEnumMembers();
+                residentialListingRequest.UpgradedEnergyFeatures = featuresInfo.UpgradedEnergyFeatures.BoolToNumericBool();
+                residentialListingRequest.EES = featuresInfo.EESFeatures.BoolToNumericBool();
+                residentialListingRequest.GreenCerts = featuresInfo.GreenBuildingVerification.ToStringFromEnumMembers();
+                residentialListingRequest.EESFeatures = featuresInfo.EnergyFeatures.ToStringFromEnumMembers();
+                residentialListingRequest.GreenIndoorAirQuality = featuresInfo.AirQuality.ToStringFromEnumMembers();
+                residentialListingRequest.GreenWaterConservation = featuresInfo.WaterConservation.ToStringFromEnumMembers();
+                residentialListingRequest.EnergyDesc = featuresInfo.GreenVerificationSource.ToStringFromEnumMembers();
+                residentialListingRequest.HeatSystemDesc = featuresInfo.HeatSystem.ToStringFromEnumMembers();
+                residentialListingRequest.CoolSystemDesc = featuresInfo.CoolingSystem.ToStringFromEnumMembers();
+                residentialListingRequest.WaterDesc = featuresInfo.WaterSewer.ToStringFromEnumMembers();
+                residentialListingRequest.SupOther = featuresInfo.SupplierOther.ToStringFromEnumMembers();
+                residentialListingRequest.Bed1Desc = featuresInfo.MasterBedroom.ToStringFromEnumMembers();
+            }
+
+            void FillFinancialInfo(FinancialResponse financialInfo)
+            {
+                if (financialInfo is null)
+                {
+                    throw new ArgumentNullException(nameof(financialInfo));
+                }
+
+                residentialListingRequest.ProposedTerms = financialInfo.ProposedTerms.ToStringFromEnumMembers();
+                residentialListingRequest.TaxRate = financialInfo.TaxRate.DecimalToString();
+                residentialListingRequest.TaxYear = financialInfo.TaxYear.IntegerToString();
+                residentialListingRequest.TitleCo = financialInfo.TitleCompany;
+                residentialListingRequest.HOA = financialInfo.HoaRequirement?.ToStringFromEnumMember();
+                residentialListingRequest.AssocName = financialInfo.HoaName;
+                residentialListingRequest.AssocTransferFee = (int?)financialInfo.HoaTransferFeeAmount;
+                residentialListingRequest.HoaWebsite = financialInfo.HoaWebsite;
+                residentialListingRequest.AssocPhone = financialInfo.HoaPhone;
+                residentialListingRequest.ManagementCompany = financialInfo.HoaMgmtCo;
+                residentialListingRequest.AssocFeeFrequency = financialInfo.HoaTerm?.ToStringFromEnumMember();
+                residentialListingRequest.AssocFeeIncludes = financialInfo.HoaFeeIncludes.ToStringFromEnumMembers();
+                residentialListingRequest.AssocFee = (int?)financialInfo.HoaAmount;
+            }
+
+            void FillShowingInfo(ShowingResponse showingInfo)
+            {
+                if (showingInfo is null)
+                {
+                    throw new ArgumentNullException(nameof(showingInfo));
+                }
+
+                residentialListingRequest.AgentListApptPhone = showingInfo.ShowingPhone;
+                residentialListingRequest.OtherPhone = showingInfo.SecondShowingPhone;
+                residentialListingRequest.BuyerCheckBox = showingInfo.HasBuyerIncentive;
+                residentialListingRequest.BuyerIncentive = showingInfo.BuyersAgentCommission.DecimalToString();
+                residentialListingRequest.BuyerIncentiveDesc = showingInfo.BuyersAgentCommissionType.ToBonusType();
+                residentialListingRequest.LockboxTypeDesc = showingInfo.LockboxType?.ToStringFromEnumMember();
+                residentialListingRequest.LockboxLocDesc = showingInfo.LockboxLocation.ToStringFromEnumMembers();
+                residentialListingRequest.Showing = showingInfo.Showing.ToStringFromEnumMembers();
+                residentialListingRequest.Directions = showingInfo.Directions;
+                residentialListingRequest.AgentPrivateRemarks = showingInfo.AgentPrivateRemarks;
+                residentialListingRequest.PublicRemarks = showingInfo.PublicRemarks;
+                residentialListingRequest.HasAgentBonus = showingInfo.HasAgentBonus;
+                residentialListingRequest.HasBonusWithAmount = showingInfo.HasBonusWithAmount;
+                residentialListingRequest.AgentBonusAmount = showingInfo.AgentBonusAmount.DecimalToString();
+                residentialListingRequest.CompBuyType = showingInfo.AgentBonusAmountType.ToNullableBonusType();
+                residentialListingRequest.CompBuyBonusExpireDate = showingInfo.BonusExpirationDate;
+    }
+
+            void FillSchoolsInfo(SchoolsResponse schoolsInfo)
+            {
+                if (schoolsInfo is null)
+                {
+                    throw new ArgumentNullException(nameof(schoolsInfo));
+                }
+
+                residentialListingRequest.SchoolDistrict = this.listingDetailResponse.SaleProperty.SchoolsInfo.SchoolDistrict?.GetEnumDescription();
+                residentialListingRequest.SchoolName1 = this.listingDetailResponse.SaleProperty.SchoolsInfo.ElementarySchool?.ToStringFromEnumMember();
+                residentialListingRequest.SchoolName2 = this.listingDetailResponse.SaleProperty.SchoolsInfo.MiddleSchool?.ToStringFromEnumMember();
+                residentialListingRequest.SchoolName3 = this.listingDetailResponse.SaleProperty.SchoolsInfo.HighSchool?.ToStringFromEnumMember();
+            }
+
+            void FillRoomsInfo(IEnumerable<RoomResponse> rooms)
+            {
+                if (rooms == null || !rooms.Any())
+                {
+                    return;
+                }
+
+                foreach (var room in rooms)
+                {
+                    this.Rooms.Add(new()
+                    {
+                        Width = room.Width,
+                        Length = room.Length,
+                        Level = room.Level.ToStringFromEnumMember(),
+                        RoomType = room.RoomType.ToStringFromEnumMember(),
+                    });
+                }
+            }
+
+            void FillOpenHouseInfo(IEnumerable<OpenHousesResponse> openHouses)
+            {
+                if (openHouses == null || !openHouses.Any())
+                {
+                    return;
+                }
+
+                foreach (var openHouse in openHouses)
+                {
+                    switch (openHouse.Type)
+                    {
+                        case OpenHouseType.Saturday:
+                            residentialListingRequest.OHStartTimeSat = openHouse.StartTime.ToString();
+                            residentialListingRequest.OHEndTimeSat = openHouse.EndTime.ToString();
+                            break;
+                        case OpenHouseType.Sunday:
+                            residentialListingRequest.OHStartTimeSun = openHouse.StartTime.ToString();
+                            residentialListingRequest.OHEndTimeSun = openHouse.EndTime.ToString();
+                            break;
+                        case OpenHouseType.Monday:
+                            residentialListingRequest.OHStartTimeMon = openHouse.StartTime.ToString();
+                            residentialListingRequest.OHEndTimeMon = openHouse.EndTime.ToString();
+                            break;
+                        case OpenHouseType.Tuesday:
+                            residentialListingRequest.OHStartTimeTue = openHouse.StartTime.ToString();
+                            residentialListingRequest.OHEndTimeTue = openHouse.EndTime.ToString();
+                            break;
+                        case OpenHouseType.Wednesday:
+                            residentialListingRequest.OHStartTimeWed = openHouse.StartTime.ToString();
+                            residentialListingRequest.OHEndTimeWed = openHouse.EndTime.ToString();
+                            break;
+                        case OpenHouseType.Thursday:
+                            residentialListingRequest.OHStartTimeThu = openHouse.StartTime.ToString();
+                            residentialListingRequest.OHEndTimeThu = openHouse.EndTime.ToString();
+                            break;
+                        case OpenHouseType.Friday:
+                            residentialListingRequest.OHStartTimeFri = openHouse.StartTime.ToString();
+                            residentialListingRequest.OHEndTimeFri = openHouse.EndTime.ToString();
+                            break;
+                        default: break;
+                    }
+                }
+            }
         }
 
         public override string GetPublicRemarks()
@@ -238,7 +420,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 else
                 {
                     var tempIndex = this.PublicRemarks.IndexOf("~", StringComparison.Ordinal) + 1;
-                    var temp = this.PublicRemarks.Substring(tempIndex).Trim();
+                    var temp = this.PublicRemarks[tempIndex..].Trim();
                     remark = (builtNote + temp).RemoveSlash();
                 }
 

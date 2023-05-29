@@ -787,27 +787,30 @@ namespace Husa.Uploader.ViewModels
         {
             try
             {
-                var workerListHasChanged = false;
+                var hasWorkerListChanged = false;
                 if (this.Workers == null)
                 {
                     this.Workers = response;
-                    workerListHasChanged = true;
+                    hasWorkerListChanged = true;
                 }
                 else
                 {
                     var diff = response
-                        .Where(entry => this.Workers.ContainsKey(entry.Key) &&
-                            (this.Workers[entry.Key].SelectedItemID != entry.Value.SelectedItemID || this.Workers[entry.Key].Status != entry.Value.Status))
+                        .Where(entry =>
+                            this.Workers.ContainsKey(entry.Key) &&
+                            (this.Workers[entry.Key].SelectedItemID != entry.Value.SelectedItemID ||
+                             this.Workers[entry.Key].Status != entry.Value.Status))
                         .ToDictionary(entry => entry.Key, entry => entry.Value);
                     if (diff.Any())
                     {
                         this.Workers = response;
-                        workerListHasChanged = true;
+                        hasWorkerListChanged = true;
                     }
                 }
 
-                if (!workerListHasChanged)
+                if (!hasWorkerListChanged || this.ListingRequests == null)
                 {
+                    this.logger.LogWarning("Skipping table refresh because the list of workers hasn't changed {changeStatus} or it's not yet available {listingRequests}.", hasWorkerListChanged, this.ListingRequests);
                     return;
                 }
 
@@ -1006,7 +1009,7 @@ namespace Husa.Uploader.ViewModels
                 await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(listing.ResidentialListingRequestID, this.State));
 
                 // 2. Execute de action
-                var response = await Task.Run(() => this.RunAction(action));
+                var response = await this.RunAction(action);
                 this.HandleUploadExecutionResult(response);
             }
             catch (Exception exception)
@@ -1055,7 +1058,9 @@ namespace Husa.Uploader.ViewModels
             try
             {
                 this.logger.LogInformation("Starting the requested upload operation");
-                return await Task.Run(() => action(this.SelectedListingRequest.FullListing, this.cancellationTokenSource.Token));
+                var listing = this.SelectedListingRequest.FullListing;
+                var token = this.cancellationTokenSource.Token;
+                return await Task.Run(() => action(listing, token));
             }
             catch (OperationCanceledException)
             {

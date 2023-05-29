@@ -93,10 +93,19 @@ namespace Husa.Uploader.Data.Entities
         public string InteriorDesc { get; set; }
         public string HowToSellDesc { get; set; }
         public string HOA { get; set; }
+        public string HasHOA { get; set; }
+        public string HoaWebsite { get; set; }
+        public string AssocName { get; set; }
+        public int? AssocFee { get; set; }
+        public string AssocFeeFrequency { get; set; }
+        public int? AssocTransferFee { get; set; }
+        public string AssocFeePaid { get; set; }
+        public string AssocFeeIncludes { get; set; }
+        public string AssocPhone { get; set; }
+        public string AssocFeeOtherDesc { get; set; }
         public string HeatSystemDesc { get; set; }
         public string HasRestrictions { get; set; }
         public bool HasPool { get; set; }
-        public string HasHOA { get; set; }
         public string HasHandicapAmenities { get; set; }
         public string HasGuestAccommodations { get; set; }
         public string GarageDesc { get; set; }
@@ -123,9 +132,6 @@ namespace Husa.Uploader.Data.Entities
         public decimal BathsTotal { get; set; }
         public int? BathsHalf { get; set; }
         public int? BathsFull { get; set; }
-        public int? AssocTransferFee { get; set; }
-        public string AssocFeePaid { get; set; }
-        public int? AssocFee { get; set; }
         public string AppliancesDesc { get; set; }
         public string AgentList { get; set; }
         public string AddressOninternetAllowed { get; set; }
@@ -134,7 +140,6 @@ namespace Husa.Uploader.Data.Entities
         public DateTime? SysTimestamp { get; set; }
         public Guid? CommunityProfileID { get; set; }
         public string AvailableDocumentsDesc { get; set; }
-        public string AssocName { get; set; }
         public string HasWaterAccess { get; set; }
         public string HasSprinklerSys { get; set; }
         public string SprinklerSysDesc { get; set; }
@@ -165,7 +170,6 @@ namespace Husa.Uploader.Data.Entities
         public string HandicapDesc { get; set; }
         public string FireplaceDesc { get; set; }
         public string ExteriorDesc { get; set; }
-        public string AssocFeeIncludes { get; set; }
         public Guid? PlanProfileID { get; set; }
         public decimal? Latitude { get; set; }
         public string WaterAccessDesc { get; set; }
@@ -179,7 +183,7 @@ namespace Husa.Uploader.Data.Entities
         public decimal LandSQFT { get; set; }
         public string BodyofWater { get; set; }
         public bool? BuyerCheckBox { get; set; }
-        public bool? BonusCheckBox { get; set; }
+        public bool? HasAgentBonus { get; set; }
         public string UtilityRoomDesc { get; set; }
         public decimal SqFtPriceSold { get; set; }
         public decimal SqFtPrice { get; set; }
@@ -221,7 +225,7 @@ namespace Husa.Uploader.Data.Entities
         public string BreakfastDim { get; set; }
         public string KitchenDim { get; set; }
         public string RangeDesc { get; set; }
-        public string AssocPhone { get; set; }
+
         public string LivingRoom1Dim { get; set; }
         public string GreenCerts { get; set; }
         public string SectionNum { get; set; }
@@ -349,7 +353,7 @@ namespace Husa.Uploader.Data.Entities
         public string SupOther { get; set; }
         public string CBNCB { get; set; }
         public string MiscellaneousDesc { get; set; }
-        public string AssocFeeOtherDesc { get; set; }
+
         public string UtilityRoomDim { get; set; }
         public int? UserID_SubmittedBy { get; set; }
         public int? UserID_Review { get; set; }
@@ -430,19 +434,7 @@ namespace Husa.Uploader.Data.Entities
         public string SellingAgentUIDOFFICE { get; set; }
         public string BrokerName { get; set; }
         public string BrokerOffice { get; set; }
-
-        //// FIXME These fields are no longer used by San Antonio. We need to figure out if they are actually needed.
-        //// public string Assoc2Name { get; set; }
-        //// public string Assoc2Fee { get; set; }
-        //// public string Assoc2FeePaid { get; set; }
-        //// public string Assoc2TransferFee { get; set; }
-        //// public string Assoc3Name { get; set; }
-        //// public string Assoc3Fee { get; set; }
-        //// public string Assoc3FeePaid { get; set; }
-        //// public string Assoc3TransferFee { get; set; }
-        //// MQ-253 -> MLS.RealtorContactEmail
         public string RealtorContactEmail { get; set; }
-        //// public string CommunityProfileRealtorContactEmail { get; set; }
 
         public string StreetSuffixFQ { get; set; }
 
@@ -707,7 +699,7 @@ namespace Husa.Uploader.Data.Entities
 
         public string UtilityLocation { get; set; }
 
-        public bool BonusWAmountCheckBox { get; set; }
+        public bool HasBonusWithAmount { get; set; }
 
         public string AgentBonusAmount { get; set; }
 
@@ -715,7 +707,7 @@ namespace Husa.Uploader.Data.Entities
 
         public string SMARTFEATURESAPP { get; set; }
 
-        public string PROPSDTRMS { get; set; }
+        public string ProposedTerms { get; set; }
 
         public string DistanceToWaterAccess { get; set; }
 
@@ -824,8 +816,6 @@ namespace Husa.Uploader.Data.Entities
         public string PresentUse { get; set; }
 
         public string RoadFrontageDesc { get; set; }
-
-        public string AssociationFeeFrequency { get; set; }
 
         public string LotFeatures { get; set; }
 
@@ -976,6 +966,20 @@ namespace Husa.Uploader.Data.Entities
         public string EarnestMoney { get; set; }
 
         public string ProspectsExempt { get; set; }
+
+        public bool UpdateGeocodes { get; set; }
+
+        public string GreenIndoorAirQuality { get; set; }
+
+        public string TopoLandDescription { get; set; }
+
+        public string UpgradedEnergyFeatures { get; set; }
+
+        public string GreenWaterConservation { get; set; }
+
+        public string AtticRoom { get; set; }
+
+        public List<ResidentialListingRequestRoom> Rooms { get; set; }
 
         public abstract ResidentialListingRequest CreateFromApiResponse();
 

@@ -92,8 +92,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.BuilderName = saleProperty.OwnerName;
                 residentialListingRequest.CompanyName = saleProperty.OwnerName;
                 residentialListingRequest.OwnerName = saleProperty.OwnerName;
-                residentialListingRequest.PlanProfileID = saleProperty.PlanId;
-                residentialListingRequest.CommunityProfileID = saleProperty.CommunityId;
             }
 
             void FillAddressInfo(AddressInfoResponse addressInfo)
@@ -168,7 +166,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.FireplaceDesc = featuresInfo.FireplaceDescription.ToStringFromEnumMembers();
                 residentialListingRequest.FloorsDesc = featuresInfo.Floors?.ToStringFromEnumMembers();
                 residentialListingRequest.WindowCoverings = featuresInfo.WindowCoverings?.ToStringFromEnumMembers();
-                residentialListingRequest.HasHandicapAmenities = featuresInfo.HasAccessibility.BoolToString();
+                residentialListingRequest.HasHandicapAmenities = featuresInfo.HasAccessibility.BoolToYesNoBool();
                 residentialListingRequest.AccessibilityDesc = featuresInfo.Accessibility.ToStringFromEnumMembers();
                 residentialListingRequest.HousingStyleDesc = featuresInfo.HousingStyle.ToStringFromEnumMembers();
                 residentialListingRequest.ExteriorFeatures = featuresInfo.ExteriorFeatures.ToStringFromEnumMembers();
@@ -202,11 +200,12 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     throw new ArgumentNullException(nameof(financialInfo));
                 }
 
-                residentialListingRequest.TaxRate = financialInfo.TaxRate.ToSafeString();
-                residentialListingRequest.TaxYear = financialInfo.TaxYear.ToSafeString();
+                residentialListingRequest.TaxRate = financialInfo.TaxRate.DecimalToString();
+                residentialListingRequest.TaxYear = financialInfo.TaxYear.IntegerToString();
                 residentialListingRequest.IsMultiParcel = financialInfo.IsMultipleTaxed.ToString();
                 residentialListingRequest.TitleCo = financialInfo.TitleCompany;
-                residentialListingRequest.PROPSDTRMS = financialInfo.ProposedTerms.ToStringFromEnumMembers();
+                residentialListingRequest.ProposedTerms = financialInfo.ProposedTerms.ToStringFromEnumMembers();
+                residentialListingRequest.HasMultipleHOA = financialInfo.HasMultipleHOA.ToString();
                 residentialListingRequest.AgentBonusAmount = financialInfo.AgentBonusAmount.ToString();
                 residentialListingRequest.CompBuyBonusExpireDate = financialInfo.BonusExpirationDate;
                 residentialListingRequest.BuyerIncentive = financialInfo.HasBuyerIncentive.ToString();
@@ -372,11 +371,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                             residentialListingRequest.UtilityRoomLength = length;
                             residentialListingRequest.UtilityRoomWidth = width;
                             break;
-                        case RoomType.Student:
-                        case RoomType.Other:
-                        case RoomType.Office:
-                        case RoomType.HalfBath:
-                        case RoomType.FullBath:
                         default:
                             break;
                     }

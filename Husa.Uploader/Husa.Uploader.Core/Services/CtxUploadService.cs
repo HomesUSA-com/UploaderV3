@@ -1,6 +1,5 @@
 namespace Husa.Uploader.Core.Services
 {
-    using System.Text.RegularExpressions;
     using System.Threading;
     using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Core.Interfaces;
@@ -70,7 +69,11 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ClickOnElementById("NewsDetailDismiss");
             }
 
-            this.uploaderClient.ClickOnElement(By.LinkText("Skip"), shouldWait: false, waitTime: 0, isElementOptional: true);
+            if (this.uploaderClient.IsElementVisible(By.LinkText("Skip")))
+            {
+                this.uploaderClient.ClickOnElement(By.LinkText("Skip"), shouldWait: false, waitTime: 0, isElementOptional: true);
+            }
+
             Thread.Sleep(2000);
 
             this.uploaderClient.NavigateToUrl("https://matrix.ctxmls.com/Matrix/Default.aspx?c=AAEAAAD*****AQAAAAAAAAARAQAAAFIAAAAGAgAAAAQ4OTQwDRsGAwAAAAQLPCUSDTUL&f=");
@@ -154,10 +157,10 @@ namespace Husa.Uploader.Core.Services
                     this.FillFinancialInformation(listing);
                     this.FillShowingInformation(listing);
                     this.FillRemarks(listing);
-                    // try { this.uploaderClient.Click(By.LinkText("Status")); } catch { }
                 }
-                catch
+                catch (Exception exception)
                 {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
                     return UploadResult.Failure;
                 }
 
@@ -612,11 +615,11 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.SetSelect(By.Id("Input_535_TB"), listing.SchoolDistrict.ToUpper(), fieldLabel: "School District", tabName); // School District
 
-            this.FillFieldSingleOption("Input_535", listing.SchoolDistrict.ToUpper());
+            this.FillFieldSingleOption("Input_535", listing.SchoolDistrict);
 
-            this.uploaderClient.SetSelect(By.Id("Input_658"), listing.SchoolName1.ToUpper(), fieldLabel: "Elementary School", tabName); // Elementary School
-            this.uploaderClient.SetSelect(By.Id("Input_659"), listing.SchoolName2.ToUpper(), fieldLabel: "Middle School", tabName); // Middle School
-            this.uploaderClient.SetSelect(By.Id("Input_660"), listing.SchoolName3.ToUpper(), fieldLabel: "High School", tabName); // High School
+            this.uploaderClient.SetSelect(By.Id("Input_658"), listing.SchoolName1, fieldLabel: "Elementary School", tabName); // Elementary School
+            this.uploaderClient.SetSelect(By.Id("Input_659"), listing.SchoolName2, fieldLabel: "Middle School", tabName); // Middle School
+            this.uploaderClient.SetSelect(By.Id("Input_660"), listing.SchoolName3, fieldLabel: "High School", tabName); // High School
 
             // this.uploaderClient.WriteTextbox(By.Id("Input_125"), listing.MapscoMapCoord); // Map Grid
             // this.uploaderClient.WriteTextbox(By.Id("Input_126"), listing.MapscoMapPage); // Map Source
@@ -795,32 +798,34 @@ namespace Husa.Uploader.Core.Services
 
         private void FillFieldSingleOption(string fieldName, string value)
         {
-            if (!string.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
             {
-                var mainWindow = this.uploaderClient.WindowHandles.FirstOrDefault(c => c == this.uploaderClient.CurrentWindowHandle);
-
-                this.uploaderClient.ExecuteScript("jQuery('#" + fieldName + "_TB').focus();");
-                this.uploaderClient.ExecuteScript("jQuery('#" + fieldName + "_A')[0].click();");
-                this.uploaderClient.SwitchTo().Window(this.uploaderClient.WindowHandles.Last());
-                Thread.Sleep(400);
-
-                char[] fieldValue = value.ToArray();
-
-                foreach (var charact in fieldValue)
-                {
-                    Thread.Sleep(400);
-                    this.uploaderClient.FindElement(By.Id("m_txtSearch")).SendKeys(charact.ToString().ToUpper());
-                }
-
-                Thread.Sleep(400);
-
-                this.uploaderClient.ExecuteScript("jQuery(\"li[title=^'" + value + "'])");
-                Thread.Sleep(400);
-
-                this.uploaderClient.ExecuteScript("let btnSave = jQuery(\"#cboxClose > button\")[0]; jQuery(btnSave).focus(); jQuery(btnSave).click();");
-
-                this.uploaderClient.SwitchTo().Window(mainWindow);
+                this.logger.LogInformation("Cannot proceed to fill field {fieldName} with an empty value", fieldName);
+                return;
             }
+
+            var mainWindow = this.uploaderClient.WindowHandles.FirstOrDefault(windowHandle => windowHandle == this.uploaderClient.CurrentWindowHandle);
+            this.uploaderClient.ExecuteScript($"jQuery('#{fieldName}_TB').focus();");
+            this.uploaderClient.ExecuteScript($"jQuery('#{fieldName}_A')[0].click();");
+            this.uploaderClient.SwitchTo().Window(this.uploaderClient.WindowHandles.Last());
+            Thread.Sleep(400);
+
+            char[] fieldValue = value.ToUpper().ToArray();
+
+            foreach (var charact in fieldValue)
+            {
+                Thread.Sleep(200);
+                this.uploaderClient.FindElement(By.Id("m_txtSearch")).SendKeys(charact.ToString().ToUpper());
+            }
+
+            Thread.Sleep(400);
+            var selectElement = $"const selected = jQuery('li[title^=\"{value}\"]'); jQuery(selected).focus(); jQuery(selected).click()";
+            this.uploaderClient.ExecuteScript(script: selectElement);
+            Thread.Sleep(400);
+
+            ////this.uploaderClient.ExecuteScript("const btnSave = jQuery(\"#cboxClose > button\")[0]; jQuery(btnSave).focus(); jQuery(btnSave).click();");
+            this.uploaderClient.ExecuteScript("javascript:LBI_Popup.selectItem(true);");
+            this.uploaderClient.SwitchTo().Window(mainWindow);
         }
 
         private void FillRooms(ResidentialListingRequest listing)
@@ -2753,12 +2758,12 @@ namespace Husa.Uploader.Core.Services
         private void UpdatePrivateRemarksInRemarksTab(ResidentialListingRequest listing)
         {
             var bonusMessage = string.Empty;
-            if (listing.BonusCheckBox.HasValue && listing.BonusCheckBox.Value &&
+            if (listing.HasAgentBonus.HasValue && listing.HasAgentBonus.Value &&
                 listing.BuyerCheckBox.HasValue && listing.BuyerCheckBox.Value)
             {
                 bonusMessage = "Possible Bonus & Buyer Incentives; ask Builder for details. ";
             }
-            else if (listing.BonusCheckBox.HasValue && listing.BonusCheckBox.Value)
+            else if (listing.HasAgentBonus.HasValue && listing.HasAgentBonus.Value)
             {
                 bonusMessage = "Possible Bonus; ask Builder for details. ";
             }
@@ -2825,30 +2830,16 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
 
             var media = await this.mediaRepository.GetListingImages(listing.ResidentialListingRequestID, market: MarketCode.CTX, cancellationToken);
-            var i = 0;
-            // Upload Images
-            // foreach (var image in media.OrderBy(x => x.Order))
+            var imageOrder = 0;
             foreach (var image in media)
             {
-                // MQ-311 - Uploader - Convert PNG for NTREIS and ACTRIS
-                if (!string.IsNullOrWhiteSpace(image.Extension) && (image.Extension.ToLower().Equals(".gif") || image.Extension.ToLower().Equals(".png")))
-                {
-                    image.Extension = ".jpg";
-                    string[] elements = Regex.Split(image.PathOnDisk, ".");
-                    if (elements.Length == 2)
-                    {
-                        var fileName = elements[0].ToString();
-                        image.PathOnDisk = fileName + ".jpg";
-                    }
-                }
-
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
 
                 this.uploaderClient.FindElement(By.Id("m_ucImageLoader_m_tblImageLoader")).FindElement(By.CssSelector("input[type=file]")).SendKeys(image.PathOnDisk);
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id($"photoCell_{i}"), cancellationToken);
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id($"photoCell_{imageOrder}"), cancellationToken);
 
-                this.uploaderClient.ExecuteScript($"jQuery('#photoCell_{i} a')[0].click();");
+                this.uploaderClient.ExecuteScript($"jQuery('#photoCell_{imageOrder} a')[0].click();");
                 Thread.Sleep(500);
 
                 this.uploaderClient.ExecuteScript($"jQuery('#m_tbxDescription').val('{image.Caption}');");
@@ -2859,7 +2850,7 @@ namespace Husa.Uploader.Core.Services
 
                 this.uploaderClient.ClickOnElementById("m_ucDetailsView_m_btnSave");
 
-                i++;
+                imageOrder++;
             }
         }
     }
