@@ -191,6 +191,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.GreenFeatures = featuresInfo.GreenFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.CommonFeatures = featuresInfo.NeighborhoodAmenities.ToStringFromEnumMembers();
                 residentialListingRequest.PublicRemarks = featuresInfo.PropertyDescription;
+                residentialListingRequest.UtilitiesDesc = featuresInfo.LotImprovements.ToStringFromEnumMembers();
             }
 
             void FillFinancialInfo(FinancialResponse financialInfo)
