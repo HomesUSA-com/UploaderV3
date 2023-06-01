@@ -201,7 +201,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     throw new ArgumentNullException(nameof(financialInfo));
                 }
 
-                residentialListingRequest.TaxRate = financialInfo.TaxRate.DecimalToString();
+                residentialListingRequest.TaxRate = financialInfo.TaxRate.StrictDecimalToString();
                 residentialListingRequest.TaxYear = financialInfo.TaxYear.IntegerToString();
                 residentialListingRequest.IsMultiParcel = financialInfo.IsMultipleTaxed.ToString();
                 residentialListingRequest.TitleCo = financialInfo.TitleCompany;
