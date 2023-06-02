@@ -99,6 +99,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.BuilderName = this.listingDetailResponse.SaleProperty.SalePropertyInfo.OwnerName;
                 residentialListingRequest.CompanyName = this.listingDetailResponse.SaleProperty.SalePropertyInfo.OwnerName;
                 residentialListingRequest.OwnerName = this.listingDetailResponse.SaleProperty.SalePropertyInfo.OwnerName;
+                residentialListingRequest.ExpiredDate = this.listingDetailResponse.ExpirationDate;
             }
 
             void FillAddressInfo(AddressInfoResponse addressInfo)
@@ -136,7 +137,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.YearBuilt = propertyInfo.ConstructionStartYear;
                 residentialListingRequest.YearBuiltSrc = propertyInfo.YearBuiltSource?.ToStringFromEnumMember();
                 residentialListingRequest.Legal = propertyInfo.LegalDescription;
-                residentialListingRequest.TaxID = propertyInfo.TaxId;
+                residentialListingRequest.TaxID = propertyInfo.PropertyId;
                 residentialListingRequest.Category = propertyInfo.TypeCategory?.ToStringFromEnumMember();
                 residentialListingRequest.MLSArea = propertyInfo.MlsArea;
                 residentialListingRequest.ListType = propertyInfo.ListingType?.ToStringFromEnumMember();
@@ -144,7 +145,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.UpdateGeocodes = propertyInfo.UpdateGeocodes;
                 residentialListingRequest.Latitude = propertyInfo.Latitude;
                 residentialListingRequest.Longitude = propertyInfo.Longitude;
-                residentialListingRequest.LotNum = propertyInfo.Lot.IntegerToString();
                 residentialListingRequest.FacesDesc = propertyInfo.FrontFaces?.ToStringFromEnumMember();
                 residentialListingRequest.SqFtTotal = propertyInfo.SqFtTotal;
                 residentialListingRequest.SqFtSource = propertyInfo.SqFtSource?.ToStringFromEnumMember();

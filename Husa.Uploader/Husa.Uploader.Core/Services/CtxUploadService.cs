@@ -610,16 +610,17 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_766"), listing.GeographicID); // Geo ID
             this.uploaderClient.SetSelect(By.Id("Input_530"), value: "NO", fieldLabel: "FEMA Flood Plain", tabName); // FEMA Flood Plain
             this.uploaderClient.SetSelect(By.Id("Input_531"), value: "NO", fieldLabel: "Residential Flooded", tabName); // Residential Flooded
-            this.uploaderClient.WriteTextbox(By.Id("Input_532"), listing.LotNum); // Lot
-            this.uploaderClient.WriteTextbox(By.Id("Input_533"), listing.Block); // Block
+            this.uploaderClient.WriteTextbox(By.Id("Input_532"), listing.LotNum, isElementOptional: true); // Lot
+            this.uploaderClient.WriteTextbox(By.Id("Input_533"), listing.Block, isElementOptional: true); // Block
+            this.uploaderClient.SetSelect(By.Id("Input_534"), listing.FacesDesc, fieldLabel: "Front Faces", tabName, isElementOptional: true); // Front Faces
 
             this.uploaderClient.SetSelect(By.Id("Input_535_TB"), listing.SchoolDistrict.ToUpper(), fieldLabel: "School District", tabName); // School District
 
             this.FillFieldSingleOption("Input_535", listing.SchoolDistrict);
-
-            this.uploaderClient.SetSelect(By.Id("Input_658"), listing.SchoolName1, fieldLabel: "Elementary School", tabName); // Elementary School
-            this.uploaderClient.SetSelect(By.Id("Input_659"), listing.SchoolName2, fieldLabel: "Middle School", tabName); // Middle School
-            this.uploaderClient.SetSelect(By.Id("Input_660"), listing.SchoolName3, fieldLabel: "High School", tabName); // High School
+            Thread.Sleep(500);
+            this.uploaderClient.SetSelect(By.Id("Input_658"), listing.SchoolName1, fieldLabel: "Elementary", tabName); // Elementary School
+            this.uploaderClient.SetSelect(By.Id("Input_659"), listing.SchoolName2, fieldLabel: "Middle", tabName); // Middle School
+            this.uploaderClient.SetSelect(By.Id("Input_660"), listing.SchoolName3, fieldLabel: "High", tabName); // High School
 
             // this.uploaderClient.WriteTextbox(By.Id("Input_125"), listing.MapscoMapCoord); // Map Grid
             // this.uploaderClient.WriteTextbox(By.Id("Input_126"), listing.MapscoMapPage); // Map Source
@@ -627,6 +628,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
             this.uploaderClient.WriteTextbox(By.Id("Input_133"), listing.OwnerName); // Owner Legal Name
             this.uploaderClient.SetSelect(By.Id("Input_137"), "0", "Also For Rent", tabName); // Also For Rent
+            this.uploaderClient.SetSelect(By.Id("Input_545"), listing.ListType, fieldLabel: "Listing Type", tabName);
 
             // 'CNDMI',
             // 'Condominium',
@@ -642,14 +644,7 @@ namespace Husa.Uploader.Core.Services
             // 'Single Family',
             // 'TNX',
             // 'Townhouse'
-            var propSubType = listing.Category switch
-            {
-                "CM" or "LA" or "CL" or "MF" or "RR" or "FR" => "OTH",
-                "CO" => "CNDMI",
-                "RE" => "SFM",
-                _ => string.Empty,
-            };
-            this.uploaderClient.SetSelect(By.Id("Input_539"), propSubType, "Property Type", tabName); // Property Type
+            this.uploaderClient.SetSelect(By.Id("Input_539"), listing.Category, "Property Sub Type", tabName); // Property Sub Type
 
             if (this.uploaderClient.UploadInformation.IsNewListing)
             {
@@ -688,28 +683,16 @@ namespace Husa.Uploader.Core.Services
             // this.uploaderClient.WriteTextbox(By.Id("Input_139"), listing.TaxRate); // Total Tax Rate
             this.uploaderClient.SetSelect(By.Id("Input_531"), "0", "Res Flooded", tabName); // Res Flooded
 
-            string constructionStatus = string.Empty;
-            switch (listing.YearBuiltDesc)
-            {
-                case "C":
-                    constructionStatus = "COMPL";
-                    break;
-                case "I":
-                    constructionStatus = "TOBEB";
-                    break;
-            }
-
-            this.uploaderClient.SetSelect(By.Id("Input_547"), constructionStatus, "Construction Status", tabName); // Construction Status
+            this.uploaderClient.SetSelect(By.Id("Input_547"), listing.YearBuiltDesc, "Construction Status", tabName); // Construction Status
             this.uploaderClient.WriteTextbox(By.Id("Input_548"), listing.OwnerName); // Builder Name
             this.uploaderClient.WriteTextbox(By.Id("Input_549"), listing.BuildCompletionDate); // Estimated Completion Date
             this.uploaderClient.WriteTextbox(By.Id("Input_553"), listing.YearBuilt); // Year Built
-            this.uploaderClient.SetSelect(By.Id("Input_186"), "OWNSE", "Year Built Source", tabName); // Year Built Source (default hardcode "Owner/Seller")
+            this.uploaderClient.SetSelect(By.Id("Input_552"), listing.YearBuiltSrc); // Year Built Source
 
             this.uploaderClient.WriteTextbox(By.Id("Input_550"), listing.SqFtTotal); // Total SqFt
             this.uploaderClient.SetSelect(By.Id("Input_551"), "BUILD", "Source SqFt", tabName); // Source SqFt
 
-            // this.uploaderClient.SetMultipleCheckboxById("Input_551", listing, "Documents on File (Max 25)", tabName); //Documents on File (Max 25)
-            // this.uploaderClient.SetMultipleCheckboxById("Input_219", listing.RestrictionsDesc); // Documents On File
+            this.uploaderClient.SetMultipleCheckboxById("Input_554", listing.AvailableDocumentsDesc, "Documents on File (Max 25)", tabName); // Documents on File (Max 25)
             var putOptionsRestrictionsDesc = new List<string>();
             var optionsRestrictionsDesc = string.IsNullOrWhiteSpace(listing.RestrictionsDesc) ? new List<string>() : listing.RestrictionsDesc.Split(',').ToList();
             foreach (string option in optionsRestrictionsDesc)
@@ -793,7 +776,6 @@ namespace Husa.Uploader.Core.Services
             // {
             //    this.uploaderClient.SetMultipleCheckboxById("Input_219", string.Join(",", putOptionsRestrictionsDesc.ToArray())); // Documents On File
             // }
-            this.uploaderClient.SetMultipleCheckboxById("Input_554", "NONE", "Documents On File", tabName); // Documents On File
         }
 
         private void FillFieldSingleOption(string fieldName, string value)
