@@ -249,13 +249,23 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     return;
                 }
 
-                var hoa = hoas.First();
-                residentialListingRequest.AssocFee = (int)hoa.Fee;
-                residentialListingRequest.AssocName = hoa.Name;
-                residentialListingRequest.AssocFeePaid = hoa.BillingFrequency.ToStringFromEnumMember();
-                residentialListingRequest.AssocTransferFee = (int)hoa.TransferFee;
-                residentialListingRequest.AssocPhone = hoa.ContactPhone;
+                residentialListingRequest.HOAs = new List<HoaRequest>();
+                foreach (HoaResponse hoa in hoas)
+                {
+                    var hoaRequest = new HoaRequest
+                    {
+                        Phone = new HoaPhone(hoa.ContactPhone),
+                        Name = hoa.Name,
+                        Fee = (int)hoa.Fee,
+                        TransferFee = (int)hoa.TransferFee,
+                        FeePaid = hoa.BillingFrequency.ToStringFromEnumMember(),
+                        Website = hoa.Website?.TruncateHOAWebsite(),
+                    };
+                    residentialListingRequest.HOAs.Add(hoaRequest);
+                }
+
                 residentialListingRequest.HasMultipleHOA = hoas.Count().ToStringFromHasMultipleHOA();
+                residentialListingRequest.NumHoas = hoas.Count().ToString();
             }
 
             void FillRoomsInfo(IEnumerable<RoomResponse> rooms)

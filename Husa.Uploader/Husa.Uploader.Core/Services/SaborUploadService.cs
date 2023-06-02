@@ -8,6 +8,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
@@ -1033,22 +1034,65 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Name("TOTALTAX"), listing.TaxRate); // Total Tax (Without Exemptions)
             if (!string.IsNullOrEmpty(listing.HOA) && (listing.HOA.Trim() == "MAND" || listing.HOA.Trim() == "VOLNT"))
             {
-                this.uploaderClient.ExecuteScript("openPicklist('HOAMNDTRY')");
-
-                this.uploaderClient.WriteTextbox(By.Name("MLTPLHOA"), listing.HasMultipleHOA); // Multiple HOA
-                this.uploaderClient.WriteTextbox(By.Name("HOAFEE"), listing.AssocFee); // HOA Fee
-                this.uploaderClient.WriteTextbox(By.Name("HOANAME"), listing.AssocName); // HOA Name
-                this.uploaderClient.WriteTextbox(By.Name("PYMNTFREQ"), listing.AssocFeePaid); // Payment Frequency
-                this.uploaderClient.WriteTextbox(By.Name("ASNTRNFEE"), listing.AssocTransferFee); // Assoc Transfer Fee
-
-                if (!string.IsNullOrEmpty(listing.AssocPhone))
+                this.uploaderClient.WriteTextbox(By.Name("MLTPLHOA"), listing.HasMultipleHOA); // Multiple
+                if (listing.HasMultipleHOA == "YES")
                 {
-                    this.uploaderClient.WriteTextbox(By.Name("HOAPHONE1"), listing.AssocPhone.Substring(0, 3), isElementOptional: true); // HOA Contact form number 1
-                    this.uploaderClient.WriteTextbox(By.Name("HOAPHONE2"), listing.AssocPhone.Substring(3, 3), isElementOptional: true); // HOA Contact form number 2
-                    this.uploaderClient.WriteTextbox(By.Name("HOAPHONE3"), listing.AssocPhone.Substring(6, 4), isElementOptional: true); // HOA Contact form number 3
+                    this.uploaderClient.FindElement(By.Name("MLTPLHOA")).SendKeys(Keys.Tab);
+                    this.uploaderClient.WriteTextbox(By.Name("NUM_HOA"), listing.NumHoas);
                 }
+
+                this.FillHoaInfo(listing.HOAs);
             }
         }
+
+        private void FillHoaInfo(IList<HoaRequest> hoaRequests)
+        {
+            var i = 1;
+            foreach (var hoaRequest in hoaRequests)
+            {
+                var hoaAttr = this.SelectHoaAttr(i);
+
+                this.uploaderClient.WriteTextbox(By.Name(hoaAttr[0]), hoaRequest.Fee); // HOA Fee
+                this.uploaderClient.WriteTextbox(By.Name(hoaAttr[1]), hoaRequest.Name); // HOA Name
+                this.uploaderClient.WriteTextbox(By.Name(hoaAttr[2]), hoaRequest.FeePaid); // Payment Frequency
+                this.uploaderClient.WriteTextbox(By.Name(hoaAttr[3]), hoaRequest.TransferFee); // Assoc Transfer Fee
+                //// this.uploaderClient.WriteTextbox(By.Name(hoaAttr[4]), hoaRequest.Website); // HOA Website
+
+                this.FillHoaPhone(hoaRequest.Phone, i);
+                i++;
+            }
+        }
+
+        private void FillHoaPhone(HoaPhone phone, int numHoa)
+        {
+            if (!phone.IsEmpty())
+            {
+                var attrNames = this.SelectHoaPhoneAttr(numHoa);
+                this.uploaderClient.WriteTextbox(By.Name(attrNames[0]), phone.AreaCode, isElementOptional: true); // HOA Contact form number 1
+                this.uploaderClient.WriteTextbox(By.Name(attrNames[1]), phone.Prefix, isElementOptional: true); // HOA Contact form number 2
+                this.uploaderClient.WriteTextbox(By.Name(attrNames[2]), phone.LineNumber, isElementOptional: true); // HOA Contact form number 3
+            }
+        }
+
+        private List<string> SelectHoaAttr(int numHoa)
+        {
+            var list = new List<string> { "HOAFEE", "HOANAME", "PYMNTFREQ", "ASNTRNFEE", "HOAWEBSITE" };
+            if (numHoa < 2)
+            {
+                return list;
+            }
+
+            return list.Select(x => $"{x}{numHoa}").ToList();
+        }
+
+        private List<string> SelectHoaPhoneAttr(int numHoa) => numHoa switch
+        {
+            1 => new List<string> { "HOAPHONE1", "HOAPHONE2", "HOAPHONE3" },
+            2 => new List<string> { "HOAPHONE21", "HOAPHONE22", "HOAPHONE23" },
+            3 => new List<string> { "HOAPHONE31", "HOAPHONE32", "HOAPHONE33" },
+            4 => new List<string> { "HOAPHONE41", "HOAPHONE42", "HOAPHONE43" },
+            _ => throw new ArgumentOutOfRangeException(nameof(numHoa)),
+        };
 
         private void FillOfficeInformation(ResidentialListingRequest listing)
         {

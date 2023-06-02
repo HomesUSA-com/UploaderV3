@@ -2,6 +2,7 @@ namespace Husa.Uploader.Data.Entities
 {
     using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Data.Entities.MarketRequests;
 
     public abstract class ResidentialListingRequest
     {
@@ -93,7 +94,6 @@ namespace Husa.Uploader.Data.Entities
         public string InteriorDesc { get; set; }
         public string HowToSellDesc { get; set; }
         public string HOA { get; set; }
-        public string HasHOA { get; set; }
         public string HoaWebsite { get; set; }
         public string AssocName { get; set; }
         public int? AssocFee { get; set; }
@@ -103,6 +103,8 @@ namespace Husa.Uploader.Data.Entities
         public string AssocFeeIncludes { get; set; }
         public string AssocPhone { get; set; }
         public string AssocFeeOtherDesc { get; set; }
+        public IList<HoaRequest> HOAs { get; set; }
+        public string NumHoas { get; set; }
         public string HeatSystemDesc { get; set; }
         public string HasRestrictions { get; set; }
         public bool HasPool { get; set; }
