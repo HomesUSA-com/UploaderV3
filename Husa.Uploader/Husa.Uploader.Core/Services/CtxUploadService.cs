@@ -2403,19 +2403,22 @@ namespace Husa.Uploader.Core.Services
             //// this.uploaderClient.SetMultipleCheckboxById("Input_150", listing.PROPSDTRMS, "Proposed Terms", tabName); // Proposed Terms
 
             // this.uploaderClient.SetSelect(By.Id("Input_624"), listing.HasHOA, "HOA", tabName); // HOA
-            if (!string.IsNullOrEmpty(listing.HOA) && (listing.HOA == "MAND"))
+            this.uploaderClient.SetMultipleCheckboxById("Input_744", listing.ProposedTerms, fieldLabel: "Acceptable Financing", tabName); // Proposed Terms
+            this.uploaderClient.WriteTextbox(By.Id("Input_618"), listing.TaxYear); // Tax Year
+            this.uploaderClient.WriteTextbox(By.Id("Input_619"), listing.TaxRate); // Tax Rate
+            if (!string.IsNullOrEmpty(listing.HOA))
             {
-                // this.uploaderClient.SetSelect(By.Id("Input_151"), "1", "HOA", tabName); // HOA
-                this.uploaderClient.SetSelect(By.Id("Input_622"), value: "MAN", fieldLabel: "HOA Mandatory", tabName); // HOA Mandatory
-            }
-            else
-            {
-                this.uploaderClient.SetSelect(By.Id("Input_622"), value: "NONE", fieldLabel: "HOA Mandatory", tabName); // HOA Mandatory
+                this.uploaderClient.SetSelect(By.Id("Input_622"), value: listing.HOA, fieldLabel: "HOA Mandatory", tabName); // HOA Mandatory
             }
 
             this.uploaderClient.WriteTextbox(By.Id("Input_623"), listing.AssocName); // HOA Name
             this.uploaderClient.WriteTextbox(By.Id("Input_624"), listing.AssocFee); // HOA Amount
-            this.uploaderClient.SetSelect(By.Id("Input_625"), listing.AssocFeePaid, fieldLabel: "HOA Term", tabName); // HOA Term
+            this.uploaderClient.SetSelect(By.Id("Input_625"), listing.AssocFeeFrequency, fieldLabel: "HOA Term", tabName); // HOA Term
+            this.uploaderClient.WriteTextbox(By.Id("Input_626"), listing.TitleCo);  // HOA Mgmt Co
+            this.uploaderClient.WriteTextbox(By.Id("Input_627"), listing.AssocPhone);  // HOA Phone
+            this.uploaderClient.WriteTextbox(By.Id("Input_628"), listing.HoaWebsite);  // HOA Website
+            this.uploaderClient.WriteTextbox(By.Id("Input_629"), listing.AssocTransferFee);  // HOA Transfer fee
+            this.uploaderClient.SetMultipleCheckboxById("Input_630", listing.AssocFeeIncludes, fieldLabel: "HOA Fee Includes", tabName);  // HOA Fee Includes
         }
 
         private void FillShowingInformation(ResidentialListingRequest listing)

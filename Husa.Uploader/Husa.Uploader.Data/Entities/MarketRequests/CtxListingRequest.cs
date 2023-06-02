@@ -7,6 +7,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
     using Husa.Quicklister.CTX.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.CTX.Api.Contracts.Response.SalePropertyDetail;
     using Husa.Quicklister.CTX.Domain.Enums;
+    using Husa.Uploader.Crosscutting.Converters;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
 
@@ -230,7 +231,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.TaxRate = financialInfo.TaxRate.DecimalToString();
                 residentialListingRequest.TaxYear = financialInfo.TaxYear.IntegerToString();
                 residentialListingRequest.TitleCo = financialInfo.TitleCompany;
-                residentialListingRequest.HOA = financialInfo.HoaRequirement?.ToStringFromEnumMember();
+                residentialListingRequest.HOA = financialInfo.HoaRequirement?.ToStringFromHOARequirementCTX();
                 residentialListingRequest.AssocName = financialInfo.HoaName;
                 residentialListingRequest.AssocTransferFee = (int?)financialInfo.HoaTransferFeeAmount;
                 residentialListingRequest.HoaWebsite = financialInfo.HoaWebsite;
