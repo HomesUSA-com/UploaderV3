@@ -17,13 +17,23 @@ pool:
 
 variables:
     chromeDriverVersion: 113.0.5672.63
+    revisionNumber: $[counter('revisions', 35)]
+    isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
 
 steps:
-- powershell: |
-    $(Build.SourcesDirectory)\Husa.Uploader\Scripts\DownloadChromeDriver.ps1 -version "$(chromeDriverVersion)" -path "$(Build.SourcesDirectory)\Husa.Uploader\Husa.Uploader"
+- task: PowerShell@2
   displayName: 'Download ChromeDriver'
+  inputs:
+    filePath: '$(Build.SourcesDirectory)\Husa.Uploader\Scripts\DownloadChromeDriver.ps1'
+    arguments: '-version "$(chromeDriverVersion)" -path "$(Build.SourcesDirectory)\Husa.Uploader\Husa.Uploader.Desktop"'
 
-- task: DotNetCoreCLI@2
+- task: PowerShell@2
+  displayName: 'Update HTML with Version'
+  inputs:
+    filePath: '$(Build.SourcesDirectory)\Husa.Uploader\Scripts\UpdatePublishAppVersion.ps1'
+    arguments: '-revision "$(revisionNumber)" -csprojPath "$(Build.SourcesDirectory)\Husa.Uploader\Husa.Uploader.Desktop\Husa.Uploader.Desktop.csproj" -htmlFilePath "$(Build.SourcesDirectory)\Husa.Uploader\Husa.Uploader.Desktop\Deployment\Publish.html" -destinationFilePath "$(build.artifactstagingdirectory)"'
+
+- task: DotNetCoreCLI@2 
   displayName: 'dotnet restore'
   inputs:
     command: restore
@@ -44,5 +54,23 @@ steps:
   inputs:
     command: test
     projects: '**/Husa.Uploader/Husa.Uploader.sln'
-    arguments: '--configuration Release --no-build --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura,opencover --logger trx'
+    arguments: '--configuration Release --no-build --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura --logger trx'
     publishTestResults: true
+
+- task: MSBuild@1
+  displayName: 'publish with ClickOnce'
+  condition: ne(variables.isPullRequest, true)
+  inputs:
+    solution: '**/Husa.Uploader.Desktop/Husa.Uploader.Desktop.csproj'
+    msbuildArguments: '/target:Publish /p:ApplicationRevision=$(revisionNumber) /p:GenerateManifests=true /p:UseApplicationTrust=true /p:Install=true /p:InstallFrom=Web /p:MapFileExtensions=true /p:IsWebBootstrapper=true /p:CreateWebPageOnPublish=true /p:WebPageFileName=Publish.html /P:PublishProfile=$(Build.SourcesDirectory)\Husa.Uploader\Husa.Uploader.Desktop\Properties\PublishProfiles\ClickOnceProfile.pubxml'
+    platform: 'AnyCPU'
+    configuration: 'Release'
+    logFileVerbosity: 'detailed'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'publish Artifact: drop'
+  condition: ne(variables.isPullRequest, true)
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'

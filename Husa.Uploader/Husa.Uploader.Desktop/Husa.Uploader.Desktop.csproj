@@ -1,0 +1,122 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net7.0-windows</TargetFramework>
+        <TargetCulture>en-US</TargetCulture>
+        <UseWPF>true</UseWPF>
+        <UserSecretsId>ff3c0fa4-605c-4c31-ad66-aaad071f0246</UserSecretsId>
+        <ProductName>HomesUSA Uploader Core</ProductName>
+        <PublisherName>HomesUSA.com</PublisherName>
+        <SuiteName>HomesUSA</SuiteName>
+        <ApplicationVersion>1.0.0.*</ApplicationVersion>
+        <ApplicationIcon>Media\icon.ico</ApplicationIcon>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <PublishUrl>https://uploaderv3-qa.homesusa.com/</PublishUrl>
+        <PublishProtocol>ClickOnce</PublishProtocol>
+        <PublishReadyToRun>false</PublishReadyToRun>
+        <PublishSingleFile>false</PublishSingleFile>
+        <PublishTrimmed>false</PublishTrimmed>
+
+        <InstallUrl>https://uploaderv3-qa.homesusa.com/</InstallUrl>
+        <CreateDesktopShortcut>True</CreateDesktopShortcut>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <SelfContained>true</SelfContained>
+
+        <UpdateEnabled>true</UpdateEnabled>
+        <UpdateMode>Foreground</UpdateMode>
+        <UpdateRequired>false</UpdateRequired>
+
+        <BootstrapperEnabled>true</BootstrapperEnabled>
+        <ManifestTimestampUrl>http://timestamp.digicert.com</ManifestTimestampUrl>
+        <SignManifests>false</SignManifests>
+        <SignatureAlgorithm>(none)</SignatureAlgorithm>
+
+        <SupportUrl>https://www.homesusa.com/mls_department/</SupportUrl>
+        <ErrorReportUrl>https://www.homesusa.com/mls_department/</ErrorReportUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Remove="appsettings.Development.json" />
+        <None Remove="appsettings.json" />
+        <None Remove="Media\dark-logo.png" />
+        <None Remove="Media\home-icon-1.png" />
+        <None Remove="Media\House01.jpg" />
+        <None Remove="Media\icon-cs.ico" />
+        <None Remove="Media\icon.ico" />
+        <None Remove="Media\lots-icon-1.png" />
+        <None Remove="Media\Password Dots.ttf" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="appsettings.Development.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="appsettings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="chromedriver.exe">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Husa.Extensions.Api" Version="4.0.1" />
+        <PackageReference Include="MahApps.Metro" Version="3.0.0-alpha0457" />
+        <PackageReference Include="MaterialDesignColors" Version="2.1.4" />
+        <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
+        <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.3.0" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.5" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
+        <PackageReference Include="Serilog" Version="2.12.0" />
+        <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
+        <PackageReference Include="Serilog.Extensions.Hosting" Version="7.0.0" />
+        <PackageReference Include="Serilog.Settings.Configuration" Version="7.0.0" />
+        <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
+        <PackageReference Include="Serilog.Sinks.EventLog" Version="3.1.0" />
+        <PackageReference Include="Serilog.Sinks.Trace" Version="3.0.0" />
+        <PackageReference Include="Husa.Extensions.Common" Version="3.8.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Husa.Uploader.Core\Husa.Uploader.Core.csproj" />
+        <ProjectReference Include="..\Husa.Uploader.Data\Husa.Uploader.Data.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Resource Include="Media\dark-logo.png">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Media\home-icon-1.png">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Media\House01.jpg">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Media\icon-cs.ico">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Media\icon.ico">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Media\lots-icon-1.png">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+        <Resource Include="Media\Password Dots.ttf">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </Resource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Deployment\Publish.html">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>

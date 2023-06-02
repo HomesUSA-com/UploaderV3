@@ -21,7 +21,6 @@ namespace Husa.Uploader.Data.Tests
         private static ApplicationOptions GetApplicationOptions() => new()
         {
             AuthenticateServerUrl = "https://localhost/auth",
-            ElasticSearchServerUrl = "https://localhost/elastic",
             SignalRURLServer = "https://localhost/signalr",
             DataRefreshIntervalInSeconds = 45,
             SignalRRefreshIntervalSeconds = 2,

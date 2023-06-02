@@ -5,7 +5,7 @@ VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Husa.Uploader.SignalR.Client", "Husa.Uploader.SignalR.Client\Husa.Uploader.SignalR.Client.csproj", "{545FA9AE-3ACC-4158-93D5-69879BEBF76F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Husa.Uploader", "Husa.Uploader\Husa.Uploader.csproj", "{21FD90F5-EED9-48CF-90E1-73AB16E69BE9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Husa.Uploader.Desktop", "Husa.Uploader.Desktop\Husa.Uploader.Desktop.csproj", "{21FD90F5-EED9-48CF-90E1-73AB16E69BE9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Husa.Uploader.Data", "Husa.Uploader.Data\Husa.Uploader.Data.csproj", "{FF3A8E4A-6469-41A7-8CB2-9C3FE753E2D4}"
 EndProject
@@ -19,6 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		..\.gitignore = ..\.gitignore
+		ci-pipeline-uploader.yml = ci-pipeline-uploader.yml
 		Directory.Build.props = Directory.Build.props
 		..\README.md = ..\README.md
 		stylecop.json = stylecop.json
@@ -26,7 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Husa.Uploader.SignalR.WebApp", "Husa.Uploader.SignalR.WebApp\Husa.Uploader.SignalR.WebApp.csproj", "{62BAB59C-E4A4-4CFB-AE77-43E5121F3802}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Uploader.Core.Tests", "Husa.Uploader.Core.Tests\Husa.Uploader.Core.Tests.csproj", "{76915118-92E4-440D-BCD0-D4D035B58837}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Husa.Uploader.Core.Tests", "Husa.Uploader.Core.Tests\Husa.Uploader.Core.Tests.csproj", "{76915118-92E4-440D-BCD0-D4D035B58837}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,7 +38,6 @@ Global
 		{545FA9AE-3ACC-4158-93D5-69879BEBF76F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{545FA9AE-3ACC-4158-93D5-69879BEBF76F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{545FA9AE-3ACC-4158-93D5-69879BEBF76F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{545FA9AE-3ACC-4158-93D5-69879BEBF76F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{21FD90F5-EED9-48CF-90E1-73AB16E69BE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{21FD90F5-EED9-48CF-90E1-73AB16E69BE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21FD90F5-EED9-48CF-90E1-73AB16E69BE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -57,15 +57,12 @@ Global
 		{A325470B-9C8A-4EBC-A3B6-1447FB8ED1FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A325470B-9C8A-4EBC-A3B6-1447FB8ED1FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A325470B-9C8A-4EBC-A3B6-1447FB8ED1FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A325470B-9C8A-4EBC-A3B6-1447FB8ED1FF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{62BAB59C-E4A4-4CFB-AE77-43E5121F3802}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{62BAB59C-E4A4-4CFB-AE77-43E5121F3802}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62BAB59C-E4A4-4CFB-AE77-43E5121F3802}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{62BAB59C-E4A4-4CFB-AE77-43E5121F3802}.Release|Any CPU.Build.0 = Release|Any CPU
 		{76915118-92E4-440D-BCD0-D4D035B58837}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{76915118-92E4-440D-BCD0-D4D035B58837}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76915118-92E4-440D-BCD0-D4D035B58837}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{76915118-92E4-440D-BCD0-D4D035B58837}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

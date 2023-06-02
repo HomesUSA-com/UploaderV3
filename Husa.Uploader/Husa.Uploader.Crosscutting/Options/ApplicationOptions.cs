@@ -10,9 +10,6 @@ namespace Husa.Uploader.Crosscutting.Options
         public string AuthenticateServerUrl { get; set; }
 
         [Required(AllowEmptyStrings = false)]
-        public string ElasticSearchServerUrl { get; set; }
-
-        [Required(AllowEmptyStrings = false)]
         public string SignalRURLServer { get; set; }
 
         [MinLength(length: 1)]
