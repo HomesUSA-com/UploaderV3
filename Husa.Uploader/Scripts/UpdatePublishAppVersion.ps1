@@ -9,8 +9,8 @@ param(
 [xml]$csprojContent = Get-Content -Path $csprojPath
 $applicationVersion = $csprojContent.Project.PropertyGroup.ApplicationVersion
 
-# Remove asterisk (*) from version
-$applicationVersion = $applicationVersion -replace '\*', ''
+# Split the application version on asterisk and keep the part before it
+$applicationVersion = ($applicationVersion -split '\*')[0]
 
 # Combine application version with revision
 $version = "$applicationVersion$revision"
