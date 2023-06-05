@@ -7,10 +7,10 @@ pr:
     - master
     
 trigger:
-- develop
-- release/*
-- hotfix/*
-- master
+  - develop
+  - release/*
+  - hotfix/*
+  - master
 
 pool:
   vmImage: windows-latest
@@ -60,7 +60,7 @@ steps:
   continueOnError: false
   inputs:
     command: test
-    projects: '**//Husa.Uploader/Husa.Uploader.sln'
+    projects: '**/Husa.Uploader/Husa.Uploader.sln'
     arguments: '--configuration Release --no-build --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura --logger trx'
     publishTestResults: true
 

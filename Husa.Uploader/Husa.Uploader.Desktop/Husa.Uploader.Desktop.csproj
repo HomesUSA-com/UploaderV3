@@ -14,13 +14,11 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-        <PublishUrl>https://uploaderv3-qa.homesusa.com/</PublishUrl>
         <PublishProtocol>ClickOnce</PublishProtocol>
         <PublishReadyToRun>false</PublishReadyToRun>
         <PublishSingleFile>false</PublishSingleFile>
         <PublishTrimmed>false</PublishTrimmed>
 
-        <InstallUrl>https://uploaderv3-qa.homesusa.com/</InstallUrl>
         <CreateDesktopShortcut>True</CreateDesktopShortcut>
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
         <SelfContained>true</SelfContained>
