@@ -1035,20 +1035,21 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.ClickOnElement(By.LinkText("Brokerage/Showing Information")); // Brokerage/Showing Information
 
-            // this.uploaderClient.WriteTextbox(By.Id("Input_209"), listing.AgentList); // List Agent MLS ID TODO: Verify the correct property
-            // this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_209_Refresh').value='1';RefreshToSamePage();"); // Refresh TODO: Veriry if necessary click in this button
-
-            // this.uploaderClient.WriteTextbox(By.Id("Input_211"), listing.AgentList); // List Agent MLS ID TODO: Verify the correct property
-            // this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_211_Refresh').value='1';RefreshToSamePage();"); // Refresh TODO: Veriry if necessary click in this button
-            this.uploaderClient.SetSelect(By.Id("Input_632"), value: "Pct", fieldLabel: "Buyer Agency $ or %", tabName); // Buyer Agency $ or %  (default hardcode "%")
-            this.uploaderClient.WriteTextbox(By.Id("Input_633"), value: "3"); // Buyer Agency Compensation (default hardcode "3")
-            // this.uploaderClient.SetSelect(By.Id("Input_213"), ??? ); // Variable Compensation
-            this.uploaderClient.SetMultipleCheckboxById("Input_645", csvValues: "APPOI", fieldLabel: "How to Show/Occupancy", tabName); // How to Show/Occupancy (default hardcode "Appointment Only")
-            this.uploaderClient.WriteTextbox(By.Id("Input_635"), value: "0"); // Buyer Agency Compensation (default hardcode "0")
+            // Brokerage
+            this.uploaderClient.SetSelect(By.Id("Input_632"), listing.BuyerIncentiveDesc, fieldLabel: "Buyer Agency $ or %", tabName);
+            this.uploaderClient.WriteTextbox(By.Id("Input_633"), listing.BuyerIncentive); // Buyer Agency Compensation
+            this.uploaderClient.WriteTextbox(By.Id("Input_635"), value: "0"); // Sub Agency Compensation (default hardcode "0")
             this.uploaderClient.SetSelect(By.Id("Input_636"), value: "Pct", fieldLabel: "Sub Agency $ or % ", tabName); // Sub Agency $ or % (default hardcode "%")
             this.uploaderClient.SetSelect(By.Id("Input_637"), listing.ProspectsExempt, "Prospects Exempt", tabName); // Prospects Exempt (default hardcode "No")
             this.uploaderClient.WriteTextbox(By.Id("Input_638"), listing.TitleCo); // Pref Title Company
             this.uploaderClient.WriteTextbox(By.Id("Input_639"), listing.EarnestMoney); // Earnest Money
+
+            // Showing
+            this.uploaderClient.SetSelect(By.Id("Input_642"), listing.LockboxTypeDesc, fieldLabel: "Lockbox Type", tabName, isElementOptional: true);
+            this.uploaderClient.WriteTextbox(By.Id("Input_648"), listing.AgentListApptPhone, isElementOptional: true);  // Showing Phone
+            this.uploaderClient.WriteTextbox(By.Id("Input_649"), listing.OtherPhone, isElementOptional: true);  // Showing Phone #2
+            this.uploaderClient.SetMultipleCheckboxById("Input_643", listing.LockboxLocDesc, fieldLabel: "Lockbox Location", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_645", listing.Showing, fieldLabel: "Showing Instructions", tabName);
         }
 
         private void FillRemarks(ResidentialListingRequest listing)
