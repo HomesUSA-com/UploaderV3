@@ -1548,6 +1548,15 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_599", listing.CommonFeatures, fieldLabel: "Neighborhood Amenitites (Max 19)", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_600", listing.RoadFrontageDesc, fieldLabel: "Access/Road Surface", tabName);
 
+            // Environment / Energy
+            this.uploaderClient.SetSelect(By.Id("Input_601"), listing.UpgradedEnergyFeatures, fieldLabel: "Upgraded Energy Features", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_602"), listing.EES, fieldLabel: "EES Features", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_605", listing.GreenIndoorAirQuality, fieldLabel: "Green Indoor Air Quality", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_604", listing.GreenCerts, fieldLabel: "Green Building Verification", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_606", listing.EESFeatures, fieldLabel: "Green Energy Efficient", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_608", listing.EnergyDesc, fieldLabel: "Green Verification Source", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_609", listing.GreenWaterConservation, fieldLabel: "Green Water Conservation", tabName);
+
             // this.uploaderClient.SetMultipleCheckboxById("Input_178", listing.HeatSystemDesc); // Heat
             var putOptionsHeat = new List<string>();
             var optionsLotHeat = string.IsNullOrWhiteSpace(listing.HeatSystemDesc) ? new List<string>() : listing.HeatSystemDesc.Split(',').ToList();
