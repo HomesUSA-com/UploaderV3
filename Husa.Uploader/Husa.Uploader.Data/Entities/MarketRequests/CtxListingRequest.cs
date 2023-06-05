@@ -186,10 +186,10 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.LaundryFacilityDesc = featuresInfo.Laundry.ToStringFromEnumMembers();
                 residentialListingRequest.Bed1Desc = featuresInfo.MasterBedroom.ToStringFromEnumMembers();
                 residentialListingRequest.GarageCarportDesc = featuresInfo.Garage?.ToStringFromEnumMember();
-                residentialListingRequest.CarportDesc = featuresInfo.Carport?.ToStringFromEnumMember();
+                residentialListingRequest.CarportDesc = featuresInfo.Carport?.ToStringFromCarport();
                 residentialListingRequest.GarageDesc = featuresInfo.GarageDescription.ToStringFromEnumMembers();
                 residentialListingRequest.InclusionsDesc = featuresInfo.Inclusions.ToStringFromEnumMembers();
-                residentialListingRequest.LaundryFacilityDesc = featuresInfo.AppliancesEquipment.ToStringFromEnumMembers();
+                residentialListingRequest.AppliancesDesc = featuresInfo.AppliancesEquipment.ToStringFromEnumMembers();
                 residentialListingRequest.LotDim = featuresInfo.LotDimension;
                 residentialListingRequest.LotSize = featuresInfo.LotSize;
                 residentialListingRequest.FenceDesc = featuresInfo.Fencing.ToStringFromEnumMembers();
