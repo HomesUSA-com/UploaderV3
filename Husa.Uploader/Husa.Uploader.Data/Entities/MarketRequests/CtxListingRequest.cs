@@ -195,7 +195,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.FenceDesc = featuresInfo.Fencing.ToStringFromEnumMembers();
                 residentialListingRequest.HasWaterAccess = featuresInfo.WaterAccess.BoolToNumericBool();
                 residentialListingRequest.WaterAccessDesc = featuresInfo.WaterAccessType.ToStringFromEnumMembers();
-                residentialListingRequest.WaterfrontYN = featuresInfo.WaterFront;
+                residentialListingRequest.WaterfrontYN = featuresInfo.WaterFront.BoolToNumericBool();
                 residentialListingRequest.WaterfrontFeatures = featuresInfo.WaterFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.IsGatedCommunity = featuresInfo.GatedCommunity.BoolToNumericBool();
                 residentialListingRequest.HasSprinklerSys = featuresInfo.SprinklerSystem.BoolToNumericBool();

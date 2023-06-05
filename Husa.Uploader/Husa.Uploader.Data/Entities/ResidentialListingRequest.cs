@@ -839,7 +839,7 @@ namespace Husa.Uploader.Data.Entities
 
         public string UtilitiesOther { get; set; }
 
-        public bool? WaterfrontYN { get; set; }
+        public string WaterfrontYN { get; set; }
 
         public bool? RoadAssessmentYN { get; set; }
 
