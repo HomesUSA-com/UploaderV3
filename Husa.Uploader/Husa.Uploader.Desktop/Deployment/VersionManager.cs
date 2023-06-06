@@ -48,21 +48,8 @@ namespace Husa.Uploader.Desktop.Deployment
             }
 
             ApplicationBuildVersion = ApplicationDeployment.CurrentVersion.ToString();
-            var updateCheckInfo = GetUpdateCheckInfo();
-            if (updateCheckInfo == null || !updateCheckInfo.UpdateAvailable)
-            {
-                return false;
-            }
-
-            try
-            {
-                ApplicationDeployment.CurrentDeployment.Update();
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            var updateCheckInfo = ApplicationDeployment.CheckForUpdate();
+            return updateCheckInfo != null && updateCheckInfo.UpdateAvailable;
         }
 
         private static DateTime? RetrieveLinkerTimestamp()
@@ -70,18 +57,6 @@ namespace Husa.Uploader.Desktop.Deployment
             var assembly = Assembly.GetCallingAssembly();
             var fileInfo = new FileInfo(assembly.Location);
             return fileInfo.Exists ? fileInfo.CreationTime.ToLocalTime() : null;
-        }
-
-        private static UpdateCheckInfo GetUpdateCheckInfo()
-        {
-            try
-            {
-                return ApplicationDeployment.CurrentDeployment.CheckForDetailedUpdate(persistUpdateCheckResult: true);
-            }
-            catch
-            {
-                return null;
-            }
         }
     }
 }

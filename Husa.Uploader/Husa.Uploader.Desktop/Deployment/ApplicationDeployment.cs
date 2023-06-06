@@ -119,14 +119,6 @@ namespace Husa.Uploader.Desktop.Deployment
             }
         }
 
-        public UpdateCheckInfo CheckForDetailedUpdate(bool persistUpdateCheckResult)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal void Update()
-        {
-            throw new NotImplementedException();
-        }
+        public static UpdateCheckInfo CheckForUpdate() => new(updateAvailable: CurrentVersion != UpdatedVersion, UpdatedVersion, isUpdateRequired: true, CurrentVersion, updateSize: 0);
     }
 }
