@@ -1028,7 +1028,7 @@ namespace Husa.Uploader.Data.Entities
 
             var fieldRemarks = extendedRemarks + privateRemarks.Replace("\"", string.Empty);
 
-            if (addPlanName)
+            if (addPlanName && !string.IsNullOrWhiteSpace(this.PlanProfileName))
             {
                 fieldRemarks = $"{fieldRemarks.TrimEnd()} Plan: {this.PlanProfileName}. ";
             }

@@ -101,6 +101,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.CompanyName = this.listingDetailResponse.SaleProperty.SalePropertyInfo.OwnerName;
                 residentialListingRequest.OwnerName = this.listingDetailResponse.SaleProperty.SalePropertyInfo.OwnerName;
                 residentialListingRequest.ExpiredDate = this.listingDetailResponse.ExpirationDate;
+                residentialListingRequest.PlanProfileName = this.listingDetailResponse.SaleProperty.SalePropertyInfo.PlanName;
             }
 
             void FillAddressInfo(AddressInfoResponse addressInfo)
