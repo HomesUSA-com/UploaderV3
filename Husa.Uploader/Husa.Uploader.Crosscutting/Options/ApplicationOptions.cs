@@ -31,5 +31,8 @@ namespace Husa.Uploader.Crosscutting.Options
 
         [Required]
         public ServiceSettings Services { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
+        public string PublishingPath { get; set; }
     }
 }

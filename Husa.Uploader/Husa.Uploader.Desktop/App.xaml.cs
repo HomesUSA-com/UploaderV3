@@ -59,9 +59,10 @@ namespace Husa.Uploader.Desktop
                     services.RegisterViews();
                     services.ConfigureApplicationOptions();
                     services.ConfigureDataAccess();
-                    services.ConfigureServices();
-                    services.ConfigureWebDriver();
+                    services.ConfigureHttpClients();
+                    services.ConfigureNavigationServices();
                     services.ConfigureSignalR();
+                    services.ConfigureServices();
                     VersionManager.ConfigureVersionInfo(isDevelopment: host.HostingEnvironment.IsDevelopment());
                 })
                 .Build();

@@ -90,7 +90,9 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<IListingRequestRepository, ListingRequestRepository>();
         }
 
-        public static void ConfigureServices(this IServiceCollection services)
+        public static void ConfigureServices(this IServiceCollection services) => services.AddTransient<IClickOnceUpdateService, ClickOnceUpdateService>();
+
+        public static void ConfigureHttpClients(this IServiceCollection services)
         {
             services.AddHttpClient();
             services.AddHttpClient<IAuthenticationClient, AuthenticationClient>((provider, client) =>
@@ -120,7 +122,7 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<IMediaServiceClient, MediaServiceClient>();
         }
 
-        public static IServiceCollection ConfigureWebDriver(this IServiceCollection services)
+        public static IServiceCollection ConfigureNavigationServices(this IServiceCollection services)
         {
             services.AddTransient<IWebDriver>(provider =>
             {
