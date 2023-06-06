@@ -34,5 +34,8 @@ namespace Husa.Uploader.Crosscutting.Options
 
         [Required]
         public ServiceSettings Services { get; set; }
+
+        [Required]
+        public FeatureFlags FeatureFlags { get; set; }
     }
 }

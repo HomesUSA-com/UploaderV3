@@ -9,7 +9,6 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Crosscutting.Exceptions;
     using Husa.Uploader.Crosscutting.Options;
-    using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
 
@@ -17,6 +16,7 @@ namespace Husa.Uploader.Core.Services
     {
         private const string HttpClientKey = nameof(VersionManagerService) + "_httpclient";
         private const string DevelopmentModeVersion = "Development";
+        private const string VersionNotSet = "Unknown";
 
         private static readonly XNamespace NamespaceFirstVersion = "urn:schemas-microsoft-com:asm.v1";
         private static string appBuildDate;
@@ -25,7 +25,6 @@ namespace Husa.Uploader.Core.Services
         private readonly ApplicationOptions options;
         private readonly ILogger logger;
         private readonly IHttpClientFactory httpClientFactory;
-        private readonly IHostEnvironment hostEnvironment;
 
         private Version currentVersion;
         private string applicationName;
@@ -34,12 +33,10 @@ namespace Husa.Uploader.Core.Services
         public VersionManagerService(
             IOptions<ApplicationOptions> options,
             IHttpClientFactory httpClientFactory,
-            IHostEnvironment hostEnvironment,
             ILogger<VersionManagerService> logger)
         {
             this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             this.httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
-            this.hostEnvironment = hostEnvironment ?? throw new ArgumentNullException(nameof(hostEnvironment));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             this.Initialize();
@@ -62,9 +59,10 @@ namespace Husa.Uploader.Core.Services
                 if (!string.IsNullOrWhiteSpace(value))
                 {
                     applicationBuildVersion = value;
+                    return;
                 }
 
-                applicationBuildVersion = string.Empty;
+                applicationBuildVersion = VersionNotSet;
             }
         }
 
@@ -78,7 +76,7 @@ namespace Husa.Uploader.Core.Services
                 }
 
                 var timestamp = RetrieveLinkerTimestamp();
-                appBuildDate = $"Version 3: {(timestamp.HasValue ? timestamp.Value.ToString("yyyy.MM.dd-HH.mm") : "Unkown")}";
+                appBuildDate = $"Version 3: {(timestamp.HasValue ? timestamp.Value.ToString("yyyy.MM.dd-HH.mm") : VersionNotSet)}";
 
                 return appBuildDate;
             }
@@ -150,12 +148,13 @@ namespace Husa.Uploader.Core.Services
 
         public async Task<bool> UpdateAvailableAsync()
         {
-            if (this.hostEnvironment.IsDevelopment())
+            if (!this.options.FeatureFlags.IsVersionCheckEnabled)
             {
                 this.logger.LogDebug("Running the application in development mode, skipping update validation");
                 return false;
             }
 
+            this.logger.LogInformation("Checking for application updates");
             var currentVer = await this.CurrentVersionAsync();
             var serverVer = await this.ServerVersionAsync();
             return currentVer < serverVer;
@@ -179,7 +178,7 @@ namespace Husa.Uploader.Core.Services
                 throw new ClickOnceDeploymentException("Can't find entry assembly name!");
             }
 
-            ApplicationBuildVersion = this.hostEnvironment.IsDevelopment() ?
+            ApplicationBuildVersion = !this.options.FeatureFlags.IsVersionCheckEnabled ?
                 DevelopmentModeVersion :
                 CurrentClickOnceVersion?.ToString();
         }

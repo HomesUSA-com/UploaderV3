@@ -619,6 +619,12 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private void ConfigureSignalR()
         {
+            if (!this.options.Value.FeatureFlags.EnableSignalR)
+            {
+                this.logger.LogInformation("Skipping SignalR refresh dispatcher registration to {refreshInterval} seconds because it's disabled", this.options.Value.SignalRRefreshIntervalSeconds);
+                return;
+            }
+
             var dispatcherTimerSignalR = new DispatcherTimer();
             dispatcherTimerSignalR.Tick += this.ReloadSignalR;
             dispatcherTimerSignalR.Interval = TimeSpan.FromSeconds(this.options.Value.SignalRRefreshIntervalSeconds);
@@ -756,6 +762,12 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private async Task ReceiveWorkerList()
         {
+            if (!this.options.Value.FeatureFlags.EnableSignalR)
+            {
+                this.logger.LogInformation("Skipping SignalR worker list refresh because it's disabled");
+                return;
+            }
+
             if (this.signalRConnectionTriesError > MaxSignalRReconnectAttempts)
             {
                 this.SignalROnline = SignalRStatus.Failed;
@@ -923,6 +935,12 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private async Task BroadcastSelectedList(Guid? selectedId = null)
         {
+            if (!this.options.Value.FeatureFlags.EnableSignalR)
+            {
+                this.logger.LogInformation("Skipping SignalR broadcast of selected list because it's disabled");
+                return;
+            }
+
             if (this.signalRConnectionTriesError > MaxSignalRReconnectAttempts)
             {
                 this.SignalROnline = SignalRStatus.Failed;

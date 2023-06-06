@@ -54,7 +54,8 @@ namespace Husa.Uploader.Desktop.Configuration
                 .Enrich.WithMachineName()
                 .Enrich.WithProperty(nameof(ApplicationOptions.ApplicationId), options.ApplicationId);
 
-            if (environment.IsDevelopment())
+            var featureFlags = configuration.GetSection("Application:FeatureFlags").Get<FeatureFlags>();
+            if (featureFlags.EnableDetailedLogs)
             {
                 loggerConfiguration
                     .WriteTo.Trace()
@@ -62,7 +63,7 @@ namespace Husa.Uploader.Desktop.Configuration
             }
 
             loggerConfiguration.ConfigureEventLog(
-                isDevelopment: environment.IsDevelopment(),
+                isDevelopment: featureFlags.EnableDetailedLogs,
                 environmentName: environment.EnvironmentName,
                 machineName: Environment.MachineName);
 

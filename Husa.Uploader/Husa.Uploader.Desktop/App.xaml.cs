@@ -27,23 +27,17 @@ namespace Husa.Uploader.Desktop
                 {
                     configuration
                         .SetBasePath(Environment.CurrentDirectory)
-                        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-
-                    if (host.HostingEnvironment.IsDevelopment())
-                    {
-                        configuration.AddJsonFile($"appsettings.{host.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                    }
+                        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{host.HostingEnvironment.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
                     configuration.AddEnvironmentVariables();
 
-                    if (host.HostingEnvironment.IsDevelopment())
+                    var config = configuration.Build();
+                    var featureFlags = config.GetSection("Application:FeatureFlags").Get<FeatureFlags>();
+                    if (featureFlags.UseDeveloperMode)
                     {
                         configuration.AddUserSecrets<Startup>();
                     }
-                    ////else
-                    ////{
-                    ////    configuration.AddKeyVault(host);
-                    ////}
                 })
                 .UseSerilog((context, loggerConfig) =>
                 {
