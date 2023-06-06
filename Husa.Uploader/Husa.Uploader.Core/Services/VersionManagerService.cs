@@ -20,6 +20,7 @@ namespace Husa.Uploader.Core.Services
 
         private static readonly XNamespace NamespaceFirstVersion = "urn:schemas-microsoft-com:asm.v1";
         private static string appBuildDate;
+        private static string applicationBuildVersion;
 
         private readonly ApplicationOptions options;
         private readonly ILogger logger;
@@ -53,7 +54,19 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public static string ApplicationBuildVersion { get; private set; }
+        public static string ApplicationBuildVersion
+        {
+            get => applicationBuildVersion;
+            private set
+            {
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    applicationBuildVersion = value;
+                }
+
+                applicationBuildVersion = string.Empty;
+            }
+        }
 
         public static string ApplicationBuildDate
         {
@@ -159,10 +172,7 @@ namespace Husa.Uploader.Core.Services
 
         private void Initialize()
         {
-            // C:\\Users\\marco\\AppData\\Local\\Apps\\2.0\\ZZY2PRNM.JY2\\T8KWVGGK.QOK\\husa..tion_0000000000000000_0001.0000_57fc843109113fc2\\Husa.Uploader.Desktop.exe.manifest
-            const string installationPath = @"Apps\2.0\ZZY2PRNM.JY2\T8KWVGGK.QOK\husa..tion_0000000000000000_0001.0000_57fc843109113fc2";
-            var localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            this.applicationPath = Path.Combine(localAppDataPath, installationPath); // AppDomain.CurrentDomain.SetupInformation.ApplicationBase ?? string.Empty;
+            this.applicationPath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase ?? string.Empty;
             this.applicationName = Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty;
             if (string.IsNullOrEmpty(this.applicationName))
             {
@@ -171,7 +181,7 @@ namespace Husa.Uploader.Core.Services
 
             ApplicationBuildVersion = this.hostEnvironment.IsDevelopment() ?
                 DevelopmentModeVersion :
-                CurrentClickOnceVersion.ToString();
+                CurrentClickOnceVersion?.ToString();
         }
 
         private async Task<Version> ReadServerManifestAsync(Stream stream)
