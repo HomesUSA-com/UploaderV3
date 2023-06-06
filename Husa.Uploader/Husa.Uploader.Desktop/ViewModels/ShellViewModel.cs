@@ -538,9 +538,9 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        public bool CanStartEdit => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IEditListing>(this.SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartEdit => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IEditListing>(this.SelectedListingRequest.FullListing.MarketCode);
 
-        public bool CanStartUpload => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IUploadListing>(this.SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartUpload => this.SelectedListingRequest != null && this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUploadListing>(this.SelectedListingRequest.FullListing.MarketCode);
 
         public bool CanStartImageUpdate => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IUpdateImages>(this.SelectedListingRequest.FullListing.MarketCode);
 
