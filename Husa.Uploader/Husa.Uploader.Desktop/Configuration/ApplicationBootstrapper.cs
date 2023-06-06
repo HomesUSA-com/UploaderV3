@@ -90,7 +90,7 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<IListingRequestRepository, ListingRequestRepository>();
         }
 
-        public static void ConfigureServices(this IServiceCollection services) => services.AddTransient<IClickOnceUpdateService, ClickOnceUpdateService>();
+        public static void ConfigureServices(this IServiceCollection services) => services.AddSingleton<IClickOnceUpdateService, VersionManagerService>();
 
         public static void ConfigureHttpClients(this IServiceCollection services)
         {

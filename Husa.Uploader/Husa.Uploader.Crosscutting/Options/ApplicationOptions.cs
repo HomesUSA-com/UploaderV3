@@ -12,6 +12,9 @@ namespace Husa.Uploader.Crosscutting.Options
         [Required(AllowEmptyStrings = false)]
         public string SignalRURLServer { get; set; }
 
+        [Required(AllowEmptyStrings = false)]
+        public string PublishingPath { get; set; }
+
         [MinLength(length: 1)]
         public int SignalRRefreshIntervalSeconds { get; set; }
 
@@ -31,8 +34,5 @@ namespace Husa.Uploader.Crosscutting.Options
 
         [Required]
         public ServiceSettings Services { get; set; }
-
-        [Required(AllowEmptyStrings = false)]
-        public string PublishingPath { get; set; }
     }
 }

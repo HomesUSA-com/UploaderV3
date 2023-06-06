@@ -13,13 +13,13 @@ namespace Husa.Uploader.Desktop.ViewModels
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.ServiceActions;
     using Husa.Uploader.Core.Models;
+    using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Models;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Interfaces;
     using Husa.Uploader.Desktop.Commands;
-    using Husa.Uploader.Desktop.Deployment;
     using Husa.Uploader.Desktop.Factories;
     using Husa.Uploader.Desktop.Models;
     using Husa.Uploader.Desktop.Views;
@@ -42,6 +42,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private readonly IOptions<ApplicationOptions> options;
         private readonly IListingRequestRepository sqlDataLoader;
         private readonly IAuthenticationClient authenticationClient;
+        private readonly IClickOnceUpdateService clickOnceUpdateService;
         private readonly IChildViewFactory mlsIssueReportFactory;
         private readonly IAbstractFactory<LatLonInputView> locationViewFactory;
         private readonly IAbstractFactory<MlsnumInputView> mlsNumberInputFactory;
@@ -93,6 +94,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             IOptions<ApplicationOptions> options,
             IListingRequestRepository sqlDataLoader,
             IAuthenticationClient authenticationClient,
+            IClickOnceUpdateService clickOnceUpdateService,
             IChildViewFactory mlsIssueReportFactory,
             IAbstractFactory<LatLonInputView> locationViewFactory,
             IAbstractFactory<MlsnumInputView> mlsNumberInputFactory,
@@ -104,6 +106,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             this.options = options ?? throw new ArgumentNullException(nameof(options));
             this.sqlDataLoader = sqlDataLoader ?? throw new ArgumentNullException(nameof(sqlDataLoader));
             this.authenticationClient = authenticationClient ?? throw new ArgumentNullException(nameof(authenticationClient));
+            this.clickOnceUpdateService = clickOnceUpdateService ?? throw new ArgumentNullException(nameof(clickOnceUpdateService));
             this.mlsIssueReportFactory = mlsIssueReportFactory ?? throw new ArgumentNullException(nameof(mlsIssueReportFactory));
             this.locationViewFactory = locationViewFactory ?? throw new ArgumentNullException(nameof(locationViewFactory));
             this.mlsNumberInputFactory = mlsNumberInputFactory ?? throw new ArgumentNullException(nameof(mlsNumberInputFactory));
@@ -152,7 +155,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        public string ApplicationBuildDate => $"{VersionManager.ApplicationBuildDate} - {VersionManager.ApplicationBuildVersion}";
+        public string ApplicationBuildDate => $"{VersionManagerService.ApplicationBuildDate} - {VersionManagerService.ApplicationBuildVersion}";
 
         public bool UpdateAvailable
         {
@@ -644,7 +647,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         {
             if (!this.UpdateAvailable)
             {
-                Task.Run(() => this.UpdateAvailable = VersionManager.InstallUpdateSyncWithInfo());
+                Task.Run(async () => this.UpdateAvailable = await this.clickOnceUpdateService.UpdateAvailableAsync());
             }
         }
 

@@ -1,4 +1,4 @@
-namespace Husa.Uploader.Core.Services
+namespace Husa.Uploader.Crosscutting.Exceptions
 {
     using System;
     using System.Runtime.Serialization;

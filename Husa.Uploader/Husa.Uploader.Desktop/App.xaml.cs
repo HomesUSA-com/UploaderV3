@@ -8,7 +8,6 @@ namespace Husa.Uploader.Desktop
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Repositories;
     using Husa.Uploader.Desktop.Configuration;
-    using Husa.Uploader.Desktop.Deployment;
     using Husa.Uploader.Desktop.Factories;
     using Husa.Uploader.Desktop.Views;
     using Microsoft.AspNetCore.SignalR.Client;
@@ -63,7 +62,6 @@ namespace Husa.Uploader.Desktop
                     services.ConfigureNavigationServices();
                     services.ConfigureSignalR();
                     services.ConfigureServices();
-                    VersionManager.ConfigureVersionInfo(isDevelopment: host.HostingEnvironment.IsDevelopment());
                 })
                 .Build();
         }
