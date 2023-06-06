@@ -298,6 +298,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                         RoomType = room.RoomType.ToStringFromEnumMember(),
                     });
                 }
+
+                residentialListingRequest.Rooms = this.Rooms;
             }
 
             void FillOpenHouseInfo(IEnumerable<OpenHousesResponse> openHouses)

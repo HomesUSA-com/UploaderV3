@@ -434,131 +434,6 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        private static List<string> ReadRoomAndFeatures(ResidentialListingRequest listing)
-        {
-            var listRoomTypes = new List<string>();
-
-            // Atrium
-            if (!string.IsNullOrEmpty(listing.OtherRoomDesc) && listing.OtherRoomDesc.Contains("RMATR"))
-            {
-                listRoomTypes.Add("Atrium");
-            }
-
-            // Basement
-            if (!string.IsNullOrEmpty(listing.OtherRoomDesc) && listing.OtherRoomDesc.Contains("BSMNT"))
-            {
-                listRoomTypes.Add("Basement");
-            }
-
-            // Rooms
-            int numBedrooms = 0;
-            if (listing.NumBedsMainLevel.HasValue)
-            {
-                numBedrooms = listing.NumBedsMainLevel.Value;
-            }
-            else if (listing.NumBedsOtherLevels.HasValue)
-            {
-                numBedrooms = listing.NumBedsOtherLevels.Value;
-            }
-
-            if (numBedrooms >= 1)
-            {
-                listRoomTypes.Add("BEDRO");
-            }
-
-            if (numBedrooms >= 2)
-            {
-                listRoomTypes.Add("Bedroom_II");
-            }
-
-            if (numBedrooms >= 3)
-            {
-                listRoomTypes.Add("Bedroom_III");
-            }
-
-            if (numBedrooms >= 4)
-            {
-                listRoomTypes.Add("Bedroom_IV");
-            }
-
-            // Bonus Room
-
-            // Breakfast Room
-            if (!string.IsNullOrEmpty(listing.DiningRoomDesc) && listing.DiningRoomDesc.Contains("DBRKA"))
-            {
-                listRoomTypes.Add("BKFRO");
-            }
-
-            // Converted Garage
-            if (!string.IsNullOrEmpty(listing.OtherRoomDesc) && listing.OtherRoomDesc.Contains("RMCGR"))
-            {
-                listRoomTypes.Add("Converted_Garage");
-            }
-
-            // Dining Room
-            if (!string.IsNullOrEmpty(listing.DiningRoomDesc) && (listing.DiningRoomDesc.Contains("DINL") || listing.DiningRoomDesc.Contains("DFMRM")))
-            {
-                listRoomTypes.Add("DININ");
-            }
-
-            // Entry Foyer
-            if (!string.IsNullOrEmpty(listing.OtherRoomDesc) && listing.OtherRoomDesc.Contains("RMFYR"))
-            {
-                listRoomTypes.Add("Entry_Forer");
-            }
-
-            // Family Room
-            if (!string.IsNullOrEmpty(listing.OtherRoomDesc) && listing.OtherRoomDesc.Contains("RMFAM"))
-            {
-                listRoomTypes.Add("FAMIL");
-            }
-
-            // Game Room
-            if (!string.IsNullOrEmpty(listing.OtherRoomDesc) && listing.OtherRoomDesc.Contains("RMGAM"))
-            {
-                listRoomTypes.Add("GAMER");
-            }
-
-            // Great Room
-            if (!string.IsNullOrEmpty(listing.OtherRoomDesc) && listing.OtherRoomDesc.Contains("RMGRT"))
-            {
-                listRoomTypes.Add("GreatRoom");
-            }
-
-            // Gym - Gym
-
-            // Kitchen
-            listRoomTypes.Add("KITCH");
-
-            // Library
-            if (!string.IsNullOrEmpty(listing.OtherRoomDesc) && listing.OtherRoomDesc.Contains("RMLIB"))
-            {
-                listRoomTypes.Add("Library");
-            }
-
-            // Living Room
-            listRoomTypes.Add("LIVIN");
-
-            // 'Living_Room_II', 'Living Room II',
-            // 'Loft', 'Loft',
-            // 'Master_Bath', 'Master Bath',
-            // 'Master_Bath_II', 'Master Bath II',
-            // 'MSTRB', 'Master Bedroom',
-            // 'Master_Bedroom_II', 'Master Bedroom II',
-            // 'MediaRoom', 'Media Room',
-            // 'OFFIC', 'Office',
-            // 'OTHER', 'Other',
-            // 'Other_Room', 'Other Room',
-            // 'Other_Room_II', 'Other Room II',
-            // 'Other_Room_III', 'Other Room III',
-            // 'SaunaRoom', 'Sauna Room',
-            // 'UTILI', 'Utility\/Laundry ',
-            // 'Wine', 'Wine',
-            // 'WORKS', 'Workshop        ',
-            // 'GuestHse', 'Guest House'
-            return listRoomTypes;
-        }
-
         private void NavigateToNewPropertyInput()
         {
             this.uploaderClient.NavigateToUrl("https://matrix.ctxmls.com/Matrix/Input");
@@ -817,42 +692,14 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.ClickOnElement(By.LinkText("Rooms")); // click in tab Listing Information
 
-            // this.uploaderClient.Click(By.Id("m_rpPageList_ctl02_lbPageLink")); // Tab: Input | Subtab: Rooms
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer")); // Look if the footer elements has been loaded
-            // Thread.Sleep(2000);
-
-            // this.uploaderClient.WriteTextbox(By.Id("Input_193"), (listing.NumBedsMainLevel != null ? listing.NumBedsMainLevel : 0) + (listing.NumBedsOtherLevels != null ? listing.NumBedsOtherLevels : 0)); // Bedrooms
             this.uploaderClient.WriteTextbox(By.Id("Input_193"), listing.Beds); // Bedrooms
             this.uploaderClient.WriteTextbox(By.Id("Input_194"), listing.BathsFull); // Full Baths
             this.uploaderClient.WriteTextbox(By.Id("Input_195"), listing.BathsHalf); // Half Baths
+            this.uploaderClient.WriteTextbox(By.Id("Input_196"), listing.NumLivingAreas, isElementOptional: true); // Living Areas
+            this.uploaderClient.WriteTextbox(By.Id("Input_197"), listing.NumDiningAreas, isElementOptional: true); // Dining Areas
+            this.uploaderClient.WriteTextbox(By.Id("Input_555"), listing.NumberFireplaces, isElementOptional: true); // Fireplaces
 
-            // this.uploaderClient.WriteTextbox(By.Id("Input_260"), listing.NumStories); // # Stories
-
-            // this.uploaderClient.WriteTextbox(By.Id("Input_196"), listing.NumLivingAreas); // # Living Areas
-
-            // this.uploaderClient.WriteTextbox(By.Id("Input_197"), listing.NumDiningAreas); // # Dining Areas
-            List<string> optionsGarageDesc = string.IsNullOrWhiteSpace(listing.ParkingDesc) ? new List<string>() : listing.ParkingDesc.Split(',').ToList();
-            foreach (string option in optionsGarageDesc)
-            {
-                switch (option)
-                {
-                    case "NONE":
-                        // this.uploaderClient.SetSelect(By.Id("Input_198"), "0", "Garage/Carport", tabName); // Garage/Carport
-                        break;
-                }
-            }
-
-            // Market options that doesn't match
-            // 'OTHSE','Other-See Remarks',
-            // 'NONE','None'
-
-            // if (optionsGarageDesc.Count > 0)
-            // {
-            //    this.uploaderClient.SetSelect(By.Id("Input_198"), "1", "Garage/Carport", tabName); // Garage/Carport
-            // }
-
-            // var guestHouse = listing.CTXGuestHouse ? "1" : "0";
-            // this.uploaderClient.SetSelect(By.Id("Input_199"), guestHouse, "Guest House", tabName); // Garage/Carport
             if (!this.uploaderClient.UploadInformation.IsNewListing)
             {
                 var elems = this.uploaderClient.FindElements(By.CssSelector("table[id^=_Input_556__del_REPEAT] a"));
@@ -863,18 +710,8 @@ namespace Husa.Uploader.Core.Services
                 }
             }
 
-            var roomTypes = ReadRoomAndFeatures(listing);
-
-            // this.uploaderClient.Click(By.Id("m_rpPageList_ctl04_lbPageLink"));
-            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
-
-            this.uploaderClient.ClickOnElement(By.LinkText("Rooms")); // click in tab Listing Information
-            Thread.Sleep(400);
-
             var i = 0;
-
-            // foreach (var roomType in roomTypes.Where(c => c.IsValid()))
-            foreach (var roomType in roomTypes)
+            foreach (var room in listing.Rooms)
             {
                 if (i > 0)
                 {
@@ -882,50 +719,10 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(400);
                 }
 
-                // 'Atrium', 'Atrium',
-                // 'Basement', 'Basement',
-                // 'BEDRO', 'Bedroom',
-                // 'Bedroom_II', 'Bedroom II',
-                // 'Bedroom_III', 'Bedroom III',
-                // 'Bedroom_IV', 'Bedroom IV',
-                // 'BonusRoom', 'Bonus Room',
-                // 'BKFRO', 'Breakfast Room',
-                // 'Converted_Garage', 'Converted Garage',
-                // 'DININ', 'Dining Room',
-                // 'Entry_Forer', 'Entry\/Foyer',
-                // 'FAMIL', 'Family Room',
-                // 'GAMER', 'Game Room',
-                // 'GreatRoom', 'Great Room',
-                // 'Gym', 'Gym',
-                // 'KITCH', 'Kitchen',
-                // 'Library', 'Library',
-                // 'LIVIN', 'Living Room',
-                // 'Living_Room_II', 'Living Room II',
-                // 'Loft', 'Loft',
-                // 'Master_Bath', 'Master Bath',
-                // 'Master_Bath_II', 'Master Bath II',
-                // 'MSTRB', 'Master Bedroom',
-                // 'Master_Bedroom_II', 'Master Bedroom II',
-                // 'MediaRoom', 'Media Room',
-                // 'OFFIC', 'Office',
-                // 'OTHER', 'Other',
-                // 'Other_Room', 'Other Room',
-                // 'Other_Room_II', 'Other Room II',
-                // 'Other_Room_III', 'Other Room III',
-                // 'SaunaRoom', 'Sauna Room',
-                // 'UTILI', 'Utility\/Laundry ',
-                // 'Wine', 'Wine',
-                // 'WORKS', 'Workshop        ',
-                // 'GuestHse', 'Guest House'
-                this.uploaderClient.SetSelect(By.Id("_Input_190__REPEAT" + i + "_190"), roomType, "Name", tabName, true); // FieldName
+                this.uploaderClient.SetSelect(By.Id($"_Input_556__REPEAT{i}_190"), room.RoomType, "Room Type", tabName);
+                this.uploaderClient.SetSelect(By.Id($"_Input_556__REPEAT{i}_491"), room.Level, "Level", tabName, isElementOptional: true);
+                this.uploaderClient.WriteTextbox(By.Id($"_Input_556__REPEAT{i}_191"), $"{room.Length} X {room.Width}", isElementOptional: true);
                 Thread.Sleep(400);
-                // this.uploaderClient.ScrollDown();
-                // this.uploaderClient.SetSelect(By.Id("_Input_190__REPEAT" + i + "_491"), roomType.Level, true);
-                // Thread.Sleep(400);
-                // this.uploaderClient.ScrollDown();
-                // this.uploaderClient.WriteTextbox(By.Id("_Input_190__REPEAT" + i + "_191"), roomType.Length, true);
-                // Thread.Sleep(400);
-                // this.uploaderClient.ScrollDown();
                 i++;
             }
         }
