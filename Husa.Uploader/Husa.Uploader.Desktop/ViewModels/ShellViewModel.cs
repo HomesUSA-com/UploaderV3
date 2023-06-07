@@ -42,7 +42,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private readonly IOptions<ApplicationOptions> options;
         private readonly IListingRequestRepository sqlDataLoader;
         private readonly IAuthenticationClient authenticationClient;
-        private readonly IClickOnceUpdateService clickOnceUpdateService;
+        private readonly IVersionManagerService versionManagerService;
         private readonly IChildViewFactory mlsIssueReportFactory;
         private readonly IAbstractFactory<LatLonInputView> locationViewFactory;
         private readonly IAbstractFactory<MlsnumInputView> mlsNumberInputFactory;
@@ -94,7 +94,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             IOptions<ApplicationOptions> options,
             IListingRequestRepository sqlDataLoader,
             IAuthenticationClient authenticationClient,
-            IClickOnceUpdateService clickOnceUpdateService,
+            IVersionManagerService versionManagerService,
             IChildViewFactory mlsIssueReportFactory,
             IAbstractFactory<LatLonInputView> locationViewFactory,
             IAbstractFactory<MlsnumInputView> mlsNumberInputFactory,
@@ -106,13 +106,15 @@ namespace Husa.Uploader.Desktop.ViewModels
             this.options = options ?? throw new ArgumentNullException(nameof(options));
             this.sqlDataLoader = sqlDataLoader ?? throw new ArgumentNullException(nameof(sqlDataLoader));
             this.authenticationClient = authenticationClient ?? throw new ArgumentNullException(nameof(authenticationClient));
-            this.clickOnceUpdateService = clickOnceUpdateService ?? throw new ArgumentNullException(nameof(clickOnceUpdateService));
+            this.versionManagerService = versionManagerService ?? throw new ArgumentNullException(nameof(versionManagerService));
             this.mlsIssueReportFactory = mlsIssueReportFactory ?? throw new ArgumentNullException(nameof(mlsIssueReportFactory));
             this.locationViewFactory = locationViewFactory ?? throw new ArgumentNullException(nameof(locationViewFactory));
             this.mlsNumberInputFactory = mlsNumberInputFactory ?? throw new ArgumentNullException(nameof(mlsNumberInputFactory));
             this.uploadFactory = uploadFactory ?? throw new ArgumentNullException(nameof(uploadFactory));
             this.hubConnection = hubConnection ?? throw new ArgumentNullException(nameof(hubConnection));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            this.ConfigureVersionCheck();
         }
 
         private ShellViewModel()
@@ -127,7 +129,6 @@ namespace Husa.Uploader.Desktop.ViewModels
             this.CorrelationIdBox = string.Empty;
             this.LastUpdated = "Last Updated: 12/12/12 22:22:22";
             this.State = UploaderState.Ready;
-            this.ConfigureVersionCheck();
         }
 
         public int SelectedTabItem
@@ -641,9 +642,15 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private void ConfigureVersionCheck()
         {
+            if (!this.options.Value.FeatureFlags.IsVersionCheckEnabled)
+            {
+                this.logger.LogInformation("Skipping version check dispatcher registration to {refreshInterval} seconds because it's disabled", this.options.Value.VersionCheckIntervalInSeconds);
+                return;
+            }
+
             var versionCheckDispatcher = new DispatcherTimer();
             versionCheckDispatcher.Tick += this.VersionCheck;
-            versionCheckDispatcher.Interval = TimeSpan.FromMinutes(15);
+            versionCheckDispatcher.Interval = TimeSpan.FromSeconds(this.options.Value.VersionCheckIntervalInSeconds);
             versionCheckDispatcher.Start();
 
             this.VersionCheck(sender: null, e: null);
@@ -653,7 +660,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         {
             if (!this.UpdateAvailable)
             {
-                Task.Run(async () => this.UpdateAvailable = await this.clickOnceUpdateService.UpdateAvailableAsync());
+                Task.Run(async () => this.UpdateAvailable = await this.versionManagerService.CheckForUpdateAsync());
             }
         }
 

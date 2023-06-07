@@ -2,6 +2,7 @@ namespace Husa.Uploader.Desktop.Configuration
 {
     using System;
     using System.IO;
+    using System.IO.Abstractions;
     using System.Reflection;
     using Husa.Extensions.Api.Client;
     using Husa.Extensions.Api.Handlers;
@@ -91,7 +92,11 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<IListingRequestRepository, ListingRequestRepository>();
         }
 
-        public static void ConfigureServices(this IServiceCollection services) => services.AddSingleton<IClickOnceUpdateService, VersionManagerService>();
+        public static void ConfigureServices(this IServiceCollection services)
+        {
+            services.AddSingleton<IVersionManagerService, VersionManagerService>();
+            services.AddSingleton<IFileSystem, FileSystem>();
+        }
 
         public static void ConfigureHttpClients(this IServiceCollection services)
         {

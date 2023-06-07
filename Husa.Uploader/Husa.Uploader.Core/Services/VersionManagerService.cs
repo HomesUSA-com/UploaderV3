@@ -2,6 +2,7 @@ namespace Husa.Uploader.Core.Services
 {
     using System;
     using System.IO;
+    using System.IO.Abstractions;
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
@@ -12,7 +13,7 @@ namespace Husa.Uploader.Core.Services
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
 
-    public class VersionManagerService : IClickOnceUpdateService
+    public class VersionManagerService : IVersionManagerService
     {
         private const string HttpClientKey = nameof(VersionManagerService) + "_httpclient";
         private const string DevelopmentModeVersion = "Development";
@@ -25,21 +26,36 @@ namespace Husa.Uploader.Core.Services
         private readonly ApplicationOptions options;
         private readonly ILogger logger;
         private readonly IHttpClientFactory httpClientFactory;
+        private readonly IFileSystem fileProvider;
+        private readonly string applicationName;
+        private readonly string applicationPath;
 
         private Version currentVersion;
-        private string applicationName;
-        private string applicationPath;
 
         public VersionManagerService(
             IOptions<ApplicationOptions> options,
             IHttpClientFactory httpClientFactory,
+            IFileSystem fileProvider,
             ILogger<VersionManagerService> logger)
+            : this()
         {
             this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             this.httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
+            this.fileProvider = fileProvider ?? throw new ArgumentNullException(nameof(fileProvider));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
             this.Initialize();
+        }
+
+        private VersionManagerService()
+        {
+            this.applicationPath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase ?? string.Empty;
+            var appName = Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty;
+            if (string.IsNullOrEmpty(appName))
+            {
+                throw new ClickOnceDeploymentException("Can't find entry assembly name!");
+            }
+
+            this.applicationName = appName;
         }
 
         public static Version CurrentClickOnceVersion
@@ -82,7 +98,31 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public async Task<Version> CurrentVersionAsync()
+        public async Task<bool> CheckForUpdateAsync()
+        {
+            if (!this.options.FeatureFlags.IsVersionCheckEnabled)
+            {
+                this.logger.LogDebug("Running the application in development mode, skipping update validation");
+                return false;
+            }
+
+            var currentVer = await this.CurrentVersionAsync();
+            var serverVer = await this.ServerVersionAsync();
+
+            this.logger.LogInformation("The current app version is {currentVersion} and the server version is {serverVersion}", currentVer, serverVer);
+            return currentVer < serverVer;
+        }
+
+        private static DateTime? RetrieveLinkerTimestamp()
+        {
+            var assembly = Assembly.GetCallingAssembly();
+            var fileInfo = new FileInfo(assembly.Location);
+            return fileInfo.Exists ?
+                fileInfo.CreationTime.ToLocalTime() :
+                null;
+        }
+
+        private async Task<Version> CurrentVersionAsync()
         {
             if (string.IsNullOrEmpty(this.applicationName))
             {
@@ -91,26 +131,20 @@ namespace Husa.Uploader.Core.Services
 
             if (this.currentVersion is not null)
             {
+                this.logger.LogInformation("The current version is already set to {version}", this.currentVersion);
                 return this.currentVersion;
             }
 
             var path = Path.Combine(this.applicationPath!, $"{this.applicationName}.exe.manifest");
-            if (!File.Exists(path))
+            if (!this.fileProvider.File.Exists(path))
             {
                 throw new ClickOnceDeploymentException($"Can't find manifest file at path {path}");
             }
 
             this.logger.LogDebug("Looking for local manifest: {path}", path);
-
-            string fileContent = await File.ReadAllTextAsync(path);
-
+            var fileContent = await this.fileProvider.File.ReadAllTextAsync(path) ?? throw new ClickOnceDeploymentException($"Unable to read text from file in path {path}");
             var xmlDoc = XDocument.Parse(fileContent, LoadOptions.None);
-            var xmlElement = xmlDoc.Descendants(NamespaceFirstVersion + "assemblyIdentity").FirstOrDefault();
-            if (xmlElement == null)
-            {
-                throw new ClickOnceDeploymentException($"Invalid manifest document for {path}");
-            }
-
+            var xmlElement = xmlDoc.Descendants(NamespaceFirstVersion + "assemblyIdentity").FirstOrDefault() ?? throw new ClickOnceDeploymentException($"Invalid manifest document for {path}");
             var version = xmlElement.Attribute("version")?.Value;
             if (string.IsNullOrEmpty(version))
             {
@@ -122,9 +156,9 @@ namespace Husa.Uploader.Core.Services
             return this.currentVersion;
         }
 
-        public async Task<Version> ServerVersionAsync()
+        private async Task<Version> ServerVersionAsync()
         {
-            using var client = HttpClientFactory();
+            using var client = GetHttpClient();
             this.logger.LogDebug("Looking for remote manifest: {publishUrl} {applicationName}.application", this.options.PublishingPath ?? string.Empty, this.applicationName);
             await using Stream stream = await client.GetStreamAsync($"{this.applicationName}.application");
             var serverVersion = await this.ReadServerManifestAsync(stream);
@@ -132,7 +166,7 @@ namespace Husa.Uploader.Core.Services
                 serverVersion :
                 throw new ClickOnceDeploymentException("Remote version info is empty!");
 
-            HttpClient HttpClientFactory()
+            HttpClient GetHttpClient()
             {
                 this.logger.LogDebug("HttpClientFactory > returning HttpClient for url: {publishUrl}", this.options.PublishingPath);
                 var uri = new Uri(this.options.PublishingPath);
@@ -146,38 +180,8 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public async Task<bool> UpdateAvailableAsync()
-        {
-            if (!this.options.FeatureFlags.IsVersionCheckEnabled)
-            {
-                this.logger.LogDebug("Running the application in development mode, skipping update validation");
-                return false;
-            }
-
-            this.logger.LogInformation("Checking for application updates");
-            var currentVer = await this.CurrentVersionAsync();
-            var serverVer = await this.ServerVersionAsync();
-            return currentVer < serverVer;
-        }
-
-        private static DateTime? RetrieveLinkerTimestamp()
-        {
-            var assembly = Assembly.GetCallingAssembly();
-            var fileInfo = new FileInfo(assembly.Location);
-            return fileInfo.Exists ?
-                fileInfo.CreationTime.ToLocalTime() :
-                null;
-        }
-
         private void Initialize()
         {
-            this.applicationPath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase ?? string.Empty;
-            this.applicationName = Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty;
-            if (string.IsNullOrEmpty(this.applicationName))
-            {
-                throw new ClickOnceDeploymentException("Can't find entry assembly name!");
-            }
-
             ApplicationBuildVersion = !this.options.FeatureFlags.IsVersionCheckEnabled ?
                 DevelopmentModeVersion :
                 CurrentClickOnceVersion?.ToString();

@@ -15,11 +15,14 @@ namespace Husa.Uploader.Crosscutting.Options
         [Required(AllowEmptyStrings = false)]
         public string PublishingPath { get; set; }
 
-        [MinLength(length: 1)]
+        [Range(1, int.MaxValue, ErrorMessage = "Value must be greater than 0.")]
         public int SignalRRefreshIntervalSeconds { get; set; }
 
-        [MinLength(length: 45)]
+        [Range(45, int.MaxValue, ErrorMessage = "Value must be greater than 0.")]
         public int DataRefreshIntervalInSeconds { get; set; }
+
+        [Range(900, int.MaxValue, ErrorMessage = "Value must be greater than 0.")]
+        public int VersionCheckIntervalInSeconds { get; set; }
 
         [Required(AllowEmptyStrings = false)]
         public string ApplicationId { get; set; }
