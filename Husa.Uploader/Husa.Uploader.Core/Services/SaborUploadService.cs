@@ -1124,7 +1124,7 @@ namespace Husa.Uploader.Core.Services
                 // this.uploaderClient.WriteTextbox(By.Name("SCHEDULED_ACTIVATION"), "N"); //Scheduled Activation
                 this.uploaderClient.WriteTextbox(By.Name("LSTDATE"), now); // List Date
                 // this.uploaderClient.WriteTextbox(By.Name("EXPDATE"), listing.ExpiredDate);//Expiration Date
-                this.uploaderClient.WriteTextbox(By.Name("EXPDATE"), DateTime.Now.AddYears(1).Date.ToString("MM/dd/yyyy")); // Expiration Date
+                this.uploaderClient.WriteTextbox(By.Name("EXPDATE"), listing.ExpiredDate.Value.Date.ToString("MM/dd/yyyy")); // Expiration Date
             }
 
             this.uploaderClient.WriteTextbox(By.Name("PROPSDTRMS"), listing.ProposedTerms); // Proposed Terms

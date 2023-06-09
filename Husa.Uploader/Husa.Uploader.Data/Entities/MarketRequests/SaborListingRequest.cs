@@ -66,6 +66,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 SysCreatedBy = this.listingDetailResponse.SysCreatedBy,
                 SysModifiedOn = this.listingDetailResponse.SysModifiedOn,
                 SysModifiedBy = this.listingDetailResponse.SysModifiedBy,
+                ExpiredDate = this.listingDetailResponse.ExpirationDate,
             };
 
             FillSalePropertyInfo(this.listingDetailResponse.SaleProperty.SalePropertyInfo);
