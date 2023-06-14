@@ -5,11 +5,13 @@ namespace Husa.Uploader.Desktop
     using System.Threading;
     using System.Windows;
     using System.Windows.Threading;
+    using Husa.Extensions.Api.Mvc;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Repositories;
     using Husa.Uploader.Desktop.Configuration;
     using Husa.Uploader.Desktop.Factories;
     using Husa.Uploader.Desktop.Views;
+    using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.SignalR.Client;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -36,7 +38,7 @@ namespace Husa.Uploader.Desktop
                     var featureFlags = config.GetSection("Application:FeatureFlags").Get<FeatureFlags>();
                     if (featureFlags.UseDeveloperMode)
                     {
-                        configuration.AddUserSecrets<Startup>();
+                        configuration.AddUserSecrets<App>();
                     }
                 })
                 .UseSerilog((context, loggerConfig) =>
@@ -56,6 +58,10 @@ namespace Husa.Uploader.Desktop
                     services.ConfigureNavigationServices();
                     services.ConfigureSignalR();
                     services.ConfigureServices();
+
+                    services
+                        .AddOptions<JsonOptions>()
+                        .Configure<IConfiguration>((jsonOptions, config) => jsonOptions.JsonSerializerOptions.SetConfiguration());
                 })
                 .Build();
         }

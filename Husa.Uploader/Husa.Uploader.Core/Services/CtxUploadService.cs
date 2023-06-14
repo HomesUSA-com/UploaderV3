@@ -1,6 +1,7 @@
 namespace Husa.Uploader.Core.Services
 {
     using System.Threading;
+    using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Crosscutting.Enums;
@@ -16,6 +17,7 @@ namespace Husa.Uploader.Core.Services
         private readonly IUploaderClient uploaderClient;
         private readonly IMediaRepository mediaRepository;
         private readonly IListingRequestRepository sqlDataLoader;
+        private readonly IServiceSubscriptionClient serviceSubscriptionClient;
         private readonly ApplicationOptions options;
         private readonly ILogger<CtxUploadService> logger;
 
@@ -24,11 +26,13 @@ namespace Husa.Uploader.Core.Services
             IOptions<ApplicationOptions> options,
             IMediaRepository mediaRepository,
             IListingRequestRepository sqlDataLoader,
+            IServiceSubscriptionClient serviceSubscriptionClient,
             ILogger<CtxUploadService> logger)
         {
             this.uploaderClient = uploaderClient ?? throw new ArgumentNullException(nameof(uploaderClient));
             this.mediaRepository = mediaRepository ?? throw new ArgumentNullException(nameof(mediaRepository));
             this.sqlDataLoader = sqlDataLoader ?? throw new ArgumentNullException(nameof(sqlDataLoader));
+            this.serviceSubscriptionClient = serviceSubscriptionClient ?? throw new ArgumentNullException(nameof(serviceSubscriptionClient));
             this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -45,18 +49,19 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.CloseDriver();
         }
 
-        public LoginResult Login()
+        public async Task<LoginResult> Login()
         {
             var marketInfo = this.options.MarketInfo.Ctx;
+
+            var credentialsTask = this.serviceSubscriptionClient.Corporation.GetMarketReverseProspectInformation(this.CurrentMarket);
             this.uploaderClient.DeleteAllCookies();
 
             // Connect to the login page
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
-
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("loginbtn"));
-
-            this.uploaderClient.WriteTextbox(By.Name("username"), marketInfo.Username);
-            this.uploaderClient.WriteTextbox(By.Name("password"), marketInfo.Password);
+            var marketCredentials = await credentialsTask;
+            this.uploaderClient.WriteTextbox(By.Name("username"), marketCredentials.UserName);
+            this.uploaderClient.WriteTextbox(By.Name("password"), marketCredentials.Password);
             this.uploaderClient.ClickOnElementById("loginbtn");
 
             Thread.Sleep(2000);
@@ -102,7 +107,7 @@ namespace Husa.Uploader.Core.Services
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken);
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-                this.Login();
+                await this.Login();
 
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
                 if (listing.IsNewListing)
@@ -131,10 +136,10 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UploadListing()
             {
-                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket,  cancellationToken);
+                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken);
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-                this.Login();
+                await this.Login();
                 Thread.Sleep(5000);
 
                 try
@@ -188,7 +193,7 @@ namespace Husa.Uploader.Core.Services
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken);
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-                this.Login();
+                await this.Login();
 
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
                 this.NavigateToQuickEdit(listing.MLSNum);
@@ -220,7 +225,7 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
-                this.Login();
+                await this.Login();
                 this.NavigateToQuickEdit(listing.MLSNum);
 
                 // Enter Manage Photos
@@ -250,7 +255,7 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
-                this.Login();
+                await this.Login();
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
 
                 this.NavigateToQuickEdit(listing.MLSNum);
@@ -279,7 +284,7 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
 
-                this.Login();
+                await this.Login();
 
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
                 this.NavigateToQuickEdit(listing.MLSNum);
@@ -408,7 +413,7 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
-                this.Login();
+                await this.Login();
                 Thread.Sleep(1000);
 
                 this.uploaderClient.ClickOnElement(By.LinkText(@"Edit Listing Details"), shouldWait: false, waitTime: 0, isElementOptional: false);
@@ -556,9 +561,11 @@ namespace Husa.Uploader.Core.Services
             }
 
             var mainWindow = this.uploaderClient.WindowHandles.FirstOrDefault(windowHandle => windowHandle == this.uploaderClient.CurrentWindowHandle);
-            this.uploaderClient.ExecuteScript($"jQuery('#{fieldName}_TB').focus();");
-            this.uploaderClient.ExecuteScript($"jQuery('#{fieldName}_A')[0].click();");
-            this.uploaderClient.SwitchTo().Window(this.uploaderClient.WindowHandles.Last());
+            this.uploaderClient.ExecuteScript(script: $"jQuery('#{fieldName}_TB').focus();");
+            this.uploaderClient.ExecuteScript(script: $"jQuery('#{fieldName}_A')[0].click();");
+
+            this.uploaderClient.SwitchToLast();
+
             Thread.Sleep(400);
 
             char[] fieldValue = value.ToUpper().ToArray();
@@ -574,7 +581,6 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ExecuteScript(script: selectElement);
             Thread.Sleep(400);
 
-            ////this.uploaderClient.ExecuteScript("const btnSave = jQuery(\"#cboxClose > button\")[0]; jQuery(btnSave).focus(); jQuery(btnSave).click();");
             this.uploaderClient.ExecuteScript("javascript:LBI_Popup.selectItem(true);");
             this.uploaderClient.SwitchTo().Window(mainWindow);
         }

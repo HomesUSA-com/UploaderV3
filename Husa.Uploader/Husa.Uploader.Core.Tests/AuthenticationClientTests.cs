@@ -8,7 +8,9 @@ namespace Husa.Uploader.Core.Tests
     using System.Threading.Tasks;
     using Husa.Uploader.Core.Models;
     using Husa.Uploader.Core.Services;
+    using Husa.Uploader.Crosscutting.Options;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
     using Moq;
     using Moq.Protected;
@@ -17,8 +19,10 @@ namespace Husa.Uploader.Core.Tests
     public class AuthenticationClientTests
     {
         private readonly Mock<HttpMessageHandler> mockHttpMessageHandler = new();
+        private readonly Mock<ILogger<AuthenticationClient>> logger = new();
         private readonly HttpClient httpClient;
         private readonly IOptions<JsonOptions> jsonOptions;
+        private readonly IOptions<ApplicationOptions> appOptions;
 
         public AuthenticationClientTests()
         {
@@ -27,6 +31,13 @@ namespace Husa.Uploader.Core.Tests
                 BaseAddress = new Uri("http://localhost/auth/"),
             };
             this.jsonOptions = Options.Create(new JsonOptions());
+            this.appOptions = Options.Create(new ApplicationOptions
+            {
+                MarketInfo = new(),
+                Uploader = new(),
+                Services = new(),
+                FeatureFlags = new(),
+            });
         }
 
         [Fact]
@@ -94,6 +105,10 @@ namespace Husa.Uploader.Core.Tests
             Assert.Null(result);
         }
 
-        private AuthenticationClient GetSut() => new(this.httpClient, this.jsonOptions);
+        private AuthenticationClient GetSut() => new(
+            this.httpClient,
+            this.appOptions,
+            this.jsonOptions,
+            this.logger.Object);
     }
 }

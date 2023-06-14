@@ -1,13 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-	</PropertyGroup>
-
 	<ItemGroup>
-        <PackageReference Include="Husa.Extensions.Common" Version="3.8.0" />
+        <PackageReference Include="Husa.CompanyServiceManager.Client" Version="0.26.0" />
+        <PackageReference Include="Husa.Extensions.Common" Version="3.8.1" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
-		<PackageReference Include="Selenium.Support" Version="4.9.1" />
-		<PackageReference Include="Selenium.WebDriver" Version="4.9.1" />
+		<PackageReference Include="Selenium.Support" Version="4.10.0" />
+		<PackageReference Include="Selenium.WebDriver" Version="4.10.0" />
 		<PackageReference Include="System.IO.Abstractions" Version="19.2.29" />
 	</ItemGroup>
 

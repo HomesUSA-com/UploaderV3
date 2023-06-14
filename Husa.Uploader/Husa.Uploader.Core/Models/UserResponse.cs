@@ -5,6 +5,8 @@ namespace Husa.Uploader.Core.Models
 
     public class UserResponse
     {
+        public static readonly Guid SuperUserId = new Guid("8e445865-a24d-4543-a6c6-9443d048cdb9");
+
         public int UserID { get; set; }
         public string UserGUID { get; set; }
         public string FirstName { get; set; }
@@ -47,5 +49,15 @@ namespace Husa.Uploader.Core.Models
         public DateTime SysModifiedOn { get; set; }
         public DateTime SysTimestamp { get; set; }
         public int SysOwnedBy { get; set; }
+
+        public static UserResponse DefaultUser() => new()
+        {
+            UserID = 1,
+            UserGUID = SuperUserId.ToString(),
+            Username = "superadmin@homesusa.com",
+            FirstName = "Super",
+            LastName = "Admin",
+            FullName = "Super Admin",
+        };
     }
 }

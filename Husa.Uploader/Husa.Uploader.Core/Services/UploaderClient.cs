@@ -593,7 +593,9 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        // FIXME: This method needs to be reviewed and reimplemented, it's too convoluted and overly defensive
+        /// <summary>
+        /// This method needs to be reviewed and reimplemented, it's too convoluted and overly defensive.
+        /// </summary>
         public void SetMultipleCheckboxById(string id, string csvValues, string fieldLabel, string fieldSection)
         {
             string friendlyErrorMessage = "Tried to transform an element with locator: {" + id + "} into a Select when processing the values {" + csvValues + "}.";
@@ -850,6 +852,13 @@ namespace Husa.Uploader.Core.Services
         }
 
         public void SwitchTo(string windowName) => this.SwitchTo().Window(windowName);
+
+        public void SwitchToLast()
+        {
+            var totalWindows = this.WindowHandles.Count;
+            var lastWindow = this.WindowHandles[totalWindows - 1];
+            this.SwitchTo().Window(lastWindow);
+        }
 
         public void CloseDriver()
         {

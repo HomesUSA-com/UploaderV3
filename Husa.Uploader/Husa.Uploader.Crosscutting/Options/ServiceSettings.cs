@@ -1,4 +1,4 @@
-﻿namespace Husa.Uploader.Crosscutting.Options
+namespace Husa.Uploader.Crosscutting.Options
 {
     using System.ComponentModel.DataAnnotations;
 
@@ -12,5 +12,8 @@
 
         [Required(AllowEmptyStrings = false)]
         public string QuicklisterCtx { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
+        public string CompanyServicesManager { get; set; }
     }
 }

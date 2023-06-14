@@ -751,7 +751,6 @@ namespace Husa.Uploader.Desktop.ViewModels
                         var fullListings = await this.sqlDataLoader.GetListingData();
                         this.DatabaseOnline = DataBaseStatus.Online;
                         this.ProcessListingData(fullListings);
-                        // TODO : Add refresh data with workers
                         this.LastUpdated = $"Total {entity} records: [{fullListings.Count()}]. Last Updated: {DateTime.Now:MM/dd/yyyy h:mm:ss tt}";
                     }
                     catch (Exception ex)
@@ -846,10 +845,10 @@ namespace Husa.Uploader.Desktop.ViewModels
                     {
                         case Entity.Listing:
                         case Entity.Leasing:
-                            contains = uploadListItems.FirstOrDefault(uploadItem => uploadItem.RequestId.ToString() == worker.Value.SelectedItemID);
+                            contains = uploadListItems.Find(uploadItem => uploadItem.RequestId.ToString() == worker.Value.SelectedItemID);
                             break;
                         case Entity.Lot:
-                            contains = uploadListItems.FirstOrDefault(uploadItem => uploadItem.InternalLotRequestId.ToString() == worker.Value.SelectedItemID);
+                            contains = uploadListItems.Find(uploadItem => uploadItem.InternalLotRequestId.ToString() == worker.Value.SelectedItemID);
                             break;
                     }
 
@@ -912,7 +911,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                 // Verify if the user has any listing requested and if so, keep it in the interface (replacing anything coming from the DB, or adding it)
                 if (this.SelectedListingRequest != null)
                 {
-                    var uploadItem = uploadItems.FirstOrDefault(c => c.RequestId == this.SelectedListingRequest.RequestId);
+                    var uploadItem = uploadItems.Find(c => c.RequestId == this.SelectedListingRequest.RequestId);
                     if (uploadItem != null)
                     {
                         var uploadItemIndex = uploadItems.IndexOf(uploadItem);
@@ -983,10 +982,10 @@ namespace Husa.Uploader.Desktop.ViewModels
             {
                 case Entity.Listing:
                 case Entity.Leasing:
-                    selectedListingItem = availableListingsToUpload.FirstOrDefault(c => c.RequestId.ToString() == responseItem.SelectedItemID);
+                    selectedListingItem = availableListingsToUpload.Find(c => c.RequestId.ToString() == responseItem.SelectedItemID);
                     break;
                 case Entity.Lot:
-                    selectedListingItem = availableListingsToUpload.FirstOrDefault(c => c.InternalLotRequestId.ToString() == responseItem.SelectedItemID);
+                    selectedListingItem = availableListingsToUpload.Find(c => c.InternalLotRequestId.ToString() == responseItem.SelectedItemID);
                     break;
             }
 

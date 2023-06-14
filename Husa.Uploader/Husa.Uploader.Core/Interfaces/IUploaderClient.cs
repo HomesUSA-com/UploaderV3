@@ -66,9 +66,9 @@ namespace Husa.Uploader.Core.Interfaces
         void NavigateToUrl(string url);
         INavigation Navigate();
         ITargetLocator SwitchTo();
-
         void SwitchTo(string frame, bool switchToParent);
         void SwitchTo(string windowName);
+        void SwitchToLast();
 
         void CloseDriver();
         void FinalizeSession();

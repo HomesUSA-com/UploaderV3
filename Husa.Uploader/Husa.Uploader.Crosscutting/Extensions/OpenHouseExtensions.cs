@@ -17,26 +17,6 @@ namespace Husa.Uploader.Crosscutting.Extensions
             return date;
         }
 
-        public static List<DateTime> GetDatesToUpdate(int max)
-        {
-            var date = new List<DateTime>();
-
-            //// TODO: Calls method to get the System Holidays
-            var holidays = new List<DateTime>();
-            var start = DateTime.Today;
-            var end = start.AddDays(max);
-
-            for (var nextDay = start; nextDay < end; nextDay = nextDay.AddDays(1))
-            {
-                if (!holidays.Contains(nextDay))
-                {
-                    date.Add(nextDay);
-                }
-            }
-
-            return date;
-        }
-
         public static string[] GetOpenHouseTime(string time, TypeOpenHouseHour type, bool changeOHHours)
         {
             string[] aux = new string[2];

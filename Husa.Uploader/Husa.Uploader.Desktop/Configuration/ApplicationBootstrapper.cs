@@ -4,6 +4,8 @@ namespace Husa.Uploader.Desktop.Configuration
     using System.IO;
     using System.IO.Abstractions;
     using System.Reflection;
+    using Husa.CompanyServicesManager.Api.Client;
+    using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Api.Client;
     using Husa.Extensions.Api.Handlers;
     using Husa.MediaService.Client;
@@ -123,6 +125,12 @@ namespace Husa.Uploader.Desktop.Configuration
             {
                 var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
                 client.BaseAddress = new Uri(options.Services.QuicklisterCtx);
+            }).AddHttpMessageHandler<AuthTokenHandler>();
+
+            services.AddHttpClient<IServiceSubscriptionClient, ServiceSubscriptionClient>((provider, client) =>
+            {
+                var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
+                client.BaseAddress = new Uri(options.Services.CompanyServicesManager);
             }).AddHttpMessageHandler<AuthTokenHandler>();
 
             services.AddTransient<IMediaServiceClient, MediaServiceClient>();

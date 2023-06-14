@@ -9,5 +9,7 @@ namespace Husa.Uploader.Crosscutting.Options
         public bool UseDeveloperMode { get; set; }
 
         public bool EnableSignalR { get; set; }
+
+        public bool SkipAuthentication { get; set; }
     }
 }

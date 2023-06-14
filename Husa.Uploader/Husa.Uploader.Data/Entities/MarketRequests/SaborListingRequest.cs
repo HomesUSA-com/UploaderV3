@@ -34,7 +34,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
         public override MarketCode MarketCode => MarketCode.SanAntonio;
 
-        public override ResidentialListingRequest CreateFromApiResponse() => new SaborListingRequest()
+        public override ResidentialListingRequest CreateFromApiResponse() => new SaborListingRequest
         {
             ResidentialListingRequestID = this.listingResponse.Id,
             OwnerName = this.listingResponse.OwnerName,
@@ -45,7 +45,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             Subdivision = this.listingResponse.Subdivision,
             Zip = this.listingResponse.ZipCode,
             Address = this.listingResponse.Address,
-            ListPrice = (int)this.listingResponse.ListPrice,
+            ListPrice = this.listingResponse.ListPrice.HasValue ? (int)this.listingResponse.ListPrice.Value : default,
             SysCreatedOn = this.listingResponse.SysCreatedOn,
             SysCreatedBy = this.listingResponse.SysCreatedBy,
         };
