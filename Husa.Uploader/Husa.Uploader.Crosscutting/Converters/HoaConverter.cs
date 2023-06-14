@@ -13,7 +13,5 @@ namespace Husa.Uploader.Crosscutting.Converters
             HOARequirement.None => "NONE",
             _ => throw new ArgumentException(nameof(HOARequirement)),
         };
-
-        public static string TruncateHOAWebsite(this string website) => website.Length > 70 ? website[..70] : website;
     }
 }

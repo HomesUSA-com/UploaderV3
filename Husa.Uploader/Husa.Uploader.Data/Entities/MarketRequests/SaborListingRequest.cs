@@ -260,7 +260,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                         Fee = (int)hoa.Fee,
                         TransferFee = (int)hoa.TransferFee,
                         FeePaid = hoa.BillingFrequency.ToStringFromEnumMember(),
-                        Website = hoa.Website?.TruncateHOAWebsite(),
                     };
                     residentialListingRequest.HOAs.Add(hoaRequest);
                 }

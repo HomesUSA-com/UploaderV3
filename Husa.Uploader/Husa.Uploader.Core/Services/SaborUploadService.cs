@@ -1058,7 +1058,6 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WriteTextbox(By.Name(hoaAttr[1]), hoaRequest.Name); // HOA Name
                 this.uploaderClient.WriteTextbox(By.Name(hoaAttr[2]), hoaRequest.FeePaid); // Payment Frequency
                 this.uploaderClient.WriteTextbox(By.Name(hoaAttr[3]), hoaRequest.TransferFee); // Assoc Transfer Fee
-                //// this.uploaderClient.WriteTextbox(By.Name(hoaAttr[4]), hoaRequest.Website); // HOA Website
 
                 this.FillHoaPhone(hoaRequest.Phone, i);
                 i++;
