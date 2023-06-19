@@ -2,10 +2,13 @@ namespace Husa.Uploader.Data.Entities
 {
     using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities.MarketRequests;
 
     public abstract class ResidentialListingRequest
     {
+        private string agentListApptPhone;
+
         // Never remove this property
         public string WorkingBy { get; set; }
         public bool IsNewListing => string.IsNullOrWhiteSpace(this.MLSNum);
@@ -199,7 +202,7 @@ namespace Husa.Uploader.Data.Entities
         public string CompSub { get; set; }
         public string BedBathDesc { get; set; }
         public string AppointmentCall { get; set; }
-        public string AgentListApptPhone { get; set; }
+        public string AgentListApptPhone { get => this.agentListApptPhone.PhoneFormat(); set => this.agentListApptPhone = value; }
         public decimal? Acres { get; set; }
         public string ExteriorFeaturesDesc { get; set; }
         public string HasOtherFees { get; set; }
@@ -1036,36 +1039,17 @@ namespace Husa.Uploader.Data.Entities
             return fieldRemarks;
         }
 
-        private string GetExtendedRemarks()
+        private string GetApptPhone()
         {
-            var salesOfficeAddr = string.Empty;
-
-            if (this.CommunityProfileSalesOfficeStreetNum.HasValue && !string.IsNullOrWhiteSpace(this.CommunityProfileSalesOfficeStreetName))
-            {
-                string soCity = this.CommunityProfileSalesOfficeCity;
-                string soZip = this.CommunityProfileSalesOfficeZip;
-                salesOfficeAddr = " Sales Office at " +
-                                   this.CommunityProfileSalesOfficeStreetNum.Value.ToString()
-                                   + " " + this.CommunityProfileSalesOfficeStreetName
-                                   + (!string.IsNullOrWhiteSpace(soCity) ? ", " + soCity : string.Empty)
-                                   + (!string.IsNullOrWhiteSpace(soZip) ? ", " + soZip : string.Empty);
-            }
-
-            var commPhone = this.CommunityProfilePhone ?? string.Empty;
-
-            string extendedRemarks = string.Format("Call Sales Associate {0}. {1}. ", commPhone, salesOfficeAddr);
-
             var apptPhone = string.Empty;
-            var alternatePhone = string.Empty;
 
-            // apptPhone
             if (!string.IsNullOrEmpty(this.AgentListApptPhoneFromCompany))
             {
                 apptPhone = this.AgentListApptPhoneFromCompany;
             }
             else if (!string.IsNullOrEmpty(this.AgentListApptPhone))
             {
-                apptPhone = this.AgentListApptPhone;
+                return this.AgentListApptPhone;
             }
             else if (!string.IsNullOrEmpty(this.AgentListApptPhoneFromCommunityProfile))
             {
@@ -1076,7 +1060,13 @@ namespace Husa.Uploader.Data.Entities
                 apptPhone = this.OwnerPhone;
             }
 
-            // alternatePhone
+            return apptPhone.PhoneFormat();
+        }
+
+        private string GetAlternatePhone()
+        {
+            var alternatePhone = string.Empty;
+
             if (!string.IsNullOrEmpty(this.AlternatePhoneFromCompany))
             {
                 alternatePhone = this.AlternatePhoneFromCompany;
@@ -1094,16 +1084,41 @@ namespace Husa.Uploader.Data.Entities
                 alternatePhone = this.AltPhoneCommunity;
             }
 
+            return alternatePhone.PhoneFormat();
+        }
+
+        private string GetExtendedRemarks()
+        {
+            var salesOfficeAddr = string.Empty;
+
+            if (this.CommunityProfileSalesOfficeStreetNum.HasValue && !string.IsNullOrWhiteSpace(this.CommunityProfileSalesOfficeStreetName))
+            {
+                string soCity = this.CommunityProfileSalesOfficeCity;
+                string soZip = this.CommunityProfileSalesOfficeZip;
+                salesOfficeAddr = " Sales Office at " +
+                                   this.CommunityProfileSalesOfficeStreetNum.Value.ToString()
+                                   + " " + this.CommunityProfileSalesOfficeStreetName
+                                   + (!string.IsNullOrWhiteSpace(soCity) ? ", " + soCity : string.Empty)
+                                   + (!string.IsNullOrWhiteSpace(soZip) ? ", " + soZip : string.Empty);
+            }
+
+            var commPhone = this.CommunityProfilePhone ?? string.Empty;
+
+            string extendedRemarks = string.Format("Call Sales Associate {0}. {1}. ", commPhone.PhoneFormat(), salesOfficeAddr);
+
+            var apptPhone = this.GetApptPhone();
+            var alternatePhone = this.GetAlternatePhone();
+
             switch (this.MarketCode)
             {
                 case MarketCode.Austin:
                     if (!string.IsNullOrEmpty(this.OtherPhone))
                     {
-                        extendedRemarks = string.Format("Call Sales Associate {0}. ", this.OtherPhone);
+                        extendedRemarks = string.Format("Call Sales Associate {0}. ", this.OtherPhone.PhoneFormat());
 
                         if (!string.IsNullOrEmpty(this.OwnerPhone) && this.OtherPhone != this.OwnerPhone)
                         {
-                            extendedRemarks = string.Format("Call Sales Associate {0} or {1}. ", this.OtherPhone, this.OwnerPhone);
+                            extendedRemarks = string.Format("Call Sales Associate {0} or {1}. ", this.OtherPhone.PhoneFormat(), this.OwnerPhone.PhoneFormat());
                         }
                     }
 
@@ -1121,13 +1136,13 @@ namespace Husa.Uploader.Data.Entities
 
                     break;
                 case MarketCode.Houston:
-                    if (!string.IsNullOrEmpty(apptPhone) && alternatePhone != apptPhone)
+                    if (!string.IsNullOrEmpty(apptPhone))
                     {
                         extendedRemarks = string.Format("Call Sales Associate {0}. ", apptPhone);
-                        alternatePhone = this.AltPhoneCommunity;
-                        if (!string.IsNullOrEmpty(alternatePhone))
+                        var altPhone = this.AltPhoneCommunity.PhoneFormat();
+                        if (!string.IsNullOrEmpty(altPhone) && altPhone != apptPhone)
                         {
-                            extendedRemarks = string.Format("Call Sales Associate {0} or {1}. ", apptPhone, alternatePhone);
+                            extendedRemarks = string.Format("Call Sales Associate {0} or {1}. ", apptPhone, altPhone);
                         }
                     }
 
