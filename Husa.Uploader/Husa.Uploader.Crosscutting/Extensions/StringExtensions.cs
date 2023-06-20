@@ -41,8 +41,8 @@ namespace Husa.Uploader.Crosscutting.Extensions
         {
             return commissionType switch
             {
-                CommissionType.Amount => "Dollars",
-                CommissionType.Percent => "Pct",
+                CommissionType.Amount => "$",
+                CommissionType.Percent => "%",
                 _ => string.Empty,
             };
         }

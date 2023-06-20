@@ -784,20 +784,7 @@ namespace Husa.Uploader.Core.Services
 
         private void UpdatePrivateRemarksInRemarksTab(ResidentialListingRequest listing)
         {
-            var bonusMessage = string.Empty;
-            if (listing.HasAgentBonus.HasValue && listing.HasAgentBonus.Value &&
-                listing.BuyerCheckBox.HasValue && listing.BuyerCheckBox.Value)
-            {
-                bonusMessage = "Possible Bonus & Buyer Incentives; ask Builder for details. ";
-            }
-            else if (listing.HasAgentBonus.HasValue && listing.HasAgentBonus.Value)
-            {
-                bonusMessage = "Possible Bonus; ask Builder for details. ";
-            }
-            else if (listing.BuyerCheckBox.HasValue && listing.BuyerCheckBox.Value)
-            {
-                bonusMessage = "Possible Buyer Incentives; ask Builder for details. ";
-            }
+            var bonusMessage = string.IsNullOrWhiteSpace(listing.MLSNum) ? listing.GetAgentBonusRemarksMessage() : string.Empty;
 
             var realtorContactEmail = string.Empty;
             if (!string.IsNullOrEmpty(listing.ContactEmailFromCompany))

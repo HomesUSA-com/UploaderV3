@@ -417,9 +417,9 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     builtNote = string.Empty;
                 }
 
-                if (!this.PublicRemarks.Contains('~'))
+                if (string.IsNullOrWhiteSpace(this.PublicRemarks) || !this.PublicRemarks.Contains('~'))
                 {
-                    remark = (builtNote + this.PublicRemarks).RemoveSlash();
+                    remark = (builtNote + this.PublicRemarks ?? string.Empty).RemoveSlash();
                 }
                 else
                 {

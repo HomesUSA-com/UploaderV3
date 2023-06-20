@@ -152,6 +152,97 @@ namespace Husa.Uploader.Data.Tests
             Assert.Throws<ArgumentNullException>(act);
         }
 
+        [Fact]
+        public void GetAgentBonusRemarksMessage_AgentBonusOn()
+        {
+            // Arrange
+            var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
+            {
+                HasAgentBonus = true,
+                BuyerCheckBox = false,
+            };
+
+            // Act
+            var result = sut.GetAgentBonusRemarksMessage();
+
+            // Assert
+            Assert.Contains("Contact Builder for Bonus Information", result);
+        }
+
+        [Fact]
+        public void GetAgentBonusRemarksMessage_AgentBonusAndBuyerIncentiveOn()
+        {
+            // Arrange
+            var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
+            {
+                HasAgentBonus = true,
+                BuyerCheckBox = true,
+            };
+
+            // Act
+            var result = sut.GetAgentBonusRemarksMessage();
+
+            // Assert
+            Assert.Contains("Contact Builder for Bonus & Buyer Incentive Information", result);
+        }
+
+        [Fact]
+        public void GetAgentBonusRemarksMessage_BuyerIncentiveOn()
+        {
+            // Arrange
+            var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
+            {
+                HasAgentBonus = false,
+                BuyerCheckBox = true,
+            };
+
+            // Act
+            var result = sut.GetAgentBonusRemarksMessage();
+
+            // Assert
+            Assert.Contains("Contact Builder for Buyer Incentive Information", result);
+        }
+
+        [Fact]
+        public void GetAgentBonusRemarksMessage_AgentBonusWithAmountAndBuyerIncentiveOn()
+        {
+            // Arrange
+            var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
+            {
+                HasAgentBonus = false,
+                BuyerCheckBox = true,
+                HasBonusWithAmount = true,
+                AgentBonusAmount = "1",
+                CompBuyType = "%",
+            };
+
+            // Act
+            var result = sut.GetAgentBonusRemarksMessage();
+
+            // Assert
+            Assert.Contains("1% Bonus. Contact Builder for Buyer Incentive Information", result);
+        }
+
+        [Fact]
+        public void GetAgentBonusRemarksMessage_AgentBonusWithAmount()
+        {
+            // Arrange
+            var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
+            {
+                HasAgentBonus = false,
+                BuyerCheckBox = false,
+                HasBonusWithAmount = true,
+                AgentBonusAmount = "1344.7811",
+                CompBuyType = "$",
+            };
+
+            // Act
+            var result = sut.GetAgentBonusRemarksMessage();
+
+            // Assert
+            Assert.Contains("$1,344.78 Bonus", result);
+        }
+
         private static ListingSaleRequestDetailResponse GetDetailResponse(
             bool includeSaleProperty = true,
             bool includeAddress = true,

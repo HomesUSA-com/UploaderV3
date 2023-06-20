@@ -1039,6 +1039,34 @@ namespace Husa.Uploader.Data.Entities
             return fieldRemarks;
         }
 
+        public virtual string GetAgentBonusRemarksMessage()
+        {
+            var hasBuyerIncentive = this.BuyerCheckBox.HasValue && this.BuyerCheckBox.Value;
+
+            if (this.HasAgentBonus.HasValue && this.HasAgentBonus.Value)
+            {
+                return hasBuyerIncentive
+                    ? "Contact Builder for Bonus & Buyer Incentive Information."
+                    : "Contact Builder for Bonus Information.";
+            }
+
+            if (this.HasBonusWithAmount && !string.IsNullOrWhiteSpace(this.CompBuyType) && decimal.TryParse(this.AgentBonusAmount, out decimal agentBonusAmount))
+            {
+                var agentAmount = (this.CompBuyType == "$" ? string.Format("${0:n2}", agentBonusAmount) : string.Format("{0}%", agentBonusAmount)) + " Bonus.";
+
+                return hasBuyerIncentive
+                    ? agentAmount + " Contact Builder for Buyer Incentive Information."
+                    : agentAmount;
+            }
+
+            if (hasBuyerIncentive)
+            {
+                return "Contact Builder for Buyer Incentive Information.";
+            }
+
+            return string.Empty;
+        }
+
         private string GetApptPhone()
         {
             var apptPhone = string.Empty;
