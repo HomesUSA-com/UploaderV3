@@ -190,7 +190,7 @@ namespace Husa.Uploader.Core.Services
                 this.FillUtilitiesInformation(listing);
                 this.FillTaxHoaInformation(listing);
                 this.FillOfficeInformation(listing);
-                this.FillRemarksInformation(listing);
+                this.FillRemarksInformation(listing as SaborListingRequest);
 
                 if (listing.IsNewListing)
                 {
@@ -360,7 +360,7 @@ namespace Husa.Uploader.Core.Services
                     isScriptOptional: true);
 
                 this.uploaderClient.ExecuteScript("clearPicklist('MISCELANEStable');selectVals('MISCELANES');;closeDiv();");
-                this.FillRemarksInformation(listing, isCompletionUpdate: true);
+                this.FillRemarksInformation(listing as SaborListingRequest, isCompletionUpdate: true);
 
                 return UploadResult.Success;
             }
@@ -1143,18 +1143,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Name("OWNER"), listing.OwnerName); // Owner
             this.uploaderClient.WriteTextbox(By.Name("SUBAGTCOM"), entry: "0%"); // Subagent Com
             this.uploaderClient.WriteTextbox(By.Name("BUYAGTCOM"), listing.CompBuy); // Buyer Agent Com
-            if (!string.IsNullOrEmpty(listing.ApplicationFeePay))
-            {
-                this.uploaderClient.WriteTextbox(By.Name("BONUS"), listing.ApplicationFeePay
-                    .Replace(",", string.Empty)
-                    .Replace(".", string.Empty)
-                    .Replace("$", string.Empty)
-                    .Replace("%", string.Empty)); // Bonus
-            }
-            else
-            {
-                this.uploaderClient.WriteTextbox(By.Name("BONUS"), entry: string.Empty);
-            }
+            this.uploaderClient.WriteTextbox(By.Name("BONUS"), entry: listing.GetAgentBonusAmount()); // Bonus
 
             // this.uploaderClient.WriteTextbox(By.Name("BONUS"), listing.CompBuyBonus);
             this.uploaderClient.WriteTextbox(By.Name("LREAORLREB"), "NO"); // Owner LREA/LREB
@@ -1162,10 +1151,8 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Name("POT_SS_YNID"), "NO", isElementOptional: true); // Potential Short Sale
         }
 
-        private void FillRemarksInformation(ResidentialListingRequest listing, bool isCompletionUpdate = false)
+        private void FillRemarksInformation(SaborListingRequest listing, bool isCompletionUpdate = false)
         {
-            const string homeUnderConstruction = "Home is under construction. For your safety, call appt number for showings";
-
             Thread.Sleep(1000);
             this.uploaderClient.ExecuteScript(" SP('6') ");
             Thread.Sleep(2000);
@@ -1174,48 +1161,14 @@ namespace Husa.Uploader.Core.Services
             {
                 this.ClickNextButton();
 
-                var bonusMessage = string.Empty;
-                if (listing.HasAgentBonus.HasValue && listing.HasAgentBonus.Value)
-                {
-                    bonusMessage = "Contact Builder for Bonus Information. ";
-                }
-
-                if (listing.BuyerCheckBox.HasValue && listing.BuyerCheckBox.Value)
-                {
-                    bonusMessage = "Contact Builder for Buyer Incentive Information. ";
-                }
-
-                var realtorContactEmail = string.Empty;
-                if (!string.IsNullOrEmpty(listing.EmailRealtorsContact))
-                {
-                    realtorContactEmail = listing.EmailRealtorsContact;
-                }
-                else
-                {
-                    realtorContactEmail = listing.RealtorContactEmail;
-                }
-
-                realtorContactEmail =
-                    (!string.IsNullOrWhiteSpace(realtorContactEmail) &&
-                    !(bonusMessage + listing.GetPrivateRemarks()).ToLower().Contains("email contact") &&
-                    !(bonusMessage + listing.GetPrivateRemarks()).ToLower().Contains(realtorContactEmail)) ? "Email contact: " + realtorContactEmail + ". " : string.Empty;
+                var message = listing.GetAgentRemarksMessage();
 
                 Thread.Sleep(2000);
-
-                var agentBonusAmount = string.Empty;
-                var message = listing.GetPrivateRemarks(useExtendedRemarks: true, addPlanName: false) + realtorContactEmail;
-
-                var incompletedBuiltNote = string.Empty;
-                if (listing.YearBuiltDesc == "Incomplete"
-                     && !message.Contains(homeUnderConstruction))
-                {
-                    incompletedBuiltNote = $"{homeUnderConstruction}. ";
-                }
 
                 this.uploaderClient.WriteTextbox(By.Name("AGTRMRKS"), entry: string.Empty);
                 this.uploaderClient.WriteTextbox(
                     findBy: By.Name("AGTRMRKS"),
-                    entry: agentBonusAmount + bonusMessage + incompletedBuiltNote + message,
+                    entry: message,
                     isElementOptional: true); // Agent Confidential Rmrks
             }
 

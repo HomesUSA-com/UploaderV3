@@ -254,7 +254,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.OtherPhone = showingInfo.SecondShowingPhone;
                 residentialListingRequest.BuyerCheckBox = showingInfo.HasBuyerIncentive;
                 residentialListingRequest.BuyerIncentive = showingInfo.BuyersAgentCommission.DecimalToString();
-                residentialListingRequest.BuyerIncentiveDesc = showingInfo.BuyersAgentCommissionType.ToBonusType();
+                residentialListingRequest.BuyerIncentiveDesc = showingInfo.BuyersAgentCommissionType.ToStringFromEnumMember();
                 residentialListingRequest.LockboxTypeDesc = showingInfo.LockboxType?.ToStringFromEnumMember();
                 residentialListingRequest.LockboxLocDesc = showingInfo.LockboxLocation.ToStringFromEnumMembers();
                 residentialListingRequest.Showing = showingInfo.Showing.ToStringFromEnumMembers();
@@ -264,7 +264,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.HasAgentBonus = showingInfo.HasAgentBonus;
                 residentialListingRequest.HasBonusWithAmount = showingInfo.HasBonusWithAmount;
                 residentialListingRequest.AgentBonusAmount = showingInfo.AgentBonusAmount.DecimalToString();
-                residentialListingRequest.CompBuyType = showingInfo.AgentBonusAmountType.ToNullableBonusType();
+                residentialListingRequest.AgentBonusAmountType = showingInfo.AgentBonusAmountType?.ToStringFromEnumMember();
                 residentialListingRequest.CompBuyBonusExpireDate = showingInfo.BonusExpirationDate;
     }
 

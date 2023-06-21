@@ -1,7 +1,5 @@
 namespace Husa.Uploader.Crosscutting.Extensions
 {
-    using Husa.Quicklister.CTX.Domain.Enums.Entities;
-
     public static class StringExtensions
     {
         public static string RemoveSlash(this string stringWithSlashes)
@@ -25,26 +23,6 @@ namespace Husa.Uploader.Crosscutting.Extensions
             }
 
             return stringWithSlashes;
-        }
-
-        public static string ToNullableBonusType(this CommissionType? commissionType)
-        {
-            if (!commissionType.HasValue)
-            {
-                return string.Empty;
-            }
-
-            return commissionType.Value.ToBonusType();
-        }
-
-        public static string ToBonusType(this CommissionType commissionType)
-        {
-            return commissionType switch
-            {
-                CommissionType.Amount => "$",
-                CommissionType.Percent => "%",
-                _ => string.Empty,
-            };
         }
 
         public static string DecimalToString(this decimal? amount) => amount.HasValue ? ((int)amount.Value).ToString() : string.Empty;

@@ -5,6 +5,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Crosscutting.Extensions.Ctx;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Interfaces;
@@ -732,7 +733,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElement(By.LinkText("Brokerage/Showing Information")); // Brokerage/Showing Information
 
             // Brokerage
-            this.uploaderClient.SetSelect(By.Id("Input_632"), listing.BuyerIncentiveDesc, fieldLabel: "Buyer Agency $ or %", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_632"), listing.BuyerIncentiveDesc.ToCommissionType(), fieldLabel: "Buyer Agency $ or %", tabName);
             this.uploaderClient.WriteTextbox(By.Id("Input_633"), listing.BuyerIncentive); // Buyer Agency Compensation
             this.uploaderClient.WriteTextbox(By.Id("Input_635"), value: "0"); // Sub Agency Compensation (default hardcode "0")
             this.uploaderClient.SetSelect(By.Id("Input_636"), value: "Pct", fieldLabel: "Sub Agency $ or % ", tabName); // Sub Agency $ or % (default hardcode "%")

@@ -213,7 +213,7 @@ namespace Husa.Uploader.Data.Tests
                 BuyerCheckBox = true,
                 HasBonusWithAmount = true,
                 AgentBonusAmount = "1",
-                CompBuyType = "%",
+                AgentBonusAmountType = "%",
             };
 
             // Act
@@ -233,7 +233,7 @@ namespace Husa.Uploader.Data.Tests
                 BuyerCheckBox = false,
                 HasBonusWithAmount = true,
                 AgentBonusAmount = "1344.7811",
-                CompBuyType = "$",
+                AgentBonusAmountType = "$",
             };
 
             // Act

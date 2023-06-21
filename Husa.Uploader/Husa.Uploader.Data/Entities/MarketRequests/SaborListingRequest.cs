@@ -208,11 +208,16 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.TitleCo = financialInfo.TitleCompany;
                 residentialListingRequest.ProposedTerms = financialInfo.ProposedTerms.ToStringFromEnumMembers();
                 residentialListingRequest.HasMultipleHOA = financialInfo.HasMultipleHOA.ToString();
-                residentialListingRequest.AgentBonusAmount = financialInfo.AgentBonusAmount.ToString();
-                residentialListingRequest.CompBuyBonusExpireDate = financialInfo.BonusExpirationDate;
-                residentialListingRequest.BuyerIncentive = financialInfo.HasBuyerIncentive.ToString();
                 residentialListingRequest.CompBuy = financialInfo.BuyersAgentCommission?.ToString();
                 residentialListingRequest.HOA = financialInfo.HOARequirement?.ToStringFromEnumMember();
+                residentialListingRequest.HasAgentBonus = financialInfo.HasAgentBonus;
+                residentialListingRequest.HasBonusWithAmount = financialInfo.HasBonusWithAmount;
+                residentialListingRequest.AgentBonusAmount = financialInfo.AgentBonusAmount.DecimalToString();
+                residentialListingRequest.AgentBonusAmountType = financialInfo.AgentBonusAmountType.ToStringFromEnumMember();
+                residentialListingRequest.CompBuyBonusExpireDate = financialInfo.BonusExpirationDate;
+                residentialListingRequest.BuyerCheckBox = financialInfo.HasBuyerIncentive;
+                residentialListingRequest.BuyerIncentive = financialInfo.BuyersAgentCommission.DecimalToString();
+                residentialListingRequest.BuyerIncentiveDesc = financialInfo.BuyersAgentCommissionType.ToStringFromEnumMember();
             }
 
             void FillShowingInfo(ShowingResponse showingInfo)
@@ -445,6 +450,27 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     }
                 }
             }
+        }
+
+        public string GetAgentRemarksMessage()
+        {
+            const string homeUnderConstruction = "Home is under construction. For your safety, call appt number for showings";
+
+            var realtorContactEmail = !string.IsNullOrEmpty(this.EmailRealtorsContact) ? this.EmailRealtorsContact : this.RealtorContactEmail;
+            var message = this.GetPrivateRemarks(useExtendedRemarks: true, addPlanName: false);
+
+            if (!string.IsNullOrWhiteSpace(realtorContactEmail) &&
+                !message.ToLower().Contains("email contact") &&
+                !message.ToLower().Contains(realtorContactEmail))
+            {
+                message += $"Email contact: {realtorContactEmail}. ";
+            }
+
+            var bonusMessage = string.IsNullOrWhiteSpace(this.MLSNum) ? this.GetAgentBonusRemarksMessage() : string.Empty;
+            var incompletedBuiltNote = this.YearBuiltDesc == "Incomplete"
+                 && !message.Contains(homeUnderConstruction) ? $"{homeUnderConstruction}. " : string.Empty;
+
+            return bonusMessage + incompletedBuiltNote + message;
         }
 
         public override string GetPublicRemarks()
