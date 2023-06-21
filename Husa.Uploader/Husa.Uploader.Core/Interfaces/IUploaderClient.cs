@@ -22,7 +22,8 @@ namespace Husa.Uploader.Core.Interfaces
         bool WaitUntilScriptIsComplete(string script, string expectedCompletedResult, CancellationToken token = default);
         void WaitUntilElementExists(By findBy, CancellationToken token = default);
         void WaitUntilElementExists(By findBy, TimeSpan waitTime, CancellationToken token = default);
-
+        void SetImplicitWait(TimeSpan waitTime);
+        void ResetImplicitWait();
         bool IsElementPresent(By findBy, bool isVisible = false);
         bool IsElementVisible(By findBy);
 

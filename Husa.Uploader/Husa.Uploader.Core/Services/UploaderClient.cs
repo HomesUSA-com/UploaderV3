@@ -15,6 +15,7 @@ namespace Husa.Uploader.Core.Services
         private readonly WebDriverWait wait;
         private readonly IJavaScriptExecutor internalJSScript;
         private readonly ILogger<UploaderClient> logger;
+        private readonly TimeSpan defaultImplicitWait;
         private bool disposedValue;
 
         public UploaderClient(IWebDriver webDriver, ILogger<UploaderClient> logger)
@@ -24,6 +25,7 @@ namespace Husa.Uploader.Core.Services
             this.internalJSScript = (IJavaScriptExecutor)this.driver;
             this.wait = new WebDriverWait(this.driver, timeout: TimeSpan.FromSeconds(10));
             this.UploadInformation = new();
+            this.defaultImplicitWait = this.driver.Manage().Timeouts().ImplicitWait;
         }
 
         ~UploaderClient()
@@ -128,6 +130,17 @@ namespace Husa.Uploader.Core.Services
         {
             this.logger.LogInformation("Waiting for the element '{by}' to exist", findBy.ToString());
             this.wait.Until(driver => driver.FindElement(findBy), token);
+        }
+
+        public void SetImplicitWait(TimeSpan waitTime)
+        {
+            this.logger.LogInformation("Setting implicit wait by {time} ms", waitTime.TotalMilliseconds);
+            this.driver.Manage().Timeouts().ImplicitWait = waitTime;
+        }
+
+        public void ResetImplicitWait()
+        {
+            this.driver.Manage().Timeouts().ImplicitWait = this.defaultImplicitWait;
         }
 
         public bool IsElementPresent(By findBy, bool isVisible = false)
