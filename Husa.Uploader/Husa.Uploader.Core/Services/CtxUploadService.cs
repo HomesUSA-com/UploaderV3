@@ -718,7 +718,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_623"), listing.AssocName); // HOA Name
             this.uploaderClient.WriteTextbox(By.Id("Input_624"), listing.AssocFee); // HOA Amount
             this.uploaderClient.SetSelect(By.Id("Input_625"), listing.AssocFeeFrequency, fieldLabel: "HOA Term", tabName); // HOA Term
-            this.uploaderClient.WriteTextbox(By.Id("Input_626"), listing.TitleCo);  // HOA Mgmt Co
+            this.uploaderClient.WriteTextbox(By.Id("Input_626"), listing.ManagementCompany);  // HOA Mgmt Co
             this.uploaderClient.WriteTextbox(By.Id("Input_627"), listing.AssocPhone);  // HOA Phone
             this.uploaderClient.WriteTextbox(By.Id("Input_628"), listing.HoaWebsite);  // HOA Website
             this.uploaderClient.WriteTextbox(By.Id("Input_629"), listing.AssocTransferFee);  // HOA Transfer fee
