@@ -5,6 +5,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Extensions.Ctx;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
@@ -168,12 +169,6 @@ namespace Husa.Uploader.Core.Services
                 {
                     this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
                     return UploadResult.Failure;
-                }
-
-                if (listing.IsNewListing)
-                {
-                    await this.ProcessImages(listing, cancellationToken);
-                    // FinalizeInsert(listing);
                 }
 
                 return UploadResult.Success;
@@ -436,6 +431,43 @@ namespace Husa.Uploader.Core.Services
                         virtualTour.GetUnbrandedUrl());
                 }
 
+                return UploadResult.Success;
+            }
+        }
+
+        public Task<UploadResult> UpdateOpenHouse(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        {
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            return UploadOpenHouse();
+
+            async Task<UploadResult> UploadOpenHouse()
+            {
+                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken);
+                this.logger.LogInformation("Editing the information of Open House for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
+                await this.Login();
+                Thread.Sleep(5000);
+                this.NavigateToQuickEdit(listing.MLSNum);
+
+                if (!listing.OpenHouse.Any())
+                {
+                    return UploadResult.Success;
+                }
+
+                Thread.Sleep(400);
+
+                // Enter OpenHouse
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Open Houses"), cancellationToken);
+                this.uploaderClient.ClickOnElement(By.LinkText("Open Houses"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_tdValidate"), cancellationToken);
+                Thread.Sleep(3000);
+
+                this.CleanOpenHouse();
+                this.AddOpenHouses(listing);
                 return UploadResult.Success;
             }
         }
@@ -865,6 +897,60 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ClickOnElementById("m_ucDetailsView_m_btnSave");
 
                 imageOrder++;
+            }
+        }
+
+        private void CleanOpenHouse()
+        {
+            var elems = this.uploaderClient.FindElements(By.CssSelector("table[id^=_Input_349__del_REPEAT] a")).Count(c => c.Displayed);
+            this.uploaderClient.ScrollDown(3000);
+            while (elems > 1)
+            {
+                this.uploaderClient.ScrollDown();
+                var elementId = $"_Input_349__del_REPEAT{elems - 1}_";
+                this.uploaderClient.ClickOnElementById(elementId);
+                elems--;
+                Thread.Sleep(300);
+            }
+        }
+
+        private void AddOpenHouses(ResidentialListingRequest listing)
+        {
+            var index = 0;
+            Thread.Sleep(1000);
+            foreach (var openHouse in listing.OpenHouse)
+            {
+                if (index != 0)
+                {
+                    this.uploaderClient.ScrollDown();
+                    this.uploaderClient.ClickOnElementById(elementId: $"_Input_349_more");
+                    Thread.Sleep(1000);
+                }
+
+                // Date
+                this.uploaderClient.WriteTextbox(By.Id($"_Input_349__REPEAT{index}_342"), entry: openHouse.Date);
+
+                // From Time
+                this.uploaderClient.WriteTextbox(By.Id($"_Input_349__REPEAT{index}_TextBox_344"), entry: openHouse.StartTime.To12Format());
+                var fromTimeTT = openHouse.StartTime.Hours >= 12 ? 1 : 0;
+                this.uploaderClient.ClickOnElementById($"_Input_349__REPEAT{index}_RadioButtonList_344_{fromTimeTT}");
+
+                // To Time
+                this.uploaderClient.WriteTextbox(By.Id($"_Input_349__REPEAT{index}_TextBox_345"), entry: openHouse.EndTime.To12Format());
+                var endTimeTT = openHouse.EndTime.Hours >= 12 ? 1 : 0;
+                this.uploaderClient.ClickOnElementById($"_Input_349__REPEAT{index}_RadioButtonList_345_{endTimeTT}");
+
+                // Active Status
+                this.uploaderClient.SetSelect(By.Id($"_Input_349__REPEAT{index}_346"), value: Convert.ToInt32(openHouse.Active));
+
+                // Open House Type
+                var type = openHouse.Type.ToString().ToUpperInvariant();
+                this.uploaderClient.SetSelect(By.Id($"_Input_349__REPEAT{index}_347"), value: type);
+
+                // Comments
+                this.uploaderClient.WriteTextbox(By.Id($"_Input_349__REPEAT{index}_348"), entry: openHouse.Comments);
+
+                index++;
             }
         }
     }

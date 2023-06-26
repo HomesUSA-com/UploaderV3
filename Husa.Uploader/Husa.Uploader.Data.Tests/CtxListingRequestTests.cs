@@ -3,7 +3,6 @@ namespace Husa.Uploader.Data.Tests
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.CTX.Api.Contracts.Response;
     using Husa.Quicklister.CTX.Api.Contracts.Response.ListingRequest.SaleRequest;
-    using Husa.Quicklister.CTX.Api.Contracts.Response.SalePropertyDetail;
     using Husa.Quicklister.CTX.Domain.Enums;
     using Husa.Quicklister.CTX.Domain.Enums.Entities;
     using Husa.Uploader.Data.Entities.MarketRequests;
@@ -98,7 +97,7 @@ namespace Husa.Uploader.Data.Tests
                     ShowingInfo = new(),
                     SchoolsInfo = new(),
                     Rooms = new List<RoomResponse>(),
-                    OpenHouses = new List<OpenHousesResponse>(),
+                    OpenHouses = new List<OpenHouseResponse>(),
                 },
             };
 
@@ -321,7 +320,7 @@ namespace Husa.Uploader.Data.Tests
 
             if (includeOpenHouse)
             {
-                listingResponse.SaleProperty.OpenHouses = new List<OpenHousesResponse>();
+                listingResponse.SaleProperty.OpenHouses = new List<OpenHouseResponse>();
             }
 
             return listingResponse;

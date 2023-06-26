@@ -795,7 +795,7 @@ namespace Husa.Uploader.Data.Entities
 
         public string IndividualOH { get; set; }
 
-        public string AllowPendingList { get; set; }
+        public bool AllowPendingList { get; set; }
 
         public bool? FencedYard { get; set; }
 
@@ -988,6 +988,8 @@ namespace Husa.Uploader.Data.Entities
         public string AtticRoom { get; set; }
 
         public List<ResidentialListingRequestRoom> Rooms { get; set; }
+
+        public List<OpenHouseRequest> OpenHouse { get; set; }
 
         public abstract ResidentialListingRequest CreateFromApiResponse();
 

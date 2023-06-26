@@ -9,7 +9,8 @@ namespace Husa.Uploader.Core.Interfaces
         IUpdatePrice,
         IUpdateStatus,
         IUpdateCompletionDate,
-        IUpdateVirtualTour
+        IUpdateVirtualTour,
+        IUpdateOpenHouse
     {
     }
 }

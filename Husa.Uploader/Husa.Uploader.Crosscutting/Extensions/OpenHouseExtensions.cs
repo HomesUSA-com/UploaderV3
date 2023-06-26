@@ -4,6 +4,18 @@ namespace Husa.Uploader.Crosscutting.Extensions
 
     public static class OpenHouseExtensions
     {
+        public static string GetComments(bool refreshments, bool lunch)
+        {
+            var comments = refreshments ? "refreshments" : string.Empty;
+
+            if (lunch)
+            {
+                comments = string.Join(", ", comments, "lunch");
+            }
+
+            return comments;
+        }
+
         public static List<DateTime> GetNextDate(int max)
         {
             var date = new List<DateTime>();
@@ -15,6 +27,12 @@ namespace Husa.Uploader.Crosscutting.Extensions
             }
 
             return date;
+        }
+
+        public static string GetNextWeekday(DateTime startDate, DayOfWeek weekDay)
+        {
+            var daysToAdd = ((int)weekDay - (int)startDate.DayOfWeek + 7) % 7;
+            return startDate.AddDays(daysToAdd).ToString("MM/dd/yyyy");
         }
 
         public static string[] GetOpenHouseTime(string time, TypeOpenHouseHour type, bool changeOHHours)
