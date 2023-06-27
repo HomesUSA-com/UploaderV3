@@ -15,7 +15,6 @@ namespace Husa.Uploader.Core.Tests
 
         private static ApplicationOptions GetApplicationOptions() => new()
         {
-            AuthenticateServerUrl = "https://localhost/auth",
             SignalRURLServer = "https://localhost/signalr",
             DataRefreshIntervalInSeconds = 45,
             SignalRRefreshIntervalSeconds = 2,
@@ -51,6 +50,7 @@ namespace Husa.Uploader.Core.Tests
                 Media = "https://localhost/signalr",
                 QuicklisterCtx = "https://localhost/quicklister-ctx",
                 QuicklisterSabor = "https://localhost/quicklister-sabor",
+                MigrationService = "https://localhost/migration",
             },
             Uploader = new()
             {

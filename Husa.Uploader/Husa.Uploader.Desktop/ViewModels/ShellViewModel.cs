@@ -12,7 +12,6 @@ namespace Husa.Uploader.Desktop.ViewModels
     using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.ServiceActions;
-    using Husa.Uploader.Core.Models;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Models;
@@ -41,7 +40,7 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private readonly IOptions<ApplicationOptions> options;
         private readonly IListingRequestRepository sqlDataLoader;
-        private readonly IAuthenticationClient authenticationClient;
+        private readonly IAuthenticationService authenticationClient;
         private readonly IVersionManagerService versionManagerService;
         private readonly IChildViewFactory mlsIssueReportFactory;
         private readonly IAbstractFactory<LatLonInputView> locationViewFactory;
@@ -93,7 +92,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         public ShellViewModel(
             IOptions<ApplicationOptions> options,
             IListingRequestRepository sqlDataLoader,
-            IAuthenticationClient authenticationClient,
+            IAuthenticationService authenticationClient,
             IVersionManagerService versionManagerService,
             IChildViewFactory mlsIssueReportFactory,
             IAbstractFactory<LatLonInputView> locationViewFactory,
@@ -590,8 +589,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         {
             try
             {
-                var userRequest = new UserRequest(this.UserName, this.Password);
-                var userResponse = await this.authenticationClient.LoginAsync(userRequest);
+                var userResponse = await this.authenticationClient.LoginAsync(this.UserName, this.Password);
                 if (userResponse != null)
                 {
                     this.HasPermission = true;
@@ -606,7 +604,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
             catch (Exception ex)
             {
-                this.logger.LogError(ex, "Error connecting to the authentication service {serviceUrl}", this.options.Value.AuthenticateServerUrl);
+                this.logger.LogError(ex, "Error connecting to the authentication service {serviceUrl}", this.options.Value.Services.MigrationService);
                 this.ShowError(friendlyMessage: "Error connecting to authentication server.");
             }
         }

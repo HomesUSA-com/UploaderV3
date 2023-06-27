@@ -9,6 +9,7 @@ namespace Husa.Uploader.Desktop.Configuration
     using Husa.Extensions.Api.Client;
     using Husa.Extensions.Api.Handlers;
     using Husa.MediaService.Client;
+    using Husa.Migration.Api.Client;
     using Husa.Quicklister.CTX.Api.Client;
     using Husa.Quicklister.Sabor.Api.Client;
     using Husa.Uploader.Core.Interfaces;
@@ -98,15 +99,17 @@ namespace Husa.Uploader.Desktop.Configuration
         {
             services.AddSingleton<IVersionManagerService, VersionManagerService>();
             services.AddSingleton<IFileSystem, FileSystem>();
+            services.AddTransient<IAuthenticationService, AuthenticationService>();
         }
 
         public static void ConfigureHttpClients(this IServiceCollection services)
         {
             services.AddHttpClient();
-            services.AddHttpClient<IAuthenticationClient, AuthenticationClient>((provider, client) =>
+
+            services.AddHttpClient<IMigrationClient, MigrationClient>((provider, client) =>
             {
                 var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
-                client.BaseAddress = new Uri(options.AuthenticateServerUrl);
+                client.BaseAddress = new Uri(options.Services.MigrationService);
             });
 
             services.AddHttpClient<HusaClient<IMediaServiceClient>>((provider, client) =>

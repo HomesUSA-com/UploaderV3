@@ -7,9 +7,6 @@ namespace Husa.Uploader.Crosscutting.Options
         public const string Section = "Application";
 
         [Required(AllowEmptyStrings = false)]
-        public string AuthenticateServerUrl { get; set; }
-
-        [Required(AllowEmptyStrings = false)]
         public string SignalRURLServer { get; set; }
 
         [Required(AllowEmptyStrings = false)]

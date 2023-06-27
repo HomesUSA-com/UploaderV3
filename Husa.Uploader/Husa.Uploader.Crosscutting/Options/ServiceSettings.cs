@@ -15,5 +15,8 @@ namespace Husa.Uploader.Crosscutting.Options
 
         [Required(AllowEmptyStrings = false)]
         public string CompanyServicesManager { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
+        public string MigrationService { get; set; }
     }
 }
