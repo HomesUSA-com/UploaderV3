@@ -1,6 +1,7 @@
 ﻿namespace Husa.Uploader.Support
 {
     using Husa.Core.UploaderBase;
+    using Husa.Uploader.Extensions;
     using Husa.Uploader.ViewModels;
     using Husa.Uploader.ViewModels.Enum;
     using System.Collections.Generic;
@@ -16,8 +17,8 @@
                 {
                     var residentialListingRequest = new ResidentialListingRequest();
                     residentialListingRequest.ResidentialListingRequestID = listingRequest.ListingSaleId;
-                    residentialListingRequest.MarketUsername = "096651";
-                    residentialListingRequest.MarketPassword = "3C$AFu2eL";
+                    residentialListingRequest.MarketUsername = "966512";
+                    residentialListingRequest.MarketPassword = "i5Y5kw!*QV";
                     residentialListingRequest.MarketID = 8;
                     residentialListingRequest.MarketName = listingRequest.MarketUniqueId;
                     residentialListingRequest.ListPrice = (decimal)listingRequest.ListPrice;
@@ -54,12 +55,12 @@
                     //ConstructionYear
                     residentialListingRequest.Legal = listingRequest.SaleProperty.PropertyInfo.LegalDescription; //check
                     residentialListingRequest.TaxID = listingRequest.SaleProperty.PropertyInfo.TaxId;
-                    residentialListingRequest.MLSArea = listingRequest.SaleProperty.PropertyInfo.MlsArea;
+                    residentialListingRequest.MLSArea = listingRequest.SaleProperty.PropertyInfo.MlsArea?.ToString();
                     residentialListingRequest.MapscoMapBook = listingRequest.SaleProperty.PropertyInfo.MapscoGrid; // check
                     residentialListingRequest.LotDim = listingRequest.SaleProperty.PropertyInfo.LotDimension;
                     residentialListingRequest.LotSize = listingRequest.SaleProperty.PropertyInfo.LotSize;
-                    residentialListingRequest.LotDesc = listingRequest.SaleProperty.PropertyInfo.LotDescription;
-                    residentialListingRequest.Occupancy = listingRequest.SaleProperty.PropertyInfo.Occupancy;
+                    residentialListingRequest.LotDesc = listingRequest.SaleProperty.PropertyInfo.LotDescription.ToStringFromEnumMembers();
+                    residentialListingRequest.Occupancy = listingRequest.SaleProperty.PropertyInfo.Occupancy.ToStringFromEnumMembers();
                     //UpdateGeoCodes
                     residentialListingRequest.Latitude = listingRequest.SaleProperty.PropertyInfo.Latitude;
                     residentialListingRequest.Longitude = listingRequest.SaleProperty.PropertyInfo.Longitude;
@@ -81,7 +82,7 @@
                     //masterBathDescription
                     //residentialListingRequest.GarageDesc = listingRequest.SaleProperty.SpacesDimensionsInfo.GarageDescription.ToString();
                     //residentialListingRequest.ParkingDesc = listingRequest.SaleProperty.SpacesDimensionsInfo.GarageDescription.ToString();
-                    residentialListingRequest.OtherParking = listingRequest.SaleProperty.SpacesDimensionsInfo.OtherParking;
+                    residentialListingRequest.OtherParking = listingRequest.SaleProperty.SpacesDimensionsInfo.OtherParking.ToStringFromEnumMembers();
 
                     residentialListingRequest.Beds = listingRequest.SaleProperty.SpacesDimensionsInfo.NumBedrooms;
                     #endregion
@@ -207,21 +208,21 @@
 
                     #region FeaturesInfo
                     //PropertyDescription
-                    residentialListingRequest.InclusionsDesc = listingRequest.SaleProperty.FeaturesInfo.Inclusions;
+                    residentialListingRequest.InclusionsDesc = listingRequest.SaleProperty.FeaturesInfo.Inclusions.ToStringFromEnumMembers();
                     residentialListingRequest.NumFireplaces = listingRequest.SaleProperty.FeaturesInfo.Fireplaces;
-                    residentialListingRequest.FireplaceDesc = listingRequest.SaleProperty.FeaturesInfo.FireplaceDescription;
-                    residentialListingRequest.FloorsDesc = listingRequest.SaleProperty.FeaturesInfo.Floors;
-                    residentialListingRequest.WindowCoverings = listingRequest.SaleProperty.FeaturesInfo.WindowCoverings;
+                    residentialListingRequest.FireplaceDesc = listingRequest.SaleProperty.FeaturesInfo.FireplaceDescription.ToStringFromEnumMembers();
+                    residentialListingRequest.FloorsDesc = listingRequest.SaleProperty.FeaturesInfo.Floors.ToStringFromEnumMembers();
+                    residentialListingRequest.WindowCoverings = listingRequest.SaleProperty.FeaturesInfo.WindowCoverings.ToStringFromEnumMembers();
                     //HasAccessibility
-                    residentialListingRequest.AccessibilityDesc = listingRequest.SaleProperty.FeaturesInfo.Accessibility;
-                    residentialListingRequest.HousingStyleDesc = listingRequest.SaleProperty.FeaturesInfo.HousingStyle;
-                    residentialListingRequest.ExteriorFeatures = listingRequest.SaleProperty.FeaturesInfo.ExteriorFeatures;
-                    residentialListingRequest.RoofDesc = listingRequest.SaleProperty.FeaturesInfo.RoofDescription;
-                    residentialListingRequest.FoundationDesc = listingRequest.SaleProperty.FeaturesInfo.Foundation;
-                    residentialListingRequest.ExteriorDesc = listingRequest.SaleProperty.FeaturesInfo.Exterior;
+                    residentialListingRequest.AccessibilityDesc = listingRequest.SaleProperty.FeaturesInfo.Accessibility.ToStringFromEnumMembers();
+                    residentialListingRequest.HousingStyleDesc = listingRequest.SaleProperty.FeaturesInfo.HousingStyle.ToStringFromEnumMembers();
+                    residentialListingRequest.ExteriorFeatures = listingRequest.SaleProperty.FeaturesInfo.ExteriorFeatures.ToStringFromEnumMembers();
+                    residentialListingRequest.RoofDesc = listingRequest.SaleProperty.FeaturesInfo.RoofDescription.ToStringFromEnumMembers();
+                    residentialListingRequest.FoundationDesc = listingRequest.SaleProperty.FeaturesInfo.Foundation.ToStringFromEnumMembers();
+                    residentialListingRequest.ExteriorDesc = listingRequest.SaleProperty.FeaturesInfo.Exterior.ToStringFromEnumMembers();
                     residentialListingRequest.HasPool = listingRequest.SaleProperty.FeaturesInfo.HasPrivatePool;
-                    residentialListingRequest.PoolDesc = listingRequest.SaleProperty.FeaturesInfo.PrivatePool;
-                    residentialListingRequest.FacesDesc = listingRequest.SaleProperty.FeaturesInfo.HomeFaces; //check
+                    residentialListingRequest.PoolDesc = listingRequest.SaleProperty.FeaturesInfo.PrivatePool.ToStringFromEnumMembers();
+                    residentialListingRequest.FacesDesc = listingRequest.SaleProperty.FeaturesInfo.HomeFaces.ToStringFromEnumMembers(); //check
                     residentialListingRequest.SupElectricity = listingRequest.SaleProperty.FeaturesInfo.SupplierElectricity;
                     residentialListingRequest.SupWater = listingRequest.SaleProperty.FeaturesInfo.SupplierWater;
                     residentialListingRequest.SupGarbage = listingRequest.SaleProperty.FeaturesInfo.SupplierGarbage;
@@ -229,13 +230,13 @@
                     residentialListingRequest.SupGas = listingRequest.SaleProperty.FeaturesInfo.SupplierGas;
                     residentialListingRequest.SupSewer = listingRequest.SaleProperty.FeaturesInfo.SupplierSewer;
                     residentialListingRequest.SupOther = listingRequest.SaleProperty.FeaturesInfo.SupplierOther;
-                    residentialListingRequest.HeatSystemDesc = listingRequest.SaleProperty.FeaturesInfo.HeatSystem;
-                    residentialListingRequest.CoolSystemDesc = listingRequest.SaleProperty.FeaturesInfo.CoolingSystem;
-                    residentialListingRequest.HeatingFuel = listingRequest.SaleProperty.FeaturesInfo.HeatingFuel;
-                    residentialListingRequest.WaterAccessDesc = listingRequest.SaleProperty.FeaturesInfo.WaterSewer; //check
-                    residentialListingRequest.GreenCerts = listingRequest.SaleProperty.FeaturesInfo.GreenCertification;
-                    residentialListingRequest.EnergyDesc = listingRequest.SaleProperty.FeaturesInfo.EnergyFeatures; //check
-                    residentialListingRequest.GreenFeatures = listingRequest.SaleProperty.FeaturesInfo.GreenFeatures;
+                    residentialListingRequest.HeatSystemDesc = listingRequest.SaleProperty.FeaturesInfo.HeatSystem.ToStringFromEnumMembers();
+                    residentialListingRequest.CoolSystemDesc = listingRequest.SaleProperty.FeaturesInfo.CoolingSystem.ToStringFromEnumMembers();  
+                    residentialListingRequest.HeatingFuel = listingRequest.SaleProperty.FeaturesInfo.HeatingFuel.ToStringFromEnumMembers();
+                    residentialListingRequest.WaterAccessDesc = listingRequest.SaleProperty.FeaturesInfo.WaterSewer.ToStringFromEnumMembers(); //check
+                    residentialListingRequest.GreenCerts = listingRequest.SaleProperty.FeaturesInfo.GreenCertification.ToStringFromEnumMembers();
+                    residentialListingRequest.EnergyDesc = listingRequest.SaleProperty.FeaturesInfo.EnergyFeatures.ToStringFromEnumMembers(); //check
+                    residentialListingRequest.GreenFeatures = listingRequest.SaleProperty.FeaturesInfo.GreenFeatures.ToStringFromEnumMembers();
                     //residentialListingRequest.CommonFeatures = listingRequest.SaleProperty.FeaturesInfo.NeighborhoodAmenities; //check
                                                                                                                                //lotImprovements
                     #endregion
@@ -245,7 +246,7 @@
                     residentialListingRequest.TaxYear = listingRequest.SaleProperty.FinancialInfo.TaxYear;
                     residentialListingRequest.IsMultiParcel = listingRequest.SaleProperty.FinancialInfo.IsMultipleTaxed.ToString(); //check
                     residentialListingRequest.TitleCo = listingRequest.SaleProperty.FinancialInfo.TitleCompany;
-                    residentialListingRequest.PROPSDTRMS = listingRequest.SaleProperty.FinancialInfo.ProposedTerms;
+                    residentialListingRequest.PROPSDTRMS = listingRequest.SaleProperty.FinancialInfo.ProposedTerms.ToStringFromEnumMembers();
                     //hoaRequirement
                     residentialListingRequest.HasMultipleHOA = listingRequest.SaleProperty.FinancialInfo.HasMultipleHOA.ToString();
                     //NumHOA

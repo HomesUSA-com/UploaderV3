@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Husa.Uploader.Desktop": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

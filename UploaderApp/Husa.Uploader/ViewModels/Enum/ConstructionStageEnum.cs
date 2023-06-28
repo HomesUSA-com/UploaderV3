@@ -7,9 +7,9 @@
     [JsonConverter(typeof(StringEnumConverter))]
     public enum ConstructionStageEnum
     {
-        [EnumMember(Value = "NCC")]
+        [EnumMember(Value = "COMPL")]
         Complete,
-        [EnumMember(Value = "NCI")]
+        [EnumMember(Value = "INCOM")]
         Incomplete,
         [EnumMember(Value = "PREOWN")]
         Preowned,

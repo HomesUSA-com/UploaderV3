@@ -1,0 +1,83 @@
+pr:
+  branches:
+    include:
+    - develop
+    - release/*
+    - hotfix/*
+    - master
+    
+trigger:
+  - develop
+  - release/*
+  - hotfix/*
+  - master
+
+pool:
+  vmImage: windows-latest
+
+variables:
+  chromeDriverVersion: '113.0.5672.63'
+  revisionNumber: $[counter('revisions', 35)]
+  isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
+  projectDirectory: '$(Build.SourcesDirectory)\Husa.Uploader\Husa.Uploader.Desktop'
+
+steps:
+- task: PowerShell@2
+  displayName: 'Download ChromeDriver'
+  inputs:
+    filePath: '$(Build.SourcesDirectory)\Husa.Uploader\Scripts\DownloadChromeDriver.ps1'
+    arguments: '-version "$(chromeDriverVersion)" -path "$(projectDirectory)"'
+
+- task: PowerShell@2
+  displayName: 'Update HTML with Version'
+  inputs:
+    filePath: '$(Build.SourcesDirectory)\Husa.Uploader\Scripts\UpdatePublishAppVersion.ps1'
+    arguments: '-revision "$(revisionNumber)" -csprojPath "$(projectDirectory)\Husa.Uploader.Desktop.csproj" -htmlFilePath "$(projectDirectory)\Deployment\Publish.html" -destinationFilePath "$(build.artifactstagingdirectory)"'
+
+- task: PowerShell@2
+  displayName: 'Update PublishDir in publish profile'
+  inputs:
+    filePath: '$(Build.SourcesDirectory)\Husa.Uploader\Scripts\UpdatePublishProfileDirectory.ps1'
+    arguments: '-publishDir "$(build.artifactstagingdirectory)" -publishProfilePath "$(projectDirectory)\Properties\PublishProfiles\ClickOnceProfile.pubxml"'
+
+- task: DotNetCoreCLI@2 
+  displayName: 'dotnet restore'
+  inputs:
+    command: restore
+    projects: '**/Husa.Uploader/Husa.Uploader.sln'
+    restoreArguments: '/property:Configuration=Release'
+    feedsToUse: 'select'
+    vstsFeed: 'f820f957-6781-4cd6-b5f5-e720c189507f/891ce0ed-37b7-4336-b1fe-079c0525a171'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build'
+  inputs:
+    projects: '**/Husa.Uploader/Husa.Uploader.sln'
+    arguments: '--configuration Release --no-restore'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet test'
+  continueOnError: false
+  inputs:
+    command: test
+    projects: '**/Husa.Uploader/Husa.Uploader.sln'
+    arguments: '--configuration Release --no-build --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura --logger trx'
+    publishTestResults: true
+
+- task: MSBuild@1
+  condition: ne(variables.isPullRequest, true)
+  displayName: 'publish with ClickOnce'
+  inputs:
+    solution: '**/Husa.Uploader.Desktop/Husa.Uploader.Desktop.csproj'
+    msbuildArguments: '/target:Publish /p:ApplicationRevision=$(revisionNumber) /P:PublishProfile=$(projectDirectory)\Properties\PublishProfiles\ClickOnceProfile.pubxml'
+    platform: 'AnyCPU'
+    configuration: 'Release'
+    logFileVerbosity: 'detailed'
+
+- task: PublishBuildArtifacts@1
+  condition: ne(variables.isPullRequest, true)
+  displayName: 'publish Artifact: drop'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'

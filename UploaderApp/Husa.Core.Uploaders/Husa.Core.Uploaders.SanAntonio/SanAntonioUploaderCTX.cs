@@ -27,8 +27,8 @@ namespace Husa.Core.Uploaders.SanAntonio
             // UP-74
             if (listing.MarketName == "San Antonio CTX")
             {
-                listing.MarketUsername = "306362";
-                listing.MarketPassword = "1232";
+                listing.MarketUsername = "966512";
+                listing.MarketPassword = "i5Y5kw!*QV";
 
                 return true;
             }
@@ -680,8 +680,8 @@ namespace Husa.Core.Uploaders.SanAntonio
             {
                 var mainWindow = driver.WindowHandles.FirstOrDefault(c => c == driver.CurrentWindowHandle);
 
-                driver.ExecuteScript("jQuery('#" + fieldName + "_TB').focus();");
-                driver.ExecuteScript("jQuery('#" + fieldName + "_A')[0].click();");
+                driver.ExecuteScript(script: "jQuery('#" + fieldName + "_TB').focus();");
+                driver.ExecuteScript(script: "jQuery('#" + fieldName + "_A')[0].click();");
                 driver.SwitchTo().Window(driver.WindowHandles.Last());
                 Thread.Sleep(400);
 
@@ -694,10 +694,10 @@ namespace Husa.Core.Uploaders.SanAntonio
                 }
                 Thread.Sleep(400);
 
-                driver.ExecuteScript("jQuery(\"li[title=^'"+value+"'])");
+                driver.ExecuteScript(script: "jQuery('li[title=^'" + value+"']')");
                 Thread.Sleep(400);
 
-                driver.ExecuteScript("let btnSave = jQuery(\"#cboxClose > button\")[0]; jQuery(btnSave).focus(); jQuery(btnSave).click();");
+                driver.ExecuteScript(script: "let btnSave = jQuery('#cboxClose > button')[0]; jQuery(btnSave).focus(); jQuery(btnSave).click();");
 
                 driver.SwitchTo().Window(mainWindow);
             }

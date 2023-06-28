@@ -1,6 +1,8 @@
 ﻿namespace Husa.Uploader.ViewModels.ListingRequestSaleSubClass
 {
+    using Husa.Uploader.ViewModels.Enum;
     using System;
+    using System.Collections.Generic;
 
     public class FinancialInfo
     {
@@ -26,7 +28,7 @@
 
         public string TitleCompany { get; set; }
 
-        public string ProposedTerms { get; set; }
+        public ICollection<ProposedTerms> ProposedTerms { get; set; }
 
         public string HOARequirement { get; set; }
 

@@ -858,7 +858,7 @@ namespace Husa.Core.Uploaders.SanAntonio
             else
                 driver.WriteTextbox(By.Name("POOLSPA"), "NONE");
 
-            driver.WriteTextbox(By.Name("EXTERRFTRS"), listing.ExteriorDesc, true);//Exterior Features
+            driver.WriteTextbox(By.Name("EXTERRFTRS"), listing.ExteriorFeatures, true);//Exterior Features
             driver.FindElement(By.Name("EXTERRFTRS")).SendKeys(Keys.Tab);
             Thread.Sleep(500);
 

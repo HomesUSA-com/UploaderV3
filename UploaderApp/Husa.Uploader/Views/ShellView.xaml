@@ -226,15 +226,16 @@
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="{x:Type ListViewItem}">
-                                                <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" 
-                                        BorderThickness="{TemplateBinding BorderThickness}" 
-                                        Background="{TemplateBinding Background}" 
-                                        Padding="{TemplateBinding Padding}"
-                                        SnapsToDevicePixels="true">
+                                                <Border x:Name="Bd"
+                                                        BorderBrush="{TemplateBinding BorderBrush}" 
+                                                        BorderThickness="{TemplateBinding BorderThickness}" 
+                                                        Background="{TemplateBinding Background}" 
+                                                        Padding="{TemplateBinding Padding}"
+                                                        SnapsToDevicePixels="true">
                                                     <GridViewRowPresenter 
-                                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
-                                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                                                 </Border>
                                             </ControlTemplate>
                                         </Setter.Value>
