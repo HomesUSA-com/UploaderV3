@@ -157,6 +157,7 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
                     }
 
+                    this.FillStatusInformation(listing);
                     this.FillListingInformation(listing);
                     this.FillRooms(listing);
                     this.FillFeatures(listing);
@@ -499,6 +500,11 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElement(By.Id("m_lbEdit")); // "Modify button"
         }
 
+        private void FillStatusInformation(ResidentialListingRequest listing)
+        {
+            this.uploaderClient.WriteTextbox(By.Id("Input_778"), listing.ExpectedActiveDate, isElementOptional: true);
+        }
+
         private void FillListingInformation(ResidentialListingRequest listing)
         {
             const string tabName = "Listing Information";
@@ -532,9 +538,9 @@ namespace Husa.Uploader.Core.Services
             this.FillFieldSingleOption("Input_535", listing.SchoolDistrict);
             this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(3000));
             this.uploaderClient.SetSelect(By.Id("Input_658"), listing.SchoolName1, fieldLabel: "Elementary", tabName, isElementOptional: true); // Elementary School
+            this.uploaderClient.ResetImplicitWait();
             this.uploaderClient.SetSelect(By.Id("Input_659"), listing.SchoolName2, fieldLabel: "Middle", tabName, isElementOptional: true); // Middle School
             this.uploaderClient.SetSelect(By.Id("Input_660"), listing.SchoolName3, fieldLabel: "High", tabName, isElementOptional: true); // High School
-            this.uploaderClient.ResetImplicitWait();
 
             this.SetLongitudeAndLatitudeValues(listing);
             this.uploaderClient.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
@@ -648,13 +654,15 @@ namespace Husa.Uploader.Core.Services
                 if (i > 0)
                 {
                     this.uploaderClient.ClickOnElement(By.Id("_Input_556_more"));
-                    Thread.Sleep(400);
+                    this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(400));
                 }
 
+                var roomType = $"_Input_556__REPEAT{i}_190";
                 this.uploaderClient.SetSelect(By.Id($"_Input_556__REPEAT{i}_190"), room.RoomType, "Room Type", tabName);
+                this.uploaderClient.ResetImplicitWait();
                 this.uploaderClient.SetSelect(By.Id($"_Input_556__REPEAT{i}_491"), room.Level, "Level", tabName, isElementOptional: true);
                 this.uploaderClient.WriteTextbox(By.Id($"_Input_556__REPEAT{i}_191"), $"{room.Length} X {room.Width}", isElementOptional: true);
-                Thread.Sleep(400);
+                this.uploaderClient.ScrollDownToElementHTML(roomType);
                 i++;
             }
         }

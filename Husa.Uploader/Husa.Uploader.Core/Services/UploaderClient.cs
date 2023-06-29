@@ -799,6 +799,12 @@ namespace Husa.Uploader.Core.Services
             this.ExecuteScript(scrollDownToElementScript);
         }
 
+        public void ScrollDownToElementHTML(string elementId)
+        {
+            var scrollDownToElementScript = this.FindElementById(elementId);
+            this.ExecuteScript("arguments[0].scrollIntoView(true);", args: scrollDownToElementScript);
+        }
+
         public object ExecuteScript(string script, bool isScriptOptional = false, params object[] args)
         {
             this.logger.LogInformation("Executing script '{script}'", script);

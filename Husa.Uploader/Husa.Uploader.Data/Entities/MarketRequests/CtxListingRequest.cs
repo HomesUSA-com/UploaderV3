@@ -77,6 +77,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 SysCreatedBy = this.listingDetailResponse.SysCreatedBy,
                 SysModifiedOn = this.listingDetailResponse.SysModifiedOn,
                 SysModifiedBy = this.listingDetailResponse.SysModifiedBy,
+                ExpectedActiveDate = DateTime.Now.ToString("MM/dd/yy"),
             };
 
             FillSalePropertyInfo(this.listingDetailResponse.SaleProperty.SalePropertyInfo);

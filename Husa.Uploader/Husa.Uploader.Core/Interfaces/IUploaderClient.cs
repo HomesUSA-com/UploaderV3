@@ -60,6 +60,7 @@ namespace Husa.Uploader.Core.Interfaces
         void ScrollDown(int pixels = 500);
         void ScrollDownPosition(int pixels = 500);
         void ScrollDownToElement(string elementId, int pixels, bool navigateToParent = false);
+        void ScrollDownToElementHTML(string elementId);
 
         object ExecuteScript(string script, bool isScriptOptional = false, params object[] args);
         object ExecuteScriptAsync(string script, bool isScriptOptional = false, params object[] args);
