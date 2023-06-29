@@ -87,6 +87,7 @@ namespace Husa.Uploader.Data.Entities
         public string ListOninternetDesc { get; set; }
         public DateTime? ListDate { get; set; }
         public DateTime? ExpiredDate { get; set; }
+        public string ExpectedActiveDate { get; set; }
         public string Legal { get; set; }
         public string LaundryLocDesc { get; set; }
         public string KitchenDesc { get; set; }
