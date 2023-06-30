@@ -16,10 +16,16 @@ pool:
   vmImage: windows-latest
 
 variables:
-  chromeDriverVersion: '113.0.5672.63'
-  revisionNumber: $[counter('revisions', 35)]
-  isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
-  projectDirectory: '$(Build.SourcesDirectory)\Husa.Uploader\Husa.Uploader.Desktop'
+- name: chromeDriverVersion
+  value: '113.0.5672.63'
+- name: revisionNumber
+  value: $[counter('revisions', 35)]
+- name: isPullRequest
+  value: $[eq(variables['Build.Reason'], 'PullRequest')]
+- name: isManual
+  value: $[eq(variables['Build.Reason'], 'Manual')]
+- name: projectDirectory
+  value: '$(Build.SourcesDirectory)\Husa.Uploader\Husa.Uploader.Desktop'
 
 steps:
 - task: PowerShell@2
@@ -27,6 +33,13 @@ steps:
   inputs:
     filePath: '$(Build.SourcesDirectory)\Husa.Uploader\Scripts\DownloadChromeDriver.ps1'
     arguments: '-version "$(chromeDriverVersion)" -path "$(projectDirectory)"'
+
+- task: FileTransform@1
+  displayName: 'File Transform: appsettings.json'
+  inputs:
+    folderPath: 'Husa.Uploader/Husa.Uploader.Desktop/'
+    fileType: json
+    targetFiles: '**/appsettings.json'
 
 - task: PowerShell@2
   displayName: 'Update HTML with Version'
@@ -79,5 +92,19 @@ steps:
   displayName: 'publish Artifact: drop'
   inputs:
     PathtoPublish: '$(build.artifactstagingdirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      $variable = "$(Build.Reason)"
+      $variable | Out-File $(Build.ArtifactStagingDirectory)\buildreason.txt
+      Get-Content $(Build.ArtifactStagingDirectory)\buildreason.txt
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
     publishLocation: 'Container'
