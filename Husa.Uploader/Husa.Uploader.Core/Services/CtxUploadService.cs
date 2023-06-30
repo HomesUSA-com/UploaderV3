@@ -9,6 +9,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Crosscutting.Extensions.Ctx;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
@@ -802,7 +803,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetSelect(By.Id("Input_147"), value: "1", fieldLabel: "Allow Comment", tabName); // Allow Comment (default hardcode "Yes")
 
             this.UpdatePublicRemarksInRemarksTab(listing); // Public Remarks
-            this.UpdatePrivateRemarksInRemarksTab(listing); // Agent Remarks
+            this.UpdatePrivateRemarksInRemarksTab(listing as CtxListingRequest); // Agent Remarks
         }
 
         private void UpdateYearBuiltDescriptionInGeneralTab(ResidentialListingRequest listing)
@@ -822,7 +823,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_142"), listing.Directions); // Syndication Remarks
         }
 
-        private void UpdatePrivateRemarksInRemarksTab(ResidentialListingRequest listing)
+        private void UpdatePrivateRemarksInRemarksTab(CtxListingRequest listing)
         {
             var bonusMessage = string.IsNullOrWhiteSpace(listing.MLSNum) ? listing.GetAgentBonusRemarksMessage() : string.Empty;
 

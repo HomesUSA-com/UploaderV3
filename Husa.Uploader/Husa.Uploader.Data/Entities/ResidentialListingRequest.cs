@@ -1066,15 +1066,6 @@ namespace Husa.Uploader.Data.Entities
                     : "Contact Builder for Bonus Information. ";
             }
 
-            var agentBonusAmount = this.GetAgentBonusAmount();
-            if (!string.IsNullOrWhiteSpace(agentBonusAmount))
-            {
-                var agentAmount = agentBonusAmount + " Bonus. ";
-                return hasBuyerIncentive
-                    ? agentAmount + "Contact Builder for Buyer Incentive Information. "
-                    : agentAmount;
-            }
-
             if (hasBuyerIncentive)
             {
                 return "Contact Builder for Buyer Incentive Information. ";
