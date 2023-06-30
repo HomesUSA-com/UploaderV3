@@ -100,7 +100,7 @@ namespace Husa.Uploader.Data.Tests
                     ShowingInfo = new(),
                     SpacesDimensionsInfo = new(),
                     Hoas = new List<SaborResponseContracts.SalePropertyDetail.HoaResponse>(),
-                    OpenHouses = new List<SaborResponseContracts.SalePropertyDetail.OpenHousesResponse>(),
+                    OpenHouses = new List<SaborResponseContracts.OpenHouseResponse>(),
                     Rooms = new List<SaborResponseContracts.RoomResponse>(),
                 },
             };

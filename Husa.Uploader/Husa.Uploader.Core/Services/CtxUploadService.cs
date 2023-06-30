@@ -526,7 +526,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetSelect(By.Id("Input_115"), listing.County, "County", tabName); // County
             this.uploaderClient.WriteTextbox(By.Id("Input_396"), listing.Subdivision); // Subdivision
             this.uploaderClient.WriteTextbox(By.Id("Input_528"), listing.Legal); // Legal Description
-            this.uploaderClient.WriteTextbox(By.Id("Input_529"), listing.TaxID); // Property ID
+            this.uploaderClient.WriteTextbox(By.Id("Input_529"), listing.TaxID == "NA" ? $"{listing.StreetNum}{listing.StreetName}" : listing.TaxID); // Property ID
             this.uploaderClient.WriteTextbox(By.Id("Input_766"), listing.GeographicID); // Geo ID
             this.uploaderClient.SetSelect(By.Id("Input_530"), value: "NO", fieldLabel: "FEMA Flood Plain", tabName); // FEMA Flood Plain
             this.uploaderClient.SetSelect(By.Id("Input_531"), value: "NO", fieldLabel: "Residential Flooded", tabName); // Residential Flooded

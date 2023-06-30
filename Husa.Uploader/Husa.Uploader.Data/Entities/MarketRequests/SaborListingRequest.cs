@@ -3,6 +3,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
     using System.Collections.Generic;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Quicklister.Sabor.Api.Contracts.Response;
     using Husa.Quicklister.Sabor.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.Sabor.Api.Contracts.Response.SalePropertyDetail;
@@ -393,7 +394,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 }
             }
 
-            void FillOpenHouseInfo(IEnumerable<OpenHousesResponse> openHouses)
+            void FillOpenHouseInfo(IEnumerable<OpenHouseResponse> openHouses)
             {
                 if (openHouses == null || !openHouses.Any())
                 {
