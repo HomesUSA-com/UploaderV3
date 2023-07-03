@@ -998,6 +998,8 @@ namespace Husa.Uploader.Data.Entities
 
         public abstract string GetPublicRemarks();
 
+        public abstract string GetBuyerAgentComp(string compBuy, string compBuyType);
+
         public UploadListingItem AsUploadItem(
             string builderName,
             string brokerOffice,

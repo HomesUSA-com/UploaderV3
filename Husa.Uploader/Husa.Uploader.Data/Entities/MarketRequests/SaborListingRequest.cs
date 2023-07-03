@@ -210,6 +210,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.ProposedTerms = financialInfo.ProposedTerms.ToStringFromEnumMembers();
                 residentialListingRequest.HasMultipleHOA = financialInfo.HasMultipleHOA.ToString();
                 residentialListingRequest.CompBuy = financialInfo.BuyersAgentCommission?.ToString();
+                residentialListingRequest.CompBuyType = financialInfo.BuyersAgentCommissionType.ToStringFromEnumMember();
                 residentialListingRequest.HOA = financialInfo.HOARequirement?.ToStringFromEnumMember();
                 residentialListingRequest.HasAgentBonus = financialInfo.HasAgentBonus;
                 residentialListingRequest.HasBonusWithAmount = financialInfo.HasBonusWithAmount;
@@ -538,6 +539,24 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     _ => "January",
                 };
             }
+        }
+
+        public override string GetBuyerAgentComp(string compBuy, string compBuyType)
+        {
+            // Remove zeroes after decimal point if available.
+            if (compBuy.Contains('.'))
+            {
+                compBuy = compBuy.TrimEnd('0').TrimEnd('.');
+            }
+
+            string formattedNumber = compBuyType switch
+            {
+                "%" => compBuy + "%",
+                "$" => "$" + compBuy,
+                _ => throw new ArgumentException("Invalid type."),
+            };
+
+            return formattedNumber;
         }
     }
 }

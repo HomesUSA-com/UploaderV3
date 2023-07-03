@@ -330,6 +330,11 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             }
         }
 
+        public override string GetBuyerAgentComp(string compBuy, string compBuyType)
+        {
+            throw new NotImplementedException();
+        }
+
         public override string GetAgentBonusRemarksMessage()
         {
             var agentBonusAmount = this.GetAgentBonusAmount();
