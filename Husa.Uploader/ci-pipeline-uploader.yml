@@ -15,6 +15,17 @@ trigger:
 pool:
   vmImage: windows-latest
 
+parameters:
+- name: environment
+  displayName: ENVIRONMENT
+  type: string
+  default: AUTO
+  values:
+  - AUTO
+  - DEV
+  - QA
+  - PROD
+
 variables:
 - name: chromeDriverVersion
   value: '113.0.5672.63'
@@ -26,6 +37,14 @@ variables:
   value: $[eq(variables['Build.Reason'], 'Manual')]
 - name: projectDirectory
   value: '$(Build.SourcesDirectory)\Husa.Uploader\Husa.Uploader.Desktop'
+- ${{ if or(eq(parameters.environment, 'PROD'),and(eq(parameters.environment, 'AUTO'),contains(variables['Build.SourceBranch'], 'master'))) }}:
+  - group: homesusa.husa.uploader-prod
+- ${{ elseif  or(eq(parameters.environment, 'QA'),and(eq(parameters.environment, 'AUTO'),contains(variables['Build.SourceBranch'], 'release'))) }}:
+  - group: homesusa.husa.uploader-qa
+- ${{ elseif  or(eq(parameters.environment, 'DEV'),and(eq(parameters.environment, 'AUTO'),contains(variables['Build.SourceBranch'], 'develop'))) }}:
+  - group: homesusa.husa.uploader-dev
+- ${{ else }}:
+  - group: homesusa.husa.uploader-dev
 
 steps:
 - task: PowerShell@2
@@ -96,12 +115,13 @@ steps:
     publishLocation: 'Container'
 
 - task: PowerShell@2
+  displayName: 'output environment'
   inputs:
     targetType: 'inline'
     script: |
-      $variable = "$(Build.Reason)"
-      $variable | Out-File $(Build.ArtifactStagingDirectory)\buildreason.txt
-      Get-Content $(Build.ArtifactStagingDirectory)\buildreason.txt
+      $variable = "$(Environment)"
+      $variable | Out-File $(Build.ArtifactStagingDirectory)\environment.txt
+      Get-Content $(Build.ArtifactStagingDirectory)\environment.txt
 
 - task: PublishBuildArtifacts@1
   inputs:
