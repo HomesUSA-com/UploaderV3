@@ -15,11 +15,36 @@ trigger:
 pool:
   vmImage: windows-latest
 
+parameters:
+- name: environment
+  displayName: ENVIRONMENT
+  type: string
+  default: AUTO
+  values:
+  - AUTO
+  - DEV
+  - QA
+  - PROD
+
 variables:
-  chromeDriverVersion: '113.0.5672.63'
-  revisionNumber: $[counter('revisions', 35)]
-  isPullRequest: $[eq(variables['Build.Reason'], 'PullRequest')]
-  projectDirectory: '$(Build.SourcesDirectory)\Husa.Uploader\Husa.Uploader.Desktop'
+- name: chromeDriverVersion
+  value: '113.0.5672.63'
+- name: revisionNumber
+  value: $[counter('revisions', 35)]
+- name: isPullRequest
+  value: $[eq(variables['Build.Reason'], 'PullRequest')]
+- name: isManual
+  value: $[eq(variables['Build.Reason'], 'Manual')]
+- name: projectDirectory
+  value: '$(Build.SourcesDirectory)\Husa.Uploader\Husa.Uploader.Desktop'
+- ${{ if or(eq(parameters.environment, 'PROD'),and(eq(parameters.environment, 'AUTO'),contains(variables['Build.SourceBranch'], 'master'))) }}:
+  - group: homesusa.husa.uploader-prod
+- ${{ elseif  or(eq(parameters.environment, 'QA'),and(eq(parameters.environment, 'AUTO'),contains(variables['Build.SourceBranch'], 'release'))) }}:
+  - group: homesusa.husa.uploader-qa
+- ${{ elseif  or(eq(parameters.environment, 'DEV'),and(eq(parameters.environment, 'AUTO'),contains(variables['Build.SourceBranch'], 'develop'))) }}:
+  - group: homesusa.husa.uploader-dev
+- ${{ else }}:
+  - group: homesusa.husa.uploader-dev
 
 steps:
 - task: PowerShell@2
@@ -27,6 +52,13 @@ steps:
   inputs:
     filePath: '$(Build.SourcesDirectory)\Husa.Uploader\Scripts\DownloadChromeDriver.ps1'
     arguments: '-version "$(chromeDriverVersion)" -path "$(projectDirectory)"'
+
+- task: FileTransform@1
+  displayName: 'File Transform: appsettings.json'
+  inputs:
+    folderPath: 'Husa.Uploader/Husa.Uploader.Desktop/'
+    fileType: json
+    targetFiles: '**/appsettings.json'
 
 - task: PowerShell@2
   displayName: 'Update HTML with Version'
@@ -79,5 +111,20 @@ steps:
   displayName: 'publish Artifact: drop'
   inputs:
     PathtoPublish: '$(build.artifactstagingdirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+
+- task: PowerShell@2
+  displayName: 'output environment'
+  inputs:
+    targetType: 'inline'
+    script: |
+      $variable = "$(Environment)"
+      $variable | Out-File $(Build.ArtifactStagingDirectory)\environment.txt
+      Get-Content $(Build.ArtifactStagingDirectory)\environment.txt
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'
     publishLocation: 'Container'
