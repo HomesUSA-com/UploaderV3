@@ -330,6 +330,26 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             }
         }
 
+        public override string GetBuyerAgentComp(string compBuy, string compBuyType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string GetAgentBonusRemarksMessage()
+        {
+            var agentBonusAmount = this.GetAgentBonusAmount();
+            if (string.IsNullOrWhiteSpace(agentBonusAmount))
+            {
+                return base.GetAgentBonusRemarksMessage();
+            }
+
+            var agentAmount = agentBonusAmount + " Bonus. ";
+            var hasBuyerIncentive = this.BuyerCheckBox.HasValue && this.BuyerCheckBox.Value;
+            return hasBuyerIncentive
+                ? agentAmount + "Contact Builder for Buyer Incentive Information. "
+                : agentAmount;
+        }
+
         public override string GetPublicRemarks()
         {
             var builtNote = "MLS# " + this.MLSNum;

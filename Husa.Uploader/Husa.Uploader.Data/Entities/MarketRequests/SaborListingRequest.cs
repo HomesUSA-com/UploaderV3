@@ -3,6 +3,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
     using System.Collections.Generic;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Quicklister.Sabor.Api.Contracts.Response;
     using Husa.Quicklister.Sabor.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.Sabor.Api.Contracts.Response.SalePropertyDetail;
@@ -131,7 +132,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.LotDim = propertyInfo.LotDimension;
                 residentialListingRequest.LotSize = propertyInfo.LotSize;
                 residentialListingRequest.LotDesc = propertyInfo.LotDescription.ToStringFromEnumMembers();
-                residentialListingRequest.Occupancy = propertyInfo.Occupancy.ToStringFromEnumMembers();
+                residentialListingRequest.Occupancy = propertyInfo.Occupancy?.ToString();
                 residentialListingRequest.Latitude = propertyInfo.Latitude;
                 residentialListingRequest.Longitude = propertyInfo.Longitude;
             }
@@ -209,6 +210,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.ProposedTerms = financialInfo.ProposedTerms.ToStringFromEnumMembers();
                 residentialListingRequest.HasMultipleHOA = financialInfo.HasMultipleHOA.ToString();
                 residentialListingRequest.CompBuy = financialInfo.BuyersAgentCommission?.ToString();
+                residentialListingRequest.CompBuyType = financialInfo.BuyersAgentCommissionType.ToStringFromEnumMember();
                 residentialListingRequest.HOA = financialInfo.HOARequirement?.ToStringFromEnumMember();
                 residentialListingRequest.HasAgentBonus = financialInfo.HasAgentBonus;
                 residentialListingRequest.HasBonusWithAmount = financialInfo.HasBonusWithAmount;
@@ -393,7 +395,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 }
             }
 
-            void FillOpenHouseInfo(IEnumerable<OpenHousesResponse> openHouses)
+            void FillOpenHouseInfo(IEnumerable<OpenHouseResponse> openHouses)
             {
                 if (openHouses == null || !openHouses.Any())
                 {
@@ -537,6 +539,24 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     _ => "January",
                 };
             }
+        }
+
+        public override string GetBuyerAgentComp(string compBuy, string compBuyType)
+        {
+            // Remove zeroes after decimal point if available.
+            if (compBuy.Contains('.'))
+            {
+                compBuy = compBuy.TrimEnd('0').TrimEnd('.');
+            }
+
+            string formattedNumber = compBuyType switch
+            {
+                "%" => compBuy + "%",
+                "$" => "$" + compBuy,
+                _ => throw new ArgumentException("Invalid type."),
+            };
+
+            return formattedNumber;
         }
     }
 }
