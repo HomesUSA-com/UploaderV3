@@ -47,6 +47,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             Zip = this.listingResponse.ZipCode,
             Address = this.listingResponse.Address,
             ListPrice = this.listingResponse.ListPrice.HasValue ? (int)this.listingResponse.ListPrice.Value : default,
+            ListStatus = this.listingResponse.MlsStatus.ToStringFromEnumMember(),
             SysCreatedOn = this.listingResponse.SysCreatedOn,
             SysCreatedBy = this.listingResponse.SysCreatedBy,
         };
