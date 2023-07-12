@@ -165,7 +165,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillLotEnvironmentUtilityInformation(listing);
                     this.FillFinancialInformation(listing);
                     this.FillShowingInformation(listing);
-                    this.FillRemarks(listing);
+                    this.FillRemarks(listing as CtxListingRequest);
                 }
                 catch (Exception exception)
                 {
@@ -801,13 +801,14 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetSelect(By.Id("Input_655"), "1", fieldLabel: "Allow 3rd Party Comments", tabName);
         }
 
-        private void FillRemarks(ResidentialListingRequest listing)
+        private void FillRemarks(CtxListingRequest listing)
         {
             const string tabName = "Remarks";
             this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
             this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // Financial Information
             this.UpdatePublicRemarksInRemarksTab(listing); // Public Remarks
-            this.UpdatePrivateRemarksInRemarksTab(listing as CtxListingRequest); // Agent Remarks
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_141"), listing.GetPrivateRemarks()); // Agent Remarks
         }
 
         private void UpdateYearBuiltDescriptionInGeneralTab(ResidentialListingRequest listing)
@@ -825,32 +826,6 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(400);
             this.uploaderClient.WriteTextbox(By.Id("Input_140"), listing.GetPublicRemarks()); // Internet / Remarks / Desc. of Property
             this.uploaderClient.WriteTextbox(By.Id("Input_142"), listing.Directions); // Syndication Remarks
-        }
-
-        private void UpdatePrivateRemarksInRemarksTab(CtxListingRequest listing)
-        {
-            var bonusMessage = string.IsNullOrWhiteSpace(listing.MLSNum) ? listing.GetAgentBonusRemarksMessage() : string.Empty;
-
-            var realtorContactEmail = string.Empty;
-            if (!string.IsNullOrEmpty(listing.ContactEmailFromCompany))
-            {
-                realtorContactEmail = listing.ContactEmailFromCompany;
-            }
-            else if (!string.IsNullOrEmpty(listing.RealtorContactEmail))
-            {
-                realtorContactEmail = listing.RealtorContactEmail;
-            }
-            else if (!string.IsNullOrEmpty(listing.RealtorContactEmailFromCommunityProfile))
-            {
-                realtorContactEmail = listing.RealtorContactEmailFromCommunityProfile;
-            }
-
-            realtorContactEmail =
-                (!string.IsNullOrWhiteSpace(realtorContactEmail) &&
-                !(bonusMessage + listing.GetPrivateRemarks()).ToLower().Contains("email contact") &&
-                !(bonusMessage + listing.GetPrivateRemarks()).ToLower().Contains(realtorContactEmail)) ? "Email contact: " + realtorContactEmail + ". " : string.Empty;
-
-            this.uploaderClient.WriteTextbox(By.Id("Input_141"), bonusMessage + listing.GetPrivateRemarks() + realtorContactEmail); // Agent Remarks
         }
 
         private void SetLongitudeAndLatitudeValues(ResidentialListingRequest listing)

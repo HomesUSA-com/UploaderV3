@@ -454,12 +454,18 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             }
         }
 
+        public override string GetPrivateRemarks()
+        {
+            var saleOfficeInfo = this.GetSalesAssociateRemarksMessage();
+            return base.GetPrivateRemarks() + (string.IsNullOrWhiteSpace(saleOfficeInfo) ? string.Empty : $" {saleOfficeInfo}");
+        }
+
         public string GetAgentRemarksMessage()
         {
             const string homeUnderConstruction = "Home is under construction. For your safety, call appt number for showings";
 
             var realtorContactEmail = !string.IsNullOrEmpty(this.EmailRealtorsContact) ? this.EmailRealtorsContact : this.RealtorContactEmail;
-            var message = this.GetPrivateRemarks(useExtendedRemarks: true, addPlanName: false);
+            var message = this.GetPrivateRemarks();
 
             if (!string.IsNullOrWhiteSpace(realtorContactEmail) &&
                 !message.ToLower().Contains("email contact") &&

@@ -1,6 +1,7 @@
 namespace Husa.Uploader.Data.Entities.MarketRequests
 {
     using System.Collections.Generic;
+    using System.Linq;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.CTX.Api.Contracts.Response;
@@ -350,6 +351,56 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 : agentAmount;
         }
 
+        public override string GetPrivateRemarks()
+        {
+            var privateRemarks = base.GetPrivateRemarks();
+
+            var bonusMessage = string.IsNullOrWhiteSpace(this.MLSNum) ? this.GetAgentBonusRemarksMessage() : string.Empty;
+            if (!string.IsNullOrWhiteSpace(bonusMessage))
+            {
+                privateRemarks = $"{bonusMessage} {privateRemarks}";
+            }
+
+            var saleOfficeInfo = this.GetSalesAssociateRemarksMessage();
+            if (!string.IsNullOrWhiteSpace(saleOfficeInfo))
+            {
+                privateRemarks += $" {saleOfficeInfo}";
+            }
+
+            if (!string.IsNullOrWhiteSpace(this.PlanProfileName))
+            {
+                privateRemarks += $" Plan: {this.PlanProfileName}.";
+            }
+
+            var realtorContactEmail = this.GetRealtorContactEmail();
+            if (!string.IsNullOrWhiteSpace(realtorContactEmail))
+            {
+                return privateRemarks + $" Email contact: {realtorContactEmail}.";
+            }
+
+            return privateRemarks;
+        }
+
+        public override string GetSalesAssociateRemarksMessage()
+        {
+            var salesOfficeAddr = this.GetSalesOfficeAddressRemarkMessage();
+            var phones = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(this.AgentListApptPhone))
+            {
+                phones.Add(this.AgentListApptPhone.PhoneFormat());
+            }
+
+            if (!string.IsNullOrWhiteSpace(this.OtherPhone))
+            {
+                phones.Add(this.OtherPhone.PhoneFormat());
+            }
+
+            return phones.Any()
+                ? string.Format("For more information call {0}. {1}.", string.Join(" or ", phones), salesOfficeAddr)
+                : salesOfficeAddr;
+        }
+
         public override string GetPublicRemarks()
         {
             var builtNote = "MLS# " + this.MLSNum;
@@ -433,6 +484,24 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
                 return remark.Replace("\t", string.Empty).Replace("\n", " ");
             }
+        }
+
+        private string GetRealtorContactEmail()
+        {
+            if (!string.IsNullOrEmpty(this.ContactEmailFromCompany))
+            {
+                return this.ContactEmailFromCompany;
+            }
+            else if (!string.IsNullOrEmpty(this.RealtorContactEmail))
+            {
+                return this.RealtorContactEmail;
+            }
+            else if (!string.IsNullOrEmpty(this.RealtorContactEmailFromCommunityProfile))
+            {
+                return this.RealtorContactEmailFromCommunityProfile;
+            }
+
+            return string.Empty;
         }
     }
 }

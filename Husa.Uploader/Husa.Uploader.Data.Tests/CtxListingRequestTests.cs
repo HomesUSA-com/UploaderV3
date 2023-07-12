@@ -242,6 +242,25 @@ namespace Husa.Uploader.Data.Tests
             Assert.Contains("$1,344.78 Bonus", result);
         }
 
+        [Fact]
+        public void GetSalesAssociateRemarksMessage()
+        {
+            // Arrange
+            var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
+            {
+                AgentListApptPhone = "9999999999",
+                OtherPhone = "8888888888",
+                CommunityProfileSalesOfficeStreetNum = 11,
+                CommunityProfileSalesOfficeStreetName = "Sales Off St",
+            };
+
+            // Act
+            var result = sut.GetSalesAssociateRemarksMessage();
+
+            // Assert
+            Assert.Contains("For more information call (999) 999-9999 or (888) 888-8888. Sales Office at 11 Sales Off St.", result);
+        }
+
         private static ListingSaleRequestDetailResponse GetDetailResponse(
             bool includeSaleProperty = true,
             bool includeAddress = true,

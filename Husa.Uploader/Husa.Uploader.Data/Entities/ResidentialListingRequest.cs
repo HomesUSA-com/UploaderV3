@@ -1026,25 +1026,78 @@ namespace Husa.Uploader.Data.Entities
                 WorkingStatus = workingStatus,
             };
 
-        public string GetPrivateRemarks(bool useExtendedRemarks = true, bool addPlanName = true)
+        public virtual string GetPrivateRemarks()
         {
-            var privateRemarks = @"LIMITED SERVICE LISTING: Buyer verifies dimensions & ISD info. Use Bldr contract. ";
+            return "LIMITED SERVICE LISTING: Buyer verifies dimensions & ISD info. Use Bldr contract.";
+        }
 
-            var extendedRemarks = string.Empty;
-
-            if (useExtendedRemarks)
+        public virtual string GetSalesOfficeAddressRemarkMessage()
+        {
+            if (!this.CommunityProfileSalesOfficeStreetNum.HasValue || string.IsNullOrWhiteSpace(this.CommunityProfileSalesOfficeStreetName))
             {
-                extendedRemarks = this.GetExtendedRemarks();
+                return string.Empty;
             }
 
-            var fieldRemarks = extendedRemarks + privateRemarks.Replace("\"", string.Empty);
+            string soCity = this.CommunityProfileSalesOfficeCity;
+            string soZip = this.CommunityProfileSalesOfficeZip;
+            return $"Sales Office at {this.CommunityProfileSalesOfficeStreetNum.Value} {this.CommunityProfileSalesOfficeStreetName}"
+                               + (!string.IsNullOrWhiteSpace(soCity) ? ", " + soCity : string.Empty)
+                               + (!string.IsNullOrWhiteSpace(soZip) ? ", " + soZip : string.Empty)
+                               + ".";
+        }
 
-            if (addPlanName && !string.IsNullOrWhiteSpace(this.PlanProfileName))
+        public virtual string GetSalesAssociateRemarksMessage()
+        {
+            var salesOfficeAddr = this.GetSalesOfficeAddressRemarkMessage();
+
+            var commPhone = this.CommunityProfilePhone ?? string.Empty;
+
+            string extendedRemarks = string.Format("Call Sales Associate {0}. {1}. ", commPhone.PhoneFormat(), salesOfficeAddr);
+
+            var apptPhone = this.GetApptPhone();
+            var alternatePhone = this.GetAlternatePhone();
+
+            switch (this.MarketCode)
             {
-                fieldRemarks = $"{fieldRemarks.TrimEnd()} Plan: {this.PlanProfileName}. ";
+                case MarketCode.Austin:
+                    if (!string.IsNullOrEmpty(this.OtherPhone))
+                    {
+                        extendedRemarks = string.Format("Call Sales Associate {0}. ", this.OtherPhone.PhoneFormat());
+
+                        if (!string.IsNullOrEmpty(this.OwnerPhone) && this.OtherPhone != this.OwnerPhone)
+                        {
+                            extendedRemarks = string.Format("Call Sales Associate {0} or {1}. ", this.OtherPhone.PhoneFormat(), this.OwnerPhone.PhoneFormat());
+                        }
+                    }
+
+                    break;
+                case MarketCode.SanAntonio:
+                    if (!string.IsNullOrEmpty(apptPhone) && alternatePhone != apptPhone)
+                    {
+                        extendedRemarks = string.Format("Call Sales Associate {0}. ", apptPhone);
+
+                        if (!string.IsNullOrEmpty(alternatePhone))
+                        {
+                            extendedRemarks = string.Format("Call Sales Associate {0} or {1}. ", apptPhone, alternatePhone);
+                        }
+                    }
+
+                    break;
+                case MarketCode.Houston:
+                    if (!string.IsNullOrEmpty(apptPhone))
+                    {
+                        extendedRemarks = string.Format("Call Sales Associate {0}. ", apptPhone);
+                        var altPhone = this.AltPhoneCommunity.PhoneFormat();
+                        if (!string.IsNullOrEmpty(altPhone) && altPhone != apptPhone)
+                        {
+                            extendedRemarks = string.Format("Call Sales Associate {0} or {1}. ", apptPhone, altPhone);
+                        }
+                    }
+
+                    break;
             }
 
-            return fieldRemarks;
+            return extendedRemarks;
         }
 
         public virtual string GetAgentBonusAmount()
@@ -1122,71 +1175,6 @@ namespace Husa.Uploader.Data.Entities
             }
 
             return alternatePhone.PhoneFormat();
-        }
-
-        private string GetExtendedRemarks()
-        {
-            var salesOfficeAddr = string.Empty;
-
-            if (this.CommunityProfileSalesOfficeStreetNum.HasValue && !string.IsNullOrWhiteSpace(this.CommunityProfileSalesOfficeStreetName))
-            {
-                string soCity = this.CommunityProfileSalesOfficeCity;
-                string soZip = this.CommunityProfileSalesOfficeZip;
-                salesOfficeAddr = " Sales Office at " +
-                                   this.CommunityProfileSalesOfficeStreetNum.Value.ToString()
-                                   + " " + this.CommunityProfileSalesOfficeStreetName
-                                   + (!string.IsNullOrWhiteSpace(soCity) ? ", " + soCity : string.Empty)
-                                   + (!string.IsNullOrWhiteSpace(soZip) ? ", " + soZip : string.Empty);
-            }
-
-            var commPhone = this.CommunityProfilePhone ?? string.Empty;
-
-            string extendedRemarks = string.Format("Call Sales Associate {0}. {1}. ", commPhone.PhoneFormat(), salesOfficeAddr);
-
-            var apptPhone = this.GetApptPhone();
-            var alternatePhone = this.GetAlternatePhone();
-
-            switch (this.MarketCode)
-            {
-                case MarketCode.Austin:
-                    if (!string.IsNullOrEmpty(this.OtherPhone))
-                    {
-                        extendedRemarks = string.Format("Call Sales Associate {0}. ", this.OtherPhone.PhoneFormat());
-
-                        if (!string.IsNullOrEmpty(this.OwnerPhone) && this.OtherPhone != this.OwnerPhone)
-                        {
-                            extendedRemarks = string.Format("Call Sales Associate {0} or {1}. ", this.OtherPhone.PhoneFormat(), this.OwnerPhone.PhoneFormat());
-                        }
-                    }
-
-                    break;
-                case MarketCode.SanAntonio:
-                    if (!string.IsNullOrEmpty(apptPhone) && alternatePhone != apptPhone)
-                    {
-                        extendedRemarks = string.Format("Call Sales Associate {0}. ", apptPhone);
-
-                        if (!string.IsNullOrEmpty(alternatePhone))
-                        {
-                            extendedRemarks = string.Format("Call Sales Associate {0} or {1}. ", apptPhone, alternatePhone);
-                        }
-                    }
-
-                    break;
-                case MarketCode.Houston:
-                    if (!string.IsNullOrEmpty(apptPhone))
-                    {
-                        extendedRemarks = string.Format("Call Sales Associate {0}. ", apptPhone);
-                        var altPhone = this.AltPhoneCommunity.PhoneFormat();
-                        if (!string.IsNullOrEmpty(altPhone) && altPhone != apptPhone)
-                        {
-                            extendedRemarks = string.Format("Call Sales Associate {0} or {1}. ", apptPhone, altPhone);
-                        }
-                    }
-
-                    break;
-            }
-
-            return extendedRemarks;
         }
     }
 }
