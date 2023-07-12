@@ -55,7 +55,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             Zip = this.listingResponse.ZipCode,
             Address = this.listingResponse.Address,
             ListPrice = (int)this.listingResponse.ListPrice,
-            ListStatus = this.listingResponse.MlsStatus.ToString(),
+            ListStatus = this.listingResponse.MlsStatus.ToStringFromEnumMember(),
             SysCreatedOn = this.listingResponse.SysCreatedOn,
             SysCreatedBy = this.listingResponse.SysCreatedBy,
             AllowPendingList = this.listingResponse.ShowOpenHousesPending,
