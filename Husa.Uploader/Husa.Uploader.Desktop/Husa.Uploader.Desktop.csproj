@@ -65,7 +65,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Husa.Migration.Api.Client" Version="1.1.0-dev001" />
+        <PackageReference Include="Husa.Migration.Api.Client" Version="1.1.0" />
         <PackageReference Include="Husa.CompanyServiceManager.Client" Version="1.0.0" />
         <PackageReference Include="Husa.Extensions.Api" Version="4.0.2" />
         <PackageReference Include="MahApps.Metro" Version="3.0.0-alpha0457" />
