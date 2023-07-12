@@ -30,7 +30,7 @@ variables:
 - name: chromeDriverVersion
   value: '113.0.5672.63'
 - name: revisionNumber
-  value: $[counter('revisions', 35)]
+  value: $[counter('revisions', 1)]
 - name: isPullRequest
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
 - name: isManual
