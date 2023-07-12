@@ -87,6 +87,7 @@ namespace Husa.Uploader.Data.Entities
         public string ListOninternetDesc { get; set; }
         public DateTime? ListDate { get; set; }
         public DateTime? ExpiredDate { get; set; }
+        public string ExpectedActiveDate { get; set; }
         public string Legal { get; set; }
         public string LaundryLocDesc { get; set; }
         public string KitchenDesc { get; set; }
@@ -997,6 +998,8 @@ namespace Husa.Uploader.Data.Entities
 
         public abstract string GetPublicRemarks();
 
+        public abstract string GetBuyerAgentComp(string compBuy, string compBuyType);
+
         public UploadListingItem AsUploadItem(
             string builderName,
             string brokerOffice,
@@ -1063,15 +1066,6 @@ namespace Husa.Uploader.Data.Entities
                 return hasBuyerIncentive
                     ? "Contact Builder for Bonus & Buyer Incentive Information. "
                     : "Contact Builder for Bonus Information. ";
-            }
-
-            var agentBonusAmount = this.GetAgentBonusAmount();
-            if (!string.IsNullOrWhiteSpace(agentBonusAmount))
-            {
-                var agentAmount = agentBonusAmount + " Bonus. ";
-                return hasBuyerIncentive
-                    ? agentAmount + "Contact Builder for Buyer Incentive Information. "
-                    : agentAmount;
             }
 
             if (hasBuyerIncentive)

@@ -55,7 +55,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             Zip = this.listingResponse.ZipCode,
             Address = this.listingResponse.Address,
             ListPrice = (int)this.listingResponse.ListPrice,
-            ListStatus = this.listingResponse.MlsStatus.ToString(),
+            ListStatus = this.listingResponse.MlsStatus.ToStringFromEnumMember(),
             SysCreatedOn = this.listingResponse.SysCreatedOn,
             SysCreatedBy = this.listingResponse.SysCreatedBy,
             AllowPendingList = this.listingResponse.ShowOpenHousesPending,
@@ -77,6 +77,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 SysCreatedBy = this.listingDetailResponse.SysCreatedBy,
                 SysModifiedOn = this.listingDetailResponse.SysModifiedOn,
                 SysModifiedBy = this.listingDetailResponse.SysModifiedBy,
+                ExpectedActiveDate = DateTime.Now.ToString("MM/dd/yy"),
             };
 
             FillSalePropertyInfo(this.listingDetailResponse.SaleProperty.SalePropertyInfo);
@@ -327,6 +328,26 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
                 residentialListingRequest.OpenHouse = this.OpenHouse;
             }
+        }
+
+        public override string GetBuyerAgentComp(string compBuy, string compBuyType)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string GetAgentBonusRemarksMessage()
+        {
+            var agentBonusAmount = this.GetAgentBonusAmount();
+            if (string.IsNullOrWhiteSpace(agentBonusAmount))
+            {
+                return base.GetAgentBonusRemarksMessage();
+            }
+
+            var agentAmount = agentBonusAmount + " Bonus. ";
+            var hasBuyerIncentive = this.BuyerCheckBox.HasValue && this.BuyerCheckBox.Value;
+            return hasBuyerIncentive
+                ? agentAmount + "Contact Builder for Buyer Incentive Information. "
+                : agentAmount;
         }
 
         public override string GetPublicRemarks()

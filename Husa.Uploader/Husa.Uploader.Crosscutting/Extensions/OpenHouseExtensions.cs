@@ -40,7 +40,7 @@ namespace Husa.Uploader.Crosscutting.Extensions
             string[] aux = new string[2];
             var hours = Convert.ToInt32(time[..2]);
             var minutes = Convert.ToInt32(time.Substring(2, 2));
-            var openHouseDateTime = new DateTime(year: 2000, month: 1, day: 1, hours, minutes, second: 0, millisecond: 0);
+            var openHouseDateTime = new DateTime(year: 2000, month: 1, day: 1, hours, minutes, second: 0, millisecond: 0, kind: DateTimeKind.Utc);
             if (changeOHHours)
             {
                 if (TypeOpenHouseHour.START.Equals(type))

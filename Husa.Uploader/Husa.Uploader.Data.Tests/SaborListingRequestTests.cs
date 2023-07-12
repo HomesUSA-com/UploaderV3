@@ -40,5 +40,25 @@ namespace Husa.Uploader.Data.Tests
             Assert.Contains("(987) 654-3210", result);
             Assert.Contains("(111) 222-3333", result);
         }
+
+        [Fact]
+        public void GetAgentBonusRemarksMessage_AgentBonusWithAmountOn()
+        {
+            // Arrange
+            var sut = new SaborListingRequest(new ListingSaleRequestQueryResponse())
+            {
+                HasAgentBonus = false,
+                BuyerCheckBox = false,
+                HasBonusWithAmount = true,
+                AgentBonusAmount = "1",
+                AgentBonusAmountType = "%",
+            };
+
+            // Act
+            var result = sut.GetAgentBonusRemarksMessage();
+
+            // Assert
+            Assert.Empty(result);
+        }
     }
 }
