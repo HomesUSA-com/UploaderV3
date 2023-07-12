@@ -720,6 +720,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_597", listing.TopoLandDescription, fieldLabel: "Topo/Land Desc (Max 33)", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_599", listing.CommonFeatures, fieldLabel: "Neighborhood Amenitites (Max 19)", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_600", listing.RoadFrontageDesc, fieldLabel: "Access/Road Surface", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_586"), value: "0", fieldLabel: "Spa/Hot Tub", tabName); // (default hardcode "No")
 
             // Environment / Energy
             this.uploaderClient.SetSelect(By.Id("Input_601"), listing.UpgradedEnergyFeatures, fieldLabel: "Upgraded Energy Features", tabName);
