@@ -789,20 +789,20 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_649"), listing.OtherPhone, isElementOptional: true);  // Showing Phone #2
             this.uploaderClient.SetMultipleCheckboxById("Input_643", listing.LockboxLocDesc, fieldLabel: "Lockbox Location", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_645", listing.Showing, fieldLabel: "Showing Instructions", tabName);
+
+            // Syndication
+            this.uploaderClient.SetSelect(By.Id("Input_651"), "1", fieldLabel: "IDX Opt In", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_652"), "1", fieldLabel: "Display on Internet", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_653"), "1", fieldLabel: "Display Address", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_654"), "1", fieldLabel: "Allow AVM", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_655"), "1", fieldLabel: "Allow 3rd Party Comments", tabName);
         }
 
         private void FillRemarks(ResidentialListingRequest listing)
         {
             const string tabName = "Remarks";
             this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
-            this.uploaderClient.ClickOnElement(By.LinkText("Remarks")); // Financial Information
-
-            this.uploaderClient.SetSelect(By.Id("Input_143"), value: "1", fieldLabel: "IDX Opt In", tabName); // IDX Opt In (default hardcode "Yes")
-            this.uploaderClient.SetSelect(By.Id("Input_144"), value: "1", fieldLabel: "Display on Internet", tabName); // Display on Internet (default hardcode "Yes")
-            this.uploaderClient.SetSelect(By.Id("Input_145"), value: "1", fieldLabel: "Display Address", tabName); // Display Address (default hardcode "Yes")
-            this.uploaderClient.SetSelect(By.Id("Input_146"), value: "0", fieldLabel: "Allow AVM", tabName); // Allow AVM (default hardcode "Yes")
-            this.uploaderClient.SetSelect(By.Id("Input_147"), value: "1", fieldLabel: "Allow Comment", tabName); // Allow Comment (default hardcode "Yes")
-
+            this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // Financial Information
             this.UpdatePublicRemarksInRemarksTab(listing); // Public Remarks
             this.UpdatePrivateRemarksInRemarksTab(listing as CtxListingRequest); // Agent Remarks
         }
