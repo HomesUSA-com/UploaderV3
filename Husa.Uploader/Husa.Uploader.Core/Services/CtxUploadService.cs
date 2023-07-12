@@ -748,6 +748,7 @@ namespace Husa.Uploader.Core.Services
             //// this.uploaderClient.SetMultipleCheckboxById("Input_150", listing.PROPSDTRMS, "Proposed Terms", tabName); // Proposed Terms
 
             // this.uploaderClient.SetSelect(By.Id("Input_624"), listing.HasHOA, "HOA", tabName); // HOA
+            this.uploaderClient.SetMultipleCheckboxById("Input_614", "ATCLO,FUNDI", fieldLabel: "Possession (Max 7)", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_744", listing.ProposedTerms, fieldLabel: "Acceptable Financing", tabName); // Proposed Terms
             this.uploaderClient.WriteTextbox(By.Id("Input_618"), listing.TaxYear); // Tax Year
             this.uploaderClient.WriteTextbox(By.Id("Input_619"), listing.TaxRate); // Tax Rate
