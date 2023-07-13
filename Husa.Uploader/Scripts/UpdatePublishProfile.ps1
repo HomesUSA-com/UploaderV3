@@ -1,6 +1,7 @@
 param(
     [string]$publishDir,
-    [string]$publishProfilePath
+    [string]$publishProfilePath,
+    [string]$publishUrl
 )
 
 # Load the publish profile XML
@@ -8,6 +9,9 @@ param(
 
 # Update the PublishDir property
 $publishProfile.Project.PropertyGroup.PublishDir = $publishDir
+
+# Update the PublishUrl property
+$publishProfile.Project.PropertyGroup.PublishUrl = $publishUrl
 
 # Save the updated publish profile
 $publishProfile.Save($publishProfilePath)
