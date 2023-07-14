@@ -67,10 +67,10 @@ steps:
     arguments: '-revision "$(revisionNumber)" -csprojPath "$(projectDirectory)\Husa.Uploader.Desktop.csproj" -htmlFilePath "$(projectDirectory)\Deployment\Publish.html" -destinationFilePath "$(build.artifactstagingdirectory)"'
 
 - task: PowerShell@2
-  displayName: 'Update PublishDir in publish profile'
+  displayName: 'Update PublishDir and PublishUrl in publish profile'
   inputs:
-    filePath: '$(Build.SourcesDirectory)\Husa.Uploader\Scripts\UpdatePublishProfileDirectory.ps1'
-    arguments: '-publishDir "$(build.artifactstagingdirectory)" -publishProfilePath "$(projectDirectory)\Properties\PublishProfiles\ClickOnceProfile.pubxml"'
+    filePath: '$(Build.SourcesDirectory)\Husa.Uploader\Scripts\UpdatePublishProfile.ps1'
+    arguments: '-publishDir "$(build.artifactstagingdirectory)" -publishProfilePath "$(projectDirectory)\Properties\PublishProfiles\ClickOnceProfile.pubxml" -publishUrl "$(Application.PublishingPath)"'
 
 - task: DotNetCoreCLI@2 
   displayName: 'dotnet restore'
