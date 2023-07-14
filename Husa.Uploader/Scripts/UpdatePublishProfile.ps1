@@ -10,8 +10,9 @@ param(
 # Update the PublishDir property
 $publishProfile.Project.PropertyGroup.PublishDir = $publishDir
 
-# Update the PublishUrl property
+# Update the PublishUrl and InstallUrl properties to the same value
 $publishProfile.Project.PropertyGroup.PublishUrl = $publishUrl
+$publishProfile.Project.PropertyGroup.InstallUrl = $publishUrl
 
 # Save the updated publish profile
 $publishProfile.Save($publishProfilePath)
