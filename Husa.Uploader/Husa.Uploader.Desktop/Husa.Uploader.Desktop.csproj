@@ -9,7 +9,7 @@
         <ProductName>HomesUSA Uploader Core</ProductName>
         <PublisherName>HomesUSA.com</PublisherName>
         <SuiteName>HomesUSA</SuiteName>
-        <ApplicationVersion>2.1.0.*</ApplicationVersion>
+        <ApplicationVersion>2.1.2.*</ApplicationVersion>
         <ApplicationIcon>Media\icon.ico</ApplicationIcon>
     </PropertyGroup>
 
