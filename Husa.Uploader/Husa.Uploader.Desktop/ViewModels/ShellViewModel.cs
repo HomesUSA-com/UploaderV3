@@ -561,7 +561,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                     return false;
                 }
 
-                var isPending = this.SelectedListingRequest.FullListing.ListStatus == "Pending";
+                var isPending = this.SelectedListingRequest.FullListing.ListStatus == "PND";
                 bool isPendingWithOHPending = isPending && this.SelectedListingRequest.FullListing.AllowPendingList;
                 return !this.SelectedListingRequest.FullListing.IsNewListing &&
                     (isPendingWithOHPending || this.SelectedListingRequest.FullListing.EnableOpenHouse);

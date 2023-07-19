@@ -310,12 +310,12 @@ namespace Husa.Uploader.Data.Entities
         public string LivingRoom2Level { get; set; }
         public int? LivingRoom2Length { get; set; }
         public string HasAerialPhoto { get; set; }
-        public int? AgentID_SELL { get; set; }
+        public string AgentMarketUniqueId { get; set; }
         public string CoopSale { get; set; }
         public bool? SellingAgentPresent { get; set; }
         public string SoilType { get; set; }
-        public decimal SellerPaid { get; set; }
-        public int? SalesPrice { get; set; }
+        public string SellConcess { get; set; }
+        public decimal? SoldPrice { get; set; }
         public int? OtherRoom1Width { get; set; }
         public string OtherRoom1Level { get; set; }
         public int? OtherRoom1Length { get; set; }
@@ -920,7 +920,7 @@ namespace Husa.Uploader.Data.Entities
 
         public bool EnableOpenHouse { get; set; }
 
-        public string ListingFinancing { get; set; }
+        public string Financing { get; set; }
 
         public string InsulationDesc { get; set; }
 
@@ -950,7 +950,7 @@ namespace Husa.Uploader.Data.Entities
 
         public string PhoneMgmtCo { get; set; }
 
-        public string AgentID_SELL2 { get; set; }
+        public string SecondAgentMarketUniqueId { get; set; }
 
         public string SellingAgent2UID { get; set; }
 

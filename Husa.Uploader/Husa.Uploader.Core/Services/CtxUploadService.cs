@@ -1,5 +1,6 @@
 namespace Husa.Uploader.Core.Services
 {
+    using System;
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
@@ -287,111 +288,30 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
                 this.NavigateToQuickEdit(listing.MLSNum);
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
-                this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
+                Thread.Sleep(1500);
+                switch (listing.ListStatus)
+                {
+                    case "CSLD":
 
-                // Login(driver, listing);
-                // QuickEdit(driver, listing);
-                ////  var expirationDate = (listing.ListDate.HasValue ? listing.ListDate.Value : DateTime.Now.Date).AddYears(1);
-                // Thread.Sleep(1500);
-                // switch (listing.ListStatus)
-                // {
-                //    #region Sold
-                //    case "S":
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Sold"), cancellationToken);
+                        this.uploaderClient.ClickOnElement(By.LinkText("Change to Sold"));
+                        Thread.Sleep(500);
+                        this.uploaderClient.WriteTextbox(By.Id("Input_74"), listing.SoldPrice);
+                        this.uploaderClient.WriteTextbox(By.Id("Input_73"), listing.ClosedDate.HasValue ? listing.ClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                        this.uploaderClient.SetSelect(By.Id($"Input_324"), value: listing.Financing);
+                        this.uploaderClient.WriteTextbox(By.Id("Input_325"), listing.SellConcess);
+                        this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                        // this.uploaderClient.WriteTextbox(By.Id("Input_527"), listing.SoldComments);
+                        this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.AgentMarketUniqueId);
+                        this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_321_Refresh').value='1';RefreshToSamePage();");
+                        this.uploaderClient.WriteTextbox(By.Id("Input_323"), listing.SecondAgentMarketUniqueId);
+                        this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_323_Refresh').value='1';RefreshToSamePage();");
+                        break;
 
-                // driver.Click(By.PartialLinkText("Change to Sold"));
-                //        Thread.Sleep(500);
-                //        driver.WriteTextbox(By.Id("Input_1029"), listing.PendingDate);
-                //        driver.WriteTextbox(By.Id("Input_1023"), listing.ClosedDate);
-                //        driver.WriteTextbox(By.Id("Input_1034"), listing.SalesPrice);
-                //        /*QLIST-85*/
-                //        //driver.WriteTextbox(By.Id("Input_1032"), listing.RepairsAmount);
-                //        driver.WriteTextbox(By.Id("Input_1032"), "0"); //RepairsAmount
+                    default:
+                        throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for CTX Listing with Id '{listing.ResidentialListingID}'");
+                }
 
-                // //driver.WriteTextbox(By.Id("Input_1314"), listing.Loan1Amount);
-                //        driver.WriteTextbox(By.Id("Input_1315"), listing.BuyersClsgCostPdbySell);
-                //        driver.WriteTextbox(By.Id("Input_1033"), listing.SellerPoints);
-                //        driver.WriteTextbox(By.Id("Input_1026"), listing.BuyerPoints);
-                //        driver.WriteTextbox(By.Id("Input_1037"), "0");
-                //        /*QLIST-85*/
-                //        //driver.SetSelect(By.Id("Input_1142"), listing.PropConditionSale);
-                //        driver.SetSelect(By.Id("Input_1142"), "EXCL"); //Condition Sale
-                //        //driver.WriteTextbox(By.Id("Input_1036"), listing.SoldComments);
-
-                // driver.WriteTextbox(By.Id("Input_1043"), listing.SellingAgentLicenseNum ?? "NONMBR");
-                //        driver.SetMultipleCheckboxById("Input_1035", listing.SoldTerms);
-
-                // break;
-
-                // #endregion
-
-                // #region Pending
-                //    case "P":
-                //        driver.Click(By.PartialLinkText("Change to Pending"));
-                //        Thread.Sleep(500);
-                //        driver.WriteTextbox(By.Id("Input_1056"), listing.PendingDate);
-                //        driver.WriteTextbox(By.Id("Input_1063"), listing.EstClosedDate);
-                //        driver.WriteTextbox(By.Id("Input_1355"), listing.ExpiredDate);
-
-                // break;
-                //    #endregion
-
-                // #region Pending Taking Backups
-
-                // case "PB":
-                //        driver.Click(By.LinkText("Change to Pending - Taking Backups"));
-
-                // driver.WriteTextbox(By.Id("Input_1067"), listing.PendingDate);
-                //        driver.WriteTextbox(By.Id("Input_1352"), listing.EstClosedDate);
-                //        driver.WriteTextbox(By.Id("Input_1355"), listing.ExpiredDate);
-                //        break;
-
-                // #endregion
-
-                // #region Active
-
-                // case "A":
-                //        driver.Click(By.LinkText("Change to Active"));
-                //        driver.WriteTextbox(By.Id("Input_1355"), listing.ExpiredDate);
-
-                // break;
-                //    #endregion
-
-                // #region Active Contingent
-
-                // case "AC":
-                //        driver.Click(By.LinkText("Change to Active Contingent"));
-                //        Thread.Sleep(500);
-                //        driver.WriteTextbox(By.Id("Input_1006"), listing.ContingencyDate);
-                //        driver.WriteTextbox(By.Id("Input_1355"), listing.ExpiredDate);
-
-                // break;
-                //    #endregion
-
-                // #region Temporarily Off Market
-
-                // case "T":
-                //        driver.Click(By.LinkText("Change to Temporarily Off Market"));
-                //        Thread.Sleep(500);
-                //        driver.WriteTextbox(By.Id("Input_1018"), DateTime.Now.ToShortDateString());
-                //        driver.WriteTextbox(By.Id("Input_1355"), listing.ExpiredDate);
-
-                // break;
-                //    #endregion
-
-                // #region Withdrawn
-
-                // case "W":
-                //        driver.Click(By.PartialLinkText("Change to Withdrawn"));
-                //        Thread.Sleep(500);
-                //        driver.WriteTextbox(By.Id("Input_1020"), DateTime.Now.ToShortDateString());
-
-                // break;
-                //    #endregion
-
-                // default:
-                //        throw new ArgumentOutOfRangeException("listing.ListingStatus", listing.ListStatus, "Invalid Status for Austin Listing with Id '" + listing.ResidentialListingID + "'");
-                // }
                 return UploadResult.Success;
             }
         }
