@@ -2,7 +2,7 @@
 
 	<ItemGroup>
         <PackageReference Include="Husa.Extensions.Common" Version="3.8.1" />
-        <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="1.2.0-dev005" />
+        <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="1.2.0-dev006" />
 	</ItemGroup>
 
 </Project>
