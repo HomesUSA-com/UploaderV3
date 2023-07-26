@@ -165,7 +165,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillLotEnvironmentUtilityInformation(listing);
                     this.FillFinancialInformation(listing);
                     this.FillShowingInformation(listing);
-                    this.FillRemarks(listing);
+                    this.FillRemarks(listing as CtxListingRequest);
                 }
                 catch (Exception exception)
                 {
@@ -577,6 +577,8 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.SetSelect(By.Id("Input_544"), "NA", "First Right Refusal Option", tabName); // First Right Refusal Option (default hardcode "N/A")
 
+            this.uploaderClient.SetMultipleCheckboxById("Input_546", "BUILDER", "Sale Type", tabName); // Sale Type
+
             this.uploaderClient.SetSelect(By.Id("Input_531"), "0", "Res Flooded", tabName); // Res Flooded
 
             this.uploaderClient.SetSelect(By.Id("Input_547"), listing.YearBuiltDesc, "Construction Status", tabName); // Construction Status
@@ -718,6 +720,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_597", listing.TopoLandDescription, fieldLabel: "Topo/Land Desc (Max 33)", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_599", listing.CommonFeatures, fieldLabel: "Neighborhood Amenitites (Max 19)", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_600", listing.RoadFrontageDesc, fieldLabel: "Access/Road Surface", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_586"), value: "0", fieldLabel: "Spa/Hot Tub", tabName); // (default hardcode "No")
 
             // Environment / Energy
             this.uploaderClient.SetSelect(By.Id("Input_601"), listing.UpgradedEnergyFeatures, fieldLabel: "Upgraded Energy Features", tabName);
@@ -748,6 +751,7 @@ namespace Husa.Uploader.Core.Services
             //// this.uploaderClient.SetMultipleCheckboxById("Input_150", listing.PROPSDTRMS, "Proposed Terms", tabName); // Proposed Terms
 
             // this.uploaderClient.SetSelect(By.Id("Input_624"), listing.HasHOA, "HOA", tabName); // HOA
+            this.uploaderClient.SetMultipleCheckboxById("Input_614", "ATCLO,FUNDI", fieldLabel: "Possession (Max 7)", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_744", listing.ProposedTerms, fieldLabel: "Acceptable Financing", tabName); // Proposed Terms
             this.uploaderClient.WriteTextbox(By.Id("Input_618"), listing.TaxYear); // Tax Year
             this.uploaderClient.WriteTextbox(By.Id("Input_619"), listing.TaxRate); // Tax Rate
@@ -788,22 +792,23 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_649"), listing.OtherPhone, isElementOptional: true);  // Showing Phone #2
             this.uploaderClient.SetMultipleCheckboxById("Input_643", listing.LockboxLocDesc, fieldLabel: "Lockbox Location", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_645", listing.Showing, fieldLabel: "Showing Instructions", tabName);
+
+            // Syndication
+            this.uploaderClient.SetSelect(By.Id("Input_651"), "1", fieldLabel: "IDX Opt In", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_652"), "1", fieldLabel: "Display on Internet", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_653"), "1", fieldLabel: "Display Address", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_654"), "1", fieldLabel: "Allow AVM", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_655"), "1", fieldLabel: "Allow 3rd Party Comments", tabName);
         }
 
-        private void FillRemarks(ResidentialListingRequest listing)
+        private void FillRemarks(CtxListingRequest listing)
         {
             const string tabName = "Remarks";
             this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
-            this.uploaderClient.ClickOnElement(By.LinkText("Remarks")); // Financial Information
-
-            this.uploaderClient.SetSelect(By.Id("Input_143"), value: "1", fieldLabel: "IDX Opt In", tabName); // IDX Opt In (default hardcode "Yes")
-            this.uploaderClient.SetSelect(By.Id("Input_144"), value: "1", fieldLabel: "Display on Internet", tabName); // Display on Internet (default hardcode "Yes")
-            this.uploaderClient.SetSelect(By.Id("Input_145"), value: "1", fieldLabel: "Display Address", tabName); // Display Address (default hardcode "Yes")
-            this.uploaderClient.SetSelect(By.Id("Input_146"), value: "0", fieldLabel: "Allow AVM", tabName); // Allow AVM (default hardcode "Yes")
-            this.uploaderClient.SetSelect(By.Id("Input_147"), value: "1", fieldLabel: "Allow Comment", tabName); // Allow Comment (default hardcode "Yes")
-
+            this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // Financial Information
             this.UpdatePublicRemarksInRemarksTab(listing); // Public Remarks
-            this.UpdatePrivateRemarksInRemarksTab(listing as CtxListingRequest); // Agent Remarks
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_141"), listing.GetPrivateRemarks()); // Agent Remarks
         }
 
         private void UpdateYearBuiltDescriptionInGeneralTab(ResidentialListingRequest listing)
@@ -821,32 +826,6 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(400);
             this.uploaderClient.WriteTextbox(By.Id("Input_140"), listing.GetPublicRemarks()); // Internet / Remarks / Desc. of Property
             this.uploaderClient.WriteTextbox(By.Id("Input_142"), listing.Directions); // Syndication Remarks
-        }
-
-        private void UpdatePrivateRemarksInRemarksTab(CtxListingRequest listing)
-        {
-            var bonusMessage = string.IsNullOrWhiteSpace(listing.MLSNum) ? listing.GetAgentBonusRemarksMessage() : string.Empty;
-
-            var realtorContactEmail = string.Empty;
-            if (!string.IsNullOrEmpty(listing.ContactEmailFromCompany))
-            {
-                realtorContactEmail = listing.ContactEmailFromCompany;
-            }
-            else if (!string.IsNullOrEmpty(listing.RealtorContactEmail))
-            {
-                realtorContactEmail = listing.RealtorContactEmail;
-            }
-            else if (!string.IsNullOrEmpty(listing.RealtorContactEmailFromCommunityProfile))
-            {
-                realtorContactEmail = listing.RealtorContactEmailFromCommunityProfile;
-            }
-
-            realtorContactEmail =
-                (!string.IsNullOrWhiteSpace(realtorContactEmail) &&
-                !(bonusMessage + listing.GetPrivateRemarks()).ToLower().Contains("email contact") &&
-                !(bonusMessage + listing.GetPrivateRemarks()).ToLower().Contains(realtorContactEmail)) ? "Email contact: " + realtorContactEmail + ". " : string.Empty;
-
-            this.uploaderClient.WriteTextbox(By.Id("Input_141"), bonusMessage + listing.GetPrivateRemarks() + realtorContactEmail); // Agent Remarks
         }
 
         private void SetLongitudeAndLatitudeValues(ResidentialListingRequest listing)

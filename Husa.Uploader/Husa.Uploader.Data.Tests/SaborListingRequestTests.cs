@@ -16,7 +16,7 @@ namespace Husa.Uploader.Data.Tests
             };
 
             // Act
-            var result = sut.GetPrivateRemarks(true);
+            var result = sut.GetPrivateRemarks();
 
             // Assert
             Assert.Contains("(123) 456-7890", result);
@@ -34,7 +34,7 @@ namespace Husa.Uploader.Data.Tests
             };
 
             // Act
-            var result = sut.GetPrivateRemarks(true);
+            var result = sut.GetPrivateRemarks();
 
             // Assert
             Assert.Contains("(987) 654-3210", result);
