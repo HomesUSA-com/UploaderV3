@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
-        <PackageReference Include="Husa.CompanyServiceManager.Client" Version="1.0.0" />
-        <PackageReference Include="Husa.Extensions.Common" Version="3.8.1" />
+        <PackageReference Include="Husa.CompanyServiceManager.Client" Version="1.1.0" />
+        <PackageReference Include="Husa.Extensions.Common" Version="3.8.2" />
         <PackageReference Include="Husa.Migration.Api.Client" Version="1.1.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
 		<PackageReference Include="Selenium.Support" Version="4.10.0" />
