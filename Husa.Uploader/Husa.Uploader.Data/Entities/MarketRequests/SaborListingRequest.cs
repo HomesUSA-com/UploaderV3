@@ -565,5 +565,15 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
             return formattedNumber;
         }
+
+        public override string GetAgentBonusAmount()
+        {
+            if (this.HasBonusWithAmount && !string.IsNullOrWhiteSpace(this.AgentBonusAmountType) && decimal.TryParse(this.AgentBonusAmount, out decimal agentBonusAmount))
+            {
+                return this.AgentBonusAmountType == DollarSign ? $"${agentBonusAmount}" : string.Format("{0}%", agentBonusAmount);
+            }
+
+            return string.Empty;
+        }
     }
 }
