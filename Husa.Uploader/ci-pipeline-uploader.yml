@@ -28,7 +28,7 @@ parameters:
 
 variables:
 - name: chromeDriverVersion
-  value: '113.0.5672.63'
+  value: '114.0.5735.90'
 - name: revisionNumber
   value: $[counter('revisions', 1)]
 - name: isPullRequest
