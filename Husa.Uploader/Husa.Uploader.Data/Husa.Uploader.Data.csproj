@@ -7,7 +7,7 @@
     <PackageReference Include="Husa.Extensions.Common" Version="3.8.3" />
     <PackageReference Include="Husa.Extensions.Media" Version="3.1.0" />
     <PackageReference Include="Husa.MediaService.Client" Version="1.0.1" />
-    <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="1.2.0" />
+    <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="1.2.1-dev001" />
     <PackageReference Include="Husa.Quicklister.Sabor.Api.Client" Version="1.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
