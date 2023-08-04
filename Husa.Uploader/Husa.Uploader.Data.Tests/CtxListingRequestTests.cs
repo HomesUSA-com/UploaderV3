@@ -86,6 +86,7 @@ namespace Husa.Uploader.Data.Tests
                 SysCreatedBy = userId,
                 SysModifiedOn = apiDate,
                 SysModifiedBy = userId,
+                StatusFieldsInfo = new(),
                 SaleProperty = new()
                 {
                     SalePropertyInfo = new(),

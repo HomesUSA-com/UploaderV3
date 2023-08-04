@@ -60,6 +60,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             SysCreatedOn = this.listingResponse.SysCreatedOn,
             SysCreatedBy = this.listingResponse.SysCreatedBy,
             AllowPendingList = this.listingResponse.ShowOpenHousesPending,
+            EnableOpenHouse = this.listingResponse.EnableOpenHouses,
         };
 
         public override ResidentialListingRequest CreateFromApiResponseDetail()
@@ -89,6 +90,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             FillFinancialInfo(this.listingDetailResponse.SaleProperty.FinancialInfo);
             FillShowingInfo(this.listingDetailResponse.SaleProperty.ShowingInfo);
             FillSchoolsInfo(this.listingDetailResponse.SaleProperty.SchoolsInfo);
+            FillStatusInfo(this.listingDetailResponse.StatusFieldsInfo);
             FillRoomsInfo(this.listingDetailResponse.SaleProperty.Rooms);
             FillOpenHouseInfo(this.listingDetailResponse.SaleProperty.OpenHouses);
 
@@ -284,6 +286,22 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.SchoolName1 = this.listingDetailResponse.SaleProperty.SchoolsInfo.ElementarySchool?.ToStringFromEnumMember();
                 residentialListingRequest.SchoolName2 = this.listingDetailResponse.SaleProperty.SchoolsInfo.MiddleSchool?.ToStringFromEnumMember();
                 residentialListingRequest.SchoolName3 = this.listingDetailResponse.SaleProperty.SchoolsInfo.HighSchool?.ToStringFromEnumMember();
+            }
+
+            void FillStatusInfo(ListingSaleStatusFieldsResponse statusInfo)
+            {
+                if (statusInfo is null)
+                {
+                    throw new ArgumentNullException(nameof(statusInfo));
+                }
+
+                residentialListingRequest.SoldPrice = statusInfo.ClosePrice;
+                residentialListingRequest.ClosedDate = statusInfo.ClosedDate;
+                residentialListingRequest.Financing = statusInfo.SellerConcessionDescription?.ToStringFromEnumMember();
+                residentialListingRequest.SellConcess = statusInfo.SellConcess;
+                residentialListingRequest.ContractDate = statusInfo.ContractDate;
+                residentialListingRequest.AgentMarketUniqueId = statusInfo.AgentMarketUniqueId;
+                residentialListingRequest.SecondAgentMarketUniqueId = statusInfo.SecondAgentMarketUniqueId;
             }
 
             void FillRoomsInfo(IEnumerable<RoomResponse> rooms)

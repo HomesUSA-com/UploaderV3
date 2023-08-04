@@ -189,7 +189,7 @@ namespace Husa.Uploader.Core.Services
                 this.FillInteriorInformation(listing);
                 this.FillUtilitiesInformation(listing);
                 this.FillTaxHoaInformation(listing);
-                this.FillOfficeInformation(listing);
+                this.FillOfficeInformation(listing as SaborListingRequest);
                 this.FillRemarksInformation(listing as SaborListingRequest);
 
                 if (listing.IsNewListing)
@@ -240,10 +240,10 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("HOWSOLD"), cancellationToken);
                     this.uploaderClient.WriteTextbox(By.Name("HOWSOLD"), listing.MFinancing); // How Sold/Sale Terms
                     this.uploaderClient.WriteTextbox(By.Name("CLOSEDATE"), listing.ClosedDate.Value.ToString("MM/dd/yyyy")); // Closing Date
-                    this.uploaderClient.WriteTextbox(By.Name("SOLDPRICE"), listing.SalesPrice); // Sold Price
-                    this.uploaderClient.WriteTextbox(By.Name("SELLCONCES"), listing.SellerPaid); // Seller Concessions
+                    this.uploaderClient.WriteTextbox(By.Name("SOLDPRICE"), listing.SoldPrice); // Sold Price
+                    this.uploaderClient.WriteTextbox(By.Name("SELLCONCES"), listing.SellConcess); // Seller Concessions
                     this.uploaderClient.WriteTextbox(By.Name("SELL_CONC_DESC"), entry: string.Empty); // Seller Concessions Description
-                    this.uploaderClient.WriteTextbox(By.Name("SELL_CONC_DESC"), listing.SellerPaid > 0 ? listing.BuyerIncentiveDesc : "NONE"); // Seller Concessions Description
+                    this.uploaderClient.WriteTextbox(By.Name("SELL_CONC_DESC"), !string.IsNullOrEmpty(listing.BuyerIncentiveDesc) ? listing.BuyerIncentiveDesc : "NONE"); // Seller Concessions Description
                 }
 
                 if (listing.ListStatus == "PDB" || listing.ListStatus == "PND" || listing.ListStatus == "SLD")
@@ -594,7 +594,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 else
                 {
-                    direction = direction + ".";
+                    direction += ".";
                 }
             }
 
@@ -1096,7 +1096,7 @@ namespace Husa.Uploader.Core.Services
             _ => throw new ArgumentOutOfRangeException(nameof(numHoa)),
         };
 
-        private void FillOfficeInformation(ResidentialListingRequest listing)
+        private void FillOfficeInformation(SaborListingRequest listing)
         {
             Thread.Sleep(1000);
             this.uploaderClient.ExecuteScript(" SP('5') ");
