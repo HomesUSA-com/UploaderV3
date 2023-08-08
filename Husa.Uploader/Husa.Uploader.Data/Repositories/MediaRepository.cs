@@ -115,7 +115,8 @@ namespace Husa.Uploader.Data.Repositories
                 requestMedia: result,
                 market,
                 token);
-            return result;
+
+            return result.OrderBy(m => m.Order);
         }
 
         public async Task<IEnumerable<ResidentialListingVirtualTour>> GetListingVirtualTours(Guid residentialListingRequestId, MarketCode market, CancellationToken token)

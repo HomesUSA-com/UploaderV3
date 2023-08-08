@@ -1175,19 +1175,7 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private bool MediaUpload()
         {
-            if (!this.SelectedListingRequest.IsNewListing)
-            {
-                return false;
-            }
-
-            var mlsNum = this.RequestMlsNumber();
-            if (!string.IsNullOrWhiteSpace(mlsNum))
-            {
-                this.SelectedListingRequest.FullListing.MLSNum = mlsNum;
-                return true;
-            }
-
-            return false;
+            return !(this.SelectedListingRequest.IsNewListing || string.IsNullOrEmpty(this.SelectedListingRequest.FullListing.MLSNum));
         }
 
         private async Task FinishUpload()

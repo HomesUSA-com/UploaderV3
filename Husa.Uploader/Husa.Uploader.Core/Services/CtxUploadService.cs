@@ -167,6 +167,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillFinancialInformation(listing);
                     this.FillShowingInformation(listing);
                     this.FillRemarks(listing as CtxListingRequest);
+                    await this.FillMedia(listing, cancellationToken);
                 }
                 catch (Exception exception)
                 {
@@ -221,7 +222,7 @@ namespace Husa.Uploader.Core.Services
             async Task<UploadResult> UpdateListingImages()
             {
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken);
-                this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Updating media for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
                 await this.Login();
@@ -230,9 +231,8 @@ namespace Husa.Uploader.Core.Services
                 // Enter Manage Photos
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"), cancellationToken);
                 this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
-
-                // Prepare Media
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSave"), cancellationToken);
+
                 this.DeleteAllImages();
                 await this.ProcessImages(listing, cancellationToken);
                 return UploadResult.Success;
@@ -731,6 +731,24 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_141"), listing.GetPrivateRemarks()); // Agent Remarks
         }
 
+        private async Task FillMedia(ResidentialListingRequest listing, CancellationToken cancellationToken)
+        {
+            if (!listing.IsNewListing)
+            {
+                this.logger.LogInformation("Skipping media upload for existing listing {listingId}", listing.ResidentialListingID);
+                return;
+            }
+
+            // Enter Manage Photos
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSaveIncomplete"), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.Id("m_lbSaveIncomplete"));
+            Thread.Sleep(1000);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbManagePhotos"), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.Id("m_lbManagePhotos"));
+
+            await this.ProcessImages(listing, cancellationToken);
+        }
+
         private void UpdateYearBuiltDescriptionInGeneralTab(ResidentialListingRequest listing)
         {
             const string tabName = "General";
@@ -773,16 +791,6 @@ namespace Husa.Uploader.Core.Services
 
         private async Task ProcessImages(ResidentialListingRequest listing, CancellationToken cancellationToken)
         {
-            this.uploaderClient.ExecuteScript(script: "javascript:var btn = jQuery('#m_lbSave')[0]; btn.click();");
-            this.uploaderClient.AcceptAlertWindow(isElementOptional: true);
-            this.NavigateToQuickEdit(listing.MLSNum);
-
-            Thread.Sleep(400);
-
-            // Enter Manage Photos
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"), cancellationToken);
-            this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
-
             var media = await this.mediaRepository.GetListingImages(listing.ResidentialListingRequestID, market: MarketCode.CTX, cancellationToken);
             var imageOrder = 0;
             foreach (var image in media)
@@ -790,19 +798,17 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
 
                 this.uploaderClient.FindElement(By.Id("m_ucImageLoader_m_tblImageLoader")).FindElement(By.CssSelector("input[type=file]")).SendKeys(image.PathOnDisk);
-
+                Thread.Sleep(3000);
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id($"photoCell_{imageOrder}"), cancellationToken);
 
-                this.uploaderClient.ExecuteScript($"jQuery('#photoCell_{imageOrder} a')[0].click();");
-                Thread.Sleep(500);
-
-                this.uploaderClient.ExecuteScript($"jQuery('#m_tbxDescription').val('{image.Caption}');");
-
-                Thread.Sleep(500);
-
-                this.uploaderClient.ExecuteScript("jQuery('#m_ucDetailsView_m_btnSave').parent().removeClass('disabled');");
-
-                this.uploaderClient.ClickOnElementById("m_ucDetailsView_m_btnSave");
+                if (!string.IsNullOrEmpty(image.Caption))
+                {
+                    this.uploaderClient.ExecuteScript($"jQuery('#photoCell_{imageOrder} a')[0].click();");
+                    Thread.Sleep(500);
+                    this.uploaderClient.ExecuteScript($"jQuery('#m_tbxDescription').val('{image.Caption}');");
+                    Thread.Sleep(500);
+                    this.uploaderClient.ClickOnElementById("m_ucDetailsView_m_btnSave");
+                }
 
                 imageOrder++;
             }
