@@ -189,7 +189,7 @@ namespace Husa.Uploader.Core.Services
                 this.FillInteriorInformation(listing);
                 this.FillUtilitiesInformation(listing);
                 this.FillTaxHoaInformation(listing);
-                this.FillOfficeInformation(listing);
+                this.FillOfficeInformation(listing as SaborListingRequest);
                 this.FillRemarksInformation(listing as SaborListingRequest);
 
                 if (listing.IsNewListing)
@@ -1096,7 +1096,7 @@ namespace Husa.Uploader.Core.Services
             _ => throw new ArgumentOutOfRangeException(nameof(numHoa)),
         };
 
-        private void FillOfficeInformation(ResidentialListingRequest listing)
+        private void FillOfficeInformation(SaborListingRequest listing)
         {
             Thread.Sleep(1000);
             this.uploaderClient.ExecuteScript(" SP('5') ");

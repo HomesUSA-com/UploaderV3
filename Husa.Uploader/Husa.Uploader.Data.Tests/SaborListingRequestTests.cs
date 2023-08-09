@@ -60,5 +60,23 @@ namespace Husa.Uploader.Data.Tests
             // Assert
             Assert.Empty(result);
         }
+
+        [Fact]
+        public void GetAgentBonusAmount_Amount()
+        {
+            // Arrange
+            var sut = new SaborListingRequest(new ListingSaleRequestQueryResponse())
+            {
+                AgentBonusAmountType = "$",
+                AgentBonusAmount = "1000",
+                HasBonusWithAmount = true,
+            };
+
+            // Act
+            var result = sut.GetAgentBonusAmount();
+
+            // Assert
+            Assert.Equal("$1000", result);
+        }
     }
 }

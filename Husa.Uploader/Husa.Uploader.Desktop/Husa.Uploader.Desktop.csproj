@@ -9,7 +9,7 @@
         <ProductName>HomesUSA Uploader Core</ProductName>
         <PublisherName>HomesUSA.com</PublisherName>
         <SuiteName>HomesUSA</SuiteName>
-        <ApplicationVersion>2.2.0.*</ApplicationVersion>
+        <ApplicationVersion>2.3.0.*</ApplicationVersion>
         <ApplicationIcon>Media\icon.ico</ApplicationIcon>
     </PropertyGroup>
 
@@ -65,7 +65,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Husa.Migration.Api.Client" Version="1.1.0" />
+        <PackageReference Include="Husa.Migration.Api.Client" Version="1.1.1" />
         <PackageReference Include="Husa.CompanyServiceManager.Client" Version="1.1.0" />
         <PackageReference Include="Husa.Extensions.Api" Version="4.0.2" />
         <PackageReference Include="MahApps.Metro" Version="3.0.0-alpha0457" />
@@ -85,7 +85,7 @@
         <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
         <PackageReference Include="Serilog.Sinks.EventLog" Version="3.1.0" />
         <PackageReference Include="Serilog.Sinks.Trace" Version="3.0.0" />
-        <PackageReference Include="Husa.Extensions.Common" Version="3.8.2" />
+        <PackageReference Include="Husa.Extensions.Common" Version="3.8.3" />
         <PackageReference Include="System.IO.Abstractions" Version="19.2.29" />
     </ItemGroup>
 

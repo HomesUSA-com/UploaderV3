@@ -60,6 +60,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             SysCreatedOn = this.listingResponse.SysCreatedOn,
             SysCreatedBy = this.listingResponse.SysCreatedBy,
             AllowPendingList = this.listingResponse.ShowOpenHousesPending,
+            EnableOpenHouse = this.listingResponse.EnableOpenHouses,
         };
 
         public override ResidentialListingRequest CreateFromApiResponseDetail()
