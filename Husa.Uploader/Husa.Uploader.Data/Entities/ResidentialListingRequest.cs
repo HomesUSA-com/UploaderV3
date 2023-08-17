@@ -718,6 +718,8 @@ namespace Husa.Uploader.Data.Entities
 
         public string ProposedTerms { get; set; }
 
+        public string Exemptions { get; set; }
+
         public string DistanceToWaterAccess { get; set; }
 
         public string Bath1Dim { get; set; }

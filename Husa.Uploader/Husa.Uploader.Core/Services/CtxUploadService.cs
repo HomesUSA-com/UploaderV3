@@ -665,14 +665,9 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.ClickOnElement(By.LinkText("Financial")); // Financial
 
-            //// this.uploaderClient.SetMultipleCheckboxById("Input_149", ??? ); // Special
-            //// this.uploaderClient.WriteTextbox(By.Name("PROPSDTRMS"), listing.PROPSDTRMS);
-            //// this.uploaderClient.SetMultipleCheckboxById("Input_150", "NEGOT,CASH,CONVE,FHA,TEXAS,VA"); // Proposed Terms
-            //// this.uploaderClient.SetMultipleCheckboxById("Input_150", listing.PROPSDTRMS, "Proposed Terms", tabName); // Proposed Terms
-
-            // this.uploaderClient.SetSelect(By.Id("Input_624"), listing.HasHOA, "HOA", tabName); // HOA
             this.uploaderClient.SetMultipleCheckboxById("Input_614", "ATCLO,FUNDI", fieldLabel: "Possession (Max 7)", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_744", listing.ProposedTerms, fieldLabel: "Acceptable Financing", tabName); // Proposed Terms
+            this.uploaderClient.SetMultipleCheckboxById("Input_616", listing.Exemptions, fieldLabel: "Exemptions", tabName); // Exemptions
             this.uploaderClient.WriteTextbox(By.Id("Input_618"), listing.TaxYear); // Tax Year
             this.uploaderClient.WriteTextbox(By.Id("Input_619"), listing.TaxRate); // Tax Rate
             if (!string.IsNullOrEmpty(listing.HOA))

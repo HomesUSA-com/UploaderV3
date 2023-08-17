@@ -235,6 +235,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 }
 
                 residentialListingRequest.ProposedTerms = financialInfo.ProposedTerms.ToStringFromEnumMembers();
+                residentialListingRequest.Exemptions = financialInfo.Exemptions.ToStringFromEnumMembers();
                 residentialListingRequest.TaxRate = financialInfo.TaxRate.DecimalToString();
                 residentialListingRequest.TaxYear = financialInfo.TaxYear.IntegerToString();
                 residentialListingRequest.TitleCo = financialInfo.TitleCompany;
@@ -315,8 +316,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 {
                     this.Rooms.Add(new()
                     {
-                        Width = room.Width,
-                        Length = room.Length,
+                        Width = room.Width ?? 0,
+                        Length = room.Length ?? 0,
                         Level = room.Level.ToStringFromEnumMember(),
                         RoomType = room.RoomType.ToStringFromEnumMember(),
                     });
