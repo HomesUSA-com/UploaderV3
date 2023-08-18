@@ -18,16 +18,24 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EAD83611-BD28-49EA-AE6D-FF0BCFB71ADB}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		..\.gitignore = ..\.gitignore
+		.gitignore = .gitignore
+		Pipelines\ci-pipeline-uploader-signalr-webapp.yml = Pipelines\ci-pipeline-uploader-signalr-webapp.yml
 		ci-pipeline-uploader.yml = ci-pipeline-uploader.yml
 		Directory.Build.props = Directory.Build.props
-		..\README.md = ..\README.md
+		README.md = README.md
 		stylecop.json = stylecop.json
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Husa.Uploader.SignalR.WebApp", "Husa.Uploader.SignalR.WebApp\Husa.Uploader.SignalR.WebApp.csproj", "{62BAB59C-E4A4-4CFB-AE77-43E5121F3802}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Husa.Uploader.Core.Tests", "Husa.Uploader.Core.Tests\Husa.Uploader.Core.Tests.csproj", "{76915118-92E4-440D-BCD0-D4D035B58837}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{26DE8BE0-63ED-464E-B3F6-D85111B40406}"
+	ProjectSection(SolutionItems) = preProject
+		Scripts\DownloadChromeDriver.ps1 = Scripts\DownloadChromeDriver.ps1
+		Scripts\UpdatePublishAppVersion.ps1 = Scripts\UpdatePublishAppVersion.ps1
+		Scripts\UpdatePublishProfile.ps1 = Scripts\UpdatePublishProfile.ps1
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

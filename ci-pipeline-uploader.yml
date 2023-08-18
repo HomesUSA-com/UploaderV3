@@ -36,7 +36,7 @@ variables:
 - name: isManual
   value: $[eq(variables['Build.Reason'], 'Manual')]
 - name: projectDirectory
-  value: '$(Build.SourcesDirectory)\Husa.Uploader\Husa.Uploader.Desktop'
+  value: '$(Build.SourcesDirectory)\Husa.Uploader.Desktop'
 - ${{ if or(eq(parameters.environment, 'PROD'),and(eq(parameters.environment, 'AUTO'),contains(variables['Build.SourceBranch'], 'master'))) }}:
   - group: homesusa.husa.uploader-prod
 - ${{ elseif  or(eq(parameters.environment, 'QA'),and(eq(parameters.environment, 'AUTO'),contains(variables['Build.SourceBranch'], 'release'))) }}:
@@ -50,33 +50,33 @@ steps:
 - task: PowerShell@2
   displayName: 'Download ChromeDriver'
   inputs:
-    filePath: '$(Build.SourcesDirectory)\Husa.Uploader\Scripts\DownloadChromeDriver.ps1'
+    filePath: '$(Build.SourcesDirectory)\Scripts\DownloadChromeDriver.ps1'
     arguments: '-version "$(chromeDriverVersion)" -path "$(projectDirectory)"'
 
 - task: FileTransform@1
   displayName: 'File Transform: appsettings.json'
   inputs:
-    folderPath: 'Husa.Uploader/Husa.Uploader.Desktop/'
+    folderPath: 'Husa.Uploader.Desktop/'
     fileType: json
     targetFiles: '**/appsettings.json'
 
 - task: PowerShell@2
   displayName: 'Update HTML with Version'
   inputs:
-    filePath: '$(Build.SourcesDirectory)\Husa.Uploader\Scripts\UpdatePublishAppVersion.ps1'
+    filePath: '$(Build.SourcesDirectory)\Scripts\UpdatePublishAppVersion.ps1'
     arguments: '-revision "$(revisionNumber)" -csprojPath "$(projectDirectory)\Husa.Uploader.Desktop.csproj" -htmlFilePath "$(projectDirectory)\Deployment\Publish.html" -destinationFilePath "$(build.artifactstagingdirectory)"'
 
 - task: PowerShell@2
   displayName: 'Update PublishDir and PublishUrl in publish profile'
   inputs:
-    filePath: '$(Build.SourcesDirectory)\Husa.Uploader\Scripts\UpdatePublishProfile.ps1'
+    filePath: '$(Build.SourcesDirectory)\Scripts\UpdatePublishProfile.ps1'
     arguments: '-publishDir "$(build.artifactstagingdirectory)" -publishProfilePath "$(projectDirectory)\Properties\PublishProfiles\ClickOnceProfile.pubxml" -publishUrl "$(Application.PublishingPath)"'
 
 - task: DotNetCoreCLI@2 
   displayName: 'dotnet restore'
   inputs:
     command: restore
-    projects: '**/Husa.Uploader/Husa.Uploader.sln'
+    projects: '**/Husa.Uploader.sln'
     restoreArguments: '/property:Configuration=Release'
     feedsToUse: 'select'
     vstsFeed: 'f820f957-6781-4cd6-b5f5-e720c189507f/891ce0ed-37b7-4336-b1fe-079c0525a171'
@@ -84,7 +84,7 @@ steps:
 - task: DotNetCoreCLI@2
   displayName: 'dotnet build'
   inputs:
-    projects: '**/Husa.Uploader/Husa.Uploader.sln'
+    projects: '**/Husa.Uploader.sln'
     arguments: '--configuration Release --no-restore'
 
 - task: DotNetCoreCLI@2
@@ -92,7 +92,7 @@ steps:
   continueOnError: false
   inputs:
     command: test
-    projects: '**/Husa.Uploader/Husa.Uploader.sln'
+    projects: '**/Husa.Uploader.sln'
     arguments: '--configuration Release --no-build --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura --logger trx'
     publishTestResults: true
 
