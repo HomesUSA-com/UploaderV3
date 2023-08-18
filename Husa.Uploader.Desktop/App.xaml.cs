@@ -1,7 +1,6 @@
 namespace Husa.Uploader.Desktop
 {
     using System;
-    using System.Globalization;
     using System.IO;
     using System.Threading;
     using System.Windows;
@@ -62,8 +61,8 @@ namespace Husa.Uploader.Desktop
                     services
                         .AddOptions<JsonOptions>()
                         .Configure<IConfiguration>((jsonOptions, config) => jsonOptions.JsonSerializerOptions.SetConfiguration());
-                    SetUSLocale();
                 })
+                .SetCultureInfo()
                 .Build();
         }
 
@@ -119,13 +118,6 @@ namespace Husa.Uploader.Desktop
 
             var hubConnection = AppHost.Services.GetRequiredService<HubConnection>();
             await hubConnection.StopAsync();
-        }
-
-        private static void SetUSLocale()
-        {
-            var cultureInfo = new CultureInfo("en-US");
-            CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
-            CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
         }
     }
 }

@@ -92,7 +92,6 @@ namespace Husa.Uploader.Desktop.ViewModels
         public void Continue()
         {
             var currentWindow = Application.Current.Windows.OfType<Window>().SingleOrDefault(window => window.DataContext == this);
-            ////if (decimal.TryParse(this.Latitude, out decimal value) && decimal.TryParse(this.Longitude, out value))
             if (currentWindow != null)
             {
                 currentWindow.DialogResult = true;

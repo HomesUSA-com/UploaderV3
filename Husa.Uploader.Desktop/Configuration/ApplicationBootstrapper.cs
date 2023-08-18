@@ -1,6 +1,7 @@
 namespace Husa.Uploader.Desktop.Configuration
 {
     using System;
+    using System.Globalization;
     using System.IO;
     using System.IO.Abstractions;
     using System.Reflection;
@@ -201,6 +202,18 @@ namespace Husa.Uploader.Desktop.Configuration
                 .WithUrl($"{options.SignalRURLServer}/uploaderHub")
                 .Build();
             });
+        }
+
+        public static IHostBuilder SetCultureInfo(this IHostBuilder hostBuilder)
+        {
+            var customCulture = new CultureInfo("en-US");
+
+            CultureInfo.DefaultThreadCurrentCulture = customCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = customCulture;
+            Thread.CurrentThread.CurrentCulture = customCulture;
+            Thread.CurrentThread.CurrentUICulture = customCulture;
+
+            return hostBuilder;
         }
     }
 }

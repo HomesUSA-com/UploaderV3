@@ -7,7 +7,7 @@ pr:
     - master
   paths:
     include:
-      - Husa.Uploader/Husa.Uploader.SignalR.WebApp
+      - Husa.Uploader.SignalR.WebApp
 
 trigger:
   branches:
@@ -18,7 +18,7 @@ trigger:
     - master
   paths:
     include:
-      - Husa.Uploader/Husa.Uploader.SignalR.WebApp
+      - Husa.Uploader.SignalR.WebApp
 
 pool:
   vmImage: windows-latest
@@ -32,14 +32,14 @@ steps:
   displayName: 'dotnet restore'
   inputs:
     command: restore
-    projects: '**/Husa.Uploader/Husa.Uploader.SignalR.WebApp/Husa.Uploader.SignalR.WebApp.csproj'
+    projects: '**/Husa.Uploader.SignalR.WebApp/Husa.Uploader.SignalR.WebApp.csproj'
     restoreArguments: '/property:Configuration=Release'
     feedsToUse: 'select'
     vstsFeed: 'f820f957-6781-4cd6-b5f5-e720c189507f/891ce0ed-37b7-4336-b1fe-079c0525a171'
 - task: DotNetCoreCLI@2
   displayName: 'dotnet build'
   inputs:
-    projects: '**/Husa.Uploader/Husa.Uploader.SignalR.WebApp/Husa.Uploader.SignalR.WebApp.csproj'
+    projects: '**/Husa.Uploader.SignalR.WebApp/Husa.Uploader.SignalR.WebApp.csproj'
     arguments: '--configuration $(BuildConfiguration)'
 - task: DotNetCoreCLI@2
   displayName: 'dotnet publish'
@@ -47,7 +47,7 @@ steps:
   inputs:
     command: publish
     publishWebProjects: false
-    projects: '**/Husa.Uploader/Husa.Uploader.SignalR.WebApp/Husa.Uploader.SignalR.WebApp.csproj'
+    projects: '**/Husa.Uploader.SignalR.WebApp/Husa.Uploader.SignalR.WebApp.csproj'
     arguments: '--configuration Release --output $(build.artifactstagingdirectory)'
 - task: PublishBuildArtifacts@1
   condition: and(succeededOrFailed(), ne(variables.isPullRequest, true))
