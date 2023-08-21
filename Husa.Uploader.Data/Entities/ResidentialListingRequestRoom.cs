@@ -4,9 +4,11 @@ namespace Husa.Uploader.Data.Entities
     {
         public string Dimensions => $"{this.Length} X {this.Width}";
 
-        public int Length { get; set; }
+        public bool HasDimensions => this.Length.HasValue && this.Width.HasValue;
 
-        public int Width { get; set; }
+        public int? Length { get; set; }
+
+        public int? Width { get; set; }
 
         public string Level { get; set; }
 

@@ -584,7 +584,12 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetSelect(By.Id($"_Input_556__REPEAT{i}_190"), room.RoomType, "Room Type", tabName);
                 this.uploaderClient.ResetImplicitWait();
                 this.uploaderClient.SetSelect(By.Id($"_Input_556__REPEAT{i}_491"), room.Level, "Level", tabName, isElementOptional: true);
-                this.uploaderClient.WriteTextbox(By.Id($"_Input_556__REPEAT{i}_191"), $"{room.Length} X {room.Width}", isElementOptional: true);
+
+                if (room.HasDimensions)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id($"_Input_556__REPEAT{i}_191"), room.Dimensions, isElementOptional: true);
+                }
+
                 this.uploaderClient.ScrollDownToElementHTML(roomType);
                 i++;
             }
