@@ -53,6 +53,12 @@ steps:
     filePath: '$(Build.SourcesDirectory)\Scripts\DownloadChromeDriver.ps1'
     arguments: '-version "$(chromeDriverVersion)" -path "$(projectDirectory)"'
 
+- task: PowerShell@2
+  displayName: 'Download Chrome'
+  inputs:
+    filePath: '$(Build.SourcesDirectory)\Scripts\DownloadChrome.ps1'
+    arguments: '-version "$(chromeDriverVersion)" -path "$(projectDirectory)"'
+
 - task: FileTransform@1
   displayName: 'File Transform: appsettings.json'
   inputs:
