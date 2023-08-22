@@ -32,6 +32,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Husa.Uploader.Core.Tests", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{26DE8BE0-63ED-464E-B3F6-D85111B40406}"
 	ProjectSection(SolutionItems) = preProject
+		Scripts\DownloadChrome.ps1 = Scripts\DownloadChrome.ps1
 		Scripts\DownloadChromeDriver.ps1 = Scripts\DownloadChromeDriver.ps1
 		Scripts\UpdatePublishAppVersion.ps1 = Scripts\UpdatePublishAppVersion.ps1
 		Scripts\UpdatePublishProfile.ps1 = Scripts\UpdatePublishProfile.ps1

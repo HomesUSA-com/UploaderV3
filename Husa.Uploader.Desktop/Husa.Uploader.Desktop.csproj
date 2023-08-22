@@ -46,6 +46,7 @@
         <None Remove="Media\icon.ico" />
         <None Remove="Media\lots-icon-1.png" />
         <None Remove="Media\Password Dots.ttf" />
+        <None Remove="ChromeForTesting\**\*" />
     </ItemGroup>
 
     <ItemGroup>
@@ -119,9 +120,19 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="Deployment\Publish.html">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
+        <None Update="Deployment\Publish.html">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="ChromeForTesting\" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="ChromeForTesting\**\*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>
