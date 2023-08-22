@@ -144,8 +144,8 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<IWebDriver>(provider =>
             {
                 var appOptions = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
-                var chromeOptions = GetOptions(appOptions.Uploader);
                 var driverPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                var chromeOptions = GetOptions(appOptions.Uploader, driverPath);
                 var driverService = ChromeDriverService.CreateDefaultService(driverPath);
                 driverService.HideCommandPromptWindow = true;
                 return new ChromeDriver(driverService, options: chromeOptions);
@@ -158,9 +158,12 @@ namespace Husa.Uploader.Desktop.Configuration
 
             return services;
 
-            static ChromeOptions GetOptions(UploaderSettings uploaderOptions)
+            static ChromeOptions GetOptions(UploaderSettings uploaderOptions, string driverPath)
             {
-                var options = new ChromeOptions();
+                var options = new ChromeOptions
+                {
+                    BinaryLocation = @$"{driverPath}\ChromeForTesting\chrome.exe",
+                };
                 options.AddArguments(uploaderOptions.ChromeOptions.Arguments);
                 foreach (var preference in uploaderOptions.ChromeOptions.UserProfilePreferences)
                 {
