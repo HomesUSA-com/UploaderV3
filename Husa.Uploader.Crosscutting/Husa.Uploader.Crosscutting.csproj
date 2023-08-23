@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<ItemGroup>
+        <PackageReference Include="Husa.Extensions.Common" Version="3.9.0" />
+        <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="1.3.0" />
+	</ItemGroup>
+
+</Project>

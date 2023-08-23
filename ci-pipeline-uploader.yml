@@ -1,0 +1,136 @@
+pr:
+  branches:
+    include:
+    - develop
+    - release/*
+    - hotfix/*
+    - master
+    
+trigger:
+  - develop
+  - release/*
+  - hotfix/*
+  - master
+
+pool:
+  vmImage: windows-latest
+
+parameters:
+- name: environment
+  displayName: ENVIRONMENT
+  type: string
+  default: AUTO
+  values:
+  - AUTO
+  - DEV
+  - QA
+  - PROD
+
+variables:
+- name: chromeDriverVersion
+  value: '116.0.5845.96'
+- name: revisionNumber
+  value: $[counter('revisions', 1)]
+- name: isPullRequest
+  value: $[eq(variables['Build.Reason'], 'PullRequest')]
+- name: isManual
+  value: $[eq(variables['Build.Reason'], 'Manual')]
+- name: projectDirectory
+  value: '$(Build.SourcesDirectory)\Husa.Uploader.Desktop'
+- ${{ if or(eq(parameters.environment, 'PROD'),and(eq(parameters.environment, 'AUTO'),contains(variables['Build.SourceBranch'], 'master'))) }}:
+  - group: homesusa.husa.uploader-prod
+- ${{ elseif  or(eq(parameters.environment, 'QA'),and(eq(parameters.environment, 'AUTO'),contains(variables['Build.SourceBranch'], 'release'))) }}:
+  - group: homesusa.husa.uploader-qa
+- ${{ elseif  or(eq(parameters.environment, 'DEV'),and(eq(parameters.environment, 'AUTO'),contains(variables['Build.SourceBranch'], 'develop'))) }}:
+  - group: homesusa.husa.uploader-dev
+- ${{ else }}:
+  - group: homesusa.husa.uploader-dev
+
+steps:
+- task: PowerShell@2
+  displayName: 'Download ChromeDriver'
+  inputs:
+    filePath: '$(Build.SourcesDirectory)\Scripts\DownloadChromeDriver.ps1'
+    arguments: '-version "$(chromeDriverVersion)" -path "$(projectDirectory)"'
+
+- task: PowerShell@2
+  displayName: 'Download Chrome'
+  inputs:
+    filePath: '$(Build.SourcesDirectory)\Scripts\DownloadChrome.ps1'
+    arguments: '-version "$(chromeDriverVersion)" -path "$(projectDirectory)"'
+
+- task: FileTransform@1
+  displayName: 'File Transform: appsettings.json'
+  inputs:
+    folderPath: 'Husa.Uploader.Desktop/'
+    fileType: json
+    targetFiles: '**/appsettings.json'
+
+- task: PowerShell@2
+  displayName: 'Update HTML with Version'
+  inputs:
+    filePath: '$(Build.SourcesDirectory)\Scripts\UpdatePublishAppVersion.ps1'
+    arguments: '-revision "$(revisionNumber)" -csprojPath "$(projectDirectory)\Husa.Uploader.Desktop.csproj" -htmlFilePath "$(projectDirectory)\Deployment\Publish.html" -destinationFilePath "$(build.artifactstagingdirectory)"'
+
+- task: PowerShell@2
+  displayName: 'Update PublishDir and PublishUrl in publish profile'
+  inputs:
+    filePath: '$(Build.SourcesDirectory)\Scripts\UpdatePublishProfile.ps1'
+    arguments: '-publishDir "$(build.artifactstagingdirectory)" -publishProfilePath "$(projectDirectory)\Properties\PublishProfiles\ClickOnceProfile.pubxml" -publishUrl "$(Application.PublishingPath)"'
+
+- task: DotNetCoreCLI@2 
+  displayName: 'dotnet restore'
+  inputs:
+    command: restore
+    projects: '**/Husa.Uploader.sln'
+    restoreArguments: '/property:Configuration=Release'
+    feedsToUse: 'select'
+    vstsFeed: 'f820f957-6781-4cd6-b5f5-e720c189507f/891ce0ed-37b7-4336-b1fe-079c0525a171'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build'
+  inputs:
+    projects: '**/Husa.Uploader.sln'
+    arguments: '--configuration Release --no-restore'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet test'
+  continueOnError: false
+  inputs:
+    command: test
+    projects: '**/Husa.Uploader.sln'
+    arguments: '--configuration Release --no-build --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura --logger trx'
+    publishTestResults: true
+
+- task: MSBuild@1
+  condition: ne(variables.isPullRequest, true)
+  displayName: 'publish with ClickOnce'
+  inputs:
+    solution: '**/Husa.Uploader.Desktop/Husa.Uploader.Desktop.csproj'
+    msbuildArguments: '/target:Publish /p:ApplicationRevision=$(revisionNumber) /P:PublishProfile=$(projectDirectory)\Properties\PublishProfiles\ClickOnceProfile.pubxml'
+    platform: 'AnyCPU'
+    configuration: 'Release'
+    logFileVerbosity: 'detailed'
+
+- task: PublishBuildArtifacts@1
+  condition: ne(variables.isPullRequest, true)
+  displayName: 'publish Artifact: drop'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+
+- task: PowerShell@2
+  displayName: 'output environment'
+  inputs:
+    targetType: 'inline'
+    script: |
+      $variable = "$(Environment)"
+      $variable | Out-File $(Build.ArtifactStagingDirectory)\environment.txt
+      Get-Content $(Build.ArtifactStagingDirectory)\environment.txt
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<ItemGroup>
+        <PackageReference Include="Husa.CompanyServiceManager.Client" Version="1.1.0" />
+        <PackageReference Include="Husa.Extensions.Common" Version="3.9.0" />
+        <PackageReference Include="Husa.Migration.Api.Client" Version="1.1.1" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
+		<PackageReference Include="Selenium.Support" Version="4.11.0" />
+		<PackageReference Include="Selenium.WebDriver" Version="4.11.0" />
+		<PackageReference Include="System.IO.Abstractions" Version="19.2.51" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Husa.Uploader.Crosscutting\Husa.Uploader.Crosscutting.csproj" />
+		<ProjectReference Include="..\Husa.Uploader.Data\Husa.Uploader.Data.csproj" />
+	</ItemGroup>
+
+</Project>
