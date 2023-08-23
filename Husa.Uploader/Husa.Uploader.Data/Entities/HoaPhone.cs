@@ -4,9 +4,9 @@ namespace Husa.Uploader.Data.Entities
     {
         public HoaPhone(string phone)
         {
-            this.AreaCode = phone.Substring(0, 3);
-            this.Prefix = phone.Substring(3, 3);
-            this.LineNumber = phone.Substring(6, 4);
+            this.AreaCode = phone != null ? phone.Substring(0, 3) : string.Empty;
+            this.Prefix = phone != null ? phone.Substring(3, 3) : string.Empty;
+            this.LineNumber = phone != null ? phone.Substring(6, 4) : string.Empty;
         }
 
         public string AreaCode { get; set; }
