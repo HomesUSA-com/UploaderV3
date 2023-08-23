@@ -1,6 +1,7 @@
 namespace Husa.Uploader.Data.Repositories
 {
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Abor.Api.Client;
     using Husa.Quicklister.CTX.Api.Client;
     using Husa.Quicklister.Sabor.Api.Client;
     using Husa.Uploader.Crosscutting.Options;
@@ -9,6 +10,7 @@ namespace Husa.Uploader.Data.Repositories
     using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
+    using AborContracts = Husa.Quicklister.Abor.Api.Contracts;
     using CtxContracts = Husa.Quicklister.CTX.Api.Contracts;
     using QuicklisterStatus = Husa.Quicklister.Extensions.Domain.Enums.ListingRequestState;
     using SaborContracts = Husa.Quicklister.Sabor.Api.Contracts;
@@ -17,6 +19,7 @@ namespace Husa.Uploader.Data.Repositories
     {
         private readonly IQuicklisterSaborClient quicklisterSaborClient;
         private readonly IQuicklisterCtxClient quicklisterCtxClient;
+        private readonly IQuicklisterAborClient quicklisterAborClient;
         private readonly ILogger<ListingRequestRepository> logger;
         private readonly MarketConfiguration marketConfiguration;
 
@@ -24,10 +27,12 @@ namespace Husa.Uploader.Data.Repositories
             IOptions<ApplicationOptions> applicationOptions,
             IQuicklisterSaborClient quicklisterSaborClient,
             IQuicklisterCtxClient quicklisterCtxClient,
+            IQuicklisterAborClient quicklisterAborClient,
             ILogger<ListingRequestRepository> logger)
         {
             this.quicklisterSaborClient = quicklisterSaborClient ?? throw new ArgumentNullException(nameof(quicklisterSaborClient));
             this.quicklisterCtxClient = quicklisterCtxClient ?? throw new ArgumentNullException(nameof(quicklisterCtxClient));
+            this.quicklisterAborClient = quicklisterAborClient ?? throw new ArgumentNullException(nameof(quicklisterAborClient));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.marketConfiguration = applicationOptions?.Value?.MarketInfo ?? throw new ArgumentNullException(nameof(applicationOptions));
         }
@@ -73,6 +78,25 @@ namespace Husa.Uploader.Data.Repositories
                 }
             }
 
+            if (this.marketConfiguration.Abor.IsEnabled)
+            {
+                this.logger.LogInformation("Getting all pending requests for {marketCode}", MarketCode.CTX);
+
+                var filter = new AborContracts.Request.SaleRequest.ListingSaleRequestFilter
+                {
+                    RequestState = QuicklisterStatus.Pending,
+                };
+                var requests = await this.quicklisterAborClient.ListingSaleRequest.GetListRequestAsync(filter, token);
+                if (requests.Data.Any())
+                {
+                    var internalSARLRCosmo = requests.Data
+                        .Select(request => new AborListingRequest(request).CreateFromApiResponse())
+                        .ToList();
+
+                    pendingRequests.AddRange(internalSARLRCosmo);
+                }
+            }
+
             return pendingRequests.Distinct();
         }
 
@@ -92,6 +116,7 @@ namespace Husa.Uploader.Data.Repositories
             {
                 MarketCode.SanAntonio => await GetFromSabor(),
                 MarketCode.CTX => await GetFromCtx(),
+                MarketCode.Austin => await GetFromAbor(),
                 _ => throw new NotSupportedException($"The market {marketCode} is not yet supported"),
             };
 
@@ -107,6 +132,12 @@ namespace Husa.Uploader.Data.Repositories
             {
                 var request = await this.quicklisterCtxClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
                 return new CtxListingRequest(request).CreateFromApiResponseDetail();
+            }
+
+            async Task<ResidentialListingRequest> GetFromAbor()
+            {
+                var request = await this.quicklisterAborClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
+                return new AborListingRequest(request).CreateFromApiResponseDetail();
             }
         }
     }

@@ -29,7 +29,7 @@ namespace Husa.Uploader.Data.Tests
             {
                 Ctx = new()
                 {
-                    IsEnabled = false,
+                    IsEnabled = true,
                     MarketCode = MarketCode.CTX,
                     LoginUrl = "https://localhost/sabor-login",
                     LogoutUrl = "https://localhost/sabor-logout",
@@ -41,12 +41,20 @@ namespace Husa.Uploader.Data.Tests
                     LoginUrl = "https://localhost/ctx-login",
                     LogoutUrl = "https://localhost/ctx-logout",
                 },
+                Abor = new()
+                {
+                    IsEnabled = true,
+                    MarketCode = MarketCode.Austin,
+                    LoginUrl = "https://localhost/abor-login",
+                    LogoutUrl = "https://localhost/abor-logout",
+                },
             },
             Services = new()
             {
                 Media = "https://localhost/signalr",
                 QuicklisterCtx = "https://localhost/quicklister-ctx",
                 QuicklisterSabor = "https://localhost/quicklister-sabor",
+                QuicklisterAbor = "https://localhost/quicklister-abor",
                 MigrationService = "https://localhost/migration",
             },
             Uploader = new()

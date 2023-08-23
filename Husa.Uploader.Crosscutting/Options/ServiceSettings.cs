@@ -14,6 +14,9 @@ namespace Husa.Uploader.Crosscutting.Options
         public string QuicklisterCtx { get; set; }
 
         [Required(AllowEmptyStrings = false)]
+        public string QuicklisterAbor { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
         public string CompanyServicesManager { get; set; }
 
         [Required(AllowEmptyStrings = false)]

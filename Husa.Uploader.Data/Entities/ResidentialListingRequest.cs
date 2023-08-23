@@ -1061,18 +1061,6 @@ namespace Husa.Uploader.Data.Entities
 
             switch (this.MarketCode)
             {
-                case MarketCode.Austin:
-                    if (!string.IsNullOrEmpty(this.OtherPhone))
-                    {
-                        extendedRemarks = string.Format("Call Sales Associate {0}. ", this.OtherPhone.PhoneFormat());
-
-                        if (!string.IsNullOrEmpty(this.OwnerPhone) && this.OtherPhone != this.OwnerPhone)
-                        {
-                            extendedRemarks = string.Format("Call Sales Associate {0} or {1}. ", this.OtherPhone.PhoneFormat(), this.OwnerPhone.PhoneFormat());
-                        }
-                    }
-
-                    break;
                 case MarketCode.SanAntonio:
                     if (!string.IsNullOrEmpty(apptPhone) && alternatePhone != apptPhone)
                     {
