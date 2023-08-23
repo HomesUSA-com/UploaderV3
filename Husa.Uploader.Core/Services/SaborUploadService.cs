@@ -554,11 +554,11 @@ namespace Husa.Uploader.Core.Services
                     var nextButtonVisible = this.uploaderClient.ExecuteScript("return jQuery('.main-content > .mylistcontainer > .affix-top > ul.pagination > li').length;").ToString();
                     if (!string.IsNullOrEmpty(nextButtonVisible) && nextButtonVisible != "0")
                     {
-                        int nextButtonIndex = (int.Parse(nextButtonVisible) > 0) ? (int.Parse(nextButtonVisible) - 1) : 0;
+                        int nextButtonIndex = (int.Parse(nextButtonVisible) > 0) ? (int.Parse(nextButtonVisible) - 2) : 0;
                         string nextButtonDisabled = this.uploaderClient.ExecuteScript("return jQuery('ul.pagination > li:eq(" + nextButtonIndex + ")').is(':disabled');").ToString();
-                        if (bool.Parse(nextButtonDisabled))
+                        if (!bool.Parse(nextButtonDisabled))
                         {
-                            this.uploaderClient.ExecuteScript("return jQuery('ul.pagination > li:eq(" + (nextButtonIndex - 1) + ") > a').click();");
+                            this.uploaderClient.ExecuteScript("return jQuery('ul.pagination > li:eq(" + nextButtonIndex + ") > a').click();", isScriptOptional: true);
                             mlsFound = false;
                         }
                     }
