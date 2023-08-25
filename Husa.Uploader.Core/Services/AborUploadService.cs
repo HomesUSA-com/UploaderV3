@@ -395,15 +395,13 @@ namespace Husa.Uploader.Core.Services
 
         private void NavigateToNewPropertyInput()
         {
-            this.uploaderClient.NavigateToUrl("https://matrix.austinmls.com/Matrix/Input");
-            // this.uploaderClient.wait.Until(ExpectedConditions.ElementIsVisible(By.LinkText("Input")));
-            // this.uploaderClient.Click(By.LinkText("Input"));
+            this.uploaderClient.NavigateToUrl("https://matrix.abor.com/Matrix/AddEdit");
             this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Add new"));
             this.uploaderClient.ClickOnElement(By.LinkText("Add new"));
             this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"));
             this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.PartialLinkText("Start with a blank Listing"));
-            this.uploaderClient.ClickOnElement(By.PartialLinkText("Start with a blank Listing"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.PartialLinkText("Start with a blank Property"));
+            this.uploaderClient.ClickOnElement(By.PartialLinkText("Start with a blank Property"));
 
             Thread.Sleep(1000);
         }
