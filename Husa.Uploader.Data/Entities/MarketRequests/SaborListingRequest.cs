@@ -79,6 +79,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             FillFinancialInfo(this.listingDetailResponse.SaleProperty.FinancialInfo);
             FillShowingInfo(this.listingDetailResponse.SaleProperty.ShowingInfo);
             FillSchoolsInfo(this.listingDetailResponse.SaleProperty.SchoolsInfo);
+            FillStatusInfo(this.listingDetailResponse.StatusFieldsInfo);
             FillHoaInfo(this.listingDetailResponse.SaleProperty.Hoas);
             FillRoomsInfo(this.listingDetailResponse.SaleProperty.Rooms);
             FillOpenHouseInfo(this.listingDetailResponse.SaleProperty.OpenHouses);
@@ -249,6 +250,23 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.SchoolName1 = schoolsInfo.ElementarySchool?.ToStringFromEnumMember();
                 residentialListingRequest.SchoolName2 = schoolsInfo.MiddleSchool?.ToStringFromEnumMember();
                 residentialListingRequest.SchoolName3 = schoolsInfo.HighSchool?.ToStringFromEnumMember();
+            }
+
+            void FillStatusInfo(ListingSaleStatusFieldsResponse statusInfo)
+            {
+                if (statusInfo is null)
+                {
+                    throw new ArgumentNullException(nameof(statusInfo));
+                }
+
+                residentialListingRequest.HowSold = statusInfo.HowSold?.ToStringFromEnumMember();
+                residentialListingRequest.ContractDate = statusInfo.ContractDate;
+                residentialListingRequest.ClosedDate = statusInfo.ClosedDate;
+                residentialListingRequest.SoldPrice = statusInfo.ClosePrice;
+                residentialListingRequest.ContingencyInfo = statusInfo.ContingencyInfo;
+                residentialListingRequest.SellConcess = statusInfo.SellConcess;
+                residentialListingRequest.SellConcessDescription = statusInfo.SellerConcessionDescription.ToStringFromEnumMembers();
+                residentialListingRequest.AgentMarketUniqueId = statusInfo.AgentMarketUniqueId;
             }
 
             void FillHoaInfo(IEnumerable<HoaResponse> hoas)
