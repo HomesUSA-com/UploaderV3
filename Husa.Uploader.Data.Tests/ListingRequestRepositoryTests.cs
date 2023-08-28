@@ -4,18 +4,17 @@ namespace Husa.Uploader.Data.Tests
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Abor.Api.Client;
     using Husa.Quicklister.CTX.Api.Client;
+    using Husa.Quicklister.Extensions.Api.Contracts.Request.SaleRequest;
+    using Husa.Quicklister.Extensions.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.Sabor.Api.Client;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Repositories;
     using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
-    using AborRequestContracts = Husa.Quicklister.Abor.Api.Contracts.Request;
     using AborResponseContracts = Husa.Quicklister.Abor.Api.Contracts.Response;
-    using CtxRequestContracts = Husa.Quicklister.CTX.Api.Contracts.Request;
     using CtxResponseContracts = Husa.Quicklister.CTX.Api.Contracts.Response;
     using SaborEnums = Husa.Quicklister.Sabor.Domain.Enums;
-    using SaborRequestContracts = Husa.Quicklister.Sabor.Api.Contracts.Request;
     using SaborResponseContracts = Husa.Quicklister.Sabor.Api.Contracts.Response;
 
     [Collection(nameof(ApplicationServicesFixture))]
@@ -37,45 +36,24 @@ namespace Husa.Uploader.Data.Tests
         {
             // Arrange
             var saborResponse = new SaborResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestQueryResponse();
-            var saborResult = new SaborResponseContracts.ListingRequest.SaleRequest.ListingRequestGridResponse<SaborResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestQueryResponse>(
-                data: new[] { saborResponse },
-                total: 1,
-                continuationToken: string.Empty,
-                currentToken: string.Empty,
-                previousToken: string.Empty);
+            var saborResult = GetListingRequestGridResponse(new[] { saborResponse });
 
             this.mockSaborClient
-                .Setup(x => x.ListingSaleRequest.GetListRequestAsync(
-                    It.IsAny<SaborRequestContracts.SaleRequest.ListingSaleRequestFilter>(),
-                    It.IsAny<CancellationToken>()))
+                .Setup(x => x.ListingSaleRequest.GetListRequestAsync(It.IsAny<SaleListingRequestFilter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(saborResult);
 
             var ctxResponse = new CtxResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestQueryResponse();
-            var ctxResult = new CtxResponseContracts.ListingRequest.SaleRequest.ListingRequestGridResponse<CtxResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestQueryResponse>(
-                data: new[] { ctxResponse },
-                total: 1,
-                continuationToken: string.Empty,
-                currentToken: string.Empty,
-                previousToken: string.Empty);
+            var ctxResult = GetListingRequestGridResponse(new[] { ctxResponse });
 
             this.mockCtxClient
-                .Setup(x => x.ListingSaleRequest.GetListRequestAsync(
-                    It.IsAny<CtxRequestContracts.SaleRequest.ListingSaleRequestFilter>(),
-                    It.IsAny<CancellationToken>()))
+                .Setup(x => x.ListingSaleRequest.GetListRequestAsync(It.IsAny<SaleListingRequestFilter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(ctxResult);
 
             var aborResponse = new AborResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestQueryResponse();
-            var aborResult = new AborResponseContracts.ListingRequest.SaleRequest.ListingRequestGridResponse<AborResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestQueryResponse>(
-                data: new[] { aborResponse },
-                total: 1,
-                continuationToken: string.Empty,
-                currentToken: string.Empty,
-                previousToken: string.Empty);
+            var aborResult = GetListingRequestGridResponse(new[] { aborResponse });
 
             this.mockAborClient
-                .Setup(x => x.ListingSaleRequest.GetListRequestAsync(
-                    It.IsAny<AborRequestContracts.SaleRequest.ListingSaleRequestFilter>(),
-                    It.IsAny<CancellationToken>()))
+                .Setup(x => x.ListingSaleRequest.GetListRequestAsync(It.IsAny<SaleListingRequestFilter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(aborResult);
 
             var sut = this.GetSut();
@@ -135,6 +113,15 @@ namespace Husa.Uploader.Data.Tests
             Assert.Equal(saborResponse.Id, result.ResidentialListingRequestID);
             Assert.Equal(MarketCode.SanAntonio, type.MarketCode);
         }
+
+        private static ListingRequestGridResponse<TSaleListingRequestResponse> GetListingRequestGridResponse<TSaleListingRequestResponse>(IEnumerable<TSaleListingRequestResponse> data)
+            where TSaleListingRequestResponse : class, ISaleListingRequestResponse
+            => new ListingRequestGridResponse<TSaleListingRequestResponse>(
+                data: data,
+                total: 1,
+                continuationToken: string.Empty,
+                currentToken: string.Empty,
+                previousToken: string.Empty);
 
         private ListingRequestRepository GetSut() => new(
             this.fixture.ApplicationOptions.Object,

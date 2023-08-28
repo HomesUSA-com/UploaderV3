@@ -1,8 +1,14 @@
 namespace Husa.Uploader.Data.Repositories
 {
+    using System.Linq;
+    using System.Linq.Expressions;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Abor.Api.Client;
     using Husa.Quicklister.CTX.Api.Client;
+    using Husa.Quicklister.Extensions.Api.Client.Interfaces;
+    using Husa.Quicklister.Extensions.Api.Contracts.Request.SaleRequest;
+    using Husa.Quicklister.Extensions.Api.Contracts.Response.ListingRequest;
+    using Husa.Quicklister.Extensions.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.Sabor.Api.Client;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
@@ -10,10 +16,7 @@ namespace Husa.Uploader.Data.Repositories
     using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
-    using AborContracts = Husa.Quicklister.Abor.Api.Contracts;
-    using CtxContracts = Husa.Quicklister.CTX.Api.Contracts;
     using QuicklisterStatus = Husa.Quicklister.Extensions.Domain.Enums.ListingRequestState;
-    using SaborContracts = Husa.Quicklister.Sabor.Api.Contracts;
 
     public class ListingRequestRepository : IListingRequestRepository
     {
@@ -39,64 +42,28 @@ namespace Husa.Uploader.Data.Repositories
 
         public async Task<IEnumerable<ResidentialListingRequest>> GetListingData(CancellationToken token = default)
         {
-            var pendingRequests = new List<ResidentialListingRequest>();
-            if (this.marketConfiguration.Sabor.IsEnabled)
+            var tasks = new[]
             {
-                this.logger.LogInformation("Getting all pending requests for {marketCode}", MarketCode.SanAntonio);
-                var filter = new SaborContracts.Request.SaleRequest.ListingSaleRequestFilter
-                {
-                    RequestState = QuicklisterStatus.Pending,
-                };
+                this.GetRequestByMarket(
+                    this.marketConfiguration.Sabor,
+                    this.quicklisterSaborClient.ListingSaleRequest,
+                    request => new SaborListingRequest(request).CreateFromApiResponse(),
+                    token),
+                this.GetRequestByMarket(
+                    this.marketConfiguration.Ctx,
+                    this.quicklisterCtxClient.ListingSaleRequest,
+                    request => new CtxListingRequest(request).CreateFromApiResponse(),
+                    token),
+                this.GetRequestByMarket(
+                    this.marketConfiguration.Abor,
+                    this.quicklisterAborClient.ListingSaleRequest,
+                    request => new AborListingRequest(request).CreateFromApiResponse(),
+                    token),
+            };
 
-                var requests = await this.quicklisterSaborClient.ListingSaleRequest.GetListRequestAsync(filter, token);
-                if (requests.Data.Any())
-                {
-                    var internalSARLRCosmo = requests.Data
-                        .Select(request => new SaborListingRequest(request).CreateFromApiResponse())
-                        .ToList();
+            var requestsByMarket = await Task.WhenAll(tasks);
 
-                    pendingRequests.AddRange(internalSARLRCosmo);
-                }
-            }
-
-            if (this.marketConfiguration.Ctx.IsEnabled)
-            {
-                this.logger.LogInformation("Getting all pending requests for {marketCode}", MarketCode.CTX);
-
-                var filter = new CtxContracts.Request.SaleRequest.ListingSaleRequestFilter
-                {
-                    RequestState = QuicklisterStatus.Pending,
-                };
-                var requests = await this.quicklisterCtxClient.ListingSaleRequest.GetListRequestAsync(filter, token);
-                if (requests.Data.Any())
-                {
-                    var internalSARLRCosmo = requests.Data
-                        .Select(request => new CtxListingRequest(request).CreateFromApiResponse())
-                        .ToList();
-
-                    pendingRequests.AddRange(internalSARLRCosmo);
-                }
-            }
-
-            if (this.marketConfiguration.Abor.IsEnabled)
-            {
-                this.logger.LogInformation("Getting all pending requests for {marketCode}", MarketCode.CTX);
-
-                var filter = new AborContracts.Request.SaleRequest.ListingSaleRequestFilter
-                {
-                    RequestState = QuicklisterStatus.Pending,
-                };
-                var requests = await this.quicklisterAborClient.ListingSaleRequest.GetListRequestAsync(filter, token);
-                if (requests.Data.Any())
-                {
-                    var internalSARLRCosmo = requests.Data
-                        .Select(request => new AborListingRequest(request).CreateFromApiResponse())
-                        .ToList();
-
-                    pendingRequests.AddRange(internalSARLRCosmo);
-                }
-            }
-
+            var pendingRequests = requestsByMarket.SelectMany(a => a).ToList();
             return pendingRequests.Distinct();
         }
 
@@ -139,6 +106,32 @@ namespace Husa.Uploader.Data.Repositories
                 var request = await this.quicklisterAborClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
                 return new AborListingRequest(request).CreateFromApiResponseDetail();
             }
+        }
+
+        private async Task<IEnumerable<ResidentialListingRequest>> GetRequestByMarket<TSaleListingRequestResponse, TListingRequestDetailResponse>(
+            MarketSettings marketSettings,
+            ISaleListingRequest<TSaleListingRequestResponse, TListingRequestDetailResponse> requestClient,
+            Expression<Func<TSaleListingRequestResponse, ResidentialListingRequest>> projection,
+            CancellationToken token = default)
+            where TSaleListingRequestResponse : class, ISaleListingRequestResponse
+            where TListingRequestDetailResponse : IListingRequestDetailResponse
+        {
+            if (marketSettings.IsEnabled)
+            {
+                this.logger.LogInformation("Getting all pending requests for {marketCode}", marketSettings.MarketCode);
+
+                var filter = new SaleListingRequestFilter
+                {
+                    RequestState = QuicklisterStatus.Pending,
+                };
+                var requests = await requestClient.GetListRequestAsync(filter, token);
+                if (requests.Data.Any())
+                {
+                    return requests.Data.AsQueryable().Select(projection).ToList();
+                }
+            }
+
+            return new List<ResidentialListingRequest>();
         }
     }
 }

@@ -187,12 +187,9 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.FireplaceDesc = featuresInfo.FireplaceDescription.ToStringFromEnumMembers();
                 residentialListingRequest.NumberFireplaces = featuresInfo.Fireplaces?.ToString();
                 residentialListingRequest.FloorsDesc = featuresInfo.Floors.ToStringFromEnumMembers();
-                residentialListingRequest.KitchenDesc = featuresInfo.KitchenFeatures.ToStringFromEnumMembers();
-                residentialListingRequest.Bed1Desc = featuresInfo.MasterBedroomFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.GarageDesc = featuresInfo.GarageDescription.ToStringFromEnumMembers();
                 residentialListingRequest.AppliancesDesc = featuresInfo.Appliances.ToStringFromEnumMembers();
                 residentialListingRequest.FenceDesc = featuresInfo.Fencing.ToStringFromEnumMembers();
-                residentialListingRequest.WaterAccessDesc = featuresInfo.WaterAccessDescription.ToStringFromEnumMembers();
                 residentialListingRequest.WaterfrontFeatures = featuresInfo.WaterfrontFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.WaterDesc = featuresInfo.WaterSewer.ToStringFromEnumMembers();
                 residentialListingRequest.BodyofWater = featuresInfo.WaterBodyName?.ToStringFromEnumMember();
@@ -208,7 +205,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.WindowCoverings = featuresInfo.WindowFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.UnitStyleDesc = featuresInfo.UnitStyle.ToStringFromEnumMembers();
                 residentialListingRequest.GarageCapacity = featuresInfo.GarageSpaces;
-                residentialListingRequest.LaundryFacilityDesc = featuresInfo.LaundryFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.LaundryLocDesc = featuresInfo.LaundryLocation.ToStringFromEnumMembers();
                 residentialListingRequest.InteriorDesc = featuresInfo.InteriorFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.GuestAccommodationsDesc = featuresInfo.GuestAccommodationsDescription.ToStringFromEnumMembers();
