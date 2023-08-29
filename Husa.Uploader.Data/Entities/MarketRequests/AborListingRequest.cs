@@ -45,7 +45,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
         public int? MainLevelBedroomTotal { get; set; }
         public int? OtherLevelsBedroomTotal { get; set; }
-        public string TaxLot { get; set; }
         public string PropertyType { get; set; }
         public string PatioAndPorchFeatures { get; set; }
 
@@ -124,7 +123,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.StreetName = addressInfo.StreetName;
                 residentialListingRequest.City = addressInfo.City.GetEnumDescription();
                 residentialListingRequest.CityCode = addressInfo.City.ToStringFromEnumMember();
-                residentialListingRequest.State = addressInfo.State.GetEnumDescription();
+                residentialListingRequest.State = addressInfo.State.ToStringFromEnumMember();
                 residentialListingRequest.Zip = addressInfo.ZipCode;
                 residentialListingRequest.County = addressInfo.County?.ToStringFromEnumMember();
                 residentialListingRequest.StreetType = addressInfo.StreetType?.ToStringFromEnumMember();
@@ -152,7 +151,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.LotDim = propertyInfo.LotDimension;
                 residentialListingRequest.LotSize = propertyInfo.LotSize;
                 residentialListingRequest.LotDesc = propertyInfo.LotDescription.ToStringFromEnumMembers();
-                residentialListingRequest.TaxLot = propertyInfo.TaxLot;
+                residentialListingRequest.OtherFees = propertyInfo.TaxLot;
                 residentialListingRequest.PropertyType = propertyInfo.PropertyType?.ToStringFromEnumMember();
             }
 
@@ -276,7 +275,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     throw new ArgumentNullException(nameof(schoolsInfo));
                 }
 
-                residentialListingRequest.SchoolDistrict = schoolsInfo.SchoolDistrict?.GetEnumDescription();
+                residentialListingRequest.SchoolDistrict = schoolsInfo.SchoolDistrict?.ToStringFromEnumMember();
                 residentialListingRequest.SchoolName1 = schoolsInfo.ElementarySchool?.ToStringFromEnumMember();
                 residentialListingRequest.SchoolName2 = schoolsInfo.MiddleSchool?.ToStringFromEnumMember();
                 residentialListingRequest.SchoolName3 = schoolsInfo.HighSchool?.ToStringFromEnumMember();

@@ -4,6 +4,7 @@ namespace Husa.Uploader.Core.Services
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
+    using Husa.Uploader.Core.Extensions;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
@@ -521,29 +522,7 @@ namespace Husa.Uploader.Core.Services
                 return;
             }
 
-            var mainWindow = this.uploaderClient.WindowHandles.FirstOrDefault(windowHandle => windowHandle == this.uploaderClient.CurrentWindowHandle);
-            this.uploaderClient.ExecuteScript(script: $"jQuery('#{fieldName}_TB').focus();");
-            this.uploaderClient.ExecuteScript(script: $"jQuery('#{fieldName}_A')[0].click();");
-
-            this.uploaderClient.SwitchToLast();
-
-            Thread.Sleep(400);
-
-            char[] fieldValue = value.ToUpper().ToArray();
-
-            foreach (var charact in fieldValue)
-            {
-                Thread.Sleep(200);
-                this.uploaderClient.FindElement(By.Id("m_txtSearch")).SendKeys(charact.ToString().ToUpper());
-            }
-
-            Thread.Sleep(400);
-            var selectElement = $"const selected = jQuery('li[title^=\"{value}\"]'); jQuery(selected).focus(); jQuery(selected).click()";
-            this.uploaderClient.ExecuteScript(script: selectElement);
-            Thread.Sleep(400);
-
-            this.uploaderClient.ExecuteScript("javascript:LBI_Popup.selectItem(true);");
-            this.uploaderClient.SwitchTo().Window(mainWindow);
+            this.uploaderClient.FillFieldSingleOption(fieldName, value);
         }
 
         private void FillRooms(ResidentialListingRequest listing)

@@ -4,6 +4,7 @@ namespace Husa.Uploader.Core.Services
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
+    using Husa.Uploader.Core.Extensions;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
@@ -425,89 +426,57 @@ namespace Husa.Uploader.Core.Services
 
         private void FillListingInformation(ResidentialListingRequest listing)
         {
-            const string tabName = "Listing Information";
-            this.uploaderClient.ClickOnElement(By.LinkText("Listing Information")); // click in tab Listing Information
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_107"));
+            const string tabName = "Listing";
+            this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // click in tab Listing Information
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_179"));
 
-            this.uploaderClient.WriteTextbox(By.Id("Input_107"), listing.StreetNum); // Street Number
-            this.uploaderClient.SetSelect(By.Id("Input_108"), listing.StreetDir, fieldLabel: "St Direction", tabName); // St Direction
-            this.uploaderClient.WriteTextbox(By.Id("Input_110"), listing.StreetName); // Street Name
-            this.uploaderClient.SetSelect(By.Id("Input_109"), listing.StreetType, fieldLabel: "Street Type", tabName); // Street Type
-            this.uploaderClient.WriteTextbox(By.Id("Input_111"), listing.UnitNum); // Unit #
-            this.uploaderClient.SetSelect(By.Id("Input_112"), listing.CityCode, fieldLabel: "City", tabName); // City
-            this.uploaderClient.SetSelect(By.Id("Input_113"), listing.StateCode, fieldLabel: "State", tabName); // State
-            this.uploaderClient.SetSelect(By.Id("Input_123"), value: "YES", fieldLabel: "In City Limits", tabName); // In City Limits
-            string etjValue = listing.InExtraTerritorialJurisdiction ? "1" : "0";
-            this.uploaderClient.SetSelect(By.Id("Input_124"), etjValue, fieldLabel: "ETJ", tabName); // ETJ
-            this.uploaderClient.WriteTextbox(By.Id("Input_114"), listing.Zip); // Zip Code
-            this.uploaderClient.SetSelect(By.Id("Input_115"), listing.County, "County", tabName); // County
-            this.uploaderClient.WriteTextbox(By.Id("Input_396"), listing.Subdivision); // Subdivision
-            this.uploaderClient.WriteTextbox(By.Id("Input_528"), listing.Legal); // Legal Description
-            this.uploaderClient.WriteTextbox(By.Id("Input_529"), listing.TaxID == "NA" ? $"{listing.StreetNum}{listing.StreetName}" : listing.TaxID); // Property ID
-            this.uploaderClient.WriteTextbox(By.Id("Input_766"), listing.GeographicID); // Geo ID
-            this.uploaderClient.SetSelect(By.Id("Input_530"), value: "NO", fieldLabel: "FEMA Flood Plain", tabName); // FEMA Flood Plain
-            this.uploaderClient.SetSelect(By.Id("Input_531"), value: "NO", fieldLabel: "Residential Flooded", tabName); // Residential Flooded
-            this.uploaderClient.WriteTextbox(By.Id("Input_532"), listing.LotNum, isElementOptional: true); // Lot
-            this.uploaderClient.WriteTextbox(By.Id("Input_533"), listing.Block, isElementOptional: true); // Block
-            this.uploaderClient.SetSelect(By.Id("Input_534"), listing.FacesDesc, fieldLabel: "Front Faces", tabName, isElementOptional: true); // Front Faces
+            // Listing Information
+            this.uploaderClient.SetSelect(By.Id("Input_179"), "EA"); // List Agreement Type
+            this.uploaderClient.SetSelect(By.Id("Input_341"), "LIMIT"); // Listing Service
+            this.uploaderClient.SetMultipleCheckboxById("Input_180", "STANDARD"); // Special Listing Conditions
+            this.uploaderClient.SetSelect(By.Id("Input_181"), "A"); // List Agreement Document
+            this.uploaderClient.WriteTextbox(By.Id("Input_77"), listing.ListPrice); // List Price
 
-            this.uploaderClient.SetSelect(By.Id("Input_535_TB"), listing.SchoolDistrict.ToUpper(), fieldLabel: "School District", tabName); // School District
-
-            this.FillFieldSingleOption("Input_535", listing.SchoolDistrict);
-            this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(3000));
-            this.uploaderClient.SetSelect(By.Id("Input_658"), listing.SchoolName1, fieldLabel: "Elementary", tabName, isElementOptional: true); // Elementary School
-            this.uploaderClient.ResetImplicitWait();
-            this.uploaderClient.SetSelect(By.Id("Input_659"), listing.SchoolName2, fieldLabel: "Middle", tabName, isElementOptional: true); // Middle School
-            this.uploaderClient.SetSelect(By.Id("Input_660"), listing.SchoolName3, fieldLabel: "High", tabName, isElementOptional: true); // High School
-
-            this.SetLongitudeAndLatitudeValues(listing);
-            this.uploaderClient.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
-            this.uploaderClient.WriteTextbox(By.Id("Input_133"), listing.OwnerName); // Owner Legal Name
-            this.uploaderClient.SetSelect(By.Id("Input_137"), "0", "Also For Rent", tabName); // Also For Rent
-            this.uploaderClient.SetSelect(By.Id("Input_545"), listing.ListType, fieldLabel: "Listing Type", tabName);
-
-            this.uploaderClient.SetSelect(By.Id("Input_539"), listing.Category, "Property Sub Type", tabName); // Property Sub Type
-
-            if (this.uploaderClient.UploadInformation.IsNewListing)
+            if (listing.ListDate.HasValue)
             {
-                DateTime listDate = DateTime.Now;
-                if (listing.ListStatus == "P" || listing.ListStatus == "PO")
-                {
-                    listDate = DateTime.Now.AddDays(-2);
-                }
-                else if (listing.ListStatus == "S")
-                {
-                    listDate = DateTime.Now.AddDays(-4);
-                }
-
-                this.uploaderClient.WriteTextbox(By.Id("Input_129"), listDate.ToShortDateString()); // List Date
-            }
-
-            if (listing.ListDate != null)
-            {
-                this.uploaderClient.WriteTextbox(By.Id("Input_130"), DateTime.Now.AddYears(1).ToShortDateString()); // Expiration Date
+                this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ListDate.Value.AddYears(1).ToShortDateString()); // Expiration Date
             }
             else
             {
-                this.uploaderClient.WriteTextbox(By.Id("Input_130"), listing.ExpiredDate != null ? ((DateTime)listing.ExpiredDate).ToShortDateString() : string.Empty); // Expiration Date
+                this.uploaderClient.WriteTextbox(By.Id("Input_83"), DateTime.Now.AddYears(1).ToShortDateString()); // Expiration Date
             }
 
-            this.uploaderClient.SetSelect(By.Id("Input_544"), "NA", "First Right Refusal Option", tabName); // First Right Refusal Option (default hardcode "N/A")
+            // Location Information
+            this.uploaderClient.WriteTextbox(By.Id("Input_183"), listing.StreetNum); // Street #
+            this.uploaderClient.WriteTextbox(By.Id("Input_185"), listing.StreetName); // Street Name
+            this.uploaderClient.SetSelect(By.Id("Input_186"), listing.StreetType); // Street Type (NM)
+            this.uploaderClient.WriteTextbox(By.Id("Input_190"), !string.IsNullOrEmpty(listing.UnitNum) ? listing.UnitNum : string.Empty); // Unit # (NM)
+            this.uploaderClient.SetSelect(By.Id("Input_191"), listing.County); // County
+            this.uploaderClient.SetSelectIfExist(By.Id("Input_192"), listing.CityCode); // City
+            this.uploaderClient.SetSelect(By.Id("Input_193"), listing.State); // State
+            this.uploaderClient.SetSelect(By.Id("Input_399"), "US"); // Country
+            this.uploaderClient.WriteTextbox(By.Id("Input_194"), listing.Zip); // ZIP Code
+            this.uploaderClient.WriteTextbox(By.Id("Input_196"), listing.Subdivision); // Subdivision
+            this.uploaderClient.WriteTextbox(By.Id("Input_197"), listing.Legal); // Tax Legal Description
+            this.uploaderClient.WriteTextbox(By.Id("Input_199"), listing.OtherFees); // Tax Lot
+            this.uploaderClient.WriteTextbox(By.Id("Input_201"), listing.TaxID); // Parcel ID
+            this.uploaderClient.SetSelect(By.Id("Input_202"), "0"); // Additional Parcels Y/N
 
-            this.uploaderClient.SetMultipleCheckboxById("Input_546", "BUILDER", "Sale Type", tabName); // Sale Type
+            this.SetLongitudeAndLatitudeValues(listing);
 
-            this.uploaderClient.SetSelect(By.Id("Input_531"), "0", "Res Flooded", tabName); // Res Flooded
+            this.uploaderClient.ScrollDown(1000);
+            this.FillFieldSingleOption("Input_204", listing.MLSArea); // MLS Area
+            this.uploaderClient.SetMultipleCheckboxById("Input_343", "N"); // FEMA 100 Yr Flood Plain
+            this.uploaderClient.SetSelect(By.Id("Input_206"), "N"); // ETJ
 
-            this.uploaderClient.SetSelect(By.Id("Input_547"), listing.YearBuiltDesc, "Construction Status", tabName); // Construction Status
-            this.uploaderClient.WriteTextbox(By.Id("Input_548"), listing.OwnerName); // Builder Name
-            this.uploaderClient.WriteTextbox(By.Id("Input_549"), listing.BuildCompletionDate); // Estimated Completion Date
-            this.uploaderClient.WriteTextbox(By.Id("Input_553"), listing.YearBuilt); // Year Built
-            this.uploaderClient.SetSelect(By.Id("Input_552"), listing.YearBuiltSrc); // Year Built Source
-
-            this.uploaderClient.WriteTextbox(By.Id("Input_550"), listing.SqFtTotal); // Total SqFt
-            this.uploaderClient.SetSelect(By.Id("Input_551"), "BUILD", "Source SqFt", tabName); // Source SqFt
-
-            this.uploaderClient.SetMultipleCheckboxById("Input_554", listing.AvailableDocumentsDesc, "Documents on File (Max 25)", tabName); // Documents on File (Max 25)
+            // School Information
+            this.uploaderClient.SetSelectIfExist(By.Id("Input_207"), listing.SchoolDistrict); // School District
+            this.uploaderClient.SetSelectIfExist(By.Id("Input_209"), listing.SchoolName1); // School District/Elementary A
+            this.uploaderClient.SetSelectIfExist(By.Id("Input_210"), listing.SchoolName2); // School District/Middle / Intermediate School
+            this.uploaderClient.SetSelectIfExist(By.Id("Input_211"), listing.SchoolName3); // School District/9 Grade / High School
+            this.uploaderClient.WriteTextbox(By.Id("Input_212"), listing.SchoolName4); // Elementary Other
+            this.uploaderClient.WriteTextbox(By.Id("Input_213"), listing.SchoolName5); // Middle or Junior Other
+            this.uploaderClient.WriteTextbox(By.Id("Input_214"), listing.SchoolName6); // High School Other
         }
 
         private void FillFieldSingleOption(string fieldName, string value)
@@ -757,7 +726,6 @@ namespace Husa.Uploader.Core.Services
 
         private void UpdatePublicRemarksInRemarksTab(ResidentialListingRequest listing)
         {
-            // driver.wait.Until(x => ExpectedConditions.ElementIsVisible(By.Id("Input_917")));
             Thread.Sleep(400);
             this.uploaderClient.WriteTextbox(By.Id("Input_140"), listing.GetPublicRemarks()); // Internet / Remarks / Desc. of Property
             this.uploaderClient.WriteTextbox(By.Id("Input_142"), listing.Directions); // Syndication Remarks
@@ -771,8 +739,8 @@ namespace Husa.Uploader.Core.Services
                 return;
             }
 
-            this.uploaderClient.WriteTextbox(By.Id("INPUT__93"), value: listing.Latitude); // Latitude
-            this.uploaderClient.WriteTextbox(By.Id("INPUT__94"), value: listing.Longitude); // Longitude
+            this.uploaderClient.WriteTextbox(By.Id("INPUT__146"), value: listing.Latitude); // Latitude
+            this.uploaderClient.WriteTextbox(By.Id("INPUT__168"), value: listing.Longitude); // Longitude
         }
 
         private void DeleteAllImages()
