@@ -161,6 +161,7 @@ namespace Husa.Uploader.Core.Services
 
                     this.FillStatusInformation(listing);
                     this.FillListingInformation(listing);
+                    this.FillGeneralInformation(listing);
                     this.FillRooms(listing);
                     this.FillFeatures(listing);
                     this.FillLotEnvironmentUtilityInformation(listing);
@@ -475,6 +476,53 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_212"), listing.SchoolName4); // Elementary Other
             this.uploaderClient.WriteTextbox(By.Id("Input_213"), listing.SchoolName5); // Middle or Junior Other
             this.uploaderClient.WriteTextbox(By.Id("Input_214"), listing.SchoolName6); // High School Other
+        }
+
+        private void FillGeneralInformation(ResidentialListingRequest listing)
+        {
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.ClickOnElement(By.LinkText("General"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_215"));
+
+            this.uploaderClient.SetSelect(By.Id("Input_215"), listing.PropSubType); // Property Sub Type (1)
+            this.uploaderClient.SetSelect(By.Id("Input_216"), "FEESIM"); // Ownership Type
+            this.uploaderClient.SetMultipleCheckboxById("Input_650", listing.NumStories); // Levels
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_220"), listing.NumBedsMainLevel); // Main Level Beds
+            this.uploaderClient.WriteTextbox(By.Id("Input_221"), listing.NumBedsOtherLevels); // # Other Level Beds
+            this.uploaderClient.WriteTextbox(By.Id("Input_218"), listing.YearBuilt); // Year Built
+
+            this.uploaderClient.SetSelect(By.Id("Input_219"), "BUILDER"); // Year Built Source
+            this.uploaderClient.SetMultipleCheckboxById("Input_225", listing.YearBuiltDesc); // Year Built Description
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_224"), listing.BathsFull); // Full Baths
+            this.uploaderClient.WriteTextbox(By.Id("Input_223"), listing.BathsHalf); // Half Bath
+            this.uploaderClient.WriteTextbox(By.Id("Input_659"), listing.NumLivingAreas); // Living
+            this.uploaderClient.WriteTextbox(By.Id("Input_660"), listing.NumDiningAreas); // Dining
+            this.uploaderClient.WriteTextbox(By.Id("Input_226"), listing.SqFtTotal); // Living Area
+            this.uploaderClient.SetSelect(By.Id("Input_227"), "BUILDER"); // Living Area Source
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_717"), listing.GarageCapacity); // # Garage Spaces
+            this.uploaderClient.WriteTextbox(By.Id("Input_229"), listing.GarageCapacity); // Parking Total
+            this.uploaderClient.SetSelect(By.Id("Input_342"), listing.FacesDesc); // Direction Faces
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.LotSize); // Lot Size Acres
+            this.uploaderClient.WriteTextbox(By.Id("Input_241"), listing.LotDim); // Lot Dimensions (Frontage x Depth)
+            this.uploaderClient.SetMultipleCheckboxById("Input_231", listing.ConstructionDesc); // Construction (5)
+            this.uploaderClient.SetMultipleCheckboxById("Input_236", listing.GarageDesc); // Garage Description (4) / Parking Features
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.ScrollDown(100);
+
+            this.uploaderClient.SetMultipleCheckboxById("Input_239", listing.FoundationDesc); // Foundation (2)
+            this.uploaderClient.WriteTextbox(By.Id("Input_678"), listing.OwnerName); // Builder Name
+            this.uploaderClient.SetMultipleCheckboxById("Input_230", listing.UnitStyleDesc); // Unit Style (5)
+            this.uploaderClient.SetMultipleCheckboxById("Input_234", listing.ViewDesc); // View (4)
+            this.uploaderClient.SetSelect(By.Id("Input_235"), listing.DistanceToWaterAccess); // Distance to Water Access
+            this.uploaderClient.SetMultipleCheckboxById("Input_237", listing.WaterfrontDesc); // Waterfront Description
+            this.uploaderClient.SetSelect(By.Id("Input_238"), listing.BodyofWater); // Water Body Name
+            this.uploaderClient.SetMultipleCheckboxById("Input_244", listing.LotDesc); // Lot Description (4)
+            this.uploaderClient.SetMultipleCheckboxById("Input_232", listing.FloorsDesc); // Flooring (4)
+            this.uploaderClient.SetMultipleCheckboxById("Input_240", listing.RestrictionsDesc); // Restrictions Description (5)
         }
 
         private void FillFieldSingleOption(string fieldName, string value)

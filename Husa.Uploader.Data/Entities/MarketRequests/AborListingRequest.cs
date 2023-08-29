@@ -43,9 +43,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
         public override MarketCode MarketCode => MarketCode.Austin;
 
-        public int? MainLevelBedroomTotal { get; set; }
-        public int? OtherLevelsBedroomTotal { get; set; }
-        public string PropertyType { get; set; }
         public string PatioAndPorchFeatures { get; set; }
 
         public override ResidentialListingRequest CreateFromApiResponse() => new AborListingRequest()
@@ -152,7 +149,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.LotSize = propertyInfo.LotSize;
                 residentialListingRequest.LotDesc = propertyInfo.LotDescription.ToStringFromEnumMembers();
                 residentialListingRequest.OtherFees = propertyInfo.TaxLot;
-                residentialListingRequest.PropertyType = propertyInfo.PropertyType?.ToStringFromEnumMember();
+                residentialListingRequest.PropSubType = propertyInfo.PropertyType?.ToStringFromEnumMember();
             }
 
             void FillSpacesDimensionsInfo(SpacesDimensionsResponse spacesDimensionsInfo)
@@ -167,8 +164,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.NumLivingAreas = spacesDimensionsInfo.LivingAreasTotal;
                 residentialListingRequest.BathsFull = spacesDimensionsInfo.FullBathsTotal;
                 residentialListingRequest.BathsHalf = spacesDimensionsInfo.HalfBathsTotal;
-                residentialListingRequest.MainLevelBedroomTotal = spacesDimensionsInfo.MainLevelBedroomTotal;
-                residentialListingRequest.OtherLevelsBedroomTotal = spacesDimensionsInfo.OtherLevelsBedroomTotal;
+                residentialListingRequest.NumBedsMainLevel = spacesDimensionsInfo.MainLevelBedroomTotal;
+                residentialListingRequest.NumBedsOtherLevels = spacesDimensionsInfo.OtherLevelsBedroomTotal;
                 residentialListingRequest.SqFtTotal = spacesDimensionsInfo.SqFtTotal;
             }
 
@@ -182,16 +179,13 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.FacesDesc = featuresInfo.HomeFaces?.ToStringFromEnumMember();
                 residentialListingRequest.FoundationDesc = featuresInfo.Foundation.ToStringFromEnumMembers();
                 residentialListingRequest.RoofDesc = featuresInfo.RoofDescription.ToStringFromEnumMembers();
-                residentialListingRequest.ExteriorDesc = featuresInfo.ConstructionMaterials.ToStringFromEnumMembers();
+                residentialListingRequest.ConstructionDesc = featuresInfo.ConstructionMaterials.ToStringFromEnumMembers();
                 residentialListingRequest.FireplaceDesc = featuresInfo.FireplaceDescription.ToStringFromEnumMembers();
                 residentialListingRequest.NumberFireplaces = featuresInfo.Fireplaces?.ToString();
                 residentialListingRequest.FloorsDesc = featuresInfo.Floors.ToStringFromEnumMembers();
-                residentialListingRequest.KitchenDesc = featuresInfo.KitchenFeatures.ToStringFromEnumMembers();
-                residentialListingRequest.Bed1Desc = featuresInfo.MasterBedroomFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.GarageDesc = featuresInfo.GarageDescription.ToStringFromEnumMembers();
                 residentialListingRequest.AppliancesDesc = featuresInfo.Appliances.ToStringFromEnumMembers();
                 residentialListingRequest.FenceDesc = featuresInfo.Fencing.ToStringFromEnumMembers();
-                residentialListingRequest.WaterAccessDesc = featuresInfo.WaterAccessDescription.ToStringFromEnumMembers();
                 residentialListingRequest.WaterfrontFeatures = featuresInfo.WaterfrontFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.WaterDesc = featuresInfo.WaterSewer.ToStringFromEnumMembers();
                 residentialListingRequest.BodyofWater = featuresInfo.WaterBodyName?.ToStringFromEnumMember();
@@ -207,7 +201,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.WindowCoverings = featuresInfo.WindowFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.UnitStyleDesc = featuresInfo.UnitStyle.ToStringFromEnumMembers();
                 residentialListingRequest.GarageCapacity = featuresInfo.GarageSpaces;
-                residentialListingRequest.LaundryFacilityDesc = featuresInfo.LaundryFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.LaundryLocDesc = featuresInfo.LaundryLocation.ToStringFromEnumMembers();
                 residentialListingRequest.InteriorDesc = featuresInfo.InteriorFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.GuestAccommodationsDesc = featuresInfo.GuestAccommodationsDescription.ToStringFromEnumMembers();
