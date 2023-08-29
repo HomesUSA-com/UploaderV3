@@ -409,14 +409,12 @@ namespace Husa.Uploader.Core.Services
 
         private void NavigateToQuickEdit(string mlsNumber)
         {
-            this.uploaderClient.NavigateToUrl("https://matrix.austinmls.com/Matrix/Input");
-            // this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Input"));
-            // this.uploaderClient.ClickOnElement(By.LinkText("Input"));
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Edit existing"));
-            this.uploaderClient.ClickOnElement(By.LinkText("Edit existing"));
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_txtSourceCommonID"));
-            this.uploaderClient.WriteTextbox(By.Id("m_txtSourceCommonID"), value: mlsNumber);
-            this.uploaderClient.ClickOnElement(By.Id("m_lbEdit")); // "Modify button"
+            this.uploaderClient.NavigateToUrl("https://matrix.abor.com/Matrix/AddEdit");
+            Thread.Sleep(1000);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lvInputUISections_ctrl0_tbQuickEditCommonID_m_txbInternalTextBox"));
+            this.uploaderClient.WriteTextbox(By.Id("m_lvInputUISections_ctrl0_tbQuickEditCommonID_m_txbInternalTextBox"), value: mlsNumber);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lvInputUISections_ctrl0_lbQuickEdit"));
+            this.uploaderClient.ClickOnElement(By.Id("m_lvInputUISections_ctrl0_lbQuickEdit"));
         }
 
         private void FillStatusInformation(ResidentialListingRequest listing)
