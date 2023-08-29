@@ -315,6 +315,7 @@ namespace Husa.Uploader.Data.Entities
         public bool? SellingAgentPresent { get; set; }
         public string SoilType { get; set; }
         public string SellConcess { get; set; }
+        public string SellConcessDescription { get; set; }
         public decimal? SoldPrice { get; set; }
         public int? OtherRoom1Width { get; set; }
         public string OtherRoom1Level { get; set; }
@@ -384,6 +385,7 @@ namespace Husa.Uploader.Data.Entities
         public int? Loan1Years { get; set; }
         public decimal Loan1Amount { get; set; }
         public string SoldTerms { get; set; }
+        public string HowSold { get; set; }
         public int? RepairsAmount { get; set; }
         public int? BuyerPoints { get; set; }
         public string TitlePaidBy { get; set; }
