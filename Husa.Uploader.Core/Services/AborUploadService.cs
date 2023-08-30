@@ -160,6 +160,7 @@ namespace Husa.Uploader.Core.Services
 
                     this.FillListingInformation(listing);
                     this.FillGeneralInformation(listing);
+                    this.FillDocumentsAndUtilities(listing as AborListingRequest);
                     this.FillGreenEnergyInformation();
                     this.FillFinancialInformation(listing as AborListingRequest);
                     this.FillShowingInformation(listing);
@@ -472,6 +473,28 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_214"), listing.SchoolName6); // High School Other
         }
 
+        private void FillDocumentsAndUtilities(AborListingRequest listing)
+        {
+            string tabName = "Documents & Utilities";
+            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
+
+            this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // click in tab DocumentsAndUtilities
+            Thread.Sleep(100);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_271"));
+            if (listing.IsNewListing)
+            {
+                this.uploaderClient.SetMultipleCheckboxById("Input_271", "None", "Disclosures", tabName);
+                this.uploaderClient.SetMultipleCheckboxById("Input_272", "NA", "Documents Available", tabName);
+                this.uploaderClient.ScrollToTop();
+            }
+
+            this.uploaderClient.SetMultipleCheckboxById("Input_273", listing.HeatSystemDesc, "Heating", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_274", listing.CoolSystemDesc, "Cooling", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_275", listing.GreenWaterConservation, "Water Source", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_276", listing.WaterDesc, "Sewer", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_278", listing.UtilitiesDesc, "Utilities", tabName);
+        }
+
         private void FillGreenEnergyInformation()
         {
             this.uploaderClient.ClickOnElement(By.LinkText("Green Energy"));
@@ -669,12 +692,8 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_604", listing.GreenCerts, fieldLabel: "Green Building Verification", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_606", listing.EESFeatures, fieldLabel: "Green Energy Efficient", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_608", listing.EnergyDesc, fieldLabel: "Green Verification Source", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_609", listing.GreenWaterConservation, fieldLabel: "Green Water Conservation", tabName);
 
             // Utilities
-            this.uploaderClient.SetMultipleCheckboxById("Input_610", listing.HeatSystemDesc, "Heat", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_611", listing.CoolSystemDesc, "A/C ", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_612", listing.WaterDesc, "Water/Sewer", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_613", listing.SupOther, " Other Utilities", tabName);
         }
 
