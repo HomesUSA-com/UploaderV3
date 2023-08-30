@@ -250,7 +250,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
                 residentialListingRequest.AgentListApptPhone = showingInfo.ContactPhone;
                 residentialListingRequest.OtherPhone = showingInfo.OccupantPhone;
-                residentialListingRequest.LockboxTypeDesc = showingInfo.LockBoxType?.ToStringFromEnumMembers();
+                residentialListingRequest.LockboxTypeDesc = showingInfo.LockBoxType?.ToStringFromEnumMember();
                 residentialListingRequest.LockboxLocDesc = showingInfo.LockBoxSerialNumber;
                 residentialListingRequest.ShowingInstructions = showingInfo.ShowingInstructions;
                 residentialListingRequest.Showing = showingInfo.ShowingRequirements.ToStringFromEnumMembers();

@@ -110,8 +110,8 @@ steps:
   continueOnError: false
   inputs:
     command: test
-    projects: '**/Husa.Uploader.sln'
-    arguments: '--configuration Release --no-build --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura --logger trx'
+    projects: '**/*Tests.csproj'
+    arguments: '--configuration Release --no-build --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura,opencover --logger trx'
     publishTestResults: true
 
 - task: PublishCodeCoverageResults@1
