@@ -2,20 +2,9 @@ namespace Husa.Uploader.Core.Extensions
 {
     using Husa.Uploader.Core.Interfaces;
     using OpenQA.Selenium;
-    using OpenQA.Selenium.Support.UI;
 
     public static class UploaderClientExtensions
     {
-        public static void SetSelectIfExist(this IUploaderClient uploaderClient, By findBy, string value)
-        {
-            var element = uploaderClient.FindElement(findBy);
-            var select = new SelectElement(element);
-            if (select.Options.Any(x => x.GetAttribute("value") == value))
-            {
-                uploaderClient.SetSelect(findBy, value);
-            }
-        }
-
         public static void FillFieldSingleOption(this IUploaderClient uploaderClient, string fieldName, string value)
         {
             if (string.IsNullOrEmpty(value))

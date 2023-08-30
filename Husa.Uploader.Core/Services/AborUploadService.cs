@@ -4,7 +4,6 @@ namespace Husa.Uploader.Core.Services
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
-    using Husa.Uploader.Core.Extensions;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
@@ -162,13 +161,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillStatusInformation(listing);
                     this.FillListingInformation(listing);
                     this.FillGeneralInformation(listing);
-                    this.FillRooms(listing);
-                    this.FillFeatures(listing);
-                    this.FillLotEnvironmentUtilityInformation(listing);
-                    this.FillFinancialInformation(listing);
-                    this.FillShowingInformation(listing);
-                    this.FillRemarks(listing as AborListingRequest);
-                    await this.FillMedia(listing, cancellationToken);
+                    this.FillGreenEnergyInformation();
                 }
                 catch (Exception exception)
                 {
@@ -476,6 +469,15 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_212"), listing.SchoolName4); // Elementary Other
             this.uploaderClient.WriteTextbox(By.Id("Input_213"), listing.SchoolName5); // Middle or Junior Other
             this.uploaderClient.WriteTextbox(By.Id("Input_214"), listing.SchoolName6); // High School Other
+        }
+
+        private void FillGreenEnergyInformation()
+        {
+            this.uploaderClient.ClickOnElement(By.LinkText("Green Energy"));
+            Thread.Sleep(100);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_280"));
+            this.uploaderClient.SetMultipleCheckboxById("Input_280", "NONE"); // Green Energy Efficient
+            this.uploaderClient.SetMultipleCheckboxById("Input_281", "None"); // Green Sustainability
         }
 
         private void FillGeneralInformation(ResidentialListingRequest listing)
