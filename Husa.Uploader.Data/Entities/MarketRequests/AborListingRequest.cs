@@ -86,7 +86,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             FillAddressInfo(this.listingDetailResponse.SaleProperty.AddressInfo);
             FillPropertyInfo(this.listingDetailResponse.SaleProperty.PropertyInfo);
             FillSpacesDimensionsInfo(this.listingDetailResponse.SaleProperty.SpacesDimensionsInfo);
-            FillFeaturesInfo(this.listingDetailResponse.SaleProperty.FeaturesInfo);
+            FillAdditionalInfo(this.listingDetailResponse.SaleProperty.FeaturesInfo);
             FillFinancialInfo(this.listingDetailResponse.SaleProperty.FinancialInfo);
             FillShowingInfo(this.listingDetailResponse.SaleProperty.ShowingInfo);
             FillSchoolsInfo(this.listingDetailResponse.SaleProperty.SchoolsInfo);
@@ -170,47 +170,29 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.SqFtTotal = spacesDimensionsInfo.SqFtTotal;
             }
 
-            void FillFeaturesInfo(FeaturesResponse featuresInfo)
+            void FillAdditionalInfo(FeaturesResponse featuresInfo)
             {
                 if (featuresInfo is null)
                 {
                     throw new ArgumentNullException(nameof(featuresInfo));
                 }
 
-                residentialListingRequest.FacesDesc = featuresInfo.HomeFaces?.ToStringFromEnumMember();
-                residentialListingRequest.FoundationDesc = featuresInfo.Foundation.ToStringFromEnumMembers();
-                residentialListingRequest.RoofDesc = featuresInfo.RoofDescription.ToStringFromEnumMembers();
-                residentialListingRequest.ConstructionDesc = featuresInfo.ConstructionMaterials.ToStringFromEnumMembers();
+                residentialListingRequest.ExteriorDesc = featuresInfo.ExteriorFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.FireplaceDesc = featuresInfo.FireplaceDescription.ToStringFromEnumMembers();
                 residentialListingRequest.NumberFireplaces = featuresInfo.Fireplaces?.ToString();
-                residentialListingRequest.FloorsDesc = featuresInfo.Floors.ToStringFromEnumMembers();
-                residentialListingRequest.GarageDesc = featuresInfo.GarageDescription.ToStringFromEnumMembers();
                 residentialListingRequest.AppliancesDesc = featuresInfo.Appliances.ToStringFromEnumMembers();
                 residentialListingRequest.FenceDesc = featuresInfo.Fencing.ToStringFromEnumMembers();
-                residentialListingRequest.WaterfrontFeatures = featuresInfo.WaterfrontFeatures.ToStringFromEnumMembers();
-                residentialListingRequest.WaterDesc = featuresInfo.WaterSewer.ToStringFromEnumMembers();
-                residentialListingRequest.BodyofWater = featuresInfo.WaterBodyName?.ToStringFromEnumMember();
-                residentialListingRequest.DistanceToWaterAccess = featuresInfo.DistanceToWaterAccess?.ToStringFromEnumMember();
-                residentialListingRequest.GreenWaterConservation = featuresInfo.WaterSource.ToStringFromEnumMembers();
-                residentialListingRequest.RestrictionsDesc = featuresInfo.RestrictionsDescription.ToStringFromEnumMembers();
-                residentialListingRequest.ExteriorFeatures = featuresInfo.ExteriorFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.CommonFeatures = featuresInfo.NeighborhoodAmenities.ToStringFromEnumMembers();
-                residentialListingRequest.HeatSystemDesc = featuresInfo.HeatSystem.ToStringFromEnumMembers();
-                residentialListingRequest.CoolSystemDesc = featuresInfo.CoolingSystem.ToStringFromEnumMembers();
                 residentialListingRequest.SecurityDesc = featuresInfo.SecurityFeatures.ToStringFromEnumMembers();
-                residentialListingRequest.UtilitiesDesc = featuresInfo.UtilitiesDescription.ToStringFromEnumMembers();
                 residentialListingRequest.WindowCoverings = featuresInfo.WindowFeatures.ToStringFromEnumMembers();
-                residentialListingRequest.UnitStyleDesc = featuresInfo.UnitStyle.ToStringFromEnumMembers();
-                residentialListingRequest.GarageCapacity = featuresInfo.GarageSpaces;
+                residentialListingRequest.LaundryFacilityDesc = featuresInfo.LaundryFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.LaundryLocDesc = featuresInfo.LaundryLocation.ToStringFromEnumMembers();
                 residentialListingRequest.InteriorDesc = featuresInfo.InteriorFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.GuestAccommodationsDesc = featuresInfo.GuestAccommodationsDescription.ToStringFromEnumMembers();
-                residentialListingRequest.PublicRemarks = featuresInfo.PropertyDescription;
                 residentialListingRequest.NumGuestBeds = featuresInfo.GuestBedroomsTotal;
                 residentialListingRequest.NumGuestHalfBaths = featuresInfo.GuestHalfBathsTotal;
                 residentialListingRequest.NumGuestFullBaths = featuresInfo.GuestFullBathsTotal;
                 residentialListingRequest.PatioAndPorchFeatures = featuresInfo.PatioAndPorchFeatures.ToStringFromEnumMembers();
-                residentialListingRequest.ViewDesc = featuresInfo.View.ToStringFromEnumMembers();
             }
 
             void FillFinancialInfo(FinancialResponse financialInfo)
