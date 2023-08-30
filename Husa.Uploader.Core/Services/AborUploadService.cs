@@ -158,10 +158,10 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
                     }
 
-                    this.FillStatusInformation(listing);
                     this.FillListingInformation(listing);
                     this.FillGeneralInformation(listing);
                     this.FillGreenEnergyInformation();
+                    this.FillFinancialInformation(listing as AborListingRequest);
                 }
                 catch (Exception exception)
                 {
@@ -677,31 +677,35 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_613", listing.SupOther, " Other Utilities", tabName);
         }
 
-        private void FillFinancialInformation(ResidentialListingRequest listing)
+        private void FillFinancialInformation(AborListingRequest listing)
         {
-            const string tabName = "Financial Information";
-            this.uploaderClient.ExecuteScript(script: " jQuery(document).scrollTop(0);");
+            this.uploaderClient.ClickOnElement(By.LinkText("Financial"));
+            Thread.Sleep(200);
+            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
 
-            this.uploaderClient.ClickOnElement(By.LinkText("Financial")); // Financial
+            this.uploaderClient.SetSelect(By.Id("Input_282"), listing.HasHoa ? "1" : "0"); // Association YN
 
-            this.uploaderClient.SetMultipleCheckboxById("Input_614", "ATCLO,FUNDI", fieldLabel: "Possession (Max 7)", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_744", listing.ProposedTerms, fieldLabel: "Acceptable Financing", tabName); // Proposed Terms
-            this.uploaderClient.SetMultipleCheckboxById("Input_616", listing.Exemptions, fieldLabel: "Exemptions", tabName); // Exemptions
-            this.uploaderClient.WriteTextbox(By.Id("Input_618"), listing.TaxYear); // Tax Year
-            this.uploaderClient.WriteTextbox(By.Id("Input_619"), listing.TaxRate); // Tax Rate
-            if (!string.IsNullOrEmpty(listing.HOA))
+            if (listing.HasHoa)
             {
-                this.uploaderClient.SetSelect(By.Id("Input_622"), value: listing.HOA, fieldLabel: "HOA Mandatory", tabName); // HOA Mandatory
+                this.uploaderClient.WriteTextbox(By.Id("Input_283"), listing.AssocName, true); // HOA Name
+                this.uploaderClient.WriteTextbox(By.Id("Input_285"), listing.AssocFee, true); // HOA Fee
+                this.uploaderClient.SetSelect(By.Id("Input_286"), listing.HOA, true); // Association Requirement
+                this.uploaderClient.SetSelect(By.Id("Input_287"), listing.AssocFeeFrequency, true); // HOA Frequency
+                this.uploaderClient.WriteTextbox(By.Id("Input_288"), listing.AssocTransferFee, true); // HOA Transfer Fee
+                this.uploaderClient.SetMultipleCheckboxById("Input_290", listing.AssocFeeIncludes); // HOA Fees Include (5)
             }
 
-            this.uploaderClient.WriteTextbox(By.Id("Input_623"), listing.AssocName); // HOA Name
-            this.uploaderClient.WriteTextbox(By.Id("Input_624"), listing.AssocFee); // HOA Amount
-            this.uploaderClient.SetSelect(By.Id("Input_625"), listing.AssocFeeFrequency, fieldLabel: "HOA Term", tabName); // HOA Term
-            this.uploaderClient.WriteTextbox(By.Id("Input_626"), listing.ManagementCompany);  // HOA Mgmt Co
-            this.uploaderClient.WriteTextbox(By.Id("Input_627"), listing.AssocPhone);  // HOA Phone
-            this.uploaderClient.WriteTextbox(By.Id("Input_628"), listing.HoaWebsite);  // HOA Website
-            this.uploaderClient.WriteTextbox(By.Id("Input_629"), listing.AssocTransferFee);  // HOA Transfer fee
-            this.uploaderClient.SetMultipleCheckboxById("Input_630", listing.AssocFeeIncludes, fieldLabel: "HOA Fee Includes", tabName);  // HOA Fee Includes
+            this.uploaderClient.SetMultipleCheckboxById("Input_291", listing.FinancingProposed); // Acceptable Financing (5)
+            this.uploaderClient.WriteTextbox(By.Id("Input_296"), "0"); // Estimated Taxes ($)
+            this.uploaderClient.WriteTextbox(By.Id("Input_297"), listing.TaxYear); // Tax Year
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_294"), listing.TaxRate, true); // Tax Rate
+            this.uploaderClient.WriteTextbox(By.Id("Input_293"), "0", true); // Tax Assessed Value
+            this.uploaderClient.SetMultipleCheckboxById("Input_295", "None"); // Buyer Incentive
+            this.uploaderClient.SetMultipleCheckboxById("Input_298", listing.ExemptionsDesc); // Tax Exemptions
+            this.uploaderClient.WriteTextbox(By.Id("Input_728"), listing.TitleCo); // Preferred Title Company
+            this.uploaderClient.ScrollDown(400);
+            this.uploaderClient.SetMultipleCheckboxById("Input_299", "Funding"); // Possession
         }
 
         private void FillShowingInformation(ResidentialListingRequest listing)
@@ -717,7 +721,6 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_635"), value: "0"); // Sub Agency Compensation (default hardcode "0")
             this.uploaderClient.SetSelect(By.Id("Input_636"), value: "Pct", fieldLabel: "Sub Agency $ or % ", tabName); // Sub Agency $ or % (default hardcode "%")
             this.uploaderClient.SetSelect(By.Id("Input_637"), listing.ProspectsExempt, "Prospects Exempt", tabName); // Prospects Exempt (default hardcode "No")
-            this.uploaderClient.WriteTextbox(By.Id("Input_638"), listing.TitleCo); // Pref Title Company
             this.uploaderClient.WriteTextbox(By.Id("Input_639"), listing.EarnestMoney); // Earnest Money
 
             // Showing

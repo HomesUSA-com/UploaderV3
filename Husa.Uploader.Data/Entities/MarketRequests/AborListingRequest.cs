@@ -43,6 +43,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
         public override MarketCode MarketCode => MarketCode.Austin;
 
+        public bool HasHoa { get; set; }
         public string PatioAndPorchFeatures { get; set; }
 
         public override ResidentialListingRequest CreateFromApiResponse() => new AborListingRequest()
@@ -220,7 +221,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 }
 
                 residentialListingRequest.FinancingProposed = financialInfo.AcceptableFinancing.ToStringFromEnumMembers();
-                residentialListingRequest.Exemptions = financialInfo.TaxExemptions.ToStringFromEnumMembers();
+                residentialListingRequest.ExemptionsDesc = financialInfo.TaxExemptions.ToStringFromEnumMembers();
                 residentialListingRequest.TaxRate = financialInfo.TaxRate.DecimalToString();
                 residentialListingRequest.TaxYear = financialInfo.TaxYear.IntegerToString();
                 residentialListingRequest.TitleCo = financialInfo.TitleCompany;
@@ -232,6 +233,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.BuyerCheckBox = financialInfo.HasBuyerIncentive;
                 residentialListingRequest.BuyerIncentive = financialInfo.BuyersAgentCommission.DecimalToString();
                 residentialListingRequest.BuyerIncentiveDesc = financialInfo.BuyersAgentCommissionType.ToStringFromEnumMember();
+                residentialListingRequest.HasHoa = financialInfo.HasHoa;
                 residentialListingRequest.HOA = financialInfo.HOARequirement?.ToStringFromEnumMember();
                 residentialListingRequest.AssocName = financialInfo.HoaName;
                 residentialListingRequest.AssocFee = financialInfo.HoaFee.HasValue ? decimal.ToInt32(financialInfo.HoaFee.Value) : 0;
