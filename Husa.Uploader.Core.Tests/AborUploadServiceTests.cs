@@ -4,6 +4,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Enums;
@@ -64,7 +65,12 @@ namespace Husa.Uploader.Core.Tests
             var addressInfo = new Mock<AborResponse.SalePropertyDetail.AddressInfoResponse>();
             var propertyInfo = new Mock<AborResponse.SalePropertyDetail.PropertyInfoResponse>();
             var featuresInfo = new Mock<AborResponse.SalePropertyDetail.FeaturesResponse>();
-            var financialInfo = new Mock<AborResponse.SalePropertyDetail.FinancialResponse>();
+            var financialInfo = new AborResponse.SalePropertyDetail.FinancialResponse()
+            {
+                HasBonusWithAmount = true,
+                BuyersAgentCommissionType = CommissionType.Amount,
+                AgentBonusAmountType = CommissionType.Percent,
+            };
             var schoolsInfo = new Mock<AborResponse.SchoolsResponse>();
             var showingInfo = new Mock<AborResponse.SalePropertyDetail.ShowingResponse>();
             var salePropertyInfo = new Mock<AborResponse.SalePropertyDetail.SalePropertyResponse>();
@@ -74,7 +80,7 @@ namespace Husa.Uploader.Core.Tests
                 AddressInfo = addressInfo.Object,
                 PropertyInfo = propertyInfo.Object,
                 FeaturesInfo = featuresInfo.Object,
-                FinancialInfo = financialInfo.Object,
+                FinancialInfo = financialInfo,
                 SchoolsInfo = schoolsInfo.Object,
                 ShowingInfo = showingInfo.Object,
                 SalePropertyInfo = salePropertyInfo.Object,

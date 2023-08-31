@@ -7,6 +7,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
+    using Husa.Uploader.Crosscutting.Extensions.Abor;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.MarketRequests;
@@ -165,6 +166,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillGreenEnergyInformation();
                     this.FillFinancialInformation(listing as AborListingRequest);
                     this.FillShowingInformation(listing);
+                    this.FillAgentOfficeInformation(listing);
                 }
                 catch (Exception exception)
                 {
@@ -788,6 +790,28 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_311"), listing.AgentListApptPhone, true); // Showing Contact Phone
             this.uploaderClient.WriteTextbox(By.Id("Input_406"), listing.OtherPhone, true);  // Showing Service Phone
             this.uploaderClient.WriteTextbox(By.Id("Input_313"), listing.ShowingInstructions); // Showing Instructions
+        }
+
+        private void FillAgentOfficeInformation(ResidentialListingRequest listing)
+        {
+            this.uploaderClient.ClickOnElement(By.LinkText("Agent/Office"));
+            Thread.Sleep(100);
+            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
+
+            this.uploaderClient.SetSelect(By.Id("Input_315"), "Percent"); // Sub Agency Compensation Type
+            this.uploaderClient.WriteTextbox(By.Id("Input_314"), "0.0"); // Sub Agency Compensation
+
+            this.uploaderClient.SetSelect(By.Id("Input_316"), listing.BuyerIncentiveDesc.ToCommissionType(), true); // Buyer Agency Compensation Type
+            this.uploaderClient.WriteTextbox(By.Id("Input_510"), listing.BuyerIncentive, true);
+
+            if (listing.HasBonusWithAmount)
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_318"), listing.AgentBonusAmountType.ToCommissionType(), true); // Bonus to BA
+                this.uploaderClient.WriteTextbox(By.Id("Input_317"), listing.AgentBonusAmount); // Bonus to BA Amount
+            }
+
+            this.uploaderClient.SetSelect(By.Id("Input_319"), "0", true); // Dual Variable Compensation
+            this.uploaderClient.SetSelect(By.Id("Input_353"), "0", true); // Intermediary
         }
 
         private void FillRemarks(AborListingRequest listing)
