@@ -546,6 +546,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_237", listing.WaterfrontDesc); // Waterfront Description
             this.uploaderClient.SetSelect(By.Id("Input_238"), listing.BodyofWater); // Water Body Name
             this.uploaderClient.SetMultipleCheckboxById("Input_244", listing.LotDesc); // Lot Description (4)
+            this.uploaderClient.SetMultipleCheckboxById("Input_233", listing.RoofDesc); // Roof
             this.uploaderClient.SetMultipleCheckboxById("Input_232", listing.FloorsDesc); // Flooring (4)
             this.uploaderClient.SetMultipleCheckboxById("Input_240", listing.RestrictionsDesc); // Restrictions Description (5)
         }
