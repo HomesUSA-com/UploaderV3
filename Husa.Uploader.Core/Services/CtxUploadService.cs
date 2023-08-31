@@ -707,7 +707,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // Financial Information
             this.UpdatePublicRemarksInRemarksTab(listing); // Public Remarks
 
-            this.uploaderClient.WriteTextbox(By.Id("Input_141"), listing.GetPrivateRemarks()); // Agent Remarks
+            this.uploaderClient.WriteTextbox(By.Id("Input_141"), listing.GetAgentRemarksMessage()); // Agent Remarks
         }
 
         private async Task FillMedia(ResidentialListingRequest listing, CancellationToken cancellationToken)

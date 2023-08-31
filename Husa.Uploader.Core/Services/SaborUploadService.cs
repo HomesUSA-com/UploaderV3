@@ -649,7 +649,7 @@ namespace Husa.Uploader.Core.Services
                 // Ignoring exception because the fields are optional
             }
 
-            if (listing.YearBuiltDesc == "Incomplete")
+            if (listing.BuiltStatus != BuiltStatus.ReadyNow)
             {
                 this.uploaderClient.WriteTextbox(By.Name("MISCELANES"), entry: "UNDCN", isElementOptional: true); // Miscellaneous
             }

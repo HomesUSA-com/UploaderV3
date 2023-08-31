@@ -4,6 +4,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Abor.Domain.Enums.Domain;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
@@ -63,7 +64,10 @@ namespace Husa.Uploader.Core.Tests
         {
             var spacesDimensionsInfo = new Mock<AborResponse.SalePropertyDetail.SpacesDimensionsResponse>();
             var addressInfo = new Mock<AborResponse.SalePropertyDetail.AddressInfoResponse>();
-            var propertyInfo = new Mock<AborResponse.SalePropertyDetail.PropertyInfoResponse>();
+            var propertyInfo = new AborResponse.SalePropertyDetail.PropertyInfoResponse()
+            {
+                ConstructionStage = ConstructionStage.Incomplete,
+            };
             var featuresInfo = new Mock<AborResponse.SalePropertyDetail.FeaturesResponse>();
             var financialInfo = new AborResponse.SalePropertyDetail.FinancialResponse()
             {
@@ -72,18 +76,26 @@ namespace Husa.Uploader.Core.Tests
                 AgentBonusAmountType = CommissionType.Percent,
             };
             var schoolsInfo = new Mock<AborResponse.SchoolsResponse>();
-            var showingInfo = new Mock<AborResponse.SalePropertyDetail.ShowingResponse>();
-            var salePropertyInfo = new Mock<AborResponse.SalePropertyDetail.SalePropertyResponse>();
+            var showingInfo = new AborResponse.SalePropertyDetail.ShowingResponse()
+            {
+                RealtorContactEmail = "RealtorContactEmail@tst.com",
+                OccupantPhone = "8888888888",
+            };
+            var salePropertyInfo = new AborResponse.SalePropertyDetail.SalePropertyResponse()
+            {
+                OwnerName = "OwnerName",
+                PlanName = "PlanName",
+            };
             var saleProperty = new AborResponse.SalePropertyDetail.SalePropertyDetailResponse()
             {
                 SpacesDimensionsInfo = spacesDimensionsInfo.Object,
                 AddressInfo = addressInfo.Object,
-                PropertyInfo = propertyInfo.Object,
+                PropertyInfo = propertyInfo,
                 FeaturesInfo = featuresInfo.Object,
                 FinancialInfo = financialInfo,
                 SchoolsInfo = schoolsInfo.Object,
-                ShowingInfo = showingInfo.Object,
-                SalePropertyInfo = salePropertyInfo.Object,
+                ShowingInfo = showingInfo,
+                SalePropertyInfo = salePropertyInfo,
             };
             var statusFields = new Mock<AborResponse.ListingSaleStatusFieldsResponse>();
 

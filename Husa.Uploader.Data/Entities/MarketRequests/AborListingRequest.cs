@@ -42,6 +42,13 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
         }
 
         public override MarketCode MarketCode => MarketCode.Austin;
+        public override BuiltStatus BuiltStatus => this.YearBuiltDesc switch
+        {
+            "TB" => BuiltStatus.ToBeBuilt,
+            "NW" => BuiltStatus.ReadyNow,
+            "UC" => BuiltStatus.WithCompletion,
+            _ => BuiltStatus.WithCompletion,
+        };
 
         public bool HasHoa { get; set; }
         public string PatioAndPorchFeatures { get; set; }
@@ -80,13 +87,14 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 SysModifiedOn = this.listingDetailResponse.SysModifiedOn,
                 SysModifiedBy = this.listingDetailResponse.SysModifiedBy,
                 ExpectedActiveDate = DateTime.Now.ToString("MM/dd/yy"),
+                ExpiredDate = this.listingDetailResponse.ExpirationDate,
             };
 
             FillSalePropertyInfo(this.listingDetailResponse.SaleProperty.SalePropertyInfo);
             FillAddressInfo(this.listingDetailResponse.SaleProperty.AddressInfo);
             FillPropertyInfo(this.listingDetailResponse.SaleProperty.PropertyInfo);
             FillSpacesDimensionsInfo(this.listingDetailResponse.SaleProperty.SpacesDimensionsInfo);
-            FillAdditionalInfo(this.listingDetailResponse.SaleProperty.FeaturesInfo);
+            FillFeaturesInfo(this.listingDetailResponse.SaleProperty.FeaturesInfo);
             FillFinancialInfo(this.listingDetailResponse.SaleProperty.FinancialInfo);
             FillShowingInfo(this.listingDetailResponse.SaleProperty.ShowingInfo);
             FillSchoolsInfo(this.listingDetailResponse.SaleProperty.SchoolsInfo);
@@ -103,11 +111,10 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     throw new ArgumentNullException(nameof(salePropertyInfo));
                 }
 
-                residentialListingRequest.BuilderName = this.listingDetailResponse.SaleProperty.SalePropertyInfo.OwnerName;
-                residentialListingRequest.CompanyName = this.listingDetailResponse.SaleProperty.SalePropertyInfo.OwnerName;
-                residentialListingRequest.OwnerName = this.listingDetailResponse.SaleProperty.SalePropertyInfo.OwnerName;
-                residentialListingRequest.ExpiredDate = this.listingDetailResponse.ExpirationDate;
-                residentialListingRequest.PlanProfileName = this.listingDetailResponse.SaleProperty.SalePropertyInfo.PlanName;
+                residentialListingRequest.BuilderName = salePropertyInfo.OwnerName;
+                residentialListingRequest.CompanyName = salePropertyInfo.OwnerName;
+                residentialListingRequest.OwnerName = salePropertyInfo.OwnerName;
+                residentialListingRequest.PlanProfileName = salePropertyInfo.PlanName;
             }
 
             void FillAddressInfo(AddressInfoResponse addressInfo)
@@ -170,7 +177,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.SqFtTotal = spacesDimensionsInfo.SqFtTotal;
             }
 
-            void FillAdditionalInfo(FeaturesResponse featuresInfo)
+            void FillFeaturesInfo(FeaturesResponse featuresInfo)
             {
                 if (featuresInfo is null)
                 {
@@ -178,21 +185,39 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 }
 
                 residentialListingRequest.ExteriorDesc = featuresInfo.ExteriorFeatures.ToStringFromEnumMembers();
+                residentialListingRequest.FacesDesc = featuresInfo.HomeFaces?.ToStringFromEnumMember();
+                residentialListingRequest.FoundationDesc = featuresInfo.Foundation.ToStringFromEnumMembers();
+                residentialListingRequest.RoofDesc = featuresInfo.RoofDescription.ToStringFromEnumMembers();
+                residentialListingRequest.ConstructionDesc = featuresInfo.ConstructionMaterials.ToStringFromEnumMembers();
                 residentialListingRequest.FireplaceDesc = featuresInfo.FireplaceDescription.ToStringFromEnumMembers();
                 residentialListingRequest.NumberFireplaces = featuresInfo.Fireplaces?.ToString();
+                residentialListingRequest.FloorsDesc = featuresInfo.Floors.ToStringFromEnumMembers();
+                residentialListingRequest.GarageDesc = featuresInfo.GarageDescription.ToStringFromEnumMembers();
                 residentialListingRequest.AppliancesDesc = featuresInfo.Appliances.ToStringFromEnumMembers();
                 residentialListingRequest.FenceDesc = featuresInfo.Fencing.ToStringFromEnumMembers();
+                residentialListingRequest.WaterfrontFeatures = featuresInfo.WaterfrontFeatures.ToStringFromEnumMembers();
+                residentialListingRequest.WaterDesc = featuresInfo.WaterSewer.ToStringFromEnumMembers();
+                residentialListingRequest.BodyofWater = featuresInfo.WaterBodyName?.ToStringFromEnumMember();
+                residentialListingRequest.DistanceToWaterAccess = featuresInfo.DistanceToWaterAccess?.ToStringFromEnumMember();
+                residentialListingRequest.GreenWaterConservation = featuresInfo.WaterSource.ToStringFromEnumMembers();
+                residentialListingRequest.RestrictionsDesc = featuresInfo.RestrictionsDescription.ToStringFromEnumMembers();
                 residentialListingRequest.CommonFeatures = featuresInfo.NeighborhoodAmenities.ToStringFromEnumMembers();
+                residentialListingRequest.HeatSystemDesc = featuresInfo.HeatSystem.ToStringFromEnumMembers();
+                residentialListingRequest.CoolSystemDesc = featuresInfo.CoolingSystem.ToStringFromEnumMembers();
                 residentialListingRequest.SecurityDesc = featuresInfo.SecurityFeatures.ToStringFromEnumMembers();
+                residentialListingRequest.UtilitiesDesc = featuresInfo.UtilitiesDescription.ToStringFromEnumMembers();
                 residentialListingRequest.WindowCoverings = featuresInfo.WindowFeatures.ToStringFromEnumMembers();
-                residentialListingRequest.LaundryFacilityDesc = featuresInfo.LaundryFeatures.ToStringFromEnumMembers();
+                residentialListingRequest.UnitStyleDesc = featuresInfo.UnitStyle.ToStringFromEnumMembers();
+                residentialListingRequest.GarageCapacity = featuresInfo.GarageSpaces;
                 residentialListingRequest.LaundryLocDesc = featuresInfo.LaundryLocation.ToStringFromEnumMembers();
                 residentialListingRequest.InteriorDesc = featuresInfo.InteriorFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.GuestAccommodationsDesc = featuresInfo.GuestAccommodationsDescription.ToStringFromEnumMembers();
+                residentialListingRequest.PublicRemarks = featuresInfo.PropertyDescription;
                 residentialListingRequest.NumGuestBeds = featuresInfo.GuestBedroomsTotal;
                 residentialListingRequest.NumGuestHalfBaths = featuresInfo.GuestHalfBathsTotal;
                 residentialListingRequest.NumGuestFullBaths = featuresInfo.GuestFullBathsTotal;
                 residentialListingRequest.PatioAndPorchFeatures = featuresInfo.PatioAndPorchFeatures.ToStringFromEnumMembers();
+                residentialListingRequest.ViewDesc = featuresInfo.View.ToStringFromEnumMembers();
             }
 
             void FillFinancialInfo(FinancialResponse financialInfo)
@@ -336,140 +361,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             return hasBuyerIncentive
                 ? agentAmount + "Contact Builder for Buyer Incentive Information. "
                 : agentAmount;
-        }
-
-        public override string GetPrivateRemarks()
-        {
-            var privateRemarks = base.GetPrivateRemarks();
-
-            var bonusMessage = string.IsNullOrWhiteSpace(this.MLSNum) ? this.GetAgentBonusRemarksMessage() : string.Empty;
-            if (!string.IsNullOrWhiteSpace(bonusMessage))
-            {
-                privateRemarks = $"{bonusMessage} {privateRemarks}";
-            }
-
-            var saleOfficeInfo = this.GetSalesAssociateRemarksMessage();
-            if (!string.IsNullOrWhiteSpace(saleOfficeInfo))
-            {
-                privateRemarks += $" {saleOfficeInfo}";
-            }
-
-            if (!string.IsNullOrWhiteSpace(this.PlanProfileName))
-            {
-                privateRemarks += $" Plan: {this.PlanProfileName}.";
-            }
-
-            if (!string.IsNullOrWhiteSpace(this.RealtorContactEmail))
-            {
-                return privateRemarks + $" Email contact: {this.RealtorContactEmail}.";
-            }
-
-            return privateRemarks;
-        }
-
-        public override string GetSalesAssociateRemarksMessage()
-        {
-            var salesOfficeAddr = this.GetSalesOfficeAddressRemarkMessage();
-            var phones = new List<string>();
-
-            if (!string.IsNullOrWhiteSpace(this.AgentListApptPhone))
-            {
-                phones.Add(this.AgentListApptPhone.PhoneFormat());
-            }
-
-            if (!string.IsNullOrWhiteSpace(this.OtherPhone))
-            {
-                phones.Add(this.OtherPhone.PhoneFormat());
-            }
-
-            return phones.Any()
-                ? string.Format("For more information call {0}. {1}.", string.Join(" or ", phones), salesOfficeAddr)
-                : salesOfficeAddr;
-        }
-
-        public override string GetPublicRemarks()
-        {
-            var builtNote = "MLS# " + this.MLSNum;
-
-            if (!string.IsNullOrWhiteSpace(this.CompanyName))
-            {
-                if (!string.IsNullOrWhiteSpace(builtNote))
-                {
-                    builtNote += " - ";
-                }
-
-                builtNote += "Built by " + this.CompanyName + " - ";
-            }
-
-            switch (GetBuiltStatus())
-            {
-                case BuiltStatus.ToBeBuilt:
-                    builtNote += "To Be Built! ~ ";
-                    break;
-
-                case BuiltStatus.ReadyNow:
-                    string dateFormat = "MMM dd";
-                    int diffDays = DateTime.Now.Subtract((DateTime)this.BuildCompletionDate).Days;
-                    if (diffDays > 365)
-                    {
-                        dateFormat = "MMM dd yyyy";
-                    }
-
-                    if (!string.IsNullOrEmpty(this.RemarksFormatFromCompany) && this.RemarksFormatFromCompany == "SD")
-                    {
-                        builtNote += "CONST. COMPLETED " + this.BuildCompletionDate.Value.ToString(dateFormat) + " ~ ";
-                    }
-                    else
-                    {
-                        builtNote += "Ready Now! ~ ";
-                    }
-
-                    break;
-
-                case BuiltStatus.WithCompletion:
-                    if (this.BuildCompletionDate != null)
-                    {
-                        builtNote += this.BuildCompletionDate.Value.ToString("MMMM") + " completion! ~ ";
-                    }
-
-                    break;
-
-                default:
-                    break;
-            }
-
-            return GetRemarks();
-
-            BuiltStatus GetBuiltStatus() => this.YearBuiltDesc switch
-            {
-                "TB" => BuiltStatus.ToBeBuilt,
-                "NW" => BuiltStatus.ReadyNow,
-                "UC" => BuiltStatus.WithCompletion,
-                _ => BuiltStatus.WithCompletion,
-            };
-
-            string GetRemarks()
-            {
-                string remark;
-
-                if (this.IncludeRemarks != null && this.IncludeRemarks == false)
-                {
-                    builtNote = string.Empty;
-                }
-
-                if (string.IsNullOrWhiteSpace(this.PublicRemarks) || !this.PublicRemarks.Contains('~'))
-                {
-                    remark = (builtNote + this.PublicRemarks ?? string.Empty).RemoveSlash();
-                }
-                else
-                {
-                    var tempIndex = this.PublicRemarks.IndexOf("~", StringComparison.Ordinal) + 1;
-                    var temp = this.PublicRemarks[tempIndex..].Trim();
-                    remark = (builtNote + temp).RemoveSlash();
-                }
-
-                return remark.Replace("\t", string.Empty).Replace("\n", " ");
-            }
         }
     }
 }

@@ -996,11 +996,11 @@ namespace Husa.Uploader.Data.Entities
 
         public List<OpenHouseRequest> OpenHouse { get; set; }
 
+        public abstract BuiltStatus BuiltStatus { get; }
+
         public abstract ResidentialListingRequest CreateFromApiResponse();
 
         public abstract ResidentialListingRequest CreateFromApiResponseDetail();
-
-        public abstract string GetPublicRemarks();
 
         public abstract string GetBuyerAgentComp(string compBuy, string compBuyType);
 
@@ -1030,9 +1030,34 @@ namespace Husa.Uploader.Data.Entities
                 WorkingStatus = workingStatus,
             };
 
-        public virtual string GetPrivateRemarks()
+        public virtual string GetAgentRemarksMessage()
         {
-            return "LIMITED SERVICE LISTING: Buyer verifies dimensions & ISD info. Use Bldr contract.";
+            var privateRemarks = "LIMITED SERVICE LISTING: Buyer verifies dimensions & ISD info. Use Bldr contract.";
+
+            var bonusMessage = string.IsNullOrWhiteSpace(this.MLSNum) ? this.GetAgentBonusRemarksMessage() : string.Empty;
+            if (!string.IsNullOrWhiteSpace(bonusMessage))
+            {
+                privateRemarks = $"{bonusMessage} {privateRemarks}";
+            }
+
+            var saleOfficeInfo = this.GetSalesAssociateRemarksMessage();
+            if (!string.IsNullOrWhiteSpace(saleOfficeInfo))
+            {
+                privateRemarks += $" {saleOfficeInfo}";
+            }
+
+            if (!string.IsNullOrWhiteSpace(this.PlanProfileName))
+            {
+                privateRemarks += $" Plan: {this.PlanProfileName}.";
+            }
+
+            if (!string.IsNullOrWhiteSpace(this.RealtorContactEmail))
+            {
+                return privateRemarks + $" Email contact: {this.RealtorContactEmail}.";
+            }
+
+            const string homeUnderConstruction = "Home is under construction. For your safety, call appt number for showings.";
+            return this.BuiltStatus != BuiltStatus.ReadyNow ? $"{homeUnderConstruction} {privateRemarks}" : privateRemarks;
         }
 
         public virtual string GetSalesOfficeAddressRemarkMessage()
@@ -1053,43 +1078,21 @@ namespace Husa.Uploader.Data.Entities
         public virtual string GetSalesAssociateRemarksMessage()
         {
             var salesOfficeAddr = this.GetSalesOfficeAddressRemarkMessage();
+            var phones = new List<string>();
 
-            var commPhone = this.CommunityProfilePhone ?? string.Empty;
-
-            string extendedRemarks = string.Format("Call Sales Associate {0}. {1}. ", commPhone.PhoneFormat(), salesOfficeAddr);
-
-            var apptPhone = this.GetApptPhone();
-            var alternatePhone = this.GetAlternatePhone();
-
-            switch (this.MarketCode)
+            if (!string.IsNullOrWhiteSpace(this.AgentListApptPhone))
             {
-                case MarketCode.SanAntonio:
-                    if (!string.IsNullOrEmpty(apptPhone) && alternatePhone != apptPhone)
-                    {
-                        extendedRemarks = string.Format("Call Sales Associate {0}. ", apptPhone);
-
-                        if (!string.IsNullOrEmpty(alternatePhone))
-                        {
-                            extendedRemarks = string.Format("Call Sales Associate {0} or {1}. ", apptPhone, alternatePhone);
-                        }
-                    }
-
-                    break;
-                case MarketCode.Houston:
-                    if (!string.IsNullOrEmpty(apptPhone))
-                    {
-                        extendedRemarks = string.Format("Call Sales Associate {0}. ", apptPhone);
-                        var altPhone = this.AltPhoneCommunity.PhoneFormat();
-                        if (!string.IsNullOrEmpty(altPhone) && altPhone != apptPhone)
-                        {
-                            extendedRemarks = string.Format("Call Sales Associate {0} or {1}. ", apptPhone, altPhone);
-                        }
-                    }
-
-                    break;
+                phones.Add(this.AgentListApptPhone.PhoneFormat());
             }
 
-            return extendedRemarks;
+            if (!string.IsNullOrWhiteSpace(this.OtherPhone))
+            {
+                phones.Add(this.OtherPhone.PhoneFormat());
+            }
+
+            return phones.Any()
+                ? string.Format("For more information call {0}. {1}.", string.Join(" or ", phones), salesOfficeAddr)
+                : salesOfficeAddr;
         }
 
         public virtual string GetAgentBonusAmount()
@@ -1121,52 +1124,63 @@ namespace Husa.Uploader.Data.Entities
             return string.Empty;
         }
 
-        private string GetApptPhone()
+        public virtual string GetPublicRemarks()
         {
-            var apptPhone = string.Empty;
+            var builtNote = !string.IsNullOrWhiteSpace(this.MLSNum) ? $"MLS# {this.MLSNum}" : string.Empty;
 
-            if (!string.IsNullOrEmpty(this.AgentListApptPhoneFromCompany))
+            if (!string.IsNullOrWhiteSpace(this.CompanyName))
             {
-                apptPhone = this.AgentListApptPhoneFromCompany;
-            }
-            else if (!string.IsNullOrEmpty(this.AgentListApptPhone))
-            {
-                return this.AgentListApptPhone;
-            }
-            else if (!string.IsNullOrEmpty(this.AgentListApptPhoneFromCommunityProfile))
-            {
-                apptPhone = this.AgentListApptPhoneFromCommunityProfile;
-            }
-            else if (!string.IsNullOrEmpty(this.OwnerPhone))
-            {
-                apptPhone = this.OwnerPhone;
+                builtNote += !string.IsNullOrWhiteSpace(builtNote) ? " - " : string.Empty;
+                builtNote += "Built by " + this.CompanyName + " - ";
             }
 
-            return apptPhone.PhoneFormat();
-        }
+            switch (this.BuiltStatus)
+            {
+                case BuiltStatus.ToBeBuilt:
+                    builtNote += "To Be Built! ~ ";
+                    break;
 
-        private string GetAlternatePhone()
-        {
-            var alternatePhone = string.Empty;
+                case BuiltStatus.ReadyNow:
+                    builtNote += "Ready Now! ~ ";
 
-            if (!string.IsNullOrEmpty(this.AlternatePhoneFromCompany))
-            {
-                alternatePhone = this.AlternatePhoneFromCompany;
-            }
-            else if (!string.IsNullOrEmpty(this.OtherPhoneFromCommunityProfile))
-            {
-                alternatePhone = this.OtherPhoneFromCommunityProfile;
-            }
-            else if (!string.IsNullOrEmpty(this.OtherPhone))
-            {
-                alternatePhone = this.OtherPhone;
-            }
-            else if (!string.IsNullOrEmpty(this.AltPhoneCommunity))
-            {
-                alternatePhone = this.AltPhoneCommunity;
+                    break;
+
+                case BuiltStatus.WithCompletion:
+                    if (this.BuildCompletionDate.HasValue)
+                    {
+                        builtNote += this.BuildCompletionDate.Value.ToString("MMMM") + " completion! ~ ";
+                    }
+
+                    break;
+
+                default:
+                    break;
             }
 
-            return alternatePhone.PhoneFormat();
+            return GetRemarks();
+
+            string GetRemarks()
+            {
+                string remark;
+
+                if (this.IncludeRemarks != null && this.IncludeRemarks == false)
+                {
+                    builtNote = string.Empty;
+                }
+
+                if (string.IsNullOrWhiteSpace(this.PublicRemarks) || !this.PublicRemarks.Contains('~'))
+                {
+                    remark = (builtNote + this.PublicRemarks ?? string.Empty).RemoveSlash();
+                }
+                else
+                {
+                    var tempIndex = this.PublicRemarks.IndexOf("~", StringComparison.Ordinal) + 1;
+                    var temp = this.PublicRemarks[tempIndex..].Trim();
+                    remark = (builtNote + temp).RemoveSlash();
+                }
+
+                return remark.Replace("\t", string.Empty).Replace("\n", " ");
+            }
         }
     }
 }
