@@ -6,35 +6,33 @@ namespace Husa.Uploader.Data.Tests
     public class SaborListingRequestTests
     {
         [Fact]
-        public void GetPrivateRemarks_GetAppointmentPhone()
+        public void GetAgentRemarksMessage_GetAppointmentPhone()
         {
             // Arrange
             var sut = new SaborListingRequest(new ListingSaleRequestQueryResponse())
             {
-                AgentListApptPhoneFromCommunityProfile = "123-456-7890",
-                OwnerPhone = "987-654-3210",
+                AgentListApptPhone = "123-456-7890",
             };
 
             // Act
-            var result = sut.GetPrivateRemarks();
+            var result = sut.GetAgentRemarksMessage();
 
             // Assert
             Assert.Contains("(123) 456-7890", result);
         }
 
         [Fact]
-        public void GetPrivateRemarks_GetAppointmentPhoneAndAlternatePhone()
+        public void GetAgentRemarksMessage_GetAppointmentPhoneAndAlternatePhone()
         {
             // Arrange
             var sut = new SaborListingRequest(new ListingSaleRequestQueryResponse())
             {
                 AgentListApptPhone = "9876543210",
-                AlternatePhoneFromCompany = "111-222-3333",
-                OtherPhoneFromCommunityProfile = "444-555-6666",
+                OtherPhone = "111-222-3333",
             };
 
             // Act
-            var result = sut.GetPrivateRemarks();
+            var result = sut.GetAgentRemarksMessage();
 
             // Assert
             Assert.Contains("(987) 654-3210", result);

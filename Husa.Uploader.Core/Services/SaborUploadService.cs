@@ -231,26 +231,28 @@ namespace Husa.Uploader.Core.Services
                     script: "jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();",
                     isScriptOptional: true);
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("csframe"), cancellationToken);
-                this.uploaderClient.SwitchTo("csframe");
+                this.uploaderClient.SwitchTo().Frame(this.uploaderClient.FindElementById("csframe"));
+
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("statuses"), cancellationToken);
                 this.uploaderClient.SetSelect(By.Id("statuses"), listing.ListStatus, "Listing Status", tabName);
 
                 if (listing.ListStatus == "SLD")
                 {
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("HOWSOLD"), cancellationToken);
-                    this.uploaderClient.WriteTextbox(By.Name("HOWSOLD"), listing.MFinancing); // How Sold/Sale Terms
-                    this.uploaderClient.WriteTextbox(By.Name("CLOSEDATE"), listing.ClosedDate.Value.ToString("MM/dd/yyyy")); // Closing Date
-                    this.uploaderClient.WriteTextbox(By.Name("SOLDPRICE"), listing.SoldPrice); // Sold Price
-                    this.uploaderClient.WriteTextbox(By.Name("SELLCONCES"), listing.SellConcess); // Seller Concessions
-                    this.uploaderClient.WriteTextbox(By.Name("SELL_CONC_DESC"), entry: string.Empty); // Seller Concessions Description
-                    this.uploaderClient.WriteTextbox(By.Name("SELL_CONC_DESC"), !string.IsNullOrEmpty(listing.BuyerIncentiveDesc) ? listing.BuyerIncentiveDesc : "NONE"); // Seller Concessions Description
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("HOWSOLDID"), cancellationToken);
+                    this.uploaderClient.WriteTextbox(By.Id("HOWSOLDID"), listing.HowSold); // How Sold/Sale Terms
+                    this.uploaderClient.WriteTextbox(By.Id("CLOSEDATE"), listing.ClosedDate.Value.ToString("MM/dd/yyyy")); // Closing Date
+                    this.uploaderClient.WriteTextbox(By.Id("SOLDPRICE"), listing.SoldPrice); // Sold Price
+                    this.uploaderClient.WriteTextbox(By.Id("CONTINFO"), listing.ContingencyInfo); // Contingent Info
+                    this.uploaderClient.WriteTextbox(By.Id("SELLCONCES"), listing.SellConcess); // Seller Concessions
+                    this.uploaderClient.WriteTextbox(By.Id("SELL_CONC_DESCID"), entry: string.Empty); // Seller Concessions Description
+                    this.uploaderClient.WriteTextbox(By.Id("SELL_CONC_DESCID"), !string.IsNullOrEmpty(listing.HowToSellDesc) ? listing.SellConcess : "NONE"); // Seller Concessions Description
                 }
 
                 if (listing.ListStatus == "PDB" || listing.ListStatus == "PND" || listing.ListStatus == "SLD")
                 {
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("CONTDATE"), cancellationToken);
-                    this.uploaderClient.WriteTextbox(By.Name("CONTDATE"), listing.PendingDate.Value.ToString("MM/dd/yyyy")); // Contract Date
-                    this.uploaderClient.WriteTextbox(By.Name("SELLAGT1"), listing.SellingAgentLicenseNum); // Selling / Buyer's Agent ID
+                    this.uploaderClient.WriteTextbox(By.Id("CONTDATE"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty); // Contract Date
+                    this.uploaderClient.WriteTextbox(By.Id("SELLAGT1"), listing.AgentMarketUniqueId); // Selling / Buyer's Agent ID
                 }
 
                 return UploadResult.Success;
@@ -282,7 +284,7 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(1000);
                 this.uploaderClient.ExecuteScript("jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("csframe"), cancellationToken);
-                this.uploaderClient.SwitchTo("csframe");
+                this.uploaderClient.SwitchTo().Frame(this.uploaderClient.FindElementById("csframe"));
                 try
                 {
                     Thread.Sleep(1000);
@@ -647,7 +649,7 @@ namespace Husa.Uploader.Core.Services
                 // Ignoring exception because the fields are optional
             }
 
-            if (listing.YearBuiltDesc == "Incomplete")
+            if (listing.BuiltStatus != BuiltStatus.ReadyNow)
             {
                 this.uploaderClient.WriteTextbox(By.Name("MISCELANES"), entry: "UNDCN", isElementOptional: true); // Miscellaneous
             }

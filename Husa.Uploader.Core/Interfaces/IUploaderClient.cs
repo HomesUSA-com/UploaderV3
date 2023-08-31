@@ -45,6 +45,7 @@ namespace Husa.Uploader.Core.Interfaces
         void SetSelect(By findBy, object value, bool isElementOptional = false);
         void SetSelect(By findBy, string value, bool isElementOptional = false);
         void SetSelect(By findBy, string value, string fieldLabel, string fieldSection, bool isElementOptional = false);
+        void SetSelectIfExist(By findBy, string value);
         void SetSelectWithScript(string fieldId, string containerClassName, int childIndex, string fieldValue, string fieldName, string fieldSection);
         void SetSelectByText(By findBy, string value, string fieldLabel, string fieldSection, bool isElementOptional = false);
         void SetMultiSelect(By findBy, string csvValues, bool isElementOptional = false);

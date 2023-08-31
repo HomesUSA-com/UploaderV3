@@ -99,6 +99,7 @@ namespace Husa.Uploader.Data.Tests
                     OpenHouses = new List<SaborResponseContracts.OpenHouseResponse>(),
                     Rooms = new List<SaborResponseContracts.RoomResponse>(),
                 },
+                StatusFieldsInfo = new(),
             };
             this.mockSaborClient
                 .Setup(x => x.ListingSaleRequest.GetListRequestSaleByIdAsync(requestId, It.IsAny<CancellationToken>()))

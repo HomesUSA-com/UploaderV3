@@ -43,6 +43,13 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
         }
 
         public override MarketCode MarketCode => MarketCode.CTX;
+        public override BuiltStatus BuiltStatus => this.YearBuiltDesc switch
+        {
+            "TB" => BuiltStatus.ToBeBuilt,
+            "NW" => BuiltStatus.ReadyNow,
+            "UC" => BuiltStatus.WithCompletion,
+            _ => BuiltStatus.WithCompletion,
+        };
 
         public override ResidentialListingRequest CreateFromApiResponse() => new CtxListingRequest()
         {
@@ -274,7 +281,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.AgentBonusAmountType = showingInfo.AgentBonusAmountType?.ToStringFromEnumMember();
                 residentialListingRequest.CompBuyBonusExpireDate = showingInfo.BonusExpirationDate;
                 residentialListingRequest.EnableOpenHouse = showingInfo.EnableOpenHouses;
-    }
+            }
 
             void FillSchoolsInfo(SchoolsResponse schoolsInfo)
             {
@@ -368,159 +375,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             return hasBuyerIncentive
                 ? agentAmount + "Contact Builder for Buyer Incentive Information. "
                 : agentAmount;
-        }
-
-        public override string GetPrivateRemarks()
-        {
-            var privateRemarks = base.GetPrivateRemarks();
-
-            var bonusMessage = string.IsNullOrWhiteSpace(this.MLSNum) ? this.GetAgentBonusRemarksMessage() : string.Empty;
-            if (!string.IsNullOrWhiteSpace(bonusMessage))
-            {
-                privateRemarks = $"{bonusMessage} {privateRemarks}";
-            }
-
-            var saleOfficeInfo = this.GetSalesAssociateRemarksMessage();
-            if (!string.IsNullOrWhiteSpace(saleOfficeInfo))
-            {
-                privateRemarks += $" {saleOfficeInfo}";
-            }
-
-            if (!string.IsNullOrWhiteSpace(this.PlanProfileName))
-            {
-                privateRemarks += $" Plan: {this.PlanProfileName}.";
-            }
-
-            var realtorContactEmail = this.GetRealtorContactEmail();
-            if (!string.IsNullOrWhiteSpace(realtorContactEmail))
-            {
-                return privateRemarks + $" Email contact: {realtorContactEmail}.";
-            }
-
-            return privateRemarks;
-        }
-
-        public override string GetSalesAssociateRemarksMessage()
-        {
-            var salesOfficeAddr = this.GetSalesOfficeAddressRemarkMessage();
-            var phones = new List<string>();
-
-            if (!string.IsNullOrWhiteSpace(this.AgentListApptPhone))
-            {
-                phones.Add(this.AgentListApptPhone.PhoneFormat());
-            }
-
-            if (!string.IsNullOrWhiteSpace(this.OtherPhone))
-            {
-                phones.Add(this.OtherPhone.PhoneFormat());
-            }
-
-            return phones.Any()
-                ? string.Format("For more information call {0}. {1}.", string.Join(" or ", phones), salesOfficeAddr)
-                : salesOfficeAddr;
-        }
-
-        public override string GetPublicRemarks()
-        {
-            var builtNote = "MLS# " + this.MLSNum;
-
-            if (!string.IsNullOrWhiteSpace(this.CompanyName))
-            {
-                if (!string.IsNullOrWhiteSpace(builtNote))
-                {
-                    builtNote += " - ";
-                }
-
-                builtNote += "Built by " + this.CompanyName + " - ";
-            }
-
-            switch (GetBuiltStatus())
-            {
-                case BuiltStatus.ToBeBuilt:
-                    builtNote += "To Be Built! ~ ";
-                    break;
-
-                case BuiltStatus.ReadyNow:
-                    string dateFormat = "MMM dd";
-                    int diffDays = DateTime.Now.Subtract((DateTime)this.BuildCompletionDate).Days;
-                    if (diffDays > 365)
-                    {
-                        dateFormat = "MMM dd yyyy";
-                    }
-
-                    if (!string.IsNullOrEmpty(this.RemarksFormatFromCompany) && this.RemarksFormatFromCompany == "SD")
-                    {
-                        builtNote += "CONST. COMPLETED " + this.BuildCompletionDate.Value.ToString(dateFormat) + " ~ ";
-                    }
-                    else
-                    {
-                        builtNote += "Ready Now! ~ ";
-                    }
-
-                    break;
-
-                case BuiltStatus.WithCompletion:
-                    if (this.BuildCompletionDate != null)
-                    {
-                        builtNote += this.BuildCompletionDate.Value.ToString("MMMM") + " completion! ~ ";
-                    }
-
-                    break;
-
-                default:
-                    break;
-            }
-
-            return GetRemarks();
-
-            BuiltStatus GetBuiltStatus() => this.YearBuiltDesc switch
-            {
-                "TB" => BuiltStatus.ToBeBuilt,
-                "NW" => BuiltStatus.ReadyNow,
-                "UC" => BuiltStatus.WithCompletion,
-                _ => BuiltStatus.WithCompletion,
-            };
-
-            string GetRemarks()
-            {
-                string remark;
-
-                if (this.IncludeRemarks != null && this.IncludeRemarks == false)
-                {
-                    builtNote = string.Empty;
-                }
-
-                if (string.IsNullOrWhiteSpace(this.PublicRemarks) || !this.PublicRemarks.Contains('~'))
-                {
-                    remark = (builtNote + this.PublicRemarks ?? string.Empty).RemoveSlash();
-                }
-                else
-                {
-                    var tempIndex = this.PublicRemarks.IndexOf("~", StringComparison.Ordinal) + 1;
-                    var temp = this.PublicRemarks[tempIndex..].Trim();
-                    remark = (builtNote + temp).RemoveSlash();
-                }
-
-                return remark.Replace("\t", string.Empty).Replace("\n", " ");
-            }
-        }
-
-        private string GetRealtorContactEmail()
-        {
-            if (!string.IsNullOrEmpty(this.ContactEmailFromCompany))
-            {
-                return this.ContactEmailFromCompany;
-            }
-            else if (!string.IsNullOrEmpty(this.RealtorContactEmail))
-            {
-                return this.RealtorContactEmail;
-            }
-            else if (!string.IsNullOrEmpty(this.RealtorContactEmailFromCommunityProfile))
-            {
-                return this.RealtorContactEmailFromCommunityProfile;
-            }
-
-            return string.Empty;
         }
     }
 }

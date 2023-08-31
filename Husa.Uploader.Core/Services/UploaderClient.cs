@@ -446,6 +446,16 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
+        public void SetSelectIfExist(By findBy, string value)
+        {
+            var element = this.FindElement(findBy);
+            var select = new SelectElement(element);
+            if (select.Options.Any(x => x.GetAttribute("value") == value))
+            {
+                this.SetSelect(findBy, value);
+            }
+        }
+
         public void SetSelectWithScript(string fieldId, string containerClassName, int childIndex, string fieldValue, string fieldName, string fieldSection)
         {
             this.ExecuteScript($"$('.{containerClassName} select:eq({childIndex})').attr('id', '{fieldId}');");

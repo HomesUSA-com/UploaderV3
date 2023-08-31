@@ -7,6 +7,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
+    using Husa.Uploader.Crosscutting.Extensions.Abor;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.MarketRequests;
@@ -158,15 +159,15 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
                     }
 
-                    this.FillStatusInformation(listing);
                     this.FillListingInformation(listing);
-                    this.FillRooms(listing);
-                    this.FillFeatures(listing);
-                    this.FillLotEnvironmentUtilityInformation(listing);
-                    this.FillFinancialInformation(listing);
+                    this.FillGeneralInformation(listing);
+                    this.FillAdditionalInformation(listing as AborListingRequest);
+                    this.FillDocumentsAndUtilities(listing as AborListingRequest);
+                    this.FillGreenEnergyInformation();
+                    this.FillFinancialInformation(listing as AborListingRequest);
                     this.FillShowingInformation(listing);
+                    this.FillAgentOfficeInformation(listing);
                     this.FillRemarks(listing as AborListingRequest);
-                    await this.FillMedia(listing, cancellationToken);
                 }
                 catch (Exception exception)
                 {
@@ -408,106 +409,146 @@ namespace Husa.Uploader.Core.Services
 
         private void NavigateToQuickEdit(string mlsNumber)
         {
-            this.uploaderClient.NavigateToUrl("https://matrix.austinmls.com/Matrix/Input");
-            // this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Input"));
-            // this.uploaderClient.ClickOnElement(By.LinkText("Input"));
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Edit existing"));
-            this.uploaderClient.ClickOnElement(By.LinkText("Edit existing"));
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_txtSourceCommonID"));
-            this.uploaderClient.WriteTextbox(By.Id("m_txtSourceCommonID"), value: mlsNumber);
-            this.uploaderClient.ClickOnElement(By.Id("m_lbEdit")); // "Modify button"
-        }
-
-        private void FillStatusInformation(ResidentialListingRequest listing)
-        {
-            this.uploaderClient.WriteTextbox(By.Id("Input_778"), listing.ExpectedActiveDate, isElementOptional: true);
+            this.uploaderClient.NavigateToUrl("https://matrix.abor.com/Matrix/AddEdit");
+            Thread.Sleep(1000);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lvInputUISections_ctrl0_tbQuickEditCommonID_m_txbInternalTextBox"));
+            this.uploaderClient.WriteTextbox(By.Id("m_lvInputUISections_ctrl0_tbQuickEditCommonID_m_txbInternalTextBox"), value: mlsNumber);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lvInputUISections_ctrl0_lbQuickEdit"));
+            this.uploaderClient.ClickOnElement(By.Id("m_lvInputUISections_ctrl0_lbQuickEdit"));
         }
 
         private void FillListingInformation(ResidentialListingRequest listing)
         {
-            const string tabName = "Listing Information";
-            this.uploaderClient.ClickOnElement(By.LinkText("Listing Information")); // click in tab Listing Information
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_107"));
+            const string tabName = "Listing";
+            this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // click in tab Listing Information
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_179"));
 
-            this.uploaderClient.WriteTextbox(By.Id("Input_107"), listing.StreetNum); // Street Number
-            this.uploaderClient.SetSelect(By.Id("Input_108"), listing.StreetDir, fieldLabel: "St Direction", tabName); // St Direction
-            this.uploaderClient.WriteTextbox(By.Id("Input_110"), listing.StreetName); // Street Name
-            this.uploaderClient.SetSelect(By.Id("Input_109"), listing.StreetType, fieldLabel: "Street Type", tabName); // Street Type
-            this.uploaderClient.WriteTextbox(By.Id("Input_111"), listing.UnitNum); // Unit #
-            this.uploaderClient.SetSelect(By.Id("Input_112"), listing.CityCode, fieldLabel: "City", tabName); // City
-            this.uploaderClient.SetSelect(By.Id("Input_113"), listing.StateCode, fieldLabel: "State", tabName); // State
-            this.uploaderClient.SetSelect(By.Id("Input_123"), value: "YES", fieldLabel: "In City Limits", tabName); // In City Limits
-            string etjValue = listing.InExtraTerritorialJurisdiction ? "1" : "0";
-            this.uploaderClient.SetSelect(By.Id("Input_124"), etjValue, fieldLabel: "ETJ", tabName); // ETJ
-            this.uploaderClient.WriteTextbox(By.Id("Input_114"), listing.Zip); // Zip Code
-            this.uploaderClient.SetSelect(By.Id("Input_115"), listing.County, "County", tabName); // County
-            this.uploaderClient.WriteTextbox(By.Id("Input_396"), listing.Subdivision); // Subdivision
-            this.uploaderClient.WriteTextbox(By.Id("Input_528"), listing.Legal); // Legal Description
-            this.uploaderClient.WriteTextbox(By.Id("Input_529"), listing.TaxID == "NA" ? $"{listing.StreetNum}{listing.StreetName}" : listing.TaxID); // Property ID
-            this.uploaderClient.WriteTextbox(By.Id("Input_766"), listing.GeographicID); // Geo ID
-            this.uploaderClient.SetSelect(By.Id("Input_530"), value: "NO", fieldLabel: "FEMA Flood Plain", tabName); // FEMA Flood Plain
-            this.uploaderClient.SetSelect(By.Id("Input_531"), value: "NO", fieldLabel: "Residential Flooded", tabName); // Residential Flooded
-            this.uploaderClient.WriteTextbox(By.Id("Input_532"), listing.LotNum, isElementOptional: true); // Lot
-            this.uploaderClient.WriteTextbox(By.Id("Input_533"), listing.Block, isElementOptional: true); // Block
-            this.uploaderClient.SetSelect(By.Id("Input_534"), listing.FacesDesc, fieldLabel: "Front Faces", tabName, isElementOptional: true); // Front Faces
+            // Listing Information
+            this.uploaderClient.SetSelect(By.Id("Input_179"), "EA"); // List Agreement Type
+            this.uploaderClient.SetSelect(By.Id("Input_341"), "LIMIT"); // Listing Service
+            this.uploaderClient.SetMultipleCheckboxById("Input_180", "STANDARD"); // Special Listing Conditions
+            this.uploaderClient.SetSelect(By.Id("Input_181"), "A"); // List Agreement Document
+            this.uploaderClient.WriteTextbox(By.Id("Input_77"), listing.ListPrice); // List Price
 
-            this.uploaderClient.SetSelect(By.Id("Input_535_TB"), listing.SchoolDistrict.ToUpper(), fieldLabel: "School District", tabName); // School District
-
-            this.FillFieldSingleOption("Input_535", listing.SchoolDistrict);
-            this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(3000));
-            this.uploaderClient.SetSelect(By.Id("Input_658"), listing.SchoolName1, fieldLabel: "Elementary", tabName, isElementOptional: true); // Elementary School
-            this.uploaderClient.ResetImplicitWait();
-            this.uploaderClient.SetSelect(By.Id("Input_659"), listing.SchoolName2, fieldLabel: "Middle", tabName, isElementOptional: true); // Middle School
-            this.uploaderClient.SetSelect(By.Id("Input_660"), listing.SchoolName3, fieldLabel: "High", tabName, isElementOptional: true); // High School
-
-            this.SetLongitudeAndLatitudeValues(listing);
-            this.uploaderClient.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
-            this.uploaderClient.WriteTextbox(By.Id("Input_133"), listing.OwnerName); // Owner Legal Name
-            this.uploaderClient.SetSelect(By.Id("Input_137"), "0", "Also For Rent", tabName); // Also For Rent
-            this.uploaderClient.SetSelect(By.Id("Input_545"), listing.ListType, fieldLabel: "Listing Type", tabName);
-
-            this.uploaderClient.SetSelect(By.Id("Input_539"), listing.Category, "Property Sub Type", tabName); // Property Sub Type
-
-            if (this.uploaderClient.UploadInformation.IsNewListing)
+            if (listing.ListDate.HasValue)
             {
-                DateTime listDate = DateTime.Now;
-                if (listing.ListStatus == "P" || listing.ListStatus == "PO")
-                {
-                    listDate = DateTime.Now.AddDays(-2);
-                }
-                else if (listing.ListStatus == "S")
-                {
-                    listDate = DateTime.Now.AddDays(-4);
-                }
-
-                this.uploaderClient.WriteTextbox(By.Id("Input_129"), listDate.ToShortDateString()); // List Date
-            }
-
-            if (listing.ListDate != null)
-            {
-                this.uploaderClient.WriteTextbox(By.Id("Input_130"), DateTime.Now.AddYears(1).ToShortDateString()); // Expiration Date
+                this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ListDate.Value.AddYears(1).ToShortDateString()); // Expiration Date
             }
             else
             {
-                this.uploaderClient.WriteTextbox(By.Id("Input_130"), listing.ExpiredDate != null ? ((DateTime)listing.ExpiredDate).ToShortDateString() : string.Empty); // Expiration Date
+                this.uploaderClient.WriteTextbox(By.Id("Input_83"), DateTime.Now.AddYears(1).ToShortDateString()); // Expiration Date
             }
 
-            this.uploaderClient.SetSelect(By.Id("Input_544"), "NA", "First Right Refusal Option", tabName); // First Right Refusal Option (default hardcode "N/A")
+            // Location Information
+            this.uploaderClient.WriteTextbox(By.Id("Input_183"), listing.StreetNum); // Street #
+            this.uploaderClient.WriteTextbox(By.Id("Input_185"), listing.StreetName); // Street Name
+            this.uploaderClient.SetSelect(By.Id("Input_186"), listing.StreetType); // Street Type (NM)
+            this.uploaderClient.WriteTextbox(By.Id("Input_190"), !string.IsNullOrEmpty(listing.UnitNum) ? listing.UnitNum : string.Empty); // Unit # (NM)
+            this.uploaderClient.SetSelect(By.Id("Input_191"), listing.County); // County
+            this.uploaderClient.SetSelectIfExist(By.Id("Input_192"), listing.CityCode); // City
+            this.uploaderClient.SetSelect(By.Id("Input_193"), listing.State); // State
+            this.uploaderClient.SetSelect(By.Id("Input_399"), "US"); // Country
+            this.uploaderClient.WriteTextbox(By.Id("Input_194"), listing.Zip); // ZIP Code
+            this.uploaderClient.WriteTextbox(By.Id("Input_196"), listing.Subdivision); // Subdivision
+            this.uploaderClient.WriteTextbox(By.Id("Input_197"), listing.Legal); // Tax Legal Description
+            this.uploaderClient.WriteTextbox(By.Id("Input_199"), listing.OtherFees); // Tax Lot
+            this.uploaderClient.WriteTextbox(By.Id("Input_201"), listing.TaxID); // Parcel ID
+            this.uploaderClient.SetSelect(By.Id("Input_202"), "0"); // Additional Parcels Y/N
 
-            this.uploaderClient.SetMultipleCheckboxById("Input_546", "BUILDER", "Sale Type", tabName); // Sale Type
+            this.SetLongitudeAndLatitudeValues(listing);
 
-            this.uploaderClient.SetSelect(By.Id("Input_531"), "0", "Res Flooded", tabName); // Res Flooded
+            this.uploaderClient.ScrollDown(1000);
+            this.FillFieldSingleOption("Input_204", listing.MLSArea); // MLS Area
+            this.uploaderClient.SetMultipleCheckboxById("Input_343", "N"); // FEMA 100 Yr Flood Plain
+            this.uploaderClient.SetSelect(By.Id("Input_206"), "N"); // ETJ
 
-            this.uploaderClient.SetSelect(By.Id("Input_547"), listing.YearBuiltDesc, "Construction Status", tabName); // Construction Status
-            this.uploaderClient.WriteTextbox(By.Id("Input_548"), listing.OwnerName); // Builder Name
-            this.uploaderClient.WriteTextbox(By.Id("Input_549"), listing.BuildCompletionDate); // Estimated Completion Date
-            this.uploaderClient.WriteTextbox(By.Id("Input_553"), listing.YearBuilt); // Year Built
-            this.uploaderClient.SetSelect(By.Id("Input_552"), listing.YearBuiltSrc); // Year Built Source
+            // School Information
+            this.uploaderClient.SetSelectIfExist(By.Id("Input_207"), listing.SchoolDistrict); // School District
+            this.uploaderClient.SetSelectIfExist(By.Id("Input_209"), listing.SchoolName1); // School District/Elementary A
+            this.uploaderClient.SetSelectIfExist(By.Id("Input_210"), listing.SchoolName2); // School District/Middle / Intermediate School
+            this.uploaderClient.SetSelectIfExist(By.Id("Input_211"), listing.SchoolName3); // School District/9 Grade / High School
+            this.uploaderClient.WriteTextbox(By.Id("Input_212"), listing.SchoolName4); // Elementary Other
+            this.uploaderClient.WriteTextbox(By.Id("Input_213"), listing.SchoolName5); // Middle or Junior Other
+            this.uploaderClient.WriteTextbox(By.Id("Input_214"), listing.SchoolName6); // High School Other
+        }
 
-            this.uploaderClient.WriteTextbox(By.Id("Input_550"), listing.SqFtTotal); // Total SqFt
-            this.uploaderClient.SetSelect(By.Id("Input_551"), "BUILD", "Source SqFt", tabName); // Source SqFt
+        private void FillDocumentsAndUtilities(AborListingRequest listing)
+        {
+            string tabName = "Documents & Utilities";
+            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
 
-            this.uploaderClient.SetMultipleCheckboxById("Input_554", listing.AvailableDocumentsDesc, "Documents on File (Max 25)", tabName); // Documents on File (Max 25)
+            this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // click in tab DocumentsAndUtilities
+            Thread.Sleep(100);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_271"));
+            if (listing.IsNewListing)
+            {
+                this.uploaderClient.SetMultipleCheckboxById("Input_271", "None", "Disclosures", tabName);
+                this.uploaderClient.SetMultipleCheckboxById("Input_272", "NA", "Documents Available", tabName);
+                this.uploaderClient.ScrollToTop();
+            }
+
+            this.uploaderClient.SetMultipleCheckboxById("Input_273", listing.HeatSystemDesc, "Heating", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_274", listing.CoolSystemDesc, "Cooling", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_275", listing.GreenWaterConservation, "Water Source", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_276", listing.WaterDesc, "Sewer", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_278", listing.UtilitiesDesc, "Utilities", tabName);
+        }
+
+        private void FillGreenEnergyInformation()
+        {
+            this.uploaderClient.ClickOnElement(By.LinkText("Green Energy"));
+            Thread.Sleep(100);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_280"));
+            this.uploaderClient.SetMultipleCheckboxById("Input_280", "NONE"); // Green Energy Efficient
+            this.uploaderClient.SetMultipleCheckboxById("Input_281", "None"); // Green Sustainability
+        }
+
+        private void FillGeneralInformation(ResidentialListingRequest listing)
+        {
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.ClickOnElement(By.LinkText("General"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_215"));
+
+            this.uploaderClient.SetSelect(By.Id("Input_215"), listing.PropSubType); // Property Sub Type (1)
+            this.uploaderClient.SetSelect(By.Id("Input_216"), "FEESIM"); // Ownership Type
+            this.uploaderClient.SetMultipleCheckboxById("Input_650", listing.NumStories); // Levels
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_220"), listing.NumBedsMainLevel); // Main Level Beds
+            this.uploaderClient.WriteTextbox(By.Id("Input_221"), listing.NumBedsOtherLevels); // # Other Level Beds
+            this.uploaderClient.WriteTextbox(By.Id("Input_218"), listing.YearBuilt); // Year Built
+
+            this.uploaderClient.SetSelect(By.Id("Input_219"), "BUILDER"); // Year Built Source
+            this.uploaderClient.SetMultipleCheckboxById("Input_225", listing.YearBuiltDesc); // Year Built Description
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_224"), listing.BathsFull); // Full Baths
+            this.uploaderClient.WriteTextbox(By.Id("Input_223"), listing.BathsHalf); // Half Bath
+            this.uploaderClient.WriteTextbox(By.Id("Input_659"), listing.NumLivingAreas); // Living
+            this.uploaderClient.WriteTextbox(By.Id("Input_660"), listing.NumDiningAreas); // Dining
+            this.uploaderClient.WriteTextbox(By.Id("Input_226"), listing.SqFtTotal); // Living Area
+            this.uploaderClient.SetSelect(By.Id("Input_227"), "BUILDER"); // Living Area Source
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_717"), listing.GarageCapacity); // # Garage Spaces
+            this.uploaderClient.WriteTextbox(By.Id("Input_229"), listing.GarageCapacity); // Parking Total
+            this.uploaderClient.SetSelect(By.Id("Input_342"), listing.FacesDesc); // Direction Faces
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.LotSize); // Lot Size Acres
+            this.uploaderClient.WriteTextbox(By.Id("Input_241"), listing.LotDim); // Lot Dimensions (Frontage x Depth)
+            this.uploaderClient.SetMultipleCheckboxById("Input_231", listing.ConstructionDesc); // Construction (5)
+            this.uploaderClient.SetMultipleCheckboxById("Input_236", listing.GarageDesc); // Garage Description (4) / Parking Features
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.ScrollDown(100);
+
+            this.uploaderClient.SetMultipleCheckboxById("Input_239", listing.FoundationDesc); // Foundation (2)
+            this.uploaderClient.WriteTextbox(By.Id("Input_678"), listing.OwnerName); // Builder Name
+            this.uploaderClient.SetMultipleCheckboxById("Input_230", listing.UnitStyleDesc); // Unit Style (5)
+            this.uploaderClient.SetMultipleCheckboxById("Input_234", listing.ViewDesc); // View (4)
+            this.uploaderClient.SetSelect(By.Id("Input_235"), listing.DistanceToWaterAccess); // Distance to Water Access
+            this.uploaderClient.SetMultipleCheckboxById("Input_237", listing.WaterfrontDesc); // Waterfront Description
+            this.uploaderClient.SetSelect(By.Id("Input_238"), listing.BodyofWater); // Water Body Name
+            this.uploaderClient.SetMultipleCheckboxById("Input_244", listing.LotDesc); // Lot Description (4)
+            this.uploaderClient.SetMultipleCheckboxById("Input_233", listing.RoofDesc); // Roof
+            this.uploaderClient.SetMultipleCheckboxById("Input_232", listing.FloorsDesc); // Flooring (4)
+            this.uploaderClient.SetMultipleCheckboxById("Input_240", listing.RestrictionsDesc); // Restrictions Description (5)
         }
 
         private void FillFieldSingleOption(string fieldName, string value)
@@ -543,207 +584,142 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SwitchTo().Window(mainWindow);
         }
 
-        private void FillRooms(ResidentialListingRequest listing)
+        private void FillAdditionalInformation(AborListingRequest listing)
         {
-            const string tabName = "Rooms";
-            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
+            var tabName = "Additional";
+            this.uploaderClient.ClickOnElement(By.LinkText(tabName));
+            Thread.Sleep(800);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
 
-            this.uploaderClient.ClickOnElement(By.LinkText("Rooms")); // click in tab Listing Information
-
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer")); // Look if the footer elements has been loaded
-            this.uploaderClient.WriteTextbox(By.Id("Input_193"), listing.Beds); // Bedrooms
-            this.uploaderClient.WriteTextbox(By.Id("Input_194"), listing.BathsFull); // Full Baths
-            this.uploaderClient.WriteTextbox(By.Id("Input_195"), listing.BathsHalf); // Half Baths
-            this.uploaderClient.WriteTextbox(By.Id("Input_196"), listing.NumLivingAreas, isElementOptional: true); // Living Areas
-            this.uploaderClient.WriteTextbox(By.Id("Input_197"), listing.NumDiningAreas, isElementOptional: true); // Dining Areas
-            this.uploaderClient.WriteTextbox(By.Id("Input_555"), listing.NumberFireplaces, isElementOptional: true); // Fireplaces
-
-            if (!this.uploaderClient.UploadInformation.IsNewListing)
+            if (listing.Bed1Level == "MAIN" && !listing.InteriorDesc.Contains("MSTDW"))
             {
-                var elems = this.uploaderClient.FindElements(By.CssSelector("table[id^=_Input_556__del_REPEAT] a"));
-
-                foreach (var elem in elems.Where(c => c.Displayed))
-                {
-                    elem.Click();
-                }
+                listing.InteriorDesc = "MSTDW," + listing.InteriorDesc;
             }
 
-            var i = 0;
-            foreach (var room in listing.Rooms)
+            this.uploaderClient.SetMultipleCheckboxById("Input_257", listing.InteriorDesc, "Interior Features", tabName); // Interior Features (12)
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.SetMultipleCheckboxById("Input_264", listing.ExteriorDesc, "Exterior Features", tabName); // Exterior Features (12)
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.SetMultipleCheckboxById("Input_256", listing.AppliancesDesc, "Appliances / Equipment", tabName); // Appliances / Equipment (12)
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.SetMultipleCheckboxById("Input_267", listing.WindowCoverings, "Window Features", tabName); // Window Features
+            this.uploaderClient.SetMultipleCheckboxById("Input_266", listing.SecurityDesc, "Security Features", tabName); // Security Features
+            this.uploaderClient.ScrollDown(200);
+            this.uploaderClient.SetMultipleCheckboxById("Input_258", "None", "Accessibility Features", tabName); // Accessibility Features
+            this.uploaderClient.SetMultipleCheckboxById("Input_265", listing.PatioAndPorchFeatures, "Patio and Porch Features", tabName); // Patio and Porch Features
+            this.uploaderClient.SetMultipleCheckboxById("Input_255", listing.LaundryLocDesc, "Laundry Location", tabName); // Laundry Location (3)
+            this.uploaderClient.SetMultipleCheckboxById("Input_262", "None", "Private Pool Features (On Property)", tabName); // Private Pool Features (On Property)
+            this.uploaderClient.WriteTextbox(By.Id("Input_259"), listing.NumberFireplaces); // # of Fireplaces
+            this.uploaderClient.SetMultipleCheckboxById("Input_249", "None", "Horse Amenities", tabName); // Horse Amenities
+            this.uploaderClient.SetMultipleCheckboxById("Input_260", listing.FireplaceDesc, "Fireplace Description", tabName); // Fireplace Description (3)
+            this.uploaderClient.SetMultipleCheckboxById("Input_261", listing.FenceDesc, "Fencing", tabName); // Fencing (4)
+
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.ScrollDown(200);
+            this.uploaderClient.SetMultipleCheckboxById("Input_269", "NONE", "Other Structures", tabName); // Other Structures
+            this.uploaderClient.SetMultipleCheckboxById("Input_251", listing.GuestAccommodationsDesc, "Guest Accommodations", tabName); // Guest Accommodations
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_252"), listing.NumGuestBeds); // # Guest Beds
+            this.uploaderClient.WriteTextbox(By.Id("Input_253"), listing.NumGuestFullBaths); // # Guest Full Baths
+            this.uploaderClient.WriteTextbox(By.Id("Input_254"), listing.NumGuestHalfBaths); // # Guest Half Baths
+
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.ScrollDown(400);
+            this.uploaderClient.SetMultipleCheckboxById("Input_268", listing.CommonFeatures, "Community Features", tabName); // Community Features
+        }
+
+        private void FillFinancialInformation(AborListingRequest listing)
+        {
+            this.uploaderClient.ClickOnElement(By.LinkText("Financial"));
+            Thread.Sleep(200);
+            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
+
+            this.uploaderClient.SetSelect(By.Id("Input_282"), listing.HasHoa ? "1" : "0"); // Association YN
+
+            if (listing.HasHoa)
             {
-                if (i > 0)
-                {
-                    this.uploaderClient.ClickOnElement(By.Id("_Input_556_more"));
-                    this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(400));
-                }
-
-                var roomType = $"_Input_556__REPEAT{i}_190";
-                this.uploaderClient.SetSelect(By.Id($"_Input_556__REPEAT{i}_190"), room.RoomType, "Room Type", tabName);
-                this.uploaderClient.ResetImplicitWait();
-                this.uploaderClient.SetSelect(By.Id($"_Input_556__REPEAT{i}_491"), room.Level, "Level", tabName, isElementOptional: true);
-
-                if (room.HasDimensions)
-                {
-                    this.uploaderClient.WriteTextbox(By.Id($"_Input_556__REPEAT{i}_191"), room.Dimensions, isElementOptional: true);
-                }
-
-                this.uploaderClient.ScrollDownToElementHTML(roomType);
-                i++;
-            }
-        }
-
-        private void FillFeatures(ResidentialListingRequest listing)
-        {
-            string tabName = "Features";
-            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
-
-            this.uploaderClient.ClickOnElement(By.LinkText("Features")); // click in tab Features
-
-            // this.uploaderClient.SetMultipleCheckboxById("Input_156", "TRADI", "Style", tabName); // Style (default hardcode "Traditional")
-            this.uploaderClient.SetMultipleCheckboxById("Input_557", listing.HousingStyleDesc, "Style (Max 20)", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_558", listing.FoundationDesc, "Foundation (Max 7)", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_563", listing.NumStories, "# Stories", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_564", listing.AtticRoom, "Attic", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_559", listing.RoofDesc, "Roof", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_561", listing.ExteriorDesc, "Construction/Exterior (Max 18)", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_562", listing.FireplaceDesc, "Fireplace (Max 19)", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_565", listing.FloorsDesc, "Flooring (Max 6)", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_566", listing.KitchenDesc, "Kitchen Features", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_567", listing.LaundryFacilityDesc, "Laundry (Max 17)", tabName);
-            this.uploaderClient.SetSelect(By.Id("Input_568"), listing.GarageCarportDesc, "Garage", tabName);
-            this.uploaderClient.SetSelect(By.Id("Input_569"), listing.CarportDesc, "Carport", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_573", listing.Bed1Desc, "Master Bedroom Desc", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_570", listing.GarageDesc, "Garage/Carport Desc (Max 23)", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_571", listing.InclusionsDesc, "Interior Features (Max 37)", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_572", listing.AppliancesDesc, "Appliances/Equipment (Max 13)", tabName);
-        }
-
-        private void FillLotEnvironmentUtilityInformation(ResidentialListingRequest listing)
-        {
-            string tabName = "Lot/Environment/Utility";
-            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
-
-            this.uploaderClient.ClickOnElement(By.LinkText("Lot/Environment/Utility")); // Lot/Environment/Utility
-
-            this.uploaderClient.WriteTextbox(By.Id("Input_576"), listing.LotDim); // Lot Dimensions
-            this.uploaderClient.SetMultipleCheckboxById("Input_581", listing.FenceDesc, "Fencing (Max 12)", tabName);
-            this.uploaderClient.WriteTextbox(By.Id("Input_577"), listing.LotSize); // Apx Acreage
-            this.uploaderClient.SetSelect(By.Id("Input_582"), listing.WaterfrontYN, fieldLabel: "Waterfront", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_585", listing.WaterfrontFeatures, "Water Features", tabName);
-            this.uploaderClient.SetSelect(By.Id("Input_578"), value: "0", fieldLabel: "Manufactured Allowed", tabName); // (default hardcode "No")
-            this.uploaderClient.SetSelect(By.Id("Input_583"), listing.IsGatedCommunity, fieldLabel: "Gated Community", tabName);
-            this.uploaderClient.SetSelect(By.Id("Input_592"), listing.HasSprinklerSys, fieldLabel: "Sprinkler System", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_593", listing.SprinklerSysDesc, fieldLabel: "Sprinkler System Desc", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_584", listing.PoolDesc, fieldLabel: "Pool (Max 2)", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_595", listing.RestrictionsDesc, fieldLabel: "Restrictions Type", tabName);
-            this.uploaderClient.SetSelect(By.Id("Input_591"), listing.HasWaterAccess, fieldLabel: "Water Access", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_590", listing.WaterAccessDesc, fieldLabel: "Water Access Type", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_596", listing.ExteriorFeatures, fieldLabel: "Exterior Features (Max 32)", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_597", listing.TopoLandDescription, fieldLabel: "Topo/Land Desc (Max 33)", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_599", listing.CommonFeatures, fieldLabel: "Neighborhood Amenitites (Max 19)", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_600", listing.RoadFrontageDesc, fieldLabel: "Access/Road Surface", tabName);
-            this.uploaderClient.SetSelect(By.Id("Input_586"), value: "0", fieldLabel: "Spa/Hot Tub", tabName); // (default hardcode "No")
-
-            // Environment / Energy
-            this.uploaderClient.SetSelect(By.Id("Input_601"), listing.UpgradedEnergyFeatures, fieldLabel: "Upgraded Energy Features", tabName);
-            this.uploaderClient.SetSelect(By.Id("Input_602"), listing.EES, fieldLabel: "EES Features", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_605", listing.GreenIndoorAirQuality, fieldLabel: "Green Indoor Air Quality", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_604", listing.GreenCerts, fieldLabel: "Green Building Verification", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_606", listing.EESFeatures, fieldLabel: "Green Energy Efficient", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_608", listing.EnergyDesc, fieldLabel: "Green Verification Source", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_609", listing.GreenWaterConservation, fieldLabel: "Green Water Conservation", tabName);
-
-            // Utilities
-            this.uploaderClient.SetMultipleCheckboxById("Input_610", listing.HeatSystemDesc, "Heat", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_611", listing.CoolSystemDesc, "A/C ", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_612", listing.WaterDesc, "Water/Sewer", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_613", listing.SupOther, " Other Utilities", tabName);
-        }
-
-        private void FillFinancialInformation(ResidentialListingRequest listing)
-        {
-            const string tabName = "Financial Information";
-            this.uploaderClient.ExecuteScript(script: " jQuery(document).scrollTop(0);");
-
-            this.uploaderClient.ClickOnElement(By.LinkText("Financial")); // Financial
-
-            this.uploaderClient.SetMultipleCheckboxById("Input_614", "ATCLO,FUNDI", fieldLabel: "Possession (Max 7)", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_744", listing.ProposedTerms, fieldLabel: "Acceptable Financing", tabName); // Proposed Terms
-            this.uploaderClient.SetMultipleCheckboxById("Input_616", listing.Exemptions, fieldLabel: "Exemptions", tabName); // Exemptions
-            this.uploaderClient.WriteTextbox(By.Id("Input_618"), listing.TaxYear); // Tax Year
-            this.uploaderClient.WriteTextbox(By.Id("Input_619"), listing.TaxRate); // Tax Rate
-            if (!string.IsNullOrEmpty(listing.HOA))
-            {
-                this.uploaderClient.SetSelect(By.Id("Input_622"), value: listing.HOA, fieldLabel: "HOA Mandatory", tabName); // HOA Mandatory
+                this.uploaderClient.WriteTextbox(By.Id("Input_283"), listing.AssocName, true); // HOA Name
+                this.uploaderClient.WriteTextbox(By.Id("Input_285"), listing.AssocFee, true); // HOA Fee
+                this.uploaderClient.SetSelect(By.Id("Input_286"), listing.HOA, true); // Association Requirement
+                this.uploaderClient.SetSelect(By.Id("Input_287"), listing.AssocFeeFrequency, true); // HOA Frequency
+                this.uploaderClient.WriteTextbox(By.Id("Input_288"), listing.AssocTransferFee, true); // HOA Transfer Fee
+                this.uploaderClient.SetMultipleCheckboxById("Input_290", listing.AssocFeeIncludes); // HOA Fees Include (5)
             }
 
-            this.uploaderClient.WriteTextbox(By.Id("Input_623"), listing.AssocName); // HOA Name
-            this.uploaderClient.WriteTextbox(By.Id("Input_624"), listing.AssocFee); // HOA Amount
-            this.uploaderClient.SetSelect(By.Id("Input_625"), listing.AssocFeeFrequency, fieldLabel: "HOA Term", tabName); // HOA Term
-            this.uploaderClient.WriteTextbox(By.Id("Input_626"), listing.ManagementCompany);  // HOA Mgmt Co
-            this.uploaderClient.WriteTextbox(By.Id("Input_627"), listing.AssocPhone);  // HOA Phone
-            this.uploaderClient.WriteTextbox(By.Id("Input_628"), listing.HoaWebsite);  // HOA Website
-            this.uploaderClient.WriteTextbox(By.Id("Input_629"), listing.AssocTransferFee);  // HOA Transfer fee
-            this.uploaderClient.SetMultipleCheckboxById("Input_630", listing.AssocFeeIncludes, fieldLabel: "HOA Fee Includes", tabName);  // HOA Fee Includes
+            this.uploaderClient.SetMultipleCheckboxById("Input_291", listing.FinancingProposed); // Acceptable Financing (5)
+            this.uploaderClient.WriteTextbox(By.Id("Input_296"), "0"); // Estimated Taxes ($)
+            this.uploaderClient.WriteTextbox(By.Id("Input_297"), listing.TaxYear); // Tax Year
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_294"), listing.TaxRate, true); // Tax Rate
+            this.uploaderClient.WriteTextbox(By.Id("Input_293"), "0", true); // Tax Assessed Value
+            this.uploaderClient.SetMultipleCheckboxById("Input_295", "None"); // Buyer Incentive
+            this.uploaderClient.SetMultipleCheckboxById("Input_298", listing.ExemptionsDesc); // Tax Exemptions
+            this.uploaderClient.WriteTextbox(By.Id("Input_728"), listing.TitleCo); // Preferred Title Company
+            this.uploaderClient.ScrollDown(400);
+            this.uploaderClient.SetMultipleCheckboxById("Input_299", "Funding"); // Possession
         }
 
         private void FillShowingInformation(ResidentialListingRequest listing)
         {
-            const string tabName = "Showing Information";
-            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
+            this.uploaderClient.ClickOnElement(By.LinkText("Showing"));
+            Thread.Sleep(100);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_301"));
 
-            this.uploaderClient.ClickOnElement(By.LinkText("Brokerage/Showing Information")); // Brokerage/Showing Information
+            this.uploaderClient.SetSelect(By.Id("Input_301"), "VCNT"); // Occupant
+            this.uploaderClient.WriteTextbox(By.Id("Input_302"), listing.OwnerName); // Owner Name
+            this.uploaderClient.SetMultipleCheckboxById("Input_305", listing.Showing); // Showing Requirements
+            this.uploaderClient.SetSelect(By.Id("Input_651"), listing.LockboxTypeDesc ?? "None"); // Lockbox Type
+            this.uploaderClient.SetMultipleCheckboxById("Input_720", "OWN"); // Showing Contact Type
+            this.uploaderClient.WriteTextbox(By.Id("Input_310"), listing.OwnerName);
+            this.uploaderClient.WriteTextbox(By.Id("Input_311"), listing.AgentListApptPhone, true); // Showing Contact Phone
+            this.uploaderClient.WriteTextbox(By.Id("Input_406"), listing.OtherPhone, true);  // Showing Service Phone
+            this.uploaderClient.WriteTextbox(By.Id("Input_313"), listing.ShowingInstructions); // Showing Instructions
+        }
 
-            // Brokerage
-            this.uploaderClient.SetSelect(By.Id("Input_632"), listing.BuyerIncentiveDesc, fieldLabel: "Buyer Agency $ or %", tabName);
-            this.uploaderClient.WriteTextbox(By.Id("Input_633"), listing.BuyerIncentive); // Buyer Agency Compensation
-            this.uploaderClient.WriteTextbox(By.Id("Input_635"), value: "0"); // Sub Agency Compensation (default hardcode "0")
-            this.uploaderClient.SetSelect(By.Id("Input_636"), value: "Pct", fieldLabel: "Sub Agency $ or % ", tabName); // Sub Agency $ or % (default hardcode "%")
-            this.uploaderClient.SetSelect(By.Id("Input_637"), listing.ProspectsExempt, "Prospects Exempt", tabName); // Prospects Exempt (default hardcode "No")
-            this.uploaderClient.WriteTextbox(By.Id("Input_638"), listing.TitleCo); // Pref Title Company
-            this.uploaderClient.WriteTextbox(By.Id("Input_639"), listing.EarnestMoney); // Earnest Money
+        private void FillAgentOfficeInformation(ResidentialListingRequest listing)
+        {
+            this.uploaderClient.ClickOnElement(By.LinkText("Agent/Office"));
+            Thread.Sleep(100);
+            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
 
-            // Showing
-            this.uploaderClient.SetSelect(By.Id("Input_642"), listing.LockboxTypeDesc, fieldLabel: "Lockbox Type", tabName, isElementOptional: true);
-            this.uploaderClient.WriteTextbox(By.Id("Input_648"), listing.AgentListApptPhone, isElementOptional: true);  // Showing Phone
-            this.uploaderClient.WriteTextbox(By.Id("Input_649"), listing.OtherPhone, isElementOptional: true);  // Showing Phone #2
-            this.uploaderClient.SetMultipleCheckboxById("Input_643", listing.LockboxLocDesc, fieldLabel: "Lockbox Location", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_645", listing.Showing, fieldLabel: "Showing Instructions", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_315"), "Percent"); // Sub Agency Compensation Type
+            this.uploaderClient.WriteTextbox(By.Id("Input_314"), "0.0"); // Sub Agency Compensation
 
-            // Syndication
-            this.uploaderClient.SetSelect(By.Id("Input_651"), "1", fieldLabel: "IDX Opt In", tabName);
-            this.uploaderClient.SetSelect(By.Id("Input_652"), "1", fieldLabel: "Display on Internet", tabName);
-            this.uploaderClient.SetSelect(By.Id("Input_653"), "1", fieldLabel: "Display Address", tabName);
-            this.uploaderClient.SetSelect(By.Id("Input_654"), "1", fieldLabel: "Allow AVM", tabName);
-            this.uploaderClient.SetSelect(By.Id("Input_655"), "1", fieldLabel: "Allow 3rd Party Comments", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_316"), listing.BuyerIncentiveDesc.ToCommissionType(), true); // Buyer Agency Compensation Type
+            this.uploaderClient.WriteTextbox(By.Id("Input_510"), listing.BuyerIncentive, true);
+
+            if (listing.HasBonusWithAmount)
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_318"), listing.AgentBonusAmountType.ToCommissionType(), true); // Bonus to BA
+                this.uploaderClient.WriteTextbox(By.Id("Input_317"), listing.AgentBonusAmount); // Bonus to BA Amount
+            }
+
+            this.uploaderClient.SetSelect(By.Id("Input_319"), "0", true); // Dual Variable Compensation
+            this.uploaderClient.SetSelect(By.Id("Input_353"), "0", true); // Intermediary
         }
 
         private void FillRemarks(AborListingRequest listing)
         {
-            const string tabName = "Remarks";
-            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
-            this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // Financial Information
-            this.UpdatePublicRemarksInRemarksTab(listing); // Public Remarks
+            this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
+            Thread.Sleep(100);
+            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
 
-            this.uploaderClient.WriteTextbox(By.Id("Input_141"), listing.GetPrivateRemarks()); // Agent Remarks
-        }
+            this.uploaderClient.WriteTextbox(By.Id("Input_320"), listing.Directions); // Directions
+            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.GetAgentRemarksMessage());
+            this.uploaderClient.ScrollDown(200);
 
-        private async Task FillMedia(ResidentialListingRequest listing, CancellationToken cancellationToken)
-        {
-            if (!listing.IsNewListing)
+            this.UpdatePublicRemarksInRemarksTab(listing);
+
+            if (listing.IsNewListing)
             {
-                this.logger.LogInformation("Skipping media upload for existing listing {listingId}", listing.ResidentialListingID);
-                return;
+                this.uploaderClient.SetSelect(By.Id("Input_329"), "1"); // Internet
+                this.uploaderClient.ScrollDown();
+                this.uploaderClient.SetMultipleCheckboxById("Input_333", "AHS,HAR,HSNAP,REALTOR,LISTHUB"); // Listing Will Appear On (4)
+
+                this.uploaderClient.SetSelect(By.Id("Input_330"), "1"); // Internet Automated Valuation Display
+                this.uploaderClient.SetSelect(By.Id("Input_331"), "1"); // Internet Consumer Comment
+                this.uploaderClient.SetSelect(By.Id("Input_332"), "1"); // Internet Address Display
             }
-
-            // Enter Manage Photos
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSaveIncomplete"), cancellationToken);
-            this.uploaderClient.ClickOnElement(By.Id("m_lbSaveIncomplete"));
-            Thread.Sleep(1000);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbManagePhotos"), cancellationToken);
-            this.uploaderClient.ClickOnElement(By.Id("m_lbManagePhotos"));
-
-            await this.ProcessImages(listing, cancellationToken);
         }
 
         private void UpdateYearBuiltDescriptionInGeneralTab(ResidentialListingRequest listing)
@@ -757,10 +733,10 @@ namespace Husa.Uploader.Core.Services
 
         private void UpdatePublicRemarksInRemarksTab(ResidentialListingRequest listing)
         {
-            // driver.wait.Until(x => ExpectedConditions.ElementIsVisible(By.Id("Input_917")));
             Thread.Sleep(400);
-            this.uploaderClient.WriteTextbox(By.Id("Input_140"), listing.GetPublicRemarks()); // Internet / Remarks / Desc. of Property
-            this.uploaderClient.WriteTextbox(By.Id("Input_142"), listing.Directions); // Syndication Remarks
+            var remarks = listing.GetPublicRemarks();
+            this.uploaderClient.WriteTextbox(By.Id("Input_322"), remarks); // Internet / Remarks / Desc. of Property
+            this.uploaderClient.WriteTextbox(By.Id("Input_323"), remarks); // Syndication Remarks
         }
 
         private void SetLongitudeAndLatitudeValues(ResidentialListingRequest listing)
@@ -771,8 +747,8 @@ namespace Husa.Uploader.Core.Services
                 return;
             }
 
-            this.uploaderClient.WriteTextbox(By.Id("INPUT__93"), value: listing.Latitude); // Latitude
-            this.uploaderClient.WriteTextbox(By.Id("INPUT__94"), value: listing.Longitude); // Longitude
+            this.uploaderClient.WriteTextbox(By.Id("INPUT__146"), value: listing.Latitude); // Latitude
+            this.uploaderClient.WriteTextbox(By.Id("INPUT__168"), value: listing.Longitude); // Longitude
         }
 
         private void DeleteAllImages()
