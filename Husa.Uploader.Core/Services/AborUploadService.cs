@@ -4,6 +4,7 @@ namespace Husa.Uploader.Core.Services
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
+    using Husa.Extensions.Common.Exceptions;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
@@ -168,6 +169,8 @@ namespace Husa.Uploader.Core.Services
                     this.FillShowingInformation(listing);
                     this.FillAgentOfficeInformation(listing);
                     this.FillRemarks(listing as AborListingRequest);
+
+                    await this.UpdateVirtualTour(listing, cancellationToken);
                 }
                 catch (Exception exception)
                 {
@@ -250,20 +253,16 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UpdateListingPrice()
             {
-                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken);
-                this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
+                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Updating the price of the listing {requestId} to {listPrice}.", listing.ResidentialListingRequestID, listing.ListPrice);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-
                 await this.Login();
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
-
+                Thread.Sleep(1000);
                 this.NavigateToQuickEdit(listing.MLSNum);
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
-                this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
-                this.uploaderClient.ScrollDown();
-                this.uploaderClient.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
-
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Price Change"), cancellationToken);
+                this.uploaderClient.ClickOnElement(By.LinkText("Price Change"));
+                this.uploaderClient.WriteTextbox(By.Id("Input_77"), listing.ListPrice); // List Price
                 return UploadResult.Success;
             }
         }
@@ -327,31 +326,11 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UploadListingVirtualTour()
             {
-                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken);
-                this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
-                this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-
                 await this.Login();
-                Thread.Sleep(1000);
+                Thread.Sleep(5000);
 
-                this.uploaderClient.ClickOnElement(By.LinkText(@"Edit Listing Details"), shouldWait: false, waitTime: 0, isElementOptional: false);
                 this.NavigateToQuickEdit(listing.MLSNum);
-
-                this.uploaderClient.SwitchTo("main");
-                this.uploaderClient.SwitchTo("workspace");
-                Thread.Sleep(1000);
-
-                this.uploaderClient.ExecuteScript(" SP('7') ");
-                Thread.Sleep(2000);
-
-                var virtualTourResponse = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: this.CurrentMarket, cancellationToken);
-                var virtualTour = virtualTourResponse.FirstOrDefault();
-                if (virtualTour != null)
-                {
-                    this.uploaderClient.WriteTextbox(
-                        findBy: By.Id("VIRTTOUR"),
-                        virtualTour.GetUnbrandedUrl());
-                }
+                await this.UpdateVirtualTour(listing, cancellationToken);
 
                 return UploadResult.Success;
             }
@@ -391,6 +370,33 @@ namespace Husa.Uploader.Core.Services
                 this.CleanOpenHouse();
                 this.AddOpenHouses(listing);
                 return UploadResult.Success;
+            }
+        }
+
+        private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        {
+            var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.Austin, cancellationToken);
+
+            if (!virtualTours.Any())
+            {
+                return;
+            }
+
+            this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
+            Thread.Sleep(200);
+            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
+
+            var firstVirtualTour = virtualTours.FirstOrDefault();
+            if (firstVirtualTour != null)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_325"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+            }
+
+            virtualTours = virtualTours.Skip(1).ToList();
+            var secondVirtualTour = virtualTours.FirstOrDefault();
+            if (secondVirtualTour != null)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_324"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
             }
         }
 

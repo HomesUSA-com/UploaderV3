@@ -9,6 +9,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
@@ -29,21 +30,15 @@ namespace Husa.Uploader.Core.Tests
         public AborUploadServiceTests(ApplicationServicesFixture fixture)
         {
             this.fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
+            this.uploaderClient.SetupAllProperties();
         }
 
         [Fact]
-        public async Task CurrentClickOnceVersion_ParseValidVersionString_ReturnsVersion()
+        public async Task Upload_ReturnSuccess()
         {
             // Arrange
-            this.uploaderClient.SetupAllProperties();
-            this.serviceSubscriptionClient
-                .Setup(x => x.Corporation.GetMarketReverseProspectInformation(It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ReverseProspectInfoResponse()
-                {
-                    UserName = "UserName",
-                    Password = "password",
-                })
-            .Verifiable();
+            this.SetUpCredentials();
+            this.SetUpVirtualTours();
 
             var listingSale = GetListingRequestDetailResponse();
             var aborListing = new AborListingRequest(listingSale).CreateFromApiResponseDetail();
@@ -58,6 +53,70 @@ namespace Husa.Uploader.Core.Tests
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task Upload_Fails()
+        {
+            // Arrange
+            var sut = this.GetSut();
+
+            // Act and Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.Upload((AborListingRequest)null));
+        }
+
+        [Fact]
+        public async Task UploadVirtualTour_ReturnSuccess()
+        {
+            this.SetUpCredentials();
+            this.SetUpVirtualTours();
+            var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.UploadVirtualTour(aborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UploadVirtualTour_ReturnSuccessWithoutVirtualTours()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.mediaRepository
+                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ResidentialListingVirtualTour[0])
+            .Verifiable();
+            var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UploadVirtualTour(aborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UploadVirtualTour_Fails()
+        {
+            // Arrange
+            var sut = this.GetSut();
+
+            // Act and Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.UploadVirtualTour((AborListingRequest)null));
+        }
+
+        private static ResidentialListingVirtualTour GetResidentialListingVirtualTour()
+        {
+            var id = Guid.NewGuid();
+            return new()
+            {
+                Id = id,
+                MediaUri = new Uri("https://test.org/" + id.ToString()),
+            };
         }
 
         private static AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse GetListingRequestDetailResponse()
@@ -107,6 +166,26 @@ namespace Husa.Uploader.Core.Tests
             };
 
             return listingSale;
+        }
+
+        private void SetUpCredentials()
+        {
+            this.serviceSubscriptionClient
+                .Setup(x => x.Corporation.GetMarketReverseProspectInformation(It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ReverseProspectInfoResponse()
+                {
+                    UserName = "UserName",
+                    Password = "password",
+                })
+            .Verifiable();
+        }
+
+        private void SetUpVirtualTours()
+        {
+            this.mediaRepository
+                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ResidentialListingVirtualTour[] { GetResidentialListingVirtualTour(), GetResidentialListingVirtualTour() })
+            .Verifiable();
         }
 
         private AborUploadService GetSut()
