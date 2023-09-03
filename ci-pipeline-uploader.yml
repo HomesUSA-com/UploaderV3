@@ -37,7 +37,7 @@ variables:
   value: $[eq(variables['Build.Reason'], 'Manual')]
 - name: projectDirectory
   value: '$(Build.SourcesDirectory)\Husa.Uploader.Desktop'
-- ${{ if or(eq(parameters.environment, 'PROD'),and(eq(parameters.environment, 'AUTO'),contains(variables['Build.SourceBranch'], 'master'))) }}:
+- ${{ if or(eq(parameters.environment, 'PROD'),and(eq(parameters.environment, 'AUTO'),or(contains(variables['Build.SourceBranch'], 'master'),contains(variables['Build.SourceBranch'], 'hotfix')))) }}:
   - group: homesusa.husa.uploader-prod
 - ${{ elseif  or(eq(parameters.environment, 'QA'),and(eq(parameters.environment, 'AUTO'),contains(variables['Build.SourceBranch'], 'release'))) }}:
   - group: homesusa.husa.uploader-qa
