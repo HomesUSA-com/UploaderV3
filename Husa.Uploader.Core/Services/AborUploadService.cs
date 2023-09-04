@@ -549,7 +549,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_230", listing.UnitStyleDesc); // Unit Style (5)
             this.uploaderClient.SetMultipleCheckboxById("Input_234", listing.ViewDesc); // View (4)
             this.uploaderClient.SetSelect(By.Id("Input_235"), listing.DistanceToWaterAccess); // Distance to Water Access
-            this.uploaderClient.SetMultipleCheckboxById("Input_237", listing.WaterfrontDesc); // Waterfront Description
+            this.uploaderClient.SetMultipleCheckboxById("Input_237", listing.WaterfrontFeatures); // Waterfront Description
             this.uploaderClient.SetSelect(By.Id("Input_238"), listing.BodyofWater); // Water Body Name
             this.uploaderClient.SetMultipleCheckboxById("Input_244", listing.LotDesc); // Lot Description (4)
             this.uploaderClient.SetMultipleCheckboxById("Input_233", listing.RoofDesc); // Roof
@@ -656,7 +656,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_296"), "0"); // Estimated Taxes ($)
             this.uploaderClient.WriteTextbox(By.Id("Input_297"), listing.TaxYear); // Tax Year
 
-            this.uploaderClient.WriteTextbox(By.Id("Input_294"), listing.TaxRate, true); // Tax Rate
+            this.uploaderClient.WriteTextbox(By.Id("Input_294"), listing.TaxRate); // Tax Rate
             this.uploaderClient.WriteTextbox(By.Id("Input_293"), "0", true); // Tax Assessed Value
             this.uploaderClient.SetMultipleCheckboxById("Input_295", "None"); // Buyer Incentive
             this.uploaderClient.SetMultipleCheckboxById("Input_298", listing.ExemptionsDesc); // Tax Exemptions
@@ -675,6 +675,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_302"), listing.OwnerName); // Owner Name
             this.uploaderClient.SetMultipleCheckboxById("Input_305", listing.Showing); // Showing Requirements
             this.uploaderClient.SetSelect(By.Id("Input_651"), listing.LockboxTypeDesc ?? "None"); // Lockbox Type
+            this.uploaderClient.WriteTextbox(By.Id("Input_312"), listing.LockboxLocDesc, true); // Lockbox Serial Number
             this.uploaderClient.SetMultipleCheckboxById("Input_720", "OWN"); // Showing Contact Type
             this.uploaderClient.WriteTextbox(By.Id("Input_310"), listing.OwnerName);
             this.uploaderClient.WriteTextbox(By.Id("Input_311"), listing.AgentListApptPhone, true); // Showing Contact Phone
