@@ -229,7 +229,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
                 residentialListingRequest.FinancingProposed = financialInfo.AcceptableFinancing.ToStringFromEnumMembers();
                 residentialListingRequest.ExemptionsDesc = financialInfo.TaxExemptions.ToStringFromEnumMembers();
-                residentialListingRequest.TaxRate = financialInfo.TaxRate.DecimalToString();
+                residentialListingRequest.TaxRate = financialInfo.TaxRate.StrictDecimalToString();
                 residentialListingRequest.TaxYear = financialInfo.TaxYear.IntegerToString();
                 residentialListingRequest.TitleCo = financialInfo.TitleCompany;
                 residentialListingRequest.HasAgentBonus = financialInfo.HasAgentBonus;
