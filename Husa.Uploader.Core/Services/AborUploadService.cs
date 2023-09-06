@@ -171,6 +171,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillRemarks(listing as AborListingRequest);
 
                     await this.UpdateVirtualTour(listing, cancellationToken);
+                    await this.FillMedia(listing, cancellationToken);
                 }
                 catch (Exception exception)
                 {
@@ -727,6 +728,24 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetSelect(By.Id("Input_331"), "1"); // Internet Consumer Comment
                 this.uploaderClient.SetSelect(By.Id("Input_332"), "1"); // Internet Address Display
             }
+        }
+
+        private async Task FillMedia(ResidentialListingRequest listing, CancellationToken cancellationToken)
+        {
+            if (!listing.IsNewListing)
+            {
+                this.logger.LogInformation("Skipping media upload for existing listing {listingId}", listing.ResidentialListingID);
+                return;
+            }
+
+            // Enter Manage Photos
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSaveIncomplete"), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.Id("m_lbSaveIncomplete"));
+            Thread.Sleep(1000);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbManagePhotos"), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.Id("m_lbManagePhotos"));
+
+            await this.ProcessImages(listing, cancellationToken);
         }
 
         private void UpdateYearBuiltDescriptionInGeneralTab(ResidentialListingRequest listing)
