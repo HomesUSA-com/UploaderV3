@@ -10,6 +10,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
     using Husa.Quicklister.Sabor.Domain.Enums;
     using Husa.Uploader.Crosscutting.Converters;
     using Husa.Uploader.Crosscutting.Extensions;
+    using BuiltStatus = Husa.Uploader.Crosscutting.Enums.BuiltStatus;
 
     public class SaborListingRequest : ResidentialListingRequest
     {
@@ -34,6 +35,12 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
         }
 
         public override MarketCode MarketCode => MarketCode.SanAntonio;
+        public override BuiltStatus BuiltStatus => this.YearBuiltDesc switch
+        {
+            "I" => BuiltStatus.ToBeBuilt,
+            "C" => BuiltStatus.ReadyNow,
+            _ => BuiltStatus.ToBeBuilt,
+        };
 
         public override ResidentialListingRequest CreateFromApiResponse() => new SaborListingRequest
         {
@@ -96,6 +103,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.BuilderName = saleProperty.OwnerName;
                 residentialListingRequest.CompanyName = saleProperty.OwnerName;
                 residentialListingRequest.OwnerName = saleProperty.OwnerName;
+                residentialListingRequest.PlanProfileName = saleProperty.PlanName;
             }
 
             void FillAddressInfo(AddressInfoResponse addressInfo)
@@ -124,7 +132,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 }
 
                 residentialListingRequest.BuildCompletionDate = propertyInfo.ConstructionCompletionDate;
-                residentialListingRequest.YearBuiltDesc = propertyInfo.ConstructionStage.ToString();
+                residentialListingRequest.YearBuiltDesc = propertyInfo.ConstructionStage?.ToStringFromEnumMember();
                 residentialListingRequest.YearBuilt = propertyInfo.ConstructionStartYear;
                 residentialListingRequest.Legal = propertyInfo.LegalDescription;
                 residentialListingRequest.TaxID = propertyInfo.TaxId;
@@ -232,6 +240,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 }
 
                 residentialListingRequest.AltPhoneCommunity = showingInfo.AltPhoneCommunity;
+                residentialListingRequest.OtherPhone = showingInfo.AltPhoneCommunity;
                 residentialListingRequest.AgentListApptPhone = showingInfo.AgentListApptPhone;
                 residentialListingRequest.Showing = showingInfo.Showing?.ToStringFromEnumMember();
                 residentialListingRequest.RealtorContactEmail = showingInfo.RealtorContactEmail;
@@ -473,37 +482,10 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             }
         }
 
-        public override string GetPrivateRemarks()
-        {
-            var saleOfficeInfo = this.GetSalesAssociateRemarksMessage();
-            return base.GetPrivateRemarks() + (string.IsNullOrWhiteSpace(saleOfficeInfo) ? string.Empty : $" {saleOfficeInfo}");
-        }
-
-        public string GetAgentRemarksMessage()
-        {
-            const string homeUnderConstruction = "Home is under construction. For your safety, call appt number for showings";
-
-            var realtorContactEmail = !string.IsNullOrEmpty(this.EmailRealtorsContact) ? this.EmailRealtorsContact : this.RealtorContactEmail;
-            var message = this.GetPrivateRemarks();
-
-            if (!string.IsNullOrWhiteSpace(realtorContactEmail) &&
-                !message.ToLower().Contains("email contact") &&
-                !message.ToLower().Contains(realtorContactEmail))
-            {
-                message += $"Email contact: {realtorContactEmail}. ";
-            }
-
-            var bonusMessage = string.IsNullOrWhiteSpace(this.MLSNum) ? this.GetAgentBonusRemarksMessage() : string.Empty;
-            var incompletedBuiltNote = this.YearBuiltDesc == "Incomplete"
-                 && !message.Contains(homeUnderConstruction) ? $"{homeUnderConstruction}. " : string.Empty;
-
-            return bonusMessage + incompletedBuiltNote + message;
-        }
-
         public override string GetPublicRemarks()
         {
             var builtNote = "MLS# " + this.MLSNum + " - Built by " + this.CompanyName + " - ";
-            if (this.YearBuiltDesc == "Complete")
+            if (this.BuiltStatus == BuiltStatus.ReadyNow)
             {
                 string dateFormat = "MMM dd";
                 int diffDays = DateTime.Now.Subtract((DateTime)this.BuildCompletionDate).Days;

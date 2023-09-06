@@ -11,6 +11,7 @@ namespace Husa.Uploader.Desktop.Configuration
     using Husa.Extensions.Api.Handlers;
     using Husa.MediaService.Client;
     using Husa.Migration.Api.Client;
+    using Husa.Quicklister.Abor.Api.Client;
     using Husa.Quicklister.CTX.Api.Client;
     using Husa.Quicklister.Sabor.Api.Client;
     using Husa.Uploader.Core.Interfaces;
@@ -131,6 +132,12 @@ namespace Husa.Uploader.Desktop.Configuration
                 client.BaseAddress = new Uri(options.Services.QuicklisterCtx);
             }).AddHttpMessageHandler<AuthTokenHandler>();
 
+            services.AddHttpClient<IQuicklisterAborClient, QuicklisterAborClient>((provider, client) =>
+            {
+                var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
+                client.BaseAddress = new Uri(options.Services.QuicklisterAbor);
+            }).AddHttpMessageHandler<AuthTokenHandler>();
+
             services.AddHttpClient<IServiceSubscriptionClient, ServiceSubscriptionClient>((provider, client) =>
             {
                 var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
@@ -156,6 +163,7 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<IUploaderClient, UploaderClient>();
             services.AddTransient<ISaborUploadService, SaborUploadService>();
             services.AddTransient<ICtxUploadService, CtxUploadService>();
+            services.AddTransient<IAborUploadService, AborUploadService>();
 
             return services;
 

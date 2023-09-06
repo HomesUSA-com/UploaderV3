@@ -2,6 +2,7 @@ namespace Husa.Uploader.Data.Tests
 {
     using System.Threading.Tasks;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Abor.Api.Client;
     using Husa.Quicklister.CTX.Api.Client;
     using Husa.Quicklister.Sabor.Api.Client;
     using Husa.Uploader.Data.Entities.MarketRequests;
@@ -9,6 +10,8 @@ namespace Husa.Uploader.Data.Tests
     using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
+    using AborRequestContracts = Husa.Quicklister.Abor.Api.Contracts.Request;
+    using AborResponseContracts = Husa.Quicklister.Abor.Api.Contracts.Response;
     using CtxRequestContracts = Husa.Quicklister.CTX.Api.Contracts.Request;
     using CtxResponseContracts = Husa.Quicklister.CTX.Api.Contracts.Response;
     using SaborEnums = Husa.Quicklister.Sabor.Domain.Enums;
@@ -20,6 +23,7 @@ namespace Husa.Uploader.Data.Tests
     {
         private readonly Mock<IQuicklisterSaborClient> mockSaborClient = new();
         private readonly Mock<IQuicklisterCtxClient> mockCtxClient = new();
+        private readonly Mock<IQuicklisterAborClient> mockAborClient = new();
         private readonly Mock<ILogger<ListingRequestRepository>> mockLogger = new();
         private readonly ApplicationServicesFixture fixture;
 
@@ -60,6 +64,20 @@ namespace Husa.Uploader.Data.Tests
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(ctxResult);
 
+            var aborResponse = new AborResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestQueryResponse();
+            var aborResult = new AborResponseContracts.ListingRequest.SaleRequest.ListingRequestGridResponse<AborResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestQueryResponse>(
+                data: new[] { aborResponse },
+                total: 1,
+                continuationToken: string.Empty,
+                currentToken: string.Empty,
+                previousToken: string.Empty);
+
+            this.mockAborClient
+                .Setup(x => x.ListingSaleRequest.GetListRequestAsync(
+                    It.IsAny<AborRequestContracts.SaleRequest.ListingSaleRequestFilter>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(aborResult);
+
             var sut = this.GetSut();
 
             // Act
@@ -67,7 +85,7 @@ namespace Husa.Uploader.Data.Tests
 
             // Assert
             Assert.NotEmpty(result);
-            Assert.Single(result);
+            Assert.Equal(3, result.Count());
         }
 
         [Fact]
@@ -123,6 +141,7 @@ namespace Husa.Uploader.Data.Tests
             this.fixture.ApplicationOptions.Object,
             this.mockSaborClient.Object,
             this.mockCtxClient.Object,
+            this.mockAborClient.Object,
             this.mockLogger.Object);
     }
 }
