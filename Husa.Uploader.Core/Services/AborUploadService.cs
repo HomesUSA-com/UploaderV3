@@ -274,32 +274,24 @@ namespace Husa.Uploader.Core.Services
             async Task<UploadResult> UpdateListingStatus()
             {
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken);
-                this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Editing the status information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
 
                 await this.Login();
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
+                Thread.Sleep(1000);
                 this.NavigateToQuickEdit(listing.MLSNum);
 
-                Thread.Sleep(1500);
+                Thread.Sleep(1000);
                 switch (listing.ListStatus)
                 {
-                    case "CSLD":
-
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Sold"), cancellationToken);
-                        this.uploaderClient.ClickOnElement(By.LinkText("Change to Sold"));
-                        Thread.Sleep(500);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_74"), listing.SoldPrice);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_73"), listing.ClosedDate.HasValue ? listing.ClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
-                        this.uploaderClient.SetSelect(By.Id($"Input_324"), value: listing.Financing);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_325"), listing.SellConcess);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
-                        // this.uploaderClient.WriteTextbox(By.Id("Input_527"), listing.SoldComments);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.AgentMarketUniqueId);
-                        this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_321_Refresh').value='1';RefreshToSamePage();");
-                        this.uploaderClient.WriteTextbox(By.Id("Input_323"), listing.SecondAgentMarketUniqueId);
-                        this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_323_Refresh').value='1';RefreshToSamePage();");
+                    case "Hold":
+                        var buttonText = "Change to Hold";
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_528"));
+                        this.uploaderClient.WriteTextbox(By.Id("Input_528"), listing.OffMarketDate.Value.ToShortDateString()); // Hold Date
+                        this.uploaderClient.WriteTextbox(By.Id("Input_81"), listing.BackOnMarketDate.Value.ToShortDateString()); // Expiration Date
                         break;
 
                     default:

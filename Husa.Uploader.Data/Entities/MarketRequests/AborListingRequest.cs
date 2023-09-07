@@ -295,9 +295,10 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
                 residentialListingRequest.SoldPrice = statusInfo.ClosePrice;
                 residentialListingRequest.ClosedDate = statusInfo.ClosedDate;
-                residentialListingRequest.Financing = statusInfo.SellerConcessionDescription?.ToStringFromEnumMembers();
                 residentialListingRequest.SellConcess = statusInfo.SellConcess;
                 residentialListingRequest.ContractDate = statusInfo.ContractDate;
+                residentialListingRequest.OffMarketDate = statusInfo.OffMarketDate;
+                residentialListingRequest.BackOnMarketDate = statusInfo.BackOnMarketDate;
             }
 
             void FillRoomsInfo(IEnumerable<RoomResponse> rooms)
