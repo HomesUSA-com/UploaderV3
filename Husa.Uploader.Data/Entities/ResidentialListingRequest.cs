@@ -191,6 +191,7 @@ namespace Husa.Uploader.Data.Entities
         public string BodyofWater { get; set; }
         public bool? BuyerCheckBox { get; set; }
         public bool? HasAgentBonus { get; set; }
+        public string HasContingencyInfo { get; set; }
         public string UtilityRoomDesc { get; set; }
         public decimal SqFtPriceSold { get; set; }
         public decimal SqFtPrice { get; set; }
