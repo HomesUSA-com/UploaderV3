@@ -109,6 +109,25 @@ namespace Husa.Uploader.Core.Tests
             await Assert.ThrowsAsync<ArgumentNullException>(() => sut.UploadVirtualTour((AborListingRequest)null));
         }
 
+        [Fact]
+        public async Task UpdateCompletionDate_Success()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+            aborListing.MLSNum = "MLSNum";
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(aborListing);
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdateCompletionDate(aborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
         private static ResidentialListingVirtualTour GetResidentialListingVirtualTour()
         {
             var id = Guid.NewGuid();
