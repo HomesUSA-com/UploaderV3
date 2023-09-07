@@ -330,10 +330,11 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UploadListingVirtualTour()
             {
+                this.logger.LogInformation("Updating VirtualTour for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login();
-                Thread.Sleep(5000);
+                this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
 
-                this.NavigateToQuickEdit(listing.MLSNum);
                 await this.UpdateVirtualTour(listing, cancellationToken);
 
                 return UploadResult.Success;
