@@ -252,6 +252,18 @@ namespace Husa.Uploader.Core.Tests
                 OwnerName = "OwnerName",
                 PlanName = "PlanName",
             };
+            var roomInfo = new AborResponse.RoomResponse()
+            {
+                Id = Guid.NewGuid(),
+                Level = RoomLevel.First,
+                RoomType = Husa.Quicklister.Abor.Domain.Enums.RoomType.PrimaryBathroom,
+                Features = new List<RoomFeatures>()
+                {
+                    RoomFeatures.DiningArea,
+                    RoomFeatures.BreakfastBar,
+                    RoomFeatures.CeilingFans,
+                },
+            };
             var saleProperty = new AborResponse.SalePropertyDetail.SalePropertyDetailResponse()
             {
                 SpacesDimensionsInfo = spacesDimensionsInfo.Object,
@@ -262,7 +274,12 @@ namespace Husa.Uploader.Core.Tests
                 SchoolsInfo = schoolsInfo.Object,
                 ShowingInfo = showingInfo,
                 SalePropertyInfo = salePropertyInfo,
+                Rooms = new List<AborResponse.RoomResponse>()
+                {
+                    roomInfo,
+                },
             };
+
             var statusFields = new Mock<AborResponse.ListingSaleStatusFieldsResponse>();
 
             var listingSale = new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse()

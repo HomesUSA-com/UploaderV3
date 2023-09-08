@@ -13,5 +13,7 @@ namespace Husa.Uploader.Data.Entities
         public string Level { get; set; }
 
         public string RoomType { get; set; }
+
+        public string Features { get; set; }
     }
 }

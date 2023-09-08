@@ -159,6 +159,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillListingInformation(listing);
                     this.FillGeneralInformation(listing);
                     this.FillAdditionalInformation(listing as AborListingRequest);
+                    this.FillRoomInformation(listing);
                     this.FillDocumentsAndUtilities(listing as AborListingRequest);
                     this.FillGreenEnergyInformation();
                     this.FillFinancialInformation(listing as AborListingRequest);
@@ -665,6 +666,56 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ScrollToTop();
             this.uploaderClient.ScrollDown(400);
             this.uploaderClient.SetMultipleCheckboxById("Input_268", listing.CommonFeatures, "Community Features", tabName); // Community Features
+        }
+
+        private void FillRoomInformation(ResidentialListingRequest listing)
+        {
+            string tabName = "Rooms";
+            this.uploaderClient.ClickOnElement(By.LinkText(tabName));
+            Thread.Sleep(200);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
+
+            if (!listing.IsNewListing)
+            {
+                int index = 0;
+
+                while (this.uploaderClient.FindElements(By.LinkText("Delete")) != null &&
+                    this.uploaderClient.FindElements(By.LinkText("Delete")).Count > 1)
+                {
+                    try
+                    {
+                        this.uploaderClient.ScrollToTop();
+                        this.uploaderClient.ClickOnElement(By.LinkText("Delete"));
+                        Thread.Sleep(400);
+                    }
+                    catch
+                    {
+                        this.uploaderClient.ScrollToTop();
+                        this.uploaderClient.ClickOnElement(By.Id("m_rpPageList_ctl02_lbPageLink"));
+                        this.uploaderClient.ExecuteScript("Subforms['s_349'].deleteRow('_Input_349__del_REPEAT" + index + "_');");
+                        Thread.Sleep(400);
+                    }
+                }
+            }
+
+            var i = 0;
+            foreach (var room in listing.Rooms)
+            {
+                if (i > 0)
+                {
+                    this.uploaderClient.ClickOnElement(By.Id("_Input_349_more"));
+                    this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(400));
+                }
+
+                var roomType = $"_Input_349__REPEAT{i}_345";
+                this.uploaderClient.SetSelect(By.Id($"_Input_349__REPEAT{i}_345"), room.RoomType, "Room Type", tabName);
+                this.uploaderClient.ResetImplicitWait();
+                this.uploaderClient.SetSelect(By.Id($"_Input_349__REPEAT{i}_346"), room.Level, "Level", tabName, isElementOptional: true);
+                this.uploaderClient.SetMultipleCheckboxById($"_Input_349__REPEAT{i}_347", room.Features);
+
+                this.uploaderClient.ScrollDownToElementHTML(roomType);
+                i++;
+            }
         }
 
         private void FillFinancialInformation(AborListingRequest listing)
