@@ -305,6 +305,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.EstClosedDate = statusInfo.EstimatedClosedDate;
                 residentialListingRequest.AgentMarketUniqueId = statusInfo.AgentMarketUniqueId;
                 residentialListingRequest.SecondAgentMarketUniqueId = statusInfo.SecondAgentMarketUniqueId;
+                residentialListingRequest.ContingencyInfo = statusInfo.ContingencyInfo.ToStringFromEnumMembers();
             }
 
             void FillRoomsInfo(IEnumerable<RoomResponse> rooms)

@@ -193,6 +193,29 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(UploadResult.Success, result);
         }
 
+        [Fact]
+        public async Task UpdateStatus_ActiveUnderContractSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+            aborListing.ListStatus = "ActiveUnderContract";
+            aborListing.PendingDate = DateTime.Now;
+            aborListing.ClosedDate = DateTime.Now;
+            aborListing.EstClosedDate = DateTime.Now;
+            aborListing.HasContingencyInfo = false;
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(aborListing);
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdateStatus(aborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
         private static ResidentialListingVirtualTour GetResidentialListingVirtualTour()
         {
             var id = Guid.NewGuid();
