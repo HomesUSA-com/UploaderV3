@@ -301,7 +301,10 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.OffMarketDate = statusInfo.OffMarketDate;
                 residentialListingRequest.BackOnMarketDate = statusInfo.BackOnMarketDate;
                 residentialListingRequest.SoldTerms = statusInfo.SaleTerms.ToStringFromEnumMembers();
-                residentialListingRequest.HasContingencyInfo = statusInfo.HasContingencyInfo.BoolToNumericBool();
+                residentialListingRequest.HasContingencyInfo = statusInfo.HasContingencyInfo;
+                residentialListingRequest.EstClosedDate = statusInfo.EstimatedClosedDate;
+                residentialListingRequest.AgentMarketUniqueId = statusInfo.AgentMarketUniqueId;
+                residentialListingRequest.SecondAgentMarketUniqueId = statusInfo.SecondAgentMarketUniqueId;
             }
 
             void FillRoomsInfo(IEnumerable<RoomResponse> rooms)

@@ -283,7 +283,7 @@ namespace Husa.Uploader.Core.Services
                 this.NavigateToQuickEdit(listing.MLSNum);
 
                 Thread.Sleep(1000);
-                string buttonText;
+                var buttonText = string.Empty;
                 switch (listing.ListStatus)
                 {
                     case "Hold":
@@ -304,11 +304,20 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.SetSelect(By.Id($"Input_524"), value: "EXCL"); // Property Condition at Closing
                         this.uploaderClient.WriteTextbox(By.Id("Input_84"), listing.SoldPrice); // close price
                         this.uploaderClient.WriteTextbox(By.Id("Input_526"), "None"); // closed Comments
-                        this.uploaderClient.SetSelect(By.Id($"Input_655"), value: listing.HasContingencyInfo); // Property Sale Contingency
+                        this.uploaderClient.SetSelect(By.Id($"Input_655"), value: listing.HasContingencyInfo.BoolToNumericBool()); // Property Sale Contingency
                         this.uploaderClient.WriteTextbox(By.Id("Input_517"), listing.SellConcess); // Buyer Clsg Cost Pd By Sell($)
                         this.uploaderClient.SetMultipleCheckboxById("Input_525", listing.SoldTerms, "Buyer Financing", " "); // Buyer Financing
                         this.uploaderClient.WriteTextbox(By.Id("Input_519"), "0"); // Repairs Amount
-
+                        break;
+                    case "Pending":
+                        buttonText = "Change to Pending";
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_512"));
+                        this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // Pending Date
+                        this.uploaderClient.WriteTextbox(By.Id("Input_515"), listing.EstClosedDate.Value.ToShortDateString()); // Tentative Close Date
+                        this.uploaderClient.WriteTextbox(By.Id("Input_81"), listing.ExpiredDate.Value.ToShortDateString()); // Expiration Date
+                        this.uploaderClient.SetSelect(By.Id("Input_655"), listing.HasContingencyInfo.BoolToNumericBool()); // Property Sale Contingency YN
                         break;
 
                     default:
