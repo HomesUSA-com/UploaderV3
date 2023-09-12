@@ -159,6 +159,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillListingInformation(listing);
                     this.FillGeneralInformation(listing);
                     this.FillAdditionalInformation(listing as AborListingRequest);
+                    this.FillRoomInformation(listing);
                     this.FillDocumentsAndUtilities(listing as AborListingRequest);
                     this.FillGreenEnergyInformation();
                     this.FillFinancialInformation(listing as AborListingRequest);
@@ -283,15 +284,53 @@ namespace Husa.Uploader.Core.Services
                 this.NavigateToQuickEdit(listing.MLSNum);
 
                 Thread.Sleep(1000);
+                var buttonText = string.Empty;
                 switch (listing.ListStatus)
                 {
                     case "Hold":
-                        var buttonText = "Change to Hold";
+                        buttonText = "Change to Hold";
                         this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
                         this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
                         this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_528"));
                         this.uploaderClient.WriteTextbox(By.Id("Input_528"), listing.OffMarketDate.Value.ToShortDateString()); // Hold Date
                         this.uploaderClient.WriteTextbox(By.Id("Input_81"), listing.BackOnMarketDate.Value.ToShortDateString()); // Expiration Date
+                        break;
+                    case "Closed":
+                        buttonText = "Change to Closed";
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                        Thread.Sleep(500);
+                        this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // pending date
+                        this.uploaderClient.WriteTextbox(By.Id("Input_85"), listing.ClosedDate.Value.ToShortDateString()); // close date
+                        this.uploaderClient.SetSelect(By.Id($"Input_524"), value: "EXCL"); // Property Condition at Closing
+                        this.uploaderClient.WriteTextbox(By.Id("Input_84"), listing.SoldPrice); // close price
+                        this.uploaderClient.WriteTextbox(By.Id("Input_526"), "None"); // closed Comments
+                        this.uploaderClient.SetSelect(By.Id($"Input_655"), value: listing.HasContingencyInfo.BoolToNumericBool()); // Property Sale Contingency
+                        this.uploaderClient.WriteTextbox(By.Id("Input_517"), listing.SellConcess); // Buyer Clsg Cost Pd By Sell($)
+                        this.uploaderClient.SetMultipleCheckboxById("Input_525", listing.SoldTerms, "Buyer Financing", " "); // Buyer Financing
+                        this.uploaderClient.WriteTextbox(By.Id("Input_519"), "0"); // Repairs Amount
+                        break;
+                    case "Pending":
+                        buttonText = "Change to Pending";
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_512"));
+                        this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // Pending Date
+                        this.uploaderClient.WriteTextbox(By.Id("Input_515"), listing.EstClosedDate.Value.ToShortDateString()); // Tentative Close Date
+                        this.uploaderClient.WriteTextbox(By.Id("Input_81"), listing.ExpiredDate.Value.ToShortDateString()); // Expiration Date
+                        this.uploaderClient.SetSelect(By.Id("Input_655"), listing.HasContingencyInfo.BoolToNumericBool()); // Property Sale Contingency YN
+                        break;
+                    case "ActiveUnderContract":
+                        buttonText = "Change to Active Under Contract";
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                        Thread.Sleep(500);
+                        this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // pending date
+                        this.uploaderClient.WriteTextbox(By.Id("Input_512"), listing.ClosedDate.Value.ToShortDateString()); // option end date
+                        this.uploaderClient.SetSelect(By.Id($"Input_655"), value: listing.HasContingencyInfo.BoolToNumericBool()); // property sale contingency
+                        this.uploaderClient.SetMultipleCheckboxById("Input_656", listing.ContingencyInfo, "Other Contingency Type", " ");
+                        this.uploaderClient.WriteTextbox(By.Id("Input_515"), listing.EstClosedDate.Value.ToShortDateString()); // Tentative Close Date
+
                         break;
 
                     default:
@@ -313,10 +352,11 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UploadListingVirtualTour()
             {
+                this.logger.LogInformation("Updating VirtualTour for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login();
-                Thread.Sleep(5000);
+                this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
 
-                this.NavigateToQuickEdit(listing.MLSNum);
                 await this.UpdateVirtualTour(listing, cancellationToken);
 
                 return UploadResult.Success;
@@ -626,6 +666,56 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ScrollToTop();
             this.uploaderClient.ScrollDown(400);
             this.uploaderClient.SetMultipleCheckboxById("Input_268", listing.CommonFeatures, "Community Features", tabName); // Community Features
+        }
+
+        private void FillRoomInformation(ResidentialListingRequest listing)
+        {
+            string tabName = "Rooms";
+            this.uploaderClient.ClickOnElement(By.LinkText(tabName));
+            Thread.Sleep(200);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
+
+            if (!listing.IsNewListing)
+            {
+                int index = 0;
+
+                while (this.uploaderClient.FindElements(By.LinkText("Delete")) != null &&
+                    this.uploaderClient.FindElements(By.LinkText("Delete")).Count > 1)
+                {
+                    try
+                    {
+                        this.uploaderClient.ScrollToTop();
+                        this.uploaderClient.ClickOnElement(By.LinkText("Delete"));
+                        Thread.Sleep(400);
+                    }
+                    catch
+                    {
+                        this.uploaderClient.ScrollToTop();
+                        this.uploaderClient.ClickOnElement(By.Id("m_rpPageList_ctl02_lbPageLink"));
+                        this.uploaderClient.ExecuteScript("Subforms['s_349'].deleteRow('_Input_349__del_REPEAT" + index + "_');");
+                        Thread.Sleep(400);
+                    }
+                }
+            }
+
+            var i = 0;
+            foreach (var room in listing.Rooms)
+            {
+                if (i > 0)
+                {
+                    this.uploaderClient.ClickOnElement(By.Id("_Input_349_more"));
+                    this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(400));
+                }
+
+                var roomType = $"_Input_349__REPEAT{i}_345";
+                this.uploaderClient.SetSelect(By.Id($"_Input_349__REPEAT{i}_345"), room.RoomType, "Room Type", tabName);
+                this.uploaderClient.ResetImplicitWait();
+                this.uploaderClient.SetSelect(By.Id($"_Input_349__REPEAT{i}_346"), room.Level, "Level", tabName, isElementOptional: true);
+                this.uploaderClient.SetMultipleCheckboxById($"_Input_349__REPEAT{i}_347", room.Features);
+
+                this.uploaderClient.ScrollDownToElementHTML(roomType);
+                i++;
+            }
         }
 
         private void FillFinancialInformation(AborListingRequest listing)
