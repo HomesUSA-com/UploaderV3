@@ -313,7 +313,7 @@ namespace Husa.Uploader.Core.Services
             async Task<UploadResult> UpdateListingImages()
             {
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
-                this.logger.LogInformation("Updating the images of the listing {requestId}.", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Updating the media of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
                 await this.Login();
                 Thread.Sleep(1000);
@@ -326,7 +326,6 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
                 this.uploaderClient.ExecuteScript("jQuery('.modal-body > .inner-modal-body > div').find('button')[5].click();");
                 Thread.Sleep(1000);
-                this.uploaderClient.ExecuteScript("jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
                 await this.ProcessImages(listing.ResidentialListingRequestID, cancellationToken);
                 return UploadResult.Success;
             }

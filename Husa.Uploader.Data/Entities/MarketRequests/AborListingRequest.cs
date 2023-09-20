@@ -295,9 +295,17 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
                 residentialListingRequest.SoldPrice = statusInfo.ClosePrice;
                 residentialListingRequest.ClosedDate = statusInfo.ClosedDate;
-                residentialListingRequest.Financing = statusInfo.SellerConcessionDescription?.ToStringFromEnumMembers();
+                residentialListingRequest.PendingDate = statusInfo.PendingDate;
                 residentialListingRequest.SellConcess = statusInfo.SellConcess;
                 residentialListingRequest.ContractDate = statusInfo.ContractDate;
+                residentialListingRequest.OffMarketDate = statusInfo.OffMarketDate;
+                residentialListingRequest.BackOnMarketDate = statusInfo.BackOnMarketDate;
+                residentialListingRequest.SoldTerms = statusInfo.SaleTerms.ToStringFromEnumMembers();
+                residentialListingRequest.HasContingencyInfo = statusInfo.HasContingencyInfo;
+                residentialListingRequest.EstClosedDate = statusInfo.EstimatedClosedDate;
+                residentialListingRequest.AgentMarketUniqueId = statusInfo.AgentMarketUniqueId;
+                residentialListingRequest.SecondAgentMarketUniqueId = statusInfo.SecondAgentMarketUniqueId;
+                residentialListingRequest.ContingencyInfo = statusInfo.ContingencyInfo.ToStringFromEnumMembers();
             }
 
             void FillRoomsInfo(IEnumerable<RoomResponse> rooms)
@@ -313,6 +321,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     {
                         Level = room.Level.ToStringFromEnumMember(),
                         RoomType = room.RoomType.ToStringFromEnumMember(),
+                        Features = room.Features.ToStringFromEnumMembers(),
                     });
                 }
 
