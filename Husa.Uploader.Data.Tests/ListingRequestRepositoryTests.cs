@@ -63,7 +63,7 @@ namespace Husa.Uploader.Data.Tests
 
             // Assert
             Assert.NotEmpty(result);
-            Assert.Equal(3, result.Count());
+            Assert.Equal(6, result.Count());
         }
 
         [Fact]

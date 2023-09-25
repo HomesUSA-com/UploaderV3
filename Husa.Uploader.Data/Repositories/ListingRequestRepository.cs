@@ -6,7 +6,6 @@ namespace Husa.Uploader.Data.Repositories
     using Husa.Quicklister.Abor.Api.Client;
     using Husa.Quicklister.CTX.Api.Client;
     using Husa.Quicklister.Extensions.Api.Client.Interfaces;
-    using Husa.Quicklister.Extensions.Api.Contracts.Request.SaleRequest;
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ListingRequest;
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.Sabor.Api.Client;
@@ -120,14 +119,23 @@ namespace Husa.Uploader.Data.Repositories
             {
                 this.logger.LogInformation("Getting all pending requests for {marketCode}", marketSettings.MarketCode);
 
-                var filter = new SaleListingRequestFilter
+                var pendingRequests = await requestClient.GetListRequestAsync(
+                    new()
+                    {
+                        RequestState = QuicklisterStatus.Pending,
+                    },
+                    token);
+                var approvedRequests = await requestClient.GetListRequestAsync(
+                    new()
+                    {
+                        RequestState = QuicklisterStatus.Processing,
+                    },
+                    token);
+
+                var requests = pendingRequests.Data.Concat(approvedRequests.Data);
+                if (requests.Any())
                 {
-                    RequestState = QuicklisterStatus.Pending,
-                };
-                var requests = await requestClient.GetListRequestAsync(filter, token);
-                if (requests.Data.Any())
-                {
-                    return requests.Data.AsQueryable().Select(projection).ToList();
+                    return requests.AsQueryable().Select(projection).ToList();
                 }
             }
 
