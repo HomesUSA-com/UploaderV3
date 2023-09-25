@@ -68,6 +68,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             ListStatus = this.listingResponse.MlsStatus.ToStringFromEnumMember(),
             SysCreatedOn = this.listingResponse.SysCreatedOn,
             SysCreatedBy = this.listingResponse.SysCreatedBy,
+            EnableOpenHouse = this.listingResponse.EnableOpenHouse,
         };
 
         public override ResidentialListingRequest CreateFromApiResponseDetail()
@@ -297,7 +298,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.ClosedDate = statusInfo.ClosedDate;
                 residentialListingRequest.PendingDate = statusInfo.PendingDate;
                 residentialListingRequest.SellConcess = statusInfo.SellConcess;
-                residentialListingRequest.ContractDate = statusInfo.ContractDate;
                 residentialListingRequest.OffMarketDate = statusInfo.OffMarketDate;
                 residentialListingRequest.BackOnMarketDate = statusInfo.BackOnMarketDate;
                 residentialListingRequest.SoldTerms = statusInfo.SaleTerms.ToStringFromEnumMembers();
@@ -343,7 +343,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                         StartTime = openHouse.StartTime,
                         EndTime = openHouse.EndTime,
                         Active = true,
-                        Comments = OpenHouseExtensions.GetComments(openHouse.Refreshments, openHouse.Lunch),
+                        Refreshments = openHouse.Refreshments.ToStringFromEnumMembers(),
                         Type = OpenHouseType.Public,
                     });
                 }
