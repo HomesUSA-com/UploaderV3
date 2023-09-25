@@ -10,6 +10,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
         public TimeSpan EndTime { get; set; }
         public bool Active { get; set; }
         public string Comments { get; set; }
+        public string Refreshments { get; set; }
         public string VirtualOpenHouseUrl { get; set; }
     }
 }
