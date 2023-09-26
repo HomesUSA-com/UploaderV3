@@ -119,23 +119,16 @@ namespace Husa.Uploader.Data.Repositories
             {
                 this.logger.LogInformation("Getting all pending requests for {marketCode}", marketSettings.MarketCode);
 
-                var pendingRequests = await requestClient.GetListRequestAsync(
+                var requests = await requestClient.GetListRequestAsync(
                     new()
                     {
                         RequestState = QuicklisterStatus.Pending,
                     },
                     token);
-                var approvedRequests = await requestClient.GetListRequestAsync(
-                    new()
-                    {
-                        RequestState = QuicklisterStatus.Processing,
-                    },
-                    token);
 
-                var requests = pendingRequests.Data.Concat(approvedRequests.Data);
-                if (requests.Any())
+                if (requests.Data.Any())
                 {
-                    return requests.AsQueryable().Select(projection).ToList();
+                    return requests.Data.AsQueryable().Select(projection).ToList();
                 }
             }
 
