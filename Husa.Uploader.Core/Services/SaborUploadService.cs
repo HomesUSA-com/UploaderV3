@@ -437,23 +437,16 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ExecuteScript(script: $"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(26) > a:first').click();");
                 Thread.Sleep(1000);
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
-                this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[6].click();");
+                this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[5].click();");
                 Thread.Sleep(1000);
-
-                this.uploaderClient.ExecuteScript(script: "jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
-
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("main"), cancellationToken);
-                this.uploaderClient.SwitchTo("main");
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("workspace"), cancellationToken);
-                this.uploaderClient.SwitchTo("workspace");
+                this.uploaderClient.SwitchTo().Frame(this.uploaderClient.FindElementById("main"));
+                this.uploaderClient.SwitchTo().Frame(this.uploaderClient.FindElementById("workspace"));
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("VIRTTOUR"), cancellationToken);
                 var virtualTourResponse = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.SanAntonio, cancellationToken);
                 var virtualTour = virtualTourResponse.FirstOrDefault();
                 if (virtualTour != null)
                 {
-                    this.uploaderClient.WriteTextbox(
-                        findBy: By.Id("VIRTTOUR"),
-                        entry: virtualTour.GetUnbrandedUrl());
+                    this.uploaderClient.WriteTextbox(By.Id("VIRTTOUR"), virtualTour.GetUnbrandedUrl());
                 }
 
                 return UploadResult.Success;
