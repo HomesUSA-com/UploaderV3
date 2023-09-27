@@ -5,6 +5,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Extensions.Common.Enums;
     using Husa.Extensions.Common.Exceptions;
     using Husa.Uploader.Core.Interfaces;
+    using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
@@ -67,26 +68,27 @@ namespace Husa.Uploader.Core.Services
             return UploadResult.Success;
         }
 
-        public async Task<LoginResult> Login()
+        public async Task<LoginResult> Login(Guid companyId)
         {
+            var company = await this.serviceSubscriptionClient.Company.GetCompany(companyId);
             var credentialsTask = this.serviceSubscriptionClient.Corporation.GetMarketReverseProspectInformation(this.CurrentMarket);
             var marketInfo = this.options.MarketInfo.Sabor;
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
             try
             {
-                var marketCredentials = await credentialsTask;
+                var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
                 try
                 {
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("go"));
-                    this.uploaderClient.WriteTextbox(By.Id("j_username"), marketCredentials.UserName);
-                    this.uploaderClient.WriteTextbox(By.Id("j_password"), marketCredentials.Password);
+                    this.uploaderClient.WriteTextbox(By.Id("j_username"), credentials[LoginCredentials.Username]);
+                    this.uploaderClient.WriteTextbox(By.Id("j_password"), credentials[LoginCredentials.Password]);
                     this.uploaderClient.ClickOnElementByName(elementName: "go");
                 }
                 catch
                 {
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("login"));
-                    this.uploaderClient.WriteTextbox(By.Id("userid"), marketCredentials.UserName);
-                    this.uploaderClient.WriteTextbox(By.Id("password"), marketCredentials.Password);
+                    this.uploaderClient.WriteTextbox(By.Id("userid"), credentials[LoginCredentials.Username]);
+                    this.uploaderClient.WriteTextbox(By.Id("password"), credentials[LoginCredentials.Password]);
                     this.uploaderClient.SubmitForm(By.Name("login"));
                 }
 
@@ -130,7 +132,7 @@ namespace Husa.Uploader.Core.Services
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-                await this.Login();
+                await this.Login(listing.CompanyId);
                 if (this.uploaderClient.UploadInformation.IsNewListing)
                 {
                     this.uploaderClient.ClickOnElementById("newlistingLink");
@@ -167,7 +169,7 @@ namespace Husa.Uploader.Core.Services
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: listing.IsNewListing);
-                await this.Login();
+                await this.Login(listing.CompanyId);
                 if (listing.IsNewListing)
                 {
                     this.uploaderClient.ClickOnElementById("newlistingLink");
@@ -215,7 +217,7 @@ namespace Husa.Uploader.Core.Services
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 const string tabName = "General";
                 this.logger.LogInformation("Updating the status of the listing {requestId} in the {tabName} tab.", listing.ResidentialListingRequestID, tabName);
-                await this.Login();
+                await this.Login(listing.CompanyId);
                 Thread.Sleep(1000);
 
                 this.EditProperty(listing.MLSNum);
@@ -271,7 +273,7 @@ namespace Husa.Uploader.Core.Services
             {
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Updating the price of the listing {requestId} to {listPrice}.", listing.ResidentialListingRequestID, listing.ListPrice);
-                await this.Login();
+                await this.Login(listing.CompanyId);
                 Thread.Sleep(1000);
 
                 this.EditProperty(listing.MLSNum);
@@ -315,7 +317,7 @@ namespace Husa.Uploader.Core.Services
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Updating the media of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
-                await this.Login();
+                await this.Login(listing.CompanyId);
                 Thread.Sleep(1000);
 
                 this.EditProperty(listing.MLSNum);
@@ -346,7 +348,7 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Updating the completion date of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
 
-                await this.Login();
+                await this.Login(listing.CompanyId);
                 Thread.Sleep(1000);
 
                 this.EditProperty(listing.MLSNum);
@@ -381,7 +383,7 @@ namespace Husa.Uploader.Core.Services
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Updating the open house information of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
-                await this.Login();
+                await this.Login(listing.CompanyId);
                 Thread.Sleep(1000);
 
                 this.EditProperty(listing.MLSNum);
@@ -429,7 +431,7 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Updating the virtual tours of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
 
-                await this.Login();
+                await this.Login(listing.CompanyId);
 
                 this.EditProperty(listing.MLSNum);
 

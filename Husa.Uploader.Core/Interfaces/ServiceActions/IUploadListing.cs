@@ -14,7 +14,7 @@ namespace Husa.Uploader.Core.Interfaces.ServiceActions
 
         Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default);
 
-        Task<LoginResult> Login();
+        Task<LoginResult> Login(Guid companyId);
 
         UploadResult Logout();
 
