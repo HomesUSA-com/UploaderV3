@@ -15,6 +15,7 @@ namespace Husa.Uploader.Data.Entities
         public bool IsNewListing => string.IsNullOrWhiteSpace(this.MLSNum);
         public string CommunityName { get; set; }
         public string CompanyName { get; set; }
+        public Guid CompanyId { get; set; }
         public Guid ResidentialListingRequestID { get; set; }
         public Guid ResidentialListingID { get; set; }
         public short? SysStatusID { get; set; }
