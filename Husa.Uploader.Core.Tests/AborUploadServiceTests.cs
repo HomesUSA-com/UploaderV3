@@ -231,6 +231,7 @@ namespace Husa.Uploader.Core.Tests
         {
             // Arrange
             this.SetUpCredentials();
+            this.SetUpCompany();
             var openHouses = new List<OpenHouseRequest>()
             {
                 new OpenHouseRequest()
