@@ -1,0 +1,475 @@
+namespace Husa.Uploader.Core.Tests
+{
+    using System;
+    using System.Threading.Tasks;
+    using Husa.CompanyServicesManager.Api.Client.Interfaces;
+    using Husa.CompanyServicesManager.Api.Contracts.Response;
+    using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Sabor.Api.Contracts.Response;
+    using Husa.Quicklister.Sabor.Api.Contracts.Response.ListingRequest.SaleRequest;
+    using Husa.Quicklister.Sabor.Api.Contracts.Response.SalePropertyDetail;
+    using Husa.Quicklister.Sabor.Domain.Enums;
+    using Husa.Quicklister.Sabor.Domain.Enums.Domain;
+    using Husa.Uploader.Core.Interfaces;
+    using Husa.Uploader.Core.Services;
+    using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.MarketRequests;
+    using Husa.Uploader.Data.Interfaces;
+    using Microsoft.Extensions.Logging;
+    using Moq;
+    using OpenQA.Selenium;
+    using Xunit;
+    using AddressInfoResponse = Husa.Quicklister.Sabor.Api.Contracts.Response.SalePropertyDetail.AddressInfoResponse;
+    using UploadResult = Husa.Uploader.Crosscutting.Enums.UploadResult;
+
+    [Collection(nameof(ApplicationServicesFixture))]
+    public class SaborUploadServiceTests
+    {
+        private readonly Mock<IUploaderClient> uploaderClient = new();
+        private readonly Mock<IMediaRepository> mediaRepository = new();
+        private readonly Mock<IListingRequestRepository> sqlDataLoader = new();
+        private readonly Mock<IServiceSubscriptionClient> serviceSubscriptionClient = new();
+        private readonly Mock<ILogger<SaborUploadService>> logger = new();
+        private readonly Mock<Models.UploadCommandInfo> uploadCommandInfo = new();
+        private readonly ApplicationServicesFixture fixture;
+
+        public SaborUploadServiceTests(ApplicationServicesFixture fixture)
+        {
+            this.fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
+            this.uploaderClient.SetupAllProperties();
+        }
+
+        [Fact]
+        public async Task UploadSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            this.SetUpVirtualTours();
+            var listingSale = GetListingRequestDetailResponse();
+            var saborListing = new SaborListingRequest(listingSale).CreateFromApiResponseDetail();
+            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).SendKeys(It.IsAny<string>()));
+            this.uploaderClient.SetupGet(x => x.UploadInformation).Returns(this.uploadCommandInfo.Object);
+            this.uploaderClient.Setup(x => x.WaitUntilElementDisappears(
+                It.Is<By>(x => x == By.ClassName("fileupload-progress")),
+                It.IsAny<CancellationToken>())).Returns(true);
+
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(saborListing);
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.Upload(saborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UploadFails()
+        {
+            // Arrange
+            var sut = this.GetSut();
+
+            // Act && Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.Upload((SaborListingRequest)null));
+        }
+
+        [Fact]
+        public async Task LoginWithNoCredentialsUseDefaultSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany(null, null);
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.Login(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(LoginResult.Logged, result);
+        }
+
+        [Fact]
+        public async Task LoginWithCredentialsSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.Login(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(LoginResult.Logged, result);
+        }
+
+        [Fact]
+        public async Task LoginInOtherElement()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            this.uploaderClient.Setup(x => x.WaitUntilElementIsDisplayed(
+                It.Is<By>(i => i == By.Name("go")), It.IsAny<CancellationToken>())).Throws<InvalidOperationException>();
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.Login(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(LoginResult.Logged, result);
+        }
+
+        [Fact]
+        public async Task UploadVirtualTourSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpVirtualTours();
+            this.SetUpCompany();
+            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse());
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(saborListing);
+            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
+            this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
+            this.uploaderClient.Setup(x => x.SwitchTo().Frame(It.IsAny<int>())).Returns(new Mock<IWebDriver>().Object);
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.UploadVirtualTour(saborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UploadVirtualTourNoVirtualToursSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse());
+            this.mediaRepository
+                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(Array.Empty<ResidentialListingVirtualTour>())
+            .Verifiable();
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(saborListing);
+            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
+            this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
+            this.uploaderClient.Setup(x => x.SwitchTo().Frame(It.IsAny<int>())).Returns(new Mock<IWebDriver>().Object);
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.UploadVirtualTour(saborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UploadVirtualTourFails()
+        {
+            // Arrange
+            var sut = this.GetSut();
+
+            // Act and Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.UploadVirtualTour((SaborListingRequest)null));
+        }
+
+        [Fact]
+        public async Task UpdateCompletionDateSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse())
+            {
+                MLSNum = "MLSNum",
+            };
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(saborListing);
+            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
+            this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.UpdateCompletionDate(saborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UpdateCompletionDateFails()
+        {
+            // Arrange
+            var sut = this.GetSut();
+
+            // Act and Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.UpdateCompletionDate((SaborListingRequest)null));
+        }
+
+        [Fact]
+        public async Task UpdateStatusSoldSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse())
+            {
+                ListStatus = "SLD",
+                ClosedDate = DateTime.UtcNow,
+            };
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(saborListing);
+            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
+            this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
+            this.uploaderClient.Setup(x => x.SwitchTo().Frame(It.IsAny<int>())).Returns(new Mock<IWebDriver>().Object);
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.UpdateStatus(saborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UpdatePriceSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse())
+            {
+                ListPrice = 100,
+            };
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(saborListing);
+            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
+            this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
+            this.uploaderClient.Setup(x => x.SwitchTo().Frame(It.IsAny<int>())).Returns(new Mock<IWebDriver>().Object);
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.UpdatePrice(saborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UpdateImagesSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse());
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(saborListing);
+            this.uploaderClient.Setup(x => x.WaitUntilElementDisappears(
+                It.Is<By>(x => x == By.ClassName("fileupload-progress")),
+                It.IsAny<CancellationToken>())).Returns(true);
+            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
+            this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
+            this.uploaderClient.SetupGet(x => x.UploadInformation).Returns(this.uploadCommandInfo.Object);
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.UpdateImages(saborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task EditListingSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse());
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(saborListing);
+            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
+            this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
+            this.uploaderClient.SetupGet(x => x.UploadInformation).Returns(this.uploadCommandInfo.Object);
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.Edit(saborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UpdateOpenHouseSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse())
+            {
+                MLSNum = "mlsNum",
+            };
+
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(saborListing);
+            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
+            this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.UpdateOpenHouse(saborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        private static ResidentialListingVirtualTour GetResidentialListingVirtualTour()
+        {
+            var id = Guid.NewGuid();
+            return new()
+            {
+                Id = id,
+                MediaUri = new Uri("https://test.org/" + id.ToString()),
+            };
+        }
+
+        private static ListingSaleRequestDetailResponse GetListingRequestDetailResponse()
+        {
+            var spacesDimensionsInfo = new Mock<SpacesDimensionsResponse>();
+            var addressInfo = new AddressInfoResponse()
+            {
+                City = Cities.Abilene,
+                County = Counties.Atascosa,
+                State = States.Texas,
+            };
+            var propertyInfo = new PropertyInfoResponse()
+            {
+                ConstructionStage = ConstructionStage.Incomplete,
+                ConstructionCompletionDate = DateTime.Now,
+            };
+            var featuresInfo = new Mock<FeaturesResponse>();
+            var financialInfo = new FinancialResponse()
+            {
+                TaxRate = 1000,
+                TaxYear = 2018,
+                BuyersAgentCommission = 10,
+                BuyersAgentCommissionType = Quicklister.Extensions.Domain.Enums.CommissionType.Amount,
+            };
+            var schoolsInfo = new SchoolsResponse()
+            {
+                ElementarySchool = ElementarySchool.Adams,
+                HighSchool = HighSchool.Johnson,
+                MiddleSchool = MiddleSchool.CalallenMiddleSchool,
+                SchoolDistrict = SchoolDistrict.AlamoHeightsISD,
+            };
+            var showingInfo = new Mock<ShowingResponse>();
+            var salePropertyInfo = new SalePropertyResponse()
+            {
+                OwnerName = "OwnerName",
+                PlanName = "PlanName",
+                CompanyId = Guid.NewGuid(),
+                CommunityId = Guid.NewGuid(),
+                PlanId = Guid.NewGuid(),
+            };
+            var roomInfo = new RoomResponse()
+            {
+                Id = Guid.NewGuid(),
+                Level = RoomLevel.MainLevel,
+                RoomType = RoomType.Office,
+                Length = 100,
+                Width = 100,
+            };
+            var saleProperty = new SalePropertyDetailResponse()
+            {
+                SpacesDimensionsInfo = spacesDimensionsInfo.Object,
+                AddressInfo = addressInfo,
+                PropertyInfo = propertyInfo,
+                FeaturesInfo = featuresInfo.Object,
+                FinancialInfo = financialInfo,
+                SchoolsInfo = schoolsInfo,
+                ShowingInfo = showingInfo.Object,
+                SalePropertyInfo = salePropertyInfo,
+                Rooms = new List<RoomResponse>()
+                {
+                    roomInfo,
+                },
+            };
+
+            var statusFields = new Mock<ListingSaleStatusFieldsResponse>();
+
+            var listingSale = new ListingSaleRequestDetailResponse()
+            {
+                SaleProperty = saleProperty,
+                ListPrice = 127738,
+                StatusFieldsInfo = statusFields.Object,
+                Id = Guid.NewGuid(),
+                ListingSaleId = Guid.NewGuid(),
+                LockedStatus = Quicklister.Extensions.Domain.Enums.LockedStatus.NoLocked,
+                MlsStatus = MarketStatuses.Active,
+            };
+
+            return listingSale;
+        }
+
+        private void SetUpCredentials()
+        {
+            this.serviceSubscriptionClient
+                .Setup(x => x.Corporation.GetMarketReverseProspectInformation(It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ReverseProspectInfoResponse()
+                {
+                    UserName = "UserName",
+                    Password = "password",
+                })
+            .Verifiable();
+        }
+
+        private void SetUpCompany(string username = "username", string password = "password")
+        {
+            var company = new CompanyDetail()
+            {
+                BrokerInfo = new BrokerInfoResponse()
+                {
+                    SiteUsername = username,
+                    SitePassword = password,
+                },
+            };
+            this.serviceSubscriptionClient
+                .Setup(x => x.Company.GetCompany(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(company);
+        }
+
+        private void SetUpVirtualTours()
+        {
+            this.mediaRepository
+                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ResidentialListingVirtualTour[] { GetResidentialListingVirtualTour(), GetResidentialListingVirtualTour() })
+            .Verifiable();
+        }
+
+        private SaborUploadService GetSut()
+            => new(
+                this.uploaderClient.Object,
+                this.fixture.ApplicationOptions,
+                this.mediaRepository.Object,
+                this.sqlDataLoader.Object,
+                this.serviceSubscriptionClient.Object,
+                this.logger.Object);
+    }
+}
