@@ -358,11 +358,7 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(1000);
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
                 Thread.Sleep(1000);
-                this.uploaderClient.ExecuteScript(
-                    script: "jQuery('#dcModal >.modal-dialog > .modal-content > .modal-body > .inner-modal-body >div > button:contains(\"Edit Listing Details\") ')[0].click();",
-                    isScriptOptional: true);
-
-                this.uploaderClient.ExecuteScript("clearPicklist('MISCELANEStable');selectVals('MISCELANES');;closeDiv();");
+                this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[2].click();");
                 this.FillRemarksInformation(listing as SaborListingRequest, isCompletionUpdate: true);
 
                 return UploadResult.Success;
