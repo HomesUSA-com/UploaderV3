@@ -103,6 +103,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.BuilderName = saleProperty.OwnerName;
                 residentialListingRequest.CompanyName = saleProperty.OwnerName;
                 residentialListingRequest.OwnerName = saleProperty.OwnerName;
+                residentialListingRequest.CompanyId = saleProperty.CompanyId;
                 residentialListingRequest.PlanProfileName = saleProperty.PlanName;
             }
 

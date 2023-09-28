@@ -39,6 +39,7 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             this.SetUpCredentials();
             this.SetUpVirtualTours();
+            this.SetUpCompany();
 
             var listingSale = GetListingRequestDetailResponse();
             var aborListing = new AborListingRequest(listingSale).CreateFromApiResponseDetail();
@@ -70,6 +71,7 @@ namespace Husa.Uploader.Core.Tests
         {
             this.SetUpCredentials();
             this.SetUpVirtualTours();
+            this.SetUpCompany();
             var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
 
             // Act
@@ -85,6 +87,7 @@ namespace Husa.Uploader.Core.Tests
         {
             // Arrange
             this.SetUpCredentials();
+            this.SetUpCompany();
             this.mediaRepository
                 .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ResidentialListingVirtualTour[0])
@@ -114,6 +117,7 @@ namespace Husa.Uploader.Core.Tests
         {
             // Arrange
             this.SetUpCredentials();
+            this.SetUpCompany();
             var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
             aborListing.MLSNum = "MLSNum";
             this.sqlDataLoader
@@ -133,6 +137,7 @@ namespace Husa.Uploader.Core.Tests
         {
             // Arrange
             this.SetUpCredentials();
+            this.SetUpCompany();
             var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
             aborListing.ListStatus = "Hold";
             aborListing.BackOnMarketDate = DateTime.Now;
@@ -154,6 +159,7 @@ namespace Husa.Uploader.Core.Tests
         {
             // Arrange
             this.SetUpCredentials();
+            this.SetUpCompany();
             var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
             aborListing.ListStatus = "Pending";
             aborListing.PendingDate = DateTime.Now;
@@ -177,6 +183,7 @@ namespace Husa.Uploader.Core.Tests
         {
             // Arrange
             this.SetUpCredentials();
+            this.SetUpCompany();
             var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
             aborListing.ListStatus = "Closed";
             aborListing.PendingDate = DateTime.Now;
@@ -198,6 +205,7 @@ namespace Husa.Uploader.Core.Tests
         {
             // Arrange
             this.SetUpCredentials();
+            this.SetUpCompany();
             var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
             aborListing.ListStatus = "ActiveUnderContract";
             aborListing.PendingDate = DateTime.Now;
@@ -214,6 +222,21 @@ namespace Husa.Uploader.Core.Tests
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task LoginWithNoCredentials_UseDefaultSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany(null, null);
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.Login(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(LoginResult.Logged, result);
         }
 
         private static ResidentialListingVirtualTour GetResidentialListingVirtualTour()
@@ -251,6 +274,7 @@ namespace Husa.Uploader.Core.Tests
             {
                 OwnerName = "OwnerName",
                 PlanName = "PlanName",
+                CompanyId = Guid.NewGuid(),
             };
             var roomInfo = new AborResponse.RoomResponse()
             {
@@ -310,6 +334,21 @@ namespace Husa.Uploader.Core.Tests
                 .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ResidentialListingVirtualTour[] { GetResidentialListingVirtualTour(), GetResidentialListingVirtualTour() })
             .Verifiable();
+        }
+
+        private void SetUpCompany(string username = "username", string password = "password")
+        {
+            var company = new CompanyDetail()
+            {
+                BrokerInfo = new BrokerInfoResponse()
+                {
+                    SiteUsername = username,
+                    SitePassword = password,
+                },
+            };
+            this.serviceSubscriptionClient
+                .Setup(x => x.Company.GetCompany(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(company);
         }
 
         private AborUploadService GetSut()
