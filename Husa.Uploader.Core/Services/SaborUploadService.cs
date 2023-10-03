@@ -1402,69 +1402,34 @@ namespace Husa.Uploader.Core.Services
         private void AddOpenHouses(ResidentialListingRequest listing)
         {
             const string tabName = "Add Open House";
-            var nextDates = OpenHouseExtensions.GetNextDate(max: 4);
             Thread.Sleep(1000);
             var openHouseType = "O";
-
-            foreach (var nextDate in nextDates)
+            foreach (var openHouse in listing.OpenHouse)
             {
                 this.uploaderClient.ClickOnElementById(elementId: "addTourLink");
                 Thread.Sleep(1000);
 
                 this.uploaderClient.SwitchToLast();
-
                 Thread.Sleep(1000);
+                this.uploaderClient.ClickOnElementById(elementId: $"type{openHouseType}");
 
-                var day = nextDate.DayOfWeek.ToString()[..3];
+                this.uploaderClient.WriteTextbox(By.Id("dayOfEvent"), entry: openHouse.Date); // Date
+                this.uploaderClient.SetSelect(By.Id("startTimeHour"), value: OpenHouseExtensions.GetOpenHouseHours(openHouse.StartTime.To12Format()), fieldLabel: "Start Time Hour", tabName);
+                this.uploaderClient.SetSelect(By.Id("startTimeMin"), value: openHouse.StartTime.Minutes.ToString(), fieldLabel: "Start Time Min", tabName);
+                var fromTimeTT = openHouse.StartTime.Hours >= 12 ? "PM" : "AM";
+                this.uploaderClient.SetSelect(By.Id("startTimeAmPm"), value: fromTimeTT, fieldLabel: "Start Time AM/PM", fieldSection: tabName);
 
-                var openHouseStartTimeInfo = listing.GetType().GetProperty($"OHStartTime{day}").GetValue(listing, null).ToString();
-                var openHouseStart = OpenHouseExtensions.GetOpenHouseTime(
-                    openHouseStartTimeInfo,
-                    type: TypeOpenHouseHour.START,
-                    changeOHHours: listing.ChangeOpenHouseHours.HasValue && listing.ChangeOpenHouseHours.Value);
+                this.uploaderClient.SetSelect(By.Id("stopTimeHour"), value: OpenHouseExtensions.GetOpenHouseHours(openHouse.EndTime.To12Format()), fieldLabel: "End Time Hour", tabName);
+                this.uploaderClient.SetSelect(By.Id("stopTimeMin"), value: openHouse.EndTime.Minutes.ToString(), fieldLabel: "End Time Min", tabName);
+                var endTimeTT = openHouse.EndTime.Hours >= 12 ? "PM" : "AM";
+                this.uploaderClient.SetSelect(By.Id("stopTimeAmPm"), value: endTimeTT, fieldLabel: "End Time AM/PM", fieldSection: tabName);
 
-                var openHouseEndTimeInfo = listing.GetType().GetProperty($"OHEndTime{day}").GetValue(listing, null).ToString();
-                var openHouseEnd = OpenHouseExtensions.GetOpenHouseTime(
-                    openHouseEndTimeInfo,
-                    type: TypeOpenHouseHour.END,
-                    changeOHHours: listing.ChangeOpenHouseHours.HasValue && listing.ChangeOpenHouseHours.Value);
+                this.uploaderClient.ClickOnElementById(elementId: $"lunch{openHouse.Lunch}");
 
-                // Date
-                this.uploaderClient.WriteTextbox(By.Id("dayOfEvent"), entry: nextDate.ToString("MM/dd/yyyy"));
+                this.uploaderClient.ClickOnElementById(elementId: $"refreshments{openHouse.Refreshments}");
+                Thread.Sleep(2000);
 
-                // Start Time
-                this.uploaderClient.SetSelect(By.Id("startTimeHour"), value: OpenHouseExtensions.GetOpenHouseTimeHours(openHouseStart), fieldLabel: "Start Time Hour", tabName);
-                this.uploaderClient.SetSelect(By.Id("startTimeMin"), value: OpenHouseExtensions.GetOpenHouseTimeMinutes(openHouseStart), fieldLabel: "Start Time Min", tabName);
-                this.uploaderClient.SetSelect(By.Id("startTimeAmPm"), value: openHouseStart[1], fieldLabel: "Start Time AM/PM", fieldSection: tabName);
-
-                // Stop Time
-                this.uploaderClient.SetSelect(By.Id("stopTimeHour"), value: OpenHouseExtensions.GetOpenHouseTimeHours(openHouseEnd), fieldLabel: "End Time Hour", tabName);
-                this.uploaderClient.SetSelect(By.Id("stopTimeMin"), value: OpenHouseExtensions.GetOpenHouseTimeMinutes(openHouseEnd), fieldLabel: "End Time Min", tabName);
-                this.uploaderClient.SetSelect(By.Id("stopTimeAmPm"), value: openHouseEnd[1], fieldLabel: "End Time AM/PM", fieldSection: tabName);
-
-                var lunchInfo = listing
-                    .GetType()
-                    .GetProperty($"OHLunch{day}")
-                    .GetValue(listing, index: null);
-
-                var refreshmentInfo = listing
-                        .GetType()
-                        .GetProperty($"OHRefreshments{day}")
-                        .GetValue(listing, index: null);
-
-                if (lunchInfo != null && refreshmentInfo != null)
-                {
-                    // Type
-                    this.uploaderClient.ClickOnElementById(elementId: $"type{openHouseType}");
-
-                    // Lunch
-                    this.uploaderClient.ClickOnElementById(elementId: $"lunch{lunchInfo}");
-
-                    // Refreshments
-                    this.uploaderClient.ClickOnElementById(elementId: $"refreshments{refreshmentInfo}");
-                }
-
-                this.uploaderClient.ClickOnElementById(elementId: " Save ");
+                this.uploaderClient.ExecuteScript(script: "jQuery('.button.Save').click();");
                 Thread.Sleep(2000);
 
                 var window = this.uploaderClient.WindowHandles.FirstOrDefault();
@@ -1472,7 +1437,6 @@ namespace Husa.Uploader.Core.Services
             }
 
             Thread.Sleep(1000);
-            this.uploaderClient.ExecuteScript("saveTours(this);");
         }
     }
 }

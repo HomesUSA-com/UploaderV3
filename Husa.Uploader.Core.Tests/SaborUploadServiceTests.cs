@@ -5,14 +5,16 @@ namespace Husa.Uploader.Core.Tests
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common.Enums;
+    // using Husa.Quicklister.Abor.Domain.Enums.Domain;
     using Husa.Quicklister.Sabor.Api.Contracts.Response;
     using Husa.Quicklister.Sabor.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.Sabor.Api.Contracts.Response.SalePropertyDetail;
     using Husa.Quicklister.Sabor.Domain.Enums;
-    using Husa.Quicklister.Sabor.Domain.Enums.Domain;
+    // using Husa.Quicklister.Sabor.Domain.Enums.Domain;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Interfaces;
@@ -321,11 +323,32 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
+            var openHouses = new List<OpenHouseRequest>()
+            {
+                new OpenHouseRequest()
+                {
+                    StartTime = new TimeSpan(14, 0, 0),
+                    EndTime = new TimeSpan(16, 0, 0),
+                    Date = OpenHouseExtensions.GetNextWeekday(DateTime.Today, DayOfWeek.Monday),
+                    Active = true,
+                    Refreshments = "Y",
+                    Lunch = "Y",
+                },
+                new OpenHouseRequest()
+                {
+                    StartTime = new TimeSpan(10, 0, 0),
+                    EndTime = new TimeSpan(15, 0, 0),
+                    Date = OpenHouseExtensions.GetNextWeekday(DateTime.Today, DayOfWeek.Thursday),
+                    Active = true,
+                    Refreshments = "Y",
+                    Lunch = "N",
+                },
+            };
             var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse())
             {
                 MLSNum = "mlsNum",
+                OpenHouse = openHouses,
             };
-
             this.sqlDataLoader
                 .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(saborListing);
@@ -355,13 +378,13 @@ namespace Husa.Uploader.Core.Tests
             var spacesDimensionsInfo = new Mock<SpacesDimensionsResponse>();
             var addressInfo = new AddressInfoResponse()
             {
-                City = Cities.Abilene,
-                County = Counties.Atascosa,
+                City = Quicklister.Sabor.Domain.Enums.Domain.Cities.Abilene,
+                County = Quicklister.Sabor.Domain.Enums.Domain.Counties.Atascosa,
                 State = States.Texas,
             };
             var propertyInfo = new PropertyInfoResponse()
             {
-                ConstructionStage = ConstructionStage.Incomplete,
+                ConstructionStage = Quicklister.Sabor.Domain.Enums.ConstructionStage.Incomplete,
                 ConstructionCompletionDate = DateTime.Now,
             };
             var featuresInfo = new Mock<FeaturesResponse>();
@@ -374,10 +397,10 @@ namespace Husa.Uploader.Core.Tests
             };
             var schoolsInfo = new SchoolsResponse()
             {
-                ElementarySchool = ElementarySchool.Adams,
-                HighSchool = HighSchool.Johnson,
-                MiddleSchool = MiddleSchool.CalallenMiddleSchool,
-                SchoolDistrict = SchoolDistrict.AlamoHeightsISD,
+                ElementarySchool = Quicklister.Sabor.Domain.Enums.Domain.ElementarySchool.Adams,
+                HighSchool = Quicklister.Sabor.Domain.Enums.Domain.HighSchool.Johnson,
+                MiddleSchool = Quicklister.Sabor.Domain.Enums.Domain.MiddleSchool.CalallenMiddleSchool,
+                SchoolDistrict = Quicklister.Sabor.Domain.Enums.Domain.SchoolDistrict.AlamoHeightsISD,
             };
             var showingInfo = new Mock<ShowingResponse>();
             var salePropertyInfo = new SalePropertyResponse()
@@ -391,7 +414,7 @@ namespace Husa.Uploader.Core.Tests
             var roomInfo = new RoomResponse()
             {
                 Id = Guid.NewGuid(),
-                Level = RoomLevel.MainLevel,
+                Level = Quicklister.Sabor.Domain.Enums.Domain.RoomLevel.MainLevel,
                 RoomType = RoomType.Office,
                 Length = 100,
                 Width = 100,

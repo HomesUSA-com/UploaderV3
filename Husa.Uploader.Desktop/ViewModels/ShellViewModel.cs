@@ -561,9 +561,9 @@ namespace Husa.Uploader.Desktop.ViewModels
                     return false;
                 }
 
-                var isPending = this.SelectedListingRequest.FullListing.ListStatus == "Pending";
+                var isPending = this.SelectedListingRequest.FullListing.ListStatus == "Pending" || this.SelectedListingRequest.FullListing.ListStatus == "PND";
                 var enableInPending = isPending && this.SelectedListingRequest.FullListing.AllowPendingList;
-                var isActive = this.SelectedListingRequest.FullListing.ListStatus == "Active";
+                var isActive = this.SelectedListingRequest.FullListing.ListStatus == "Active" || this.SelectedListingRequest.FullListing.ListStatus == "ACT";
                 return !this.SelectedListingRequest.FullListing.IsNewListing
                     && this.SelectedListingRequest.FullListing.EnableOpenHouse
                     && (isActive || enableInPending);
