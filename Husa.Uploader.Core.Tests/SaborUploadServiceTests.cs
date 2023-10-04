@@ -363,6 +363,14 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(UploadResult.Success, result);
         }
 
+        [Fact]
+        public void TestGetOpenHouseHours()
+        {
+            var result = OpenHouseExtensions.GetOpenHouseHours("10:30");
+
+            Assert.Equal("10", result);
+        }
+
         private static ResidentialListingVirtualTour GetResidentialListingVirtualTour()
         {
             var id = Guid.NewGuid();
