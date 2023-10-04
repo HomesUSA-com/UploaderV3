@@ -116,6 +116,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.CompanyName = salePropertyInfo.OwnerName;
                 residentialListingRequest.OwnerName = salePropertyInfo.OwnerName;
                 residentialListingRequest.PlanProfileName = salePropertyInfo.PlanName;
+                residentialListingRequest.CompanyId = salePropertyInfo.CompanyId;
             }
 
             void FillAddressInfo(AddressInfoResponse addressInfo)

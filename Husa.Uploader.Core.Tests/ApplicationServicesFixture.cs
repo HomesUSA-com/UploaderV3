@@ -32,17 +32,17 @@ namespace Husa.Uploader.Core.Tests
             {
                 Ctx = new()
                 {
-                    IsEnabled = false,
+                    IsEnabled = true,
                     MarketCode = MarketCode.CTX,
-                    LoginUrl = "https://localhost/sabor-login",
-                    LogoutUrl = "https://localhost/sabor-logout",
+                    LoginUrl = "https://localhost/ctx-login",
+                    LogoutUrl = "https://localhost/ctx-logout",
                 },
                 Sabor = new()
                 {
                     IsEnabled = true,
                     MarketCode = MarketCode.SanAntonio,
-                    LoginUrl = "https://localhost/ctx-login",
-                    LogoutUrl = "https://localhost/ctx-logout",
+                    LoginUrl = "https://localhost/sabor-login",
+                    LogoutUrl = "https://localhost/sabor-logout",
                 },
                 Abor = new()
                 {

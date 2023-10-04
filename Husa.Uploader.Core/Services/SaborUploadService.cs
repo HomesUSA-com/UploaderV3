@@ -5,6 +5,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Extensions.Common.Enums;
     using Husa.Extensions.Common.Exceptions;
     using Husa.Uploader.Core.Interfaces;
+    using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
@@ -67,26 +68,27 @@ namespace Husa.Uploader.Core.Services
             return UploadResult.Success;
         }
 
-        public async Task<LoginResult> Login()
+        public async Task<LoginResult> Login(Guid companyId)
         {
+            var company = await this.serviceSubscriptionClient.Company.GetCompany(companyId);
             var credentialsTask = this.serviceSubscriptionClient.Corporation.GetMarketReverseProspectInformation(this.CurrentMarket);
             var marketInfo = this.options.MarketInfo.Sabor;
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
             try
             {
-                var marketCredentials = await credentialsTask;
+                var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
                 try
                 {
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("go"));
-                    this.uploaderClient.WriteTextbox(By.Id("j_username"), marketCredentials.UserName);
-                    this.uploaderClient.WriteTextbox(By.Id("j_password"), marketCredentials.Password);
+                    this.uploaderClient.WriteTextbox(By.Id("j_username"), credentials[LoginCredentials.Username]);
+                    this.uploaderClient.WriteTextbox(By.Id("j_password"), credentials[LoginCredentials.Password]);
                     this.uploaderClient.ClickOnElementByName(elementName: "go");
                 }
                 catch
                 {
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("login"));
-                    this.uploaderClient.WriteTextbox(By.Id("userid"), marketCredentials.UserName);
-                    this.uploaderClient.WriteTextbox(By.Id("password"), marketCredentials.Password);
+                    this.uploaderClient.WriteTextbox(By.Id("userid"), credentials[LoginCredentials.Username]);
+                    this.uploaderClient.WriteTextbox(By.Id("password"), credentials[LoginCredentials.Password]);
                     this.uploaderClient.SubmitForm(By.Name("login"));
                 }
 
@@ -130,7 +132,7 @@ namespace Husa.Uploader.Core.Services
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-                await this.Login();
+                await this.Login(listing.CompanyId);
                 if (this.uploaderClient.UploadInformation.IsNewListing)
                 {
                     this.uploaderClient.ClickOnElementById("newlistingLink");
@@ -167,7 +169,7 @@ namespace Husa.Uploader.Core.Services
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: listing.IsNewListing);
-                await this.Login();
+                await this.Login(listing.CompanyId);
                 if (listing.IsNewListing)
                 {
                     this.uploaderClient.ClickOnElementById("newlistingLink");
@@ -215,7 +217,7 @@ namespace Husa.Uploader.Core.Services
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 const string tabName = "General";
                 this.logger.LogInformation("Updating the status of the listing {requestId} in the {tabName} tab.", listing.ResidentialListingRequestID, tabName);
-                await this.Login();
+                await this.Login(listing.CompanyId);
                 Thread.Sleep(1000);
 
                 this.EditProperty(listing.MLSNum);
@@ -271,7 +273,7 @@ namespace Husa.Uploader.Core.Services
             {
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Updating the price of the listing {requestId} to {listPrice}.", listing.ResidentialListingRequestID, listing.ListPrice);
-                await this.Login();
+                await this.Login(listing.CompanyId);
                 Thread.Sleep(1000);
 
                 this.EditProperty(listing.MLSNum);
@@ -315,7 +317,7 @@ namespace Husa.Uploader.Core.Services
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Updating the media of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
-                await this.Login();
+                await this.Login(listing.CompanyId);
                 Thread.Sleep(1000);
 
                 this.EditProperty(listing.MLSNum);
@@ -346,7 +348,7 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Updating the completion date of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
 
-                await this.Login();
+                await this.Login(listing.CompanyId);
                 Thread.Sleep(1000);
 
                 this.EditProperty(listing.MLSNum);
@@ -356,11 +358,7 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(1000);
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
                 Thread.Sleep(1000);
-                this.uploaderClient.ExecuteScript(
-                    script: "jQuery('#dcModal >.modal-dialog > .modal-content > .modal-body > .inner-modal-body >div > button:contains(\"Edit Listing Details\") ')[0].click();",
-                    isScriptOptional: true);
-
-                this.uploaderClient.ExecuteScript("clearPicklist('MISCELANEStable');selectVals('MISCELANES');;closeDiv();");
+                this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[2].click();");
                 this.FillRemarksInformation(listing as SaborListingRequest, isCompletionUpdate: true);
 
                 return UploadResult.Success;
@@ -381,7 +379,7 @@ namespace Husa.Uploader.Core.Services
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken) ?? throw new NotFoundException<ResidentialListingRequest>(listing.ResidentialListingRequestID);
                 this.logger.LogInformation("Updating the open house information of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
-                await this.Login();
+                await this.Login(listing.CompanyId);
                 Thread.Sleep(1000);
 
                 this.EditProperty(listing.MLSNum);
@@ -429,7 +427,7 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Updating the virtual tours of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
 
-                await this.Login();
+                await this.Login(listing.CompanyId);
 
                 this.EditProperty(listing.MLSNum);
 
@@ -1404,69 +1402,34 @@ namespace Husa.Uploader.Core.Services
         private void AddOpenHouses(ResidentialListingRequest listing)
         {
             const string tabName = "Add Open House";
-            var nextDates = OpenHouseExtensions.GetNextDate(max: 4);
             Thread.Sleep(1000);
             var openHouseType = "O";
-
-            foreach (var nextDate in nextDates)
+            foreach (var openHouse in listing.OpenHouse)
             {
                 this.uploaderClient.ClickOnElementById(elementId: "addTourLink");
                 Thread.Sleep(1000);
 
                 this.uploaderClient.SwitchToLast();
-
                 Thread.Sleep(1000);
+                this.uploaderClient.ClickOnElementById(elementId: $"type{openHouseType}");
 
-                var day = nextDate.DayOfWeek.ToString()[..3];
+                this.uploaderClient.WriteTextbox(By.Id("dayOfEvent"), entry: openHouse.Date); // Date
+                this.uploaderClient.SetSelect(By.Id("startTimeHour"), value: OpenHouseExtensions.GetOpenHouseHours(openHouse.StartTime.To12Format()), fieldLabel: "Start Time Hour", tabName);
+                this.uploaderClient.SetSelect(By.Id("startTimeMin"), value: openHouse.StartTime.Minutes.ToString(), fieldLabel: "Start Time Min", tabName);
+                var fromTimeTT = openHouse.StartTime.Hours >= 12 ? "PM" : "AM";
+                this.uploaderClient.SetSelect(By.Id("startTimeAmPm"), value: fromTimeTT, fieldLabel: "Start Time AM/PM", fieldSection: tabName);
 
-                var openHouseStartTimeInfo = listing.GetType().GetProperty($"OHStartTime{day}").GetValue(listing, null).ToString();
-                var openHouseStart = OpenHouseExtensions.GetOpenHouseTime(
-                    openHouseStartTimeInfo,
-                    type: TypeOpenHouseHour.START,
-                    changeOHHours: listing.ChangeOpenHouseHours.HasValue && listing.ChangeOpenHouseHours.Value);
+                this.uploaderClient.SetSelect(By.Id("stopTimeHour"), value: OpenHouseExtensions.GetOpenHouseHours(openHouse.EndTime.To12Format()), fieldLabel: "End Time Hour", tabName);
+                this.uploaderClient.SetSelect(By.Id("stopTimeMin"), value: openHouse.EndTime.Minutes.ToString(), fieldLabel: "End Time Min", tabName);
+                var endTimeTT = openHouse.EndTime.Hours >= 12 ? "PM" : "AM";
+                this.uploaderClient.SetSelect(By.Id("stopTimeAmPm"), value: endTimeTT, fieldLabel: "End Time AM/PM", fieldSection: tabName);
 
-                var openHouseEndTimeInfo = listing.GetType().GetProperty($"OHEndTime{day}").GetValue(listing, null).ToString();
-                var openHouseEnd = OpenHouseExtensions.GetOpenHouseTime(
-                    openHouseEndTimeInfo,
-                    type: TypeOpenHouseHour.END,
-                    changeOHHours: listing.ChangeOpenHouseHours.HasValue && listing.ChangeOpenHouseHours.Value);
+                this.uploaderClient.ClickOnElementById(elementId: $"lunch{openHouse.Lunch}");
 
-                // Date
-                this.uploaderClient.WriteTextbox(By.Id("dayOfEvent"), entry: nextDate.ToString("MM/dd/yyyy"));
+                this.uploaderClient.ClickOnElementById(elementId: $"refreshments{openHouse.Refreshments}");
+                Thread.Sleep(2000);
 
-                // Start Time
-                this.uploaderClient.SetSelect(By.Id("startTimeHour"), value: OpenHouseExtensions.GetOpenHouseTimeHours(openHouseStart), fieldLabel: "Start Time Hour", tabName);
-                this.uploaderClient.SetSelect(By.Id("startTimeMin"), value: OpenHouseExtensions.GetOpenHouseTimeMinutes(openHouseStart), fieldLabel: "Start Time Min", tabName);
-                this.uploaderClient.SetSelect(By.Id("startTimeAmPm"), value: openHouseStart[1], fieldLabel: "Start Time AM/PM", fieldSection: tabName);
-
-                // Stop Time
-                this.uploaderClient.SetSelect(By.Id("stopTimeHour"), value: OpenHouseExtensions.GetOpenHouseTimeHours(openHouseEnd), fieldLabel: "End Time Hour", tabName);
-                this.uploaderClient.SetSelect(By.Id("stopTimeMin"), value: OpenHouseExtensions.GetOpenHouseTimeMinutes(openHouseEnd), fieldLabel: "End Time Min", tabName);
-                this.uploaderClient.SetSelect(By.Id("stopTimeAmPm"), value: openHouseEnd[1], fieldLabel: "End Time AM/PM", fieldSection: tabName);
-
-                var lunchInfo = listing
-                    .GetType()
-                    .GetProperty($"OHLunch{day}")
-                    .GetValue(listing, index: null);
-
-                var refreshmentInfo = listing
-                        .GetType()
-                        .GetProperty($"OHRefreshments{day}")
-                        .GetValue(listing, index: null);
-
-                if (lunchInfo != null && refreshmentInfo != null)
-                {
-                    // Type
-                    this.uploaderClient.ClickOnElementById(elementId: $"type{openHouseType}");
-
-                    // Lunch
-                    this.uploaderClient.ClickOnElementById(elementId: $"lunch{lunchInfo}");
-
-                    // Refreshments
-                    this.uploaderClient.ClickOnElementById(elementId: $"refreshments{refreshmentInfo}");
-                }
-
-                this.uploaderClient.ClickOnElementById(elementId: " Save ");
+                this.uploaderClient.ExecuteScript(script: "jQuery('.button.Save').click();");
                 Thread.Sleep(2000);
 
                 var window = this.uploaderClient.WindowHandles.FirstOrDefault();
@@ -1474,7 +1437,6 @@ namespace Husa.Uploader.Core.Services
             }
 
             Thread.Sleep(1000);
-            this.uploaderClient.ExecuteScript("saveTours(this);");
         }
     }
 }

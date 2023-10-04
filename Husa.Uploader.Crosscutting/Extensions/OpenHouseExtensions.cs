@@ -122,6 +122,24 @@ namespace Husa.Uploader.Crosscutting.Extensions
                 "0";
         }
 
+        public static string GetOpenHouseHours(string openHouseTimes)
+        {
+            if (openHouseTimes is null)
+            {
+                throw new ArgumentNullException(nameof(openHouseTimes));
+            }
+
+            if (!openHouseTimes.Any())
+            {
+                return "0";
+            }
+
+            var firstOpenHouseTime = openHouseTimes.Split(':').FirstOrDefault();
+            return firstOpenHouseTime != null && !firstOpenHouseTime.Equals("12", StringComparison.InvariantCultureIgnoreCase) ?
+                firstOpenHouseTime :
+                "0";
+        }
+
         public static string GetOpenHouseTimeMinutes(string[] openHouseTimes)
         {
             if (openHouseTimes is null)
