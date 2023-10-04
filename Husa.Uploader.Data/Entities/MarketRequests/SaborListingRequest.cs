@@ -3,7 +3,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
     using System.Collections.Generic;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
-    using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Quicklister.Sabor.Api.Contracts.Response;
     using Husa.Quicklister.Sabor.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.Sabor.Api.Contracts.Response.SalePropertyDetail;
@@ -32,6 +31,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
         private SaborListingRequest()
             : base()
         {
+            this.OpenHouse = new List<OpenHouseRequest>();
         }
 
         public override MarketCode MarketCode => MarketCode.SanAntonio;
@@ -57,6 +57,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             ListStatus = this.listingResponse.MlsStatus.ToStringFromEnumMember(),
             SysCreatedOn = this.listingResponse.SysCreatedOn,
             SysCreatedBy = this.listingResponse.SysCreatedBy,
+            EnableOpenHouse = this.listingResponse.EnableOpenHouse,
         };
 
         public override ResidentialListingRequest CreateFromApiResponseDetail()
@@ -247,6 +248,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.RealtorContactEmail = showingInfo.RealtorContactEmail;
                 residentialListingRequest.Directions = showingInfo.Directions;
                 residentialListingRequest.AgentPrivateRemarks = showingInfo.AgentPrivateRemarks;
+                residentialListingRequest.EnableOpenHouse = showingInfo.EnableOpenHouses;
             }
 
             void FillSchoolsInfo(SchoolsResponse schoolsInfo)
@@ -433,53 +435,18 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
                 foreach (var openHouse in openHouses)
                 {
-                    switch (openHouse.Type)
+                    this.OpenHouse.Add(new()
                     {
-                        case OpenHouseType.Saturday:
-                            //// residentialListingRequest.OHRefreshmentsSat = openHouse.Refreshments;
-                            residentialListingRequest.OHStartTimeSat = openHouse.StartTime.ToString();
-                            residentialListingRequest.OHEndTimeSat = openHouse.EndTime.ToString();
-                            //// residentialListingRequest.OHCommentsSat = openHouse.Comments;
-                            break;
-                        case OpenHouseType.Sunday:
-                            //// residentialListingRequest.OHRefreshmentsSun = openHouse.Refreshments;
-                            residentialListingRequest.OHStartTimeSun = openHouse.StartTime.ToString();
-                            residentialListingRequest.OHEndTimeSun = openHouse.EndTime.ToString();
-                            //// residentialListingRequest.OHCommentsSun = openHouse.Comments;
-                            break;
-                        case OpenHouseType.Monday:
-                            //// residentialListingRequest.OHRefreshmentsMon = openHouse.Refreshments;
-                            residentialListingRequest.OHStartTimeMon = openHouse.StartTime.ToString();
-                            residentialListingRequest.OHEndTimeMon = openHouse.EndTime.ToString();
-                            //// residentialListingRequest.OHCommentsMon = openHouse.Comments;
-                            break;
-                        case OpenHouseType.Tuesday:
-                            //// residentialListingRequest.OHRefreshmentsTue = openHouse.Refreshments;
-                            residentialListingRequest.OHStartTimeTue = openHouse.StartTime.ToString();
-                            residentialListingRequest.OHEndTimeTue = openHouse.EndTime.ToString();
-                            //// residentialListingRequest.OHCommentsTue = openHouse.Comments;
-                            break;
-                        case OpenHouseType.Wednesday:
-                            //// residentialListingRequest.OHRefreshmentsWed = openHouse.Refreshments;
-                            residentialListingRequest.OHStartTimeWed = openHouse.StartTime.ToString();
-                            residentialListingRequest.OHEndTimeWed = openHouse.EndTime.ToString();
-                            //// residentialListingRequest.OHCommentsWed = openHouse.Comments;
-                            break;
-                        case OpenHouseType.Thursday:
-                            //// residentialListingRequest.OHRefreshmentsThu = openHouse.Refreshments;
-                            residentialListingRequest.OHStartTimeThu = openHouse.StartTime.ToString();
-                            residentialListingRequest.OHEndTimeThu = openHouse.EndTime.ToString();
-                            //// residentialListingRequest.OHCommentsThu = openHouse.Comments;
-                            break;
-                        case OpenHouseType.Friday:
-                            //// residentialListingRequest.OHRefreshmentsFri = openHouse.Refreshments;
-                            residentialListingRequest.OHStartTimeFri = openHouse.StartTime.ToString();
-                            residentialListingRequest.OHEndTimeFri = openHouse.EndTime.ToString();
-                            //// residentialListingRequest.OHCommentsFri = openHouse.Comments;
-                            break;
-                        default: break;
-                    }
+                        Date = OpenHouseExtensions.GetNextWeekday(DateTime.Today, Enum.Parse<DayOfWeek>(openHouse.Type.ToString(), ignoreCase: true)),
+                        StartTime = openHouse.StartTime,
+                        EndTime = openHouse.EndTime,
+                        Active = true,
+                        Lunch = openHouse.Lunch ? "Y" : "N",
+                        Refreshments = openHouse.Refreshments ? "Y" : "N",
+                    });
                 }
+
+                residentialListingRequest.OpenHouse = this.OpenHouse;
             }
         }
 

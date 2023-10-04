@@ -3,12 +3,14 @@ namespace Husa.Uploader.Core.Tests
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.CompanyServicesManager.Api.Contracts.Response;
+    using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Abor.Domain.Enums.Domain;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Interfaces;
@@ -225,6 +227,56 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Fact]
+        public async Task AddOpenHouseSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var openHouses = new List<OpenHouseRequest>()
+            {
+                new OpenHouseRequest()
+                {
+                    Type = Crosscutting.Enums.OpenHouseType.Public,
+                    StartTime = new TimeSpan(14, 0, 0),
+                    EndTime = new TimeSpan(16, 0, 0),
+                    Date = OpenHouseExtensions.GetNextWeekday(DateTime.Today, DayOfWeek.Monday),
+                    Active = true,
+                    Comments = "Test",
+                    Refreshments = new List<Refreshments>()
+                     {
+                         Refreshments.Beverages,
+                     }.ToStringFromEnumMembers(),
+                },
+                new OpenHouseRequest()
+                {
+                    Type = Crosscutting.Enums.OpenHouseType.Public,
+                    StartTime = new TimeSpan(10, 0, 0),
+                    EndTime = new TimeSpan(15, 0, 0),
+                    Date = OpenHouseExtensions.GetNextWeekday(DateTime.Today, DayOfWeek.Thursday),
+                    Active = true,
+                    Comments = "Test",
+                    Refreshments = new List<Refreshments>()
+                     {
+                         Refreshments.Pastries,
+                     }.ToStringFromEnumMembers(),
+                },
+            };
+
+            var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+            aborListing.OpenHouse = openHouses;
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(aborListing);
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdateOpenHouse(aborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
         public async Task LoginWithNoCredentials_UseDefaultSuccess()
         {
             // Arrange
@@ -304,6 +356,30 @@ namespace Husa.Uploader.Core.Tests
                 },
             };
 
+            var openHouses = new List<AborResponse.OpenHouseResponse>()
+            {
+              new AborResponse.OpenHouseResponse()
+              {
+                  StartTime = new TimeSpan(10, 0, 0),
+                  EndTime = new TimeSpan(12, 0, 0),
+                  Refreshments = new List<Refreshments>()
+                  {
+                         Refreshments.Beverages,
+                  },
+                  Type = Quicklister.Extensions.Domain.Enums.OpenHouseType.Wednesday,
+              },
+              new AborResponse.OpenHouseResponse()
+              {
+                    StartTime = new TimeSpan(9, 0, 0),
+                    EndTime = new TimeSpan(10, 0, 0),
+                    Refreshments = new List<Refreshments>()
+                    {
+                             Refreshments.Appetizers,
+                    },
+                    Type = Quicklister.Extensions.Domain.Enums.OpenHouseType.Saturday,
+              },
+            };
+
             var statusFields = new Mock<AborResponse.ListingSaleStatusFieldsResponse>();
 
             var listingSale = new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse()
@@ -312,6 +388,7 @@ namespace Husa.Uploader.Core.Tests
                 ListPrice = 127738,
                 StatusFieldsInfo = statusFields.Object,
             };
+            listingSale.SaleProperty.OpenHouses = openHouses;
 
             return listingSale;
         }
