@@ -29,5 +29,6 @@ namespace Husa.Uploader.Crosscutting.Extensions
         public static string StrictDecimalToString(this decimal? amount) => amount.HasValue ? amount.Value.ToString() : string.Empty;
 
         public static string IntegerToString(this int? amount) => amount.HasValue ? amount.Value.ToString() : string.Empty;
+        public static string PriceWithDollarSign(this string price) => price is not null ? $"${price}" : price;
     }
 }
