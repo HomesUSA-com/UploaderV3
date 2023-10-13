@@ -254,7 +254,7 @@ namespace Husa.Uploader.Core.Services
                 {
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("CONTDATE"), cancellationToken);
                     this.uploaderClient.WriteTextbox(By.Id("CONTDATE"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty); // Contract Date
-                    this.uploaderClient.WriteTextbox(By.Id("SELLAGT1"), listing.AgentMarketUniqueId); // Selling / Buyer's Agent ID
+                    this.uploaderClient.WriteTextbox(By.Id("SELLAGT1"), listing.AgentLoginName);
                 }
 
                 return UploadResult.Success;

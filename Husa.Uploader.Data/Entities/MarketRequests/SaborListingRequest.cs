@@ -279,6 +279,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.SellConcess = statusInfo.SellConcess;
                 residentialListingRequest.SellConcessDescription = statusInfo.SellerConcessionDescription.ToStringFromEnumMembers();
                 residentialListingRequest.AgentMarketUniqueId = statusInfo.AgentMarketUniqueId;
+                residentialListingRequest.AgentLoginName = statusInfo.LoginName;
             }
 
             void FillHoaInfo(IEnumerable<HoaResponse> hoas)
