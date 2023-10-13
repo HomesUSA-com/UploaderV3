@@ -313,6 +313,7 @@ namespace Husa.Uploader.Data.Entities
         public int? LivingRoom2Length { get; set; }
         public string HasAerialPhoto { get; set; }
         public string AgentMarketUniqueId { get; set; }
+        public string AgentLoginName { get; set; }
         public string CoopSale { get; set; }
         public bool? SellingAgentPresent { get; set; }
         public string SoilType { get; set; }
