@@ -1,9 +1,11 @@
 namespace Husa.Uploader.Data.Entities
 {
+    using System.Collections.Generic;
     using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities.MarketRequests;
+    using BuiltStatus = Husa.Uploader.Crosscutting.Enums.BuiltStatus;
 
     public abstract class ResidentialListingRequest
     {
