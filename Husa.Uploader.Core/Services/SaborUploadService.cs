@@ -397,12 +397,6 @@ namespace Husa.Uploader.Core.Services
 
                 this.DeleteOpenHouses();
 
-                this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(26) > a:first').click();");
-                Thread.Sleep(1000);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
-                this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[7].click();");
-                Thread.Sleep(1000);
-
                 if (listing.EnableOpenHouse)
                 {
                     this.AddOpenHouses(listing);
@@ -1395,7 +1389,6 @@ namespace Husa.Uploader.Core.Services
                 }
             }
 
-            this.uploaderClient.ExecuteScript(script: "jQuery('.button.Save').click();");
             Thread.Sleep(2000);
         }
 
@@ -1404,8 +1397,16 @@ namespace Husa.Uploader.Core.Services
             const string tabName = "Add Open House";
             Thread.Sleep(1000);
             var openHouseType = "O";
-            foreach (var openHouse in listing.OpenHouse)
+            var maxIterations = 4;
+            var iterationCount = 0;
+            var sortedOpenHouses = listing.OpenHouse.OrderBy(openHouse => openHouse.Date).ToList();
+            foreach (var openHouse in sortedOpenHouses)
             {
+                if (iterationCount >= maxIterations)
+                {
+                    break;
+                }
+
                 this.uploaderClient.ClickOnElementById(elementId: "addTourLink");
                 Thread.Sleep(1000);
 
@@ -1434,6 +1435,7 @@ namespace Husa.Uploader.Core.Services
 
                 var window = this.uploaderClient.WindowHandles.FirstOrDefault();
                 this.uploaderClient.SwitchTo().Window(windowName: window);
+                iterationCount++;
             }
 
             Thread.Sleep(1000);

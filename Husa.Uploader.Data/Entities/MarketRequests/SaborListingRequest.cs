@@ -90,7 +90,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             FillStatusInfo(this.listingDetailResponse.StatusFieldsInfo);
             FillHoaInfo(this.listingDetailResponse.SaleProperty.Hoas);
             FillRoomsInfo(this.listingDetailResponse.SaleProperty.Rooms);
-            FillOpenHouseInfo(this.listingDetailResponse.SaleProperty.OpenHouses);
+            this.FillOpenHouseInfo(this.listingDetailResponse.SaleProperty.OpenHouses, residentialListingRequest.OpenHouse);
 
             return residentialListingRequest;
 
@@ -426,29 +426,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     }
                 }
             }
-
-            void FillOpenHouseInfo(IEnumerable<OpenHouseResponse> openHouses)
-            {
-                if (openHouses == null || !openHouses.Any())
-                {
-                    return;
-                }
-
-                foreach (var openHouse in openHouses)
-                {
-                    this.OpenHouse.Add(new()
-                    {
-                        Date = OpenHouseExtensions.GetNextWeekday(DateTime.Today, Enum.Parse<DayOfWeek>(openHouse.Type.ToString(), ignoreCase: true)),
-                        StartTime = openHouse.StartTime,
-                        EndTime = openHouse.EndTime,
-                        Active = true,
-                        Lunch = openHouse.Lunch ? "Y" : "N",
-                        Refreshments = openHouse.Refreshments ? "Y" : "N",
-                    });
-                }
-
-                residentialListingRequest.OpenHouse = this.OpenHouse;
-            }
         }
 
         public override string GetPublicRemarks()
@@ -543,6 +520,28 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             }
 
             return string.Empty;
+        }
+
+        public void FillOpenHouseInfo(IEnumerable<OpenHouseResponse> openHouses, List<OpenHouseRequest> openHouseList)
+        {
+            if (openHouses == null || !openHouses.Any())
+            {
+                return;
+            }
+
+            DateTime tomorrow = DateTime.Today.AddDays(1);
+            foreach (var openHouse in openHouses)
+            {
+                openHouseList.Add(new()
+                {
+                    Date = OpenHouseExtensions.GetNextWeekday(tomorrow, Enum.Parse<DayOfWeek>(openHouse.Type.ToString(), ignoreCase: true)),
+                    StartTime = openHouse.StartTime,
+                    EndTime = openHouse.EndTime,
+                    Active = true,
+                    Lunch = openHouse.Lunch ? "Y" : "N",
+                    Refreshments = openHouse.Refreshments ? "Y" : "N",
+                });
+            }
         }
     }
 }
