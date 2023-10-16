@@ -323,13 +323,15 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
+
+            DateTime tomorrow = DateTime.Today.AddDays(1);
             var openHouses = new List<OpenHouseRequest>()
             {
                 new OpenHouseRequest()
                 {
                     StartTime = new TimeSpan(14, 0, 0),
                     EndTime = new TimeSpan(16, 0, 0),
-                    Date = OpenHouseExtensions.GetNextWeekday(DateTime.Today, DayOfWeek.Monday),
+                    Date = OpenHouseExtensions.GetNextWeekday(tomorrow, DayOfWeek.Monday),
                     Active = true,
                     Refreshments = "Y",
                     Lunch = "Y",
@@ -338,7 +340,7 @@ namespace Husa.Uploader.Core.Tests
                 {
                     StartTime = new TimeSpan(10, 0, 0),
                     EndTime = new TimeSpan(15, 0, 0),
-                    Date = OpenHouseExtensions.GetNextWeekday(DateTime.Today, DayOfWeek.Thursday),
+                    Date = OpenHouseExtensions.GetNextWeekday(tomorrow, DayOfWeek.Thursday),
                     Active = true,
                     Refreshments = "Y",
                     Lunch = "N",
@@ -358,9 +360,40 @@ namespace Husa.Uploader.Core.Tests
             // Act
             var sut = this.GetSut();
             var result = await sut.UpdateOpenHouse(saborListing);
-
-            // Assert
             Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public void FillOpenHouseInfo_CreatesOpenHouseEntries()
+        {
+            var expectedCount = 2;
+            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse())
+            {
+                MLSNum = "mlsNum",
+            };
+            var openHouseResponses = new List<OpenHouseResponse>
+            {
+                new OpenHouseResponse
+                {
+                    Type = Quicklister.Extensions.Domain.Enums.OpenHouseType.Monday,
+                    StartTime = new TimeSpan(14, 0, 0),
+                    EndTime = new TimeSpan(16, 0, 0),
+                    Lunch = true,
+                    Refreshments = false,
+                },
+                new OpenHouseResponse
+                {
+                    Type = Quicklister.Extensions.Domain.Enums.OpenHouseType.Wednesday,
+                    StartTime = new TimeSpan(10, 0, 0),
+                    EndTime = new TimeSpan(15, 0, 0),
+                    Lunch = false,
+                    Refreshments = true,
+                },
+            };
+
+            saborListing.FillOpenHouseInfo(openHouseResponses, saborListing.OpenHouse);
+
+            Assert.Equal(expectedCount, saborListing.OpenHouse.Count);
         }
 
         [Fact]
