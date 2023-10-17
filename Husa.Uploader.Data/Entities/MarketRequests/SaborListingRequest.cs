@@ -529,12 +529,23 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 return;
             }
 
-            DateTime tomorrow = DateTime.Today.AddDays(1);
+            DateTime startDate;
+            DateTime currentDateTime = DateTime.Now;
             foreach (var openHouse in openHouses)
             {
+                var openHouseDate = OpenHouseExtensions.GetNextWeekday(DateTime.Today, Enum.Parse<DayOfWeek>(openHouse.Type.ToString(), ignoreCase: true));
+                if (currentDateTime.Date.ToString("MM/dd/yyyy") == openHouseDate && TimeSpan.FromHours(currentDateTime.Hour) > openHouse.StartTime)
+                {
+                    startDate = DateTime.Today.AddDays(1);
+                }
+                else
+                {
+                    startDate = DateTime.Today;
+                }
+
                 openHouseList.Add(new()
                 {
-                    Date = OpenHouseExtensions.GetNextWeekday(tomorrow, Enum.Parse<DayOfWeek>(openHouse.Type.ToString(), ignoreCase: true)),
+                    Date = OpenHouseExtensions.GetNextWeekday(startDate, Enum.Parse<DayOfWeek>(openHouse.Type.ToString(), ignoreCase: true)),
                     StartTime = openHouse.StartTime,
                     EndTime = openHouse.EndTime,
                     Active = true,
