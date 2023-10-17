@@ -1,9 +1,11 @@
 namespace Husa.Uploader.Data.Entities
 {
+    using System.Collections.Generic;
     using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities.MarketRequests;
+    using BuiltStatus = Husa.Uploader.Crosscutting.Enums.BuiltStatus;
 
     public abstract class ResidentialListingRequest
     {
@@ -313,6 +315,7 @@ namespace Husa.Uploader.Data.Entities
         public int? LivingRoom2Length { get; set; }
         public string HasAerialPhoto { get; set; }
         public string AgentMarketUniqueId { get; set; }
+        public string AgentLoginName { get; set; }
         public string CoopSale { get; set; }
         public bool? SellingAgentPresent { get; set; }
         public string SoilType { get; set; }

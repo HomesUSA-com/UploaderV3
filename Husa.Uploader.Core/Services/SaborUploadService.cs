@@ -243,18 +243,18 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("HOWSOLDID"), cancellationToken);
                     this.uploaderClient.WriteTextbox(By.Id("HOWSOLDID"), listing.HowSold); // How Sold/Sale Terms
                     this.uploaderClient.WriteTextbox(By.Id("CLOSEDATE"), listing.ClosedDate.Value.ToString("MM/dd/yyyy")); // Closing Date
-                    this.uploaderClient.WriteTextbox(By.Id("SOLDPRICE"), listing.SoldPrice); // Sold Price
+                    this.uploaderClient.WriteTextbox(By.Id("SOLDPRICE"), listing.SoldPrice.DecimalToString()); // Sold Price
                     this.uploaderClient.WriteTextbox(By.Id("CONTINFO"), listing.ContingencyInfo); // Contingent Info
-                    this.uploaderClient.WriteTextbox(By.Id("SELLCONCES"), listing.SellConcess); // Seller Concessions
-                    this.uploaderClient.WriteTextbox(By.Id("SELL_CONC_DESCID"), entry: string.Empty); // Seller Concessions Description
-                    this.uploaderClient.WriteTextbox(By.Id("SELL_CONC_DESCID"), !string.IsNullOrEmpty(listing.HowToSellDesc) ? listing.SellConcess : "NONE"); // Seller Concessions Description
+                    this.uploaderClient.WriteTextbox(By.Id("SELLCONCES"), listing.SellConcess.PriceWithDollarSign()); // Seller Concessions
+                    this.uploaderClient.WriteTextbox(By.Id("SELL_CONC_DESCID"), listing.SellConcessDescription); // Seller Concessions Description
+                    this.uploaderClient.FindElement(By.Name("AGTRMRKS")).Clear(); // Agent Confidential Remarks
                 }
 
                 if (listing.ListStatus == "PDB" || listing.ListStatus == "PND" || listing.ListStatus == "SLD")
                 {
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("CONTDATE"), cancellationToken);
                     this.uploaderClient.WriteTextbox(By.Id("CONTDATE"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty); // Contract Date
-                    this.uploaderClient.WriteTextbox(By.Id("SELLAGT1"), listing.AgentMarketUniqueId); // Selling / Buyer's Agent ID
+                    this.uploaderClient.WriteTextbox(By.Id("SELLAGT1"), listing.AgentLoginName);
                 }
 
                 return UploadResult.Success;
@@ -396,12 +396,6 @@ namespace Husa.Uploader.Core.Services
                     isScriptOptional: true);
 
                 this.DeleteOpenHouses();
-
-                this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(26) > a:first').click();");
-                Thread.Sleep(1000);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
-                this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[7].click();");
-                Thread.Sleep(1000);
 
                 if (listing.EnableOpenHouse)
                 {
@@ -1395,7 +1389,6 @@ namespace Husa.Uploader.Core.Services
                 }
             }
 
-            this.uploaderClient.ExecuteScript(script: "jQuery('.button.Save').click();");
             Thread.Sleep(2000);
         }
 
@@ -1404,8 +1397,16 @@ namespace Husa.Uploader.Core.Services
             const string tabName = "Add Open House";
             Thread.Sleep(1000);
             var openHouseType = "O";
-            foreach (var openHouse in listing.OpenHouse)
+            var maxIterations = 4;
+            var iterationCount = 0;
+            var sortedOpenHouses = listing.OpenHouse.OrderBy(openHouse => openHouse.Date).ToList();
+            foreach (var openHouse in sortedOpenHouses)
             {
+                if (iterationCount >= maxIterations)
+                {
+                    break;
+                }
+
                 this.uploaderClient.ClickOnElementById(elementId: "addTourLink");
                 Thread.Sleep(1000);
 
@@ -1434,6 +1435,7 @@ namespace Husa.Uploader.Core.Services
 
                 var window = this.uploaderClient.WindowHandles.FirstOrDefault();
                 this.uploaderClient.SwitchTo().Window(windowName: window);
+                iterationCount++;
             }
 
             Thread.Sleep(1000);
