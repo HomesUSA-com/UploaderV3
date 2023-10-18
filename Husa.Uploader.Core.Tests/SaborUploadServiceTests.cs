@@ -324,14 +324,16 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCredentials();
             this.SetUpCompany();
 
-            DateTime tomorrow = DateTime.Today.AddDays(1);
+            DateTime startDateMonday = AdjustStartDate(DayOfWeek.Monday, new TimeSpan(14, 0, 0));
+            DateTime startDateThursday = AdjustStartDate(DayOfWeek.Thursday, new TimeSpan(10, 0, 0));
+
             var openHouses = new List<OpenHouseRequest>()
             {
                 new OpenHouseRequest()
                 {
                     StartTime = new TimeSpan(14, 0, 0),
                     EndTime = new TimeSpan(16, 0, 0),
-                    Date = OpenHouseExtensions.GetNextWeekday(tomorrow, DayOfWeek.Monday),
+                    Date = OpenHouseExtensions.GetNextWeekday(startDateMonday, DayOfWeek.Monday),
                     Active = true,
                     Refreshments = "Y",
                     Lunch = "Y",
@@ -340,7 +342,7 @@ namespace Husa.Uploader.Core.Tests
                 {
                     StartTime = new TimeSpan(10, 0, 0),
                     EndTime = new TimeSpan(15, 0, 0),
-                    Date = OpenHouseExtensions.GetNextWeekday(tomorrow, DayOfWeek.Thursday),
+                    Date = OpenHouseExtensions.GetNextWeekday(startDateThursday, DayOfWeek.Thursday),
                     Active = true,
                     Refreshments = "Y",
                     Lunch = "N",
@@ -412,6 +414,20 @@ namespace Husa.Uploader.Core.Tests
                 Id = id,
                 MediaUri = new Uri("https://test.org/" + id.ToString()),
             };
+        }
+
+        private static DateTime AdjustStartDate(DayOfWeek day, TimeSpan startTime)
+        {
+            DateTime currentDateTime = DateTime.Now;
+            var openHouseDate = OpenHouseExtensions.GetNextWeekday(DateTime.Today, day);
+            if (currentDateTime.Date.ToString("MM/dd/yyyy") == openHouseDate && TimeSpan.FromHours(currentDateTime.Hour) > startTime)
+            {
+                return DateTime.Today.AddDays(1);
+            }
+            else
+            {
+                return DateTime.Today;
+            }
         }
 
         private static ListingSaleRequestDetailResponse GetListingRequestDetailResponse()
