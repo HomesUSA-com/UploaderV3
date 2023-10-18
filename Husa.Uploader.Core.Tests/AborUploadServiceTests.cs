@@ -277,6 +277,39 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Fact]
+        public void GetComments_RefreshmentsAndLunch_ReturnsCombinedString()
+        {
+            bool refreshments = true;
+            bool lunch = true;
+
+            string result = OpenHouseExtensions.GetComments(refreshments, lunch);
+
+            Assert.Equal("refreshments, lunch", result);
+        }
+
+        [Fact]
+        public void GetComments_RefreshmentsOnly_ReturnsRefreshments()
+        {
+            bool refreshments = true;
+            bool lunch = false;
+
+            string result = OpenHouseExtensions.GetComments(refreshments, lunch);
+
+            Assert.Equal("refreshments", result);
+        }
+
+        [Fact]
+        public void GetComments_NoRefreshmentsOrLunch_ReturnsEmptyString()
+        {
+            bool refreshments = false;
+            bool lunch = false;
+
+            string result = OpenHouseExtensions.GetComments(refreshments, lunch);
+
+            Assert.Equal(string.Empty, result);
+        }
+
+        [Fact]
         public async Task LoginWithNoCredentials_UseDefaultSuccess()
         {
             // Arrange
