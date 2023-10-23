@@ -564,9 +564,12 @@ namespace Husa.Uploader.Desktop.ViewModels
                 var isPending = this.SelectedListingRequest.FullListing.ListStatus == "Pending" || this.SelectedListingRequest.FullListing.ListStatus == "PND";
                 var enableInPending = isPending && this.SelectedListingRequest.FullListing.AllowPendingList;
                 var isActive = this.SelectedListingRequest.FullListing.ListStatus == "Active" || this.SelectedListingRequest.FullListing.ListStatus == "ACT";
+                var isPCH = this.SelectedListingRequest.FullListing.ListStatus == "PCH";
+                var isBOM = this.SelectedListingRequest.FullListing.ListStatus == "BOM";
+                var isSanAntonio = this.SelectedListingRequest.FullListing.MarketCode == MarketCode.SanAntonio;
                 return !this.SelectedListingRequest.FullListing.IsNewListing
                     && this.SelectedListingRequest.FullListing.EnableOpenHouse
-                    && (isActive || enableInPending);
+                    && (isActive || enableInPending || (isSanAntonio && (isPCH || isBOM)));
             }
         }
 
