@@ -26,7 +26,7 @@ namespace Husa.Uploader.Desktop.ViewModels
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
 
-    public class ShellViewModel : ViewModel
+    public partial class ShellViewModel : ViewModel
     {
         public static readonly IEnumerable<UploaderState> NoUploadInProgressStatuses = new[]
         {
@@ -95,9 +95,11 @@ namespace Husa.Uploader.Desktop.ViewModels
             IAuthenticationService authenticationClient,
             IVersionManagerService versionManagerService,
             IChildViewFactory mlsIssueReportFactory,
+            IAbstractFactory<BulkUploadView> bulkUploadViewFactory,
             IAbstractFactory<LatLonInputView> locationViewFactory,
             IAbstractFactory<MlsnumInputView> mlsNumberInputFactory,
             IUploadFactory uploadFactory,
+            IBulkUploadFactory bulkUploadFactory,
             HubConnection hubConnection,
             ILogger<ShellView> logger)
             : this()
@@ -108,8 +110,10 @@ namespace Husa.Uploader.Desktop.ViewModels
             this.versionManagerService = versionManagerService ?? throw new ArgumentNullException(nameof(versionManagerService));
             this.mlsIssueReportFactory = mlsIssueReportFactory ?? throw new ArgumentNullException(nameof(mlsIssueReportFactory));
             this.locationViewFactory = locationViewFactory ?? throw new ArgumentNullException(nameof(locationViewFactory));
+            this.bulkUploadViewFactory = bulkUploadViewFactory ?? throw new ArgumentNullException(nameof(bulkUploadViewFactory));
             this.mlsNumberInputFactory = mlsNumberInputFactory ?? throw new ArgumentNullException(nameof(mlsNumberInputFactory));
             this.uploadFactory = uploadFactory ?? throw new ArgumentNullException(nameof(uploadFactory));
+            this.bulkUploadFactory = bulkUploadFactory ?? throw new ArgumentNullException(nameof(bulkUploadFactory));
             this.hubConnection = hubConnection ?? throw new ArgumentNullException(nameof(hubConnection));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -1093,15 +1097,20 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
             catch (OperationCanceledException)
             {
-                this.State = UploaderState.Cancelled;
-                this.uploadFactory.Uploader.Logout();
-                this.uploadFactory.CloseDriver();
-                return UploadResult.Failure;
+                return this.CatchCanceledException();
             }
             finally
             {
                 this.cancellationTokenSource = null;
             }
+        }
+
+        private UploadResult CatchCanceledException()
+        {
+            this.State = UploaderState.Cancelled;
+            this.uploadFactory.Uploader.Logout();
+            this.uploadFactory.CloseDriver();
+            return UploadResult.Failure;
         }
 
         private async Task StartEdit()

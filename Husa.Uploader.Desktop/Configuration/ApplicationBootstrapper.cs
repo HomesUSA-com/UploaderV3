@@ -15,7 +15,9 @@ namespace Husa.Uploader.Desktop.Configuration
     using Husa.Quicklister.CTX.Api.Client;
     using Husa.Quicklister.Sabor.Api.Client;
     using Husa.Uploader.Core.Interfaces;
+    using Husa.Uploader.Core.Interfaces.BulkUpload;
     using Husa.Uploader.Core.Services;
+    using Husa.Uploader.Core.Services.BulkUpload;
     using Husa.Uploader.Crosscutting.Constants;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Interfaces;
@@ -164,6 +166,8 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<ISaborUploadService, SaborUploadService>();
             services.AddTransient<ICtxUploadService, CtxUploadService>();
             services.AddTransient<IAborUploadService, AborUploadService>();
+            services.AddSingleton<IBulkUploadFactory, BulkUploadFactory>();
+            services.AddTransient<ISaborBulkUploadService, SaborBulkUploadService>();
 
             return services;
 
@@ -192,6 +196,7 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddViewFactory<MlsnumInputView, MlsnumInputViewModel>();
             services.AddViewFactory<LatLonInputView, LatLonInputViewModel>();
             services.AddViewFactory<MlsIssueReportView, MlsIssueReportViewModel>();
+            services.AddViewFactory<BulkUploadView, BulkUploadViewModel>();
         }
 
         public static void AddViewFactory<TForm, TModel>(this IServiceCollection services)
