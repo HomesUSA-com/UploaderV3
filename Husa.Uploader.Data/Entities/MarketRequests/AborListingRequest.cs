@@ -263,7 +263,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.LockboxLocDesc = showingInfo.LockBoxSerialNumber;
                 residentialListingRequest.ShowingInstructions = showingInfo.ShowingInstructions;
                 residentialListingRequest.Showing = showingInfo.ShowingRequirements.ToStringFromEnumMembers();
-                residentialListingRequest.RealtorContactEmail = showingInfo.RealtorContactEmail;
+                residentialListingRequest.RealtorContactEmail = showingInfo.RealtorContactEmail.ToStringFromCollection(";");
                 residentialListingRequest.Directions = showingInfo.Directions;
                 residentialListingRequest.AgentPrivateRemarks = showingInfo.AgentPrivateRemarks;
                 residentialListingRequest.AgentPrivateRemarks2 = showingInfo.AgentPrivateRemarksAdditional;
@@ -351,11 +351,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
                 residentialListingRequest.OpenHouse = this.OpenHouse;
             }
-        }
-
-        public override string GetBuyerAgentComp(string compBuy, string compBuyType)
-        {
-            throw new NotImplementedException();
         }
 
         public override string GetAgentBonusRemarksMessage()

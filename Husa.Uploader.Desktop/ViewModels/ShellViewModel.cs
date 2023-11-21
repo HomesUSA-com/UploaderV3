@@ -10,6 +10,7 @@ namespace Husa.Uploader.Desktop.ViewModels
     using System.Windows.Input;
     using System.Windows.Threading;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.ServiceActions;
     using Husa.Uploader.Core.Services;

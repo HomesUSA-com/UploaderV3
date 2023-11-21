@@ -6,7 +6,6 @@ namespace Husa.Uploader.Core.Services.BulkUpload
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.BulkUpload;
-    using Husa.Uploader.Crosscutting.Enums;
     using Microsoft.Extensions.Logging;
 
     public class SaborBulkUploadService : ISaborBulkUploadService

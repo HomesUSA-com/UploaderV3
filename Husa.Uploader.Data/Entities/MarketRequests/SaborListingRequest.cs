@@ -494,7 +494,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             }
         }
 
-        public override string GetBuyerAgentComp(string compBuy, string compBuyType)
+        public string GetBuyerAgentComp(string compBuy, string compBuyType)
         {
             // Remove zeroes after decimal point if available.
             if (compBuy.Contains('.'))

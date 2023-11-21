@@ -4,6 +4,7 @@ namespace Husa.Uploader.Core.Services
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Extensions;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services.Common;

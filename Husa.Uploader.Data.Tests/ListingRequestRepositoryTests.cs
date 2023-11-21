@@ -6,6 +6,7 @@ namespace Husa.Uploader.Data.Tests
     using Husa.Quicklister.CTX.Api.Client;
     using Husa.Quicklister.Extensions.Api.Contracts.Request.SaleRequest;
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ListingRequest.SaleRequest;
+    using Husa.Quicklister.Har.Api.Client;
     using Husa.Quicklister.Sabor.Api.Client;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Repositories;
@@ -14,6 +15,7 @@ namespace Husa.Uploader.Data.Tests
     using Xunit;
     using AborResponseContracts = Husa.Quicklister.Abor.Api.Contracts.Response;
     using CtxResponseContracts = Husa.Quicklister.CTX.Api.Contracts.Response;
+    using HarResponseContracts = Husa.Quicklister.Har.Api.Contracts.Response;
     using SaborEnums = Husa.Quicklister.Sabor.Domain.Enums;
     using SaborResponseContracts = Husa.Quicklister.Sabor.Api.Contracts.Response;
 
@@ -23,6 +25,7 @@ namespace Husa.Uploader.Data.Tests
         private readonly Mock<IQuicklisterSaborClient> mockSaborClient = new();
         private readonly Mock<IQuicklisterCtxClient> mockCtxClient = new();
         private readonly Mock<IQuicklisterAborClient> mockAborClient = new();
+        private readonly Mock<IQuicklisterHarClient> mockHarClient = new();
         private readonly Mock<ILogger<ListingRequestRepository>> mockLogger = new();
         private readonly ApplicationServicesFixture fixture;
 
@@ -56,6 +59,13 @@ namespace Husa.Uploader.Data.Tests
                 .Setup(x => x.ListingSaleRequest.GetListRequestAsync(It.IsAny<SaleListingRequestFilter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(aborResult);
 
+            var harResponse = new HarResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestQueryResponse();
+            var harResult = GetListingRequestGridResponse(new[] { harResponse });
+
+            this.mockHarClient
+                .Setup(x => x.ListingSaleRequest.GetListRequestAsync(It.IsAny<SaleListingRequestFilter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(harResult);
+
             var sut = this.GetSut();
 
             // Act
@@ -63,7 +73,7 @@ namespace Husa.Uploader.Data.Tests
 
             // Assert
             Assert.NotEmpty(result);
-            Assert.Equal(3, result.Count());
+            Assert.Equal(4, result.Count());
         }
 
         [Fact]
@@ -129,6 +139,7 @@ namespace Husa.Uploader.Data.Tests
             this.mockSaborClient.Object,
             this.mockCtxClient.Object,
             this.mockAborClient.Object,
+            this.mockHarClient.Object,
             this.mockLogger.Object);
     }
 }

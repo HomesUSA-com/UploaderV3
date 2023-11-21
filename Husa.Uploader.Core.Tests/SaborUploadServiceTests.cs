@@ -5,12 +5,11 @@ namespace Husa.Uploader.Core.Tests
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common.Enums;
-    // using Husa.Quicklister.Abor.Domain.Enums.Domain;
+    using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Quicklister.Sabor.Api.Contracts.Response;
     using Husa.Quicklister.Sabor.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.Sabor.Api.Contracts.Response.SalePropertyDetail;
     using Husa.Quicklister.Sabor.Domain.Enums;
-    // using Husa.Quicklister.Sabor.Domain.Enums.Domain;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Enums;
@@ -23,7 +22,6 @@ namespace Husa.Uploader.Core.Tests
     using OpenQA.Selenium;
     using Xunit;
     using AddressInfoResponse = Husa.Quicklister.Sabor.Api.Contracts.Response.SalePropertyDetail.AddressInfoResponse;
-    using UploadResult = Husa.Uploader.Crosscutting.Enums.UploadResult;
 
     [Collection(nameof(ApplicationServicesFixture))]
     public class SaborUploadServiceTests

@@ -9,6 +9,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Quicklister.CTX.Api.Contracts.Response.SalePropertyDetail;
     using Husa.Quicklister.CTX.Domain.Enums;
     using Husa.Quicklister.CTX.Domain.Enums.Entities;
+    using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Enums;
@@ -20,7 +21,6 @@ namespace Husa.Uploader.Core.Tests
     using OpenQA.Selenium;
     using Xunit;
     using AddressInfoResponse = Husa.Quicklister.CTX.Api.Contracts.Response.SalePropertyDetail.AddressInfoResponse;
-    using UploadResult = Husa.Uploader.Crosscutting.Enums.UploadResult;
 
     [Collection(nameof(ApplicationServicesFixture))]
     public class CtxUploadServiceTests

@@ -13,6 +13,7 @@ namespace Husa.Uploader.Desktop.Configuration
     using Husa.Migration.Api.Client;
     using Husa.Quicklister.Abor.Api.Client;
     using Husa.Quicklister.CTX.Api.Client;
+    using Husa.Quicklister.Har.Api.Client;
     using Husa.Quicklister.Sabor.Api.Client;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.BulkUpload;
@@ -138,6 +139,12 @@ namespace Husa.Uploader.Desktop.Configuration
             {
                 var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
                 client.BaseAddress = new Uri(options.Services.QuicklisterAbor);
+            }).AddHttpMessageHandler<AuthTokenHandler>();
+
+            services.AddHttpClient<IQuicklisterHarClient, QuicklisterHarClient>((provider, client) =>
+            {
+                var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
+                client.BaseAddress = new Uri(options.Services.QuicklisterHar);
             }).AddHttpMessageHandler<AuthTokenHandler>();
 
             services.AddHttpClient<IServiceSubscriptionClient, ServiceSubscriptionClient>((provider, client) =>

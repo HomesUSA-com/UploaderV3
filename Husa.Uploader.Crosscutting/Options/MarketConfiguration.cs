@@ -7,5 +7,7 @@ namespace Husa.Uploader.Crosscutting.Options
         public MarketSettings Ctx { get; set; }
 
         public MarketSettings Abor { get; set; }
+
+        public MarketSettings Har { get; set; }
     }
 }

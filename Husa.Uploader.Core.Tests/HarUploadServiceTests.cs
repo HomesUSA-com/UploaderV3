@@ -5,8 +5,8 @@ namespace Husa.Uploader.Core.Tests
     using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
-    using Husa.Quicklister.Abor.Domain.Enums.Domain;
     using Husa.Quicklister.Extensions.Domain.Enums;
+    using Husa.Quicklister.Har.Domain.Enums.Domain;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Enums;
@@ -17,19 +17,19 @@ namespace Husa.Uploader.Core.Tests
     using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
-    using AborResponse = Husa.Quicklister.Abor.Api.Contracts.Response;
+    using HarResponse = Husa.Quicklister.Har.Api.Contracts.Response;
 
     [Collection(nameof(ApplicationServicesFixture))]
-    public class AborUploadServiceTests
+    public class HarUploadServiceTests
     {
         private readonly Mock<IUploaderClient> uploaderClient = new();
         private readonly Mock<IMediaRepository> mediaRepository = new();
         private readonly Mock<IListingRequestRepository> sqlDataLoader = new();
         private readonly Mock<IServiceSubscriptionClient> serviceSubscriptionClient = new();
-        private readonly Mock<ILogger<AborUploadService>> logger = new();
+        private readonly Mock<ILogger<HarUploadService>> logger = new();
         private readonly ApplicationServicesFixture fixture;
 
-        public AborUploadServiceTests(ApplicationServicesFixture fixture)
+        public HarUploadServiceTests(ApplicationServicesFixture fixture)
         {
             this.fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             this.uploaderClient.SetupAllProperties();
@@ -44,15 +44,15 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCompany();
 
             var listingSale = GetListingRequestDetailResponse();
-            var aborListing = new AborListingRequest(listingSale).CreateFromApiResponseDetail();
+            var harListing = new HarListingRequest(listingSale).CreateFromApiResponseDetail();
 
             this.sqlDataLoader
                 .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(aborListing);
+                .ReturnsAsync(harListing);
 
             // Act
             var sut = this.GetSut();
-            var result = await sut.Upload(aborListing);
+            var result = await sut.Upload(harListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
@@ -65,7 +65,7 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act and Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.Upload((AborListingRequest)null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.Upload((HarListingRequest)null));
         }
 
         [Fact]
@@ -74,11 +74,11 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCredentials();
             this.SetUpVirtualTours();
             this.SetUpCompany();
-            var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+            var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
 
             // Act
             var sut = this.GetSut();
-            var result = await sut.UploadVirtualTour(aborListing);
+            var result = await sut.UploadVirtualTour(harListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
@@ -94,11 +94,11 @@ namespace Husa.Uploader.Core.Tests
                 .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ResidentialListingVirtualTour[0])
             .Verifiable();
-            var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+            var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
             var sut = this.GetSut();
 
             // Act
-            var result = await sut.UploadVirtualTour(aborListing);
+            var result = await sut.UploadVirtualTour(harListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
@@ -111,7 +111,7 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act and Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.UploadVirtualTour((AborListingRequest)null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.UploadVirtualTour((HarListingRequest)null));
         }
 
         [Fact]
@@ -120,15 +120,15 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
-            var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
-            aborListing.MLSNum = "MLSNum";
+            var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+            harListing.MLSNum = "MLSNum";
             this.sqlDataLoader
                 .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(aborListing);
+                .ReturnsAsync(harListing);
             var sut = this.GetSut();
 
             // Act
-            var result = await sut.UpdateCompletionDate(aborListing);
+            var result = await sut.UpdateCompletionDate(harListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
@@ -140,17 +140,17 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
-            var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
-            aborListing.ListStatus = "Hold";
-            aborListing.BackOnMarketDate = DateTime.Now;
-            aborListing.OffMarketDate = DateTime.Now;
+            var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+            harListing.ListStatus = "Hold";
+            harListing.BackOnMarketDate = DateTime.Now;
+            harListing.OffMarketDate = DateTime.Now;
             this.sqlDataLoader
                 .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(aborListing);
+                .ReturnsAsync(harListing);
             var sut = this.GetSut();
 
             // Act
-            var result = await sut.UpdateStatus(aborListing);
+            var result = await sut.UpdateStatus(harListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
@@ -162,19 +162,19 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
-            var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
-            aborListing.ListStatus = "Pending";
-            aborListing.PendingDate = DateTime.Now;
-            aborListing.EstClosedDate = DateTime.Now;
-            aborListing.ExpiredDate = DateTime.Now;
-            aborListing.HasContingencyInfo = false;
+            var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+            harListing.ListStatus = "Pending";
+            harListing.PendingDate = DateTime.Now;
+            harListing.EstClosedDate = DateTime.Now;
+            harListing.ExpiredDate = DateTime.Now;
+            harListing.HasContingencyInfo = false;
             this.sqlDataLoader
                 .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(aborListing);
+                .ReturnsAsync(harListing);
             var sut = this.GetSut();
 
             // Act
-            var result = await sut.UpdateStatus(aborListing);
+            var result = await sut.UpdateStatus(harListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
@@ -186,17 +186,17 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
-            var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
-            aborListing.ListStatus = "Closed";
-            aborListing.PendingDate = DateTime.Now;
-            aborListing.ClosedDate = DateTime.Now;
+            var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+            harListing.ListStatus = "Closed";
+            harListing.PendingDate = DateTime.Now;
+            harListing.ClosedDate = DateTime.Now;
             this.sqlDataLoader
                 .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(aborListing);
+                .ReturnsAsync(harListing);
             var sut = this.GetSut();
 
             // Act
-            var result = await sut.UpdateStatus(aborListing);
+            var result = await sut.UpdateStatus(harListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
@@ -208,19 +208,19 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
-            var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
-            aborListing.ListStatus = "ActiveUnderContract";
-            aborListing.PendingDate = DateTime.Now;
-            aborListing.ClosedDate = DateTime.Now;
-            aborListing.EstClosedDate = DateTime.Now;
-            aborListing.HasContingencyInfo = false;
+            var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+            harListing.ListStatus = "ActiveUnderContract";
+            harListing.PendingDate = DateTime.Now;
+            harListing.ClosedDate = DateTime.Now;
+            harListing.EstClosedDate = DateTime.Now;
+            harListing.HasContingencyInfo = false;
             this.sqlDataLoader
                 .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(aborListing);
+                .ReturnsAsync(harListing);
             var sut = this.GetSut();
 
             // Act
-            var result = await sut.UpdateStatus(aborListing);
+            var result = await sut.UpdateStatus(harListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
@@ -244,7 +244,7 @@ namespace Husa.Uploader.Core.Tests
                     Comments = "Test",
                     Refreshments = new List<Refreshments>()
                      {
-                         Refreshments.Beverages,
+                         Refreshments.Dinner,
                      }.ToStringFromEnumMembers(),
                 },
                 new OpenHouseRequest()
@@ -257,20 +257,20 @@ namespace Husa.Uploader.Core.Tests
                     Comments = "Test",
                     Refreshments = new List<Refreshments>()
                      {
-                         Refreshments.Pastries,
+                         Refreshments.Lunch,
                      }.ToStringFromEnumMembers(),
                 },
             };
 
-            var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
-            aborListing.OpenHouse = openHouses;
+            var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+            harListing.OpenHouse = openHouses;
             this.sqlDataLoader
                 .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(aborListing);
+                .ReturnsAsync(harListing);
             var sut = this.GetSut();
 
             // Act
-            var result = await sut.UpdateOpenHouse(aborListing);
+            var result = await sut.UpdateOpenHouse(harListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
@@ -334,46 +334,40 @@ namespace Husa.Uploader.Core.Tests
             };
         }
 
-        private static AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse GetListingRequestDetailResponse()
+        private static HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse GetListingRequestDetailResponse()
         {
-            var spacesDimensionsInfo = new Mock<AborResponse.SalePropertyDetail.SpacesDimensionsResponse>();
-            var addressInfo = new Mock<AborResponse.SalePropertyDetail.AddressInfoResponse>();
-            var propertyInfo = new AborResponse.SalePropertyDetail.PropertyInfoResponse()
+            var spacesDimensionsInfo = new Mock<HarResponse.SalePropertyDetail.SpacesDimensionsResponse>();
+            var addressInfo = new Mock<HarResponse.SalePropertyDetail.AddressInfoResponse>();
+            var propertyInfo = new HarResponse.SalePropertyDetail.PropertyInfoResponse()
             {
                 ConstructionStage = ConstructionStage.Incomplete,
             };
-            var featuresInfo = new Mock<AborResponse.SalePropertyDetail.FeaturesResponse>();
-            var financialInfo = new AborResponse.SalePropertyDetail.FinancialResponse()
+            var featuresInfo = new Mock<HarResponse.SalePropertyDetail.FeaturesResponse>();
+            var financialInfo = new HarResponse.SalePropertyDetail.FinancialResponse()
             {
                 HasBonusWithAmount = true,
                 BuyersAgentCommissionType = CommissionType.Amount,
                 AgentBonusAmountType = CommissionType.Percent,
             };
-            var schoolsInfo = new Mock<AborResponse.SchoolsResponse>();
-            var showingInfo = new AborResponse.SalePropertyDetail.ShowingResponse()
+            var schoolsInfo = new Mock<HarResponse.SchoolsResponse>();
+            var showingInfo = new HarResponse.SalePropertyDetail.ShowingResponse()
             {
                 RealtorContactEmail = new string[] { "RealtorContactEmail@tst.com" },
                 OccupantPhone = "8888888888",
             };
-            var salePropertyInfo = new AborResponse.SalePropertyDetail.SalePropertyResponse()
+            var salePropertyInfo = new HarResponse.SalePropertyDetail.SalePropertyResponse()
             {
                 OwnerName = "OwnerName",
                 PlanName = "PlanName",
                 CompanyId = Guid.NewGuid(),
             };
-            var roomInfo = new AborResponse.RoomResponse()
+            var roomInfo = new HarResponse.RoomResponse()
             {
                 Id = Guid.NewGuid(),
                 Level = RoomLevel.First,
-                RoomType = Husa.Quicklister.Abor.Domain.Enums.RoomType.PrimaryBathroom,
-                Features = new List<RoomFeatures>()
-                {
-                    RoomFeatures.DiningArea,
-                    RoomFeatures.BreakfastBar,
-                    RoomFeatures.CeilingFans,
-                },
+                RoomType = Husa.Quicklister.Har.Domain.Enums.RoomType.ExtraRoom,
             };
-            var saleProperty = new AborResponse.SalePropertyDetail.SalePropertyDetailResponse()
+            var saleProperty = new HarResponse.SalePropertyDetail.SalePropertyDetailResponse()
             {
                 SpacesDimensionsInfo = spacesDimensionsInfo.Object,
                 AddressInfo = addressInfo.Object,
@@ -383,39 +377,39 @@ namespace Husa.Uploader.Core.Tests
                 SchoolsInfo = schoolsInfo.Object,
                 ShowingInfo = showingInfo,
                 SalePropertyInfo = salePropertyInfo,
-                Rooms = new List<AborResponse.RoomResponse>()
+                Rooms = new List<HarResponse.RoomResponse>()
                 {
                     roomInfo,
                 },
             };
 
-            var openHouses = new List<AborResponse.OpenHouseResponse>()
+            var openHouses = new List<HarResponse.OpenHouseResponse>()
             {
-              new AborResponse.OpenHouseResponse()
+              new HarResponse.OpenHouseResponse()
               {
                   StartTime = new TimeSpan(10, 0, 0),
                   EndTime = new TimeSpan(12, 0, 0),
                   Refreshments = new List<Refreshments>()
                   {
-                         Refreshments.Beverages,
+                         Refreshments.Dinner,
                   },
                   Type = Quicklister.Extensions.Domain.Enums.OpenHouseType.Wednesday,
               },
-              new AborResponse.OpenHouseResponse()
+              new HarResponse.OpenHouseResponse()
               {
                     StartTime = new TimeSpan(9, 0, 0),
                     EndTime = new TimeSpan(10, 0, 0),
                     Refreshments = new List<Refreshments>()
                     {
-                             Refreshments.Appetizers,
+                             Refreshments.Snacks,
                     },
                     Type = Quicklister.Extensions.Domain.Enums.OpenHouseType.Saturday,
               },
             };
 
-            var statusFields = new Mock<AborResponse.ListingSaleStatusFieldsResponse>();
+            var statusFields = new Mock<HarResponse.ListingSaleStatusFieldsResponse>();
 
-            var listingSale = new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse()
+            var listingSale = new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse()
             {
                 SaleProperty = saleProperty,
                 ListPrice = 127738,
@@ -461,7 +455,7 @@ namespace Husa.Uploader.Core.Tests
                 .ReturnsAsync(company);
         }
 
-        private AborUploadService GetSut()
+        private HarUploadService GetSut()
             => new(
                 this.uploaderClient.Object,
                 this.fixture.ApplicationOptions,

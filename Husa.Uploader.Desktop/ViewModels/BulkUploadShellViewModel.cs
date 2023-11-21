@@ -2,6 +2,7 @@ namespace Husa.Uploader.Desktop.ViewModels
 {
     using System.Windows;
     using System.Windows.Input;
+    using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces.ServiceActions;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Desktop.Commands;

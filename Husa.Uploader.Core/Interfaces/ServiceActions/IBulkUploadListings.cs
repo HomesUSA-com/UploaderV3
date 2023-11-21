@@ -2,7 +2,6 @@ namespace Husa.Uploader.Core.Interfaces.ServiceActions
 {
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
-    using Husa.Uploader.Crosscutting.Enums;
 
     public interface IBulkUploadListings
     {

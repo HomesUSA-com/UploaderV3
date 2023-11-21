@@ -10,7 +10,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
-    using Husa.Uploader.Crosscutting.Extensions.Abor;
+    using Husa.Uploader.Crosscutting.Extensions.Har;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.MarketRequests;
@@ -19,22 +19,22 @@ namespace Husa.Uploader.Core.Services
     using Microsoft.Extensions.Options;
     using OpenQA.Selenium;
 
-    public class AborUploadService : IAborUploadService
+    public class HarUploadService : IHarUploadService
     {
         private readonly IUploaderClient uploaderClient;
         private readonly IMediaRepository mediaRepository;
         private readonly IListingRequestRepository sqlDataLoader;
         private readonly IServiceSubscriptionClient serviceSubscriptionClient;
         private readonly ApplicationOptions options;
-        private readonly ILogger<AborUploadService> logger;
+        private readonly ILogger<HarUploadService> logger;
 
-        public AborUploadService(
+        public HarUploadService(
             IUploaderClient uploaderClient,
             IOptions<ApplicationOptions> options,
             IMediaRepository mediaRepository,
             IListingRequestRepository sqlDataLoader,
             IServiceSubscriptionClient serviceSubscriptionClient,
-            ILogger<AborUploadService> logger)
+            ILogger<HarUploadService> logger)
         {
             this.uploaderClient = uploaderClient ?? throw new ArgumentNullException(nameof(uploaderClient));
             this.mediaRepository = mediaRepository ?? throw new ArgumentNullException(nameof(mediaRepository));
@@ -44,7 +44,7 @@ namespace Husa.Uploader.Core.Services
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public MarketCode CurrentMarket => MarketCode.Austin;
+        public MarketCode CurrentMarket => MarketCode.Houston;
 
         public bool IsFlashRequired => false;
 
@@ -58,7 +58,7 @@ namespace Husa.Uploader.Core.Services
 
         public async Task<LoginResult> Login(Guid companyId)
         {
-            var marketInfo = this.options.MarketInfo.Abor;
+            var marketInfo = this.options.MarketInfo.Har;
             var company = await this.serviceSubscriptionClient.Company.GetCompany(companyId);
             var credentialsTask = this.serviceSubscriptionClient.Corporation.GetMarketReverseProspectInformation(this.CurrentMarket);
             this.uploaderClient.DeleteAllCookies();
@@ -98,7 +98,7 @@ namespace Husa.Uploader.Core.Services
 
         public UploadResult Logout()
         {
-            this.uploaderClient.NavigateToUrl(this.options.MarketInfo.Abor.LogoutUrl);
+            this.uploaderClient.NavigateToUrl(this.options.MarketInfo.Har.LogoutUrl);
             return UploadResult.Success;
         }
 
@@ -162,14 +162,14 @@ namespace Husa.Uploader.Core.Services
 
                     this.FillListingInformation(listing);
                     this.FillGeneralInformation(listing);
-                    this.FillAdditionalInformation(listing as AborListingRequest);
+                    this.FillAdditionalInformation(listing as HarListingRequest);
                     this.FillRoomInformation(listing);
-                    this.FillDocumentsAndUtilities(listing as AborListingRequest);
+                    this.FillDocumentsAndUtilities(listing as HarListingRequest);
                     this.FillGreenEnergyInformation();
-                    this.FillFinancialInformation(listing as AborListingRequest);
+                    this.FillFinancialInformation(listing as HarListingRequest);
                     this.FillShowingInformation(listing);
                     this.FillAgentOfficeInformation(listing);
-                    this.FillRemarks(listing as AborListingRequest);
+                    this.FillRemarks(listing as HarListingRequest);
 
                     await this.UpdateVirtualTour(listing, cancellationToken);
                     await this.FillMedia(listing, cancellationToken);
@@ -338,7 +338,7 @@ namespace Husa.Uploader.Core.Services
                         break;
 
                     default:
-                        throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for Austin Listing with Id '{listing.ResidentialListingID}'");
+                        throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for Houston Listing with Id '{listing.ResidentialListingID}'");
                 }
 
                 return UploadResult.Success;
@@ -406,7 +406,7 @@ namespace Husa.Uploader.Core.Services
 
         private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
-            var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.Austin, cancellationToken);
+            var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.Houston, cancellationToken);
 
             if (!virtualTours.Any())
             {
@@ -516,7 +516,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_214"), listing.SchoolName6); // High School Other
         }
 
-        private void FillDocumentsAndUtilities(AborListingRequest listing)
+        private void FillDocumentsAndUtilities(HarListingRequest listing)
         {
             string tabName = "Documents & Utilities";
             this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
@@ -628,7 +628,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SwitchTo().Window(mainWindow);
         }
 
-        private void FillAdditionalInformation(AborListingRequest listing)
+        private void FillAdditionalInformation(HarListingRequest listing)
         {
             var tabName = "Additional";
             this.uploaderClient.ClickOnElement(By.LinkText(tabName));
@@ -650,7 +650,6 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_266", listing.SecurityDesc, "Security Features", tabName); // Security Features
             this.uploaderClient.ScrollDown(200);
             this.uploaderClient.SetMultipleCheckboxById("Input_258", "None", "Accessibility Features", tabName); // Accessibility Features
-            this.uploaderClient.SetMultipleCheckboxById("Input_265", listing.PatioAndPorchFeatures, "Patio and Porch Features", tabName); // Patio and Porch Features
             this.uploaderClient.SetMultipleCheckboxById("Input_255", listing.LaundryLocDesc, "Laundry Location", tabName); // Laundry Location (3)
             this.uploaderClient.SetMultipleCheckboxById("Input_262", "None", "Private Pool Features (On Property)", tabName); // Private Pool Features (On Property)
             this.uploaderClient.WriteTextbox(By.Id("Input_259"), listing.NumberFireplaces); // # of Fireplaces
@@ -722,23 +721,18 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        private void FillFinancialInformation(AborListingRequest listing)
+        private void FillFinancialInformation(HarListingRequest listing)
         {
             this.uploaderClient.ClickOnElement(By.LinkText("Financial"));
             Thread.Sleep(200);
             this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
 
-            this.uploaderClient.SetSelect(By.Id("Input_282"), listing.HasHoa ? "1" : "0"); // Association YN
-
-            if (listing.HasHoa)
-            {
-                this.uploaderClient.WriteTextbox(By.Id("Input_283"), listing.AssocName, true); // HOA Name
-                this.uploaderClient.WriteTextbox(By.Id("Input_285"), listing.AssocFee, true); // HOA Fee
-                this.uploaderClient.SetSelect(By.Id("Input_286"), listing.HOA, true); // Association Requirement
-                this.uploaderClient.SetSelect(By.Id("Input_287"), listing.AssocFeeFrequency, true); // HOA Frequency
-                this.uploaderClient.WriteTextbox(By.Id("Input_288"), listing.AssocTransferFee, true); // HOA Transfer Fee
-                this.uploaderClient.SetMultipleCheckboxById("Input_290", listing.AssocFeeIncludes); // HOA Fees Include (5)
-            }
+            this.uploaderClient.WriteTextbox(By.Id("Input_283"), listing.AssocName, true); // HOA Name
+            this.uploaderClient.WriteTextbox(By.Id("Input_285"), listing.AssocFee, true); // HOA Fee
+            this.uploaderClient.SetSelect(By.Id("Input_286"), listing.HOA, true); // Association Requirement
+            this.uploaderClient.SetSelect(By.Id("Input_287"), listing.AssocFeeFrequency, true); // HOA Frequency
+            this.uploaderClient.WriteTextbox(By.Id("Input_288"), listing.AssocTransferFee, true); // HOA Transfer Fee
+            this.uploaderClient.SetMultipleCheckboxById("Input_290", listing.AssocFeeIncludes); // HOA Fees Include (5)
 
             this.uploaderClient.SetMultipleCheckboxById("Input_291", listing.FinancingProposed); // Acceptable Financing (5)
             this.uploaderClient.WriteTextbox(By.Id("Input_296"), "0"); // Estimated Taxes ($)
@@ -793,7 +787,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetSelect(By.Id("Input_353"), "0", true); // Intermediary
         }
 
-        private void FillRemarks(AborListingRequest listing)
+        private void FillRemarks(HarListingRequest listing)
         {
             this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
             Thread.Sleep(100);
