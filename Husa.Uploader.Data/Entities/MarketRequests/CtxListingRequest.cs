@@ -279,7 +279,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.HasAgentBonus = showingInfo.HasAgentBonus;
                 residentialListingRequest.HasBonusWithAmount = showingInfo.HasBonusWithAmount;
                 residentialListingRequest.AgentBonusAmount = showingInfo.AgentBonusAmount.DecimalToString();
-                residentialListingRequest.AgentBonusAmountType = showingInfo.AgentBonusAmountType?.ToStringFromEnumMember();
+                residentialListingRequest.AgentBonusAmountType = showingInfo.AgentBonusAmountType.ToStringFromEnumMember();
                 residentialListingRequest.CompBuyBonusExpireDate = showingInfo.BonusExpirationDate;
                 residentialListingRequest.EnableOpenHouse = showingInfo.EnableOpenHouses;
             }
