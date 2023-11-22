@@ -66,32 +66,20 @@ namespace Husa.Uploader.Core.Services
             var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
 
             // Connect to the login page
+            var loginButtonId = "login_btn";
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("loginbtn"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id(loginButtonId));
 
-            this.uploaderClient.WriteTextbox(By.Name("username"), credentials[LoginCredentials.Username]);
-            this.uploaderClient.WriteTextbox(By.Name("password"), credentials[LoginCredentials.Password]);
-            this.uploaderClient.ClickOnElementById("loginbtn");
+            this.uploaderClient.WriteTextbox(By.Id("username"), credentials[LoginCredentials.Username]);
+            this.uploaderClient.WriteTextbox(By.Id("password"), credentials[LoginCredentials.Password]);
+            Thread.Sleep(1000);
+            this.uploaderClient.ClickOnElementById(loginButtonId);
 
-            Thread.Sleep(2000);
-
-            // Use the same browser page NOT _blank
-            Thread.Sleep(2000);
-
-            if (this.uploaderClient.IsElementVisible(By.Id("NewsDetailDismiss")))
-            {
-                this.uploaderClient.ClickOnElementById("NewsDetailDismiss");
-            }
-
-            if (this.uploaderClient.IsElementVisible(By.LinkText("Skip")))
-            {
-                this.uploaderClient.ClickOnElement(By.LinkText("Skip"), shouldWait: false, waitTime: 0, isElementOptional: true);
-            }
-
-            Thread.Sleep(2000);
-
-            this.uploaderClient.NavigateToUrl("https://matrix.abor.com/Matrix/Default.aspx?c=AAEAAAD*****AQAAAAAAAAARAQAAAEQAAAAGAgAAAAQ4NzU5DUAGAwAAAAVVLMOwWA0CCw))&f=");
-            Thread.Sleep(2000);
+            Thread.Sleep(1000);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("RedirectingPopup"));
+            Thread.Sleep(4000);
+            this.uploaderClient.NavigateToUrl("https://www.har.com/moa_mls/goMatrix");
+            Thread.Sleep(1000);
 
             return LoginResult.Logged;
         }
@@ -433,7 +421,7 @@ namespace Husa.Uploader.Core.Services
 
         private void NavigateToNewPropertyInput()
         {
-            this.uploaderClient.NavigateToUrl("https://matrix.abor.com/Matrix/AddEdit");
+            this.uploaderClient.NavigateToUrl("http://matrix.harmls.com/Matrix/AddEditInput");
             this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Add new"));
             this.uploaderClient.ClickOnElement(By.LinkText("Add new"));
             this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"));
@@ -446,7 +434,7 @@ namespace Husa.Uploader.Core.Services
 
         private void NavigateToQuickEdit(string mlsNumber)
         {
-            this.uploaderClient.NavigateToUrl("https://matrix.abor.com/Matrix/AddEdit");
+            this.uploaderClient.NavigateToUrl("https://matrix.harmls.com/Matrix/AddEdit");
             Thread.Sleep(1000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lvInputUISections_ctrl0_tbQuickEditCommonID_m_txbInternalTextBox"));
             this.uploaderClient.WriteTextbox(By.Id("m_lvInputUISections_ctrl0_tbQuickEditCommonID_m_txbInternalTextBox"), value: mlsNumber);

@@ -173,6 +173,7 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<ISaborUploadService, SaborUploadService>();
             services.AddTransient<ICtxUploadService, CtxUploadService>();
             services.AddTransient<IAborUploadService, AborUploadService>();
+            services.AddTransient<IHarUploadService, HarUploadService>();
             services.AddSingleton<IBulkUploadFactory, BulkUploadFactory>();
             services.AddTransient<ISaborBulkUploadService, SaborBulkUploadService>();
 
