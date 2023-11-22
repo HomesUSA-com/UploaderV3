@@ -1,31 +1,24 @@
 namespace Husa.Uploader.Core.Tests
 {
     using System.Threading;
-    using Husa.CompanyServicesManager.Api.Client.Interfaces;
-    using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Quicklister.Har.Domain.Enums.Domain;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
-    using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.MarketRequests;
-    using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
     using HarResponse = Husa.Quicklister.Har.Api.Contracts.Response;
 
     [Collection(nameof(ApplicationServicesFixture))]
-    public class HarUploadServiceTests
+    public class HarUploadServiceTests : MarketUploadServiceTests<HarUploadService, HarListingRequest>
     {
         private readonly Mock<IUploaderClient> uploaderClient = new();
-        private readonly Mock<IMediaRepository> mediaRepository = new();
-        private readonly Mock<IListingRequestRepository> sqlDataLoader = new();
-        private readonly Mock<IServiceSubscriptionClient> serviceSubscriptionClient = new();
         private readonly Mock<ILogger<HarUploadService>> logger = new();
         private readonly ApplicationServicesFixture fixture;
 
@@ -33,105 +26,6 @@ namespace Husa.Uploader.Core.Tests
         {
             this.fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             this.uploaderClient.SetupAllProperties();
-        }
-
-        [Fact]
-        public async Task Upload_ReturnSuccess()
-        {
-            // Arrange
-            this.SetUpCredentials();
-            this.SetUpVirtualTours();
-            this.SetUpCompany();
-
-            var listingSale = GetListingRequestDetailResponse();
-            var harListing = new HarListingRequest(listingSale).CreateFromApiResponseDetail();
-
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(harListing);
-
-            // Act
-            var sut = this.GetSut();
-            var result = await sut.Upload(harListing);
-
-            // Assert
-            Assert.Equal(UploadResult.Success, result);
-        }
-
-        [Fact]
-        public async Task Upload_Fails()
-        {
-            // Arrange
-            var sut = this.GetSut();
-
-            // Act and Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.Upload((HarListingRequest)null));
-        }
-
-        [Fact]
-        public async Task UploadVirtualTour_ReturnSuccess()
-        {
-            this.SetUpCredentials();
-            this.SetUpVirtualTours();
-            this.SetUpCompany();
-            var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
-
-            // Act
-            var sut = this.GetSut();
-            var result = await sut.UploadVirtualTour(harListing);
-
-            // Assert
-            Assert.Equal(UploadResult.Success, result);
-        }
-
-        [Fact]
-        public async Task UploadVirtualTour_ReturnSuccessWithoutVirtualTours()
-        {
-            // Arrange
-            this.SetUpCredentials();
-            this.SetUpCompany();
-            this.mediaRepository
-                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ResidentialListingVirtualTour[0])
-            .Verifiable();
-            var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
-            var sut = this.GetSut();
-
-            // Act
-            var result = await sut.UploadVirtualTour(harListing);
-
-            // Assert
-            Assert.Equal(UploadResult.Success, result);
-        }
-
-        [Fact]
-        public async Task UploadVirtualTour_Fails()
-        {
-            // Arrange
-            var sut = this.GetSut();
-
-            // Act and Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.UploadVirtualTour((HarListingRequest)null));
-        }
-
-        [Fact]
-        public async Task UpdateCompletionDate_Success()
-        {
-            // Arrange
-            this.SetUpCredentials();
-            this.SetUpCompany();
-            var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
-            harListing.MLSNum = "MLSNum";
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(harListing);
-            var sut = this.GetSut();
-
-            // Act
-            var result = await sut.UpdateCompletionDate(harListing);
-
-            // Assert
-            Assert.Equal(UploadResult.Success, result);
         }
 
         [Fact]
@@ -309,29 +203,22 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(string.Empty, result);
         }
 
-        [Fact]
-        public async Task LoginWithNoCredentials_UseDefaultSuccess()
+        protected override HarUploadService GetSut()
+            => new(
+                this.uploaderClient.Object,
+                this.fixture.ApplicationOptions,
+                this.mediaRepository.Object,
+                this.sqlDataLoader.Object,
+                this.serviceSubscriptionClient.Object,
+                this.logger.Object);
+
+        protected override HarListingRequest GetEmptyListingRequest()
+            => new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+
+        protected override ResidentialListingRequest GetResidentialListingRequest()
         {
-            // Arrange
-            this.SetUpCredentials();
-            this.SetUpCompany(null, null);
-
-            // Act
-            var sut = this.GetSut();
-            var result = await sut.Login(Guid.NewGuid());
-
-            // Assert
-            Assert.Equal(LoginResult.Logged, result);
-        }
-
-        private static ResidentialListingVirtualTour GetResidentialListingVirtualTour()
-        {
-            var id = Guid.NewGuid();
-            return new()
-            {
-                Id = id,
-                MediaUri = new Uri("https://test.org/" + id.ToString()),
-            };
+            var listingSale = GetListingRequestDetailResponse();
+            return new HarListingRequest(listingSale).CreateFromApiResponseDetail();
         }
 
         private static HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse GetListingRequestDetailResponse()
@@ -419,49 +306,5 @@ namespace Husa.Uploader.Core.Tests
 
             return listingSale;
         }
-
-        private void SetUpCredentials()
-        {
-            this.serviceSubscriptionClient
-                .Setup(x => x.Corporation.GetMarketReverseProspectInformation(It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ReverseProspectInfoResponse()
-                {
-                    UserName = "UserName",
-                    Password = "password",
-                })
-            .Verifiable();
-        }
-
-        private void SetUpVirtualTours()
-        {
-            this.mediaRepository
-                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ResidentialListingVirtualTour[] { GetResidentialListingVirtualTour(), GetResidentialListingVirtualTour() })
-            .Verifiable();
-        }
-
-        private void SetUpCompany(string username = "username", string password = "password")
-        {
-            var company = new CompanyDetail()
-            {
-                BrokerInfo = new BrokerInfoResponse()
-                {
-                    SiteUsername = username,
-                    SitePassword = password,
-                },
-            };
-            this.serviceSubscriptionClient
-                .Setup(x => x.Company.GetCompany(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(company);
-        }
-
-        private HarUploadService GetSut()
-            => new(
-                this.uploaderClient.Object,
-                this.fixture.ApplicationOptions,
-                this.mediaRepository.Object,
-                this.sqlDataLoader.Object,
-                this.serviceSubscriptionClient.Object,
-                this.logger.Object);
     }
 }
