@@ -279,7 +279,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.HasAgentBonus = showingInfo.HasAgentBonus;
                 residentialListingRequest.HasBonusWithAmount = showingInfo.HasBonusWithAmount;
                 residentialListingRequest.AgentBonusAmount = showingInfo.AgentBonusAmount.DecimalToString();
-                residentialListingRequest.AgentBonusAmountType = showingInfo.AgentBonusAmountType?.ToStringFromEnumMember();
+                residentialListingRequest.AgentBonusAmountType = showingInfo.AgentBonusAmountType.ToStringFromEnumMember();
                 residentialListingRequest.CompBuyBonusExpireDate = showingInfo.BonusExpirationDate;
                 residentialListingRequest.EnableOpenHouse = showingInfo.EnableOpenHouses;
             }
@@ -356,11 +356,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
                 residentialListingRequest.OpenHouse = this.OpenHouse;
             }
-        }
-
-        public override string GetBuyerAgentComp(string compBuy, string compBuyType)
-        {
-            throw new NotImplementedException();
         }
 
         public override string GetAgentBonusRemarksMessage()

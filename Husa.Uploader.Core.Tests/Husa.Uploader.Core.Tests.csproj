@@ -19,6 +19,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Husa.Uploader.Core\Husa.Uploader.Core.csproj" />
+        <ProjectReference Include="..\Husa.Uploader.Crosscutting.Tests\Husa.Uploader.Crosscutting.Tests.csproj" />
     </ItemGroup>
 
 </Project>

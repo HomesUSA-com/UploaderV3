@@ -2,21 +2,23 @@ namespace Husa.Uploader.Desktop.Factories
 {
     using System;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
+    using Husa.Uploader.Core.Interfaces.BulkUpload;
     using Husa.Uploader.Core.Interfaces.ServiceActions;
     using Microsoft.Extensions.DependencyInjection;
 
-    public class UploaderFactory : IUploadFactory
+    public class BulkUploadFactory : IBulkUploadFactory
     {
         private readonly IServiceProvider serviceProvider;
-        private IUploadListing uploader;
+        private IBulkUploadListings uploader;
 
-        public UploaderFactory(IServiceProvider serviceProvider)
+        public BulkUploadFactory(IServiceProvider serviceProvider)
         {
             this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
-        public IUploadListing Uploader
+        public IBulkUploadListings Uploader
         {
             get => this.uploader ?? throw new InvalidOperationException($"The field '{nameof(this.uploader)}' must be initialized first");
             private set => this.uploader = value;
@@ -27,9 +29,6 @@ namespace Husa.Uploader.Desktop.Factories
             return marketCode switch
             {
                 MarketCode.SanAntonio => IsAssignableFrom<ISaborUploadService, T>(),
-                MarketCode.CTX => IsAssignableFrom<ICtxUploadService, T>(),
-                MarketCode.Austin => IsAssignableFrom<IAborUploadService, T>(),
-                MarketCode.Houston => IsAssignableFrom<IHarUploadService, T>(),
                 _ => false,
             };
         }
@@ -44,25 +43,23 @@ namespace Husa.Uploader.Desktop.Factories
             this.Uploader.CancelOperation();
         }
 
-        public T Create<T>(MarketCode marketCode)
+        public T Create<T>(MarketCode marketCode, RequestFieldChange requestFieldChange)
         {
             switch (marketCode)
             {
                 case MarketCode.SanAntonio:
-                    this.Uploader = this.serviceProvider.GetRequiredService<ISaborUploadService>();
-                    return (T)this.Uploader;
-                case MarketCode.CTX:
-                    this.Uploader = this.serviceProvider.GetRequiredService<ICtxUploadService>();
-                    return (T)this.Uploader;
-                case MarketCode.Austin:
-                    this.Uploader = this.serviceProvider.GetRequiredService<IAborUploadService>();
-                    return (T)this.Uploader;
-                case MarketCode.Houston:
-                    this.Uploader = this.serviceProvider.GetRequiredService<IHarUploadService>();
-                    return (T)this.Uploader;
+                    this.Uploader = this.serviceProvider.GetRequiredService<ISaborBulkUploadService>();
+                    break;
                 default:
                     throw new NotSupportedException($"The market {marketCode} is not supported");
             }
+
+            if (this.uploader is not null)
+            {
+                this.uploader.SetRequestFieldChange(requestFieldChange);
+            }
+
+            return (T)this.Uploader;
         }
 
         private static bool IsAssignableFrom<TService, T>()

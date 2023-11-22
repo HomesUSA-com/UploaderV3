@@ -4,32 +4,32 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
     using System.Linq;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
-    using Husa.Quicklister.Abor.Api.Contracts.Response;
-    using Husa.Quicklister.Abor.Api.Contracts.Response.ListingRequest.SaleRequest;
-    using Husa.Quicklister.Abor.Api.Contracts.Response.SalePropertyDetail;
+    using Husa.Quicklister.Har.Api.Contracts.Response;
+    using Husa.Quicklister.Har.Api.Contracts.Response.ListingRequest.SaleRequest;
+    using Husa.Quicklister.Har.Api.Contracts.Response.SalePropertyDetail;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
 
-    public class AborListingRequest : ResidentialListingRequest
+    public class HarListingRequest : ResidentialListingRequest
     {
         private const string DefaultIntegerAsStringValue = "0";
 
         private readonly ListingSaleRequestQueryResponse listingResponse;
         private readonly ListingSaleRequestDetailResponse listingDetailResponse;
 
-        public AborListingRequest(ListingSaleRequestQueryResponse listingResponse)
+        public HarListingRequest(ListingSaleRequestQueryResponse listingResponse)
             : this()
         {
             this.listingResponse = listingResponse ?? throw new ArgumentNullException(nameof(listingResponse));
         }
 
-        public AborListingRequest(ListingSaleRequestDetailResponse listingDetailResponse)
+        public HarListingRequest(ListingSaleRequestDetailResponse listingDetailResponse)
             : this()
         {
             this.listingDetailResponse = listingDetailResponse ?? throw new ArgumentNullException(nameof(listingDetailResponse));
         }
 
-        private AborListingRequest()
+        private HarListingRequest()
             : base()
         {
             this.InExtraTerritorialJurisdiction = false;
@@ -41,19 +41,26 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             this.OpenHouse = new List<OpenHouseRequest>();
         }
 
-        public override MarketCode MarketCode => MarketCode.Austin;
+        public bool HasDishwasher { get; set; }
+        public bool HasCompactor { get; set; }
+        public bool HasCommunityPool { get; set; }
+        public bool HasIcemaker { get; set; }
+        public bool HasDisposal { get; set; }
+        public bool HasMicrowawe { get; set; }
+        public bool IsActiveCommunity { get; set; }
+        public bool HasUtilitiesDescription { get; set; }
+        public bool HasOtherFees { get; set; }
+        public string WasherConnections { get; set; }
+
+        public override MarketCode MarketCode => MarketCode.Houston;
         public override BuiltStatus BuiltStatus => this.YearBuiltDesc switch
         {
-            "TB" => BuiltStatus.ToBeBuilt,
-            "NW" => BuiltStatus.ReadyNow,
-            "UC" => BuiltStatus.WithCompletion,
+            "BEBLT" => BuiltStatus.ToBeBuilt,
+            "NVLIV" => BuiltStatus.ReadyNow,
             _ => BuiltStatus.WithCompletion,
         };
 
-        public bool HasHoa { get; set; }
-        public string PatioAndPorchFeatures { get; set; }
-
-        public override ResidentialListingRequest CreateFromApiResponse() => new AborListingRequest()
+        public override ResidentialListingRequest CreateFromApiResponse() => new HarListingRequest()
         {
             ResidentialListingRequestID = this.listingResponse.Id,
             OwnerName = this.listingResponse.OwnerName,
@@ -73,7 +80,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
         public override ResidentialListingRequest CreateFromApiResponseDetail()
         {
-            var residentialListingRequest = new AborListingRequest
+            var residentialListingRequest = new HarListingRequest
             {
                 ResidentialListingRequestID = this.listingDetailResponse.Id,
                 ResidentialListingRequestGUID = this.listingDetailResponse.Id,
@@ -152,14 +159,23 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.Legal = propertyInfo.LegalDescription;
                 residentialListingRequest.TaxID = propertyInfo.TaxId;
                 residentialListingRequest.MLSArea = propertyInfo.MlsArea?.ToStringFromEnumMember();
+                residentialListingRequest.MLSSubArea = propertyInfo.SubArea?.ToStringFromEnumMember();
+                residentialListingRequest.SectionNum = propertyInfo.SectionNum;
                 residentialListingRequest.UpdateGeocodes = propertyInfo.UpdateGeocodes;
                 residentialListingRequest.Latitude = propertyInfo.Latitude;
                 residentialListingRequest.Longitude = propertyInfo.Longitude;
+                residentialListingRequest.PropSubType = propertyInfo.PropertyType.ToStringFromEnumMembers();
                 residentialListingRequest.LotDim = propertyInfo.LotDimension;
-                residentialListingRequest.LotSize = propertyInfo.LotSize;
                 residentialListingRequest.LotDesc = propertyInfo.LotDescription.ToStringFromEnumMembers();
-                residentialListingRequest.OtherFees = propertyInfo.TaxLot;
-                residentialListingRequest.PropSubType = propertyInfo.PropertyType?.ToStringFromEnumMember();
+                residentialListingRequest.LotSize = propertyInfo.LotSize?.ToStringFromEnumMember();
+                residentialListingRequest.LotSizeAcres = propertyInfo.LotSizeSqft?.ToString();
+                residentialListingRequest.LotSizeSrc = propertyInfo.LotSizeSource?.ToStringFromEnumMember();
+                residentialListingRequest.MapscoMapCoord = propertyInfo.MapscoGrid;
+                residentialListingRequest.IsNewConstruction = propertyInfo.IsNewConstruction;
+                residentialListingRequest.LegalSubdivision = propertyInfo.LegalSubdivision?.ToStringFromEnumMember();
+                residentialListingRequest.IsPlannedDevelopment = propertyInfo.IsPlannedCommunity;
+                residentialListingRequest.PlannedDevelopment = propertyInfo.PlannedCommunity?.ToStringFromEnumMember();
+                residentialListingRequest.HousingTypeDesc = propertyInfo.HousingType?.ToStringFromEnumMember();
             }
 
             void FillSpacesDimensionsInfo(SpacesDimensionsResponse spacesDimensionsInfo)
@@ -169,14 +185,15 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     throw new ArgumentNullException(nameof(spacesDimensionsInfo));
                 }
 
-                residentialListingRequest.NumStories = spacesDimensionsInfo.StoriesTotal?.ToStringFromEnumMember();
-                residentialListingRequest.NumDiningAreas = spacesDimensionsInfo.DiningAreasTotal;
-                residentialListingRequest.NumLivingAreas = spacesDimensionsInfo.LivingAreasTotal;
-                residentialListingRequest.BathsFull = spacesDimensionsInfo.FullBathsTotal;
-                residentialListingRequest.BathsHalf = spacesDimensionsInfo.HalfBathsTotal;
-                residentialListingRequest.NumBedsMainLevel = spacesDimensionsInfo.MainLevelBedroomTotal;
-                residentialListingRequest.NumBedsOtherLevels = spacesDimensionsInfo.OtherLevelsBedroomTotal;
-                residentialListingRequest.SqFtTotal = spacesDimensionsInfo.SqFtTotal;
+                residentialListingRequest.NumStories = spacesDimensionsInfo.Stories?.ToString();
+                residentialListingRequest.BathsFull = spacesDimensionsInfo.BathsFull;
+                residentialListingRequest.BathsHalf = spacesDimensionsInfo.BathsHalf;
+                residentialListingRequest.Beds = spacesDimensionsInfo.NumBedrooms;
+                residentialListingRequest.SqFtTotal = spacesDimensionsInfo.SqftTotal;
+                residentialListingRequest.RoomDescription = spacesDimensionsInfo.RoomDescription.ToStringFromEnumMembers();
+                residentialListingRequest.BedBathDesc = spacesDimensionsInfo.PrimaryBathDescription.ToStringFromEnumMembers();
+                residentialListingRequest.BedroomDescription = spacesDimensionsInfo.BedroomDescription.ToStringFromEnumMembers();
+                residentialListingRequest.KitchenDescription = spacesDimensionsInfo.KitchenDescription.ToStringFromEnumMembers();
             }
 
             void FillFeaturesInfo(FeaturesResponse featuresInfo)
@@ -187,7 +204,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 }
 
                 residentialListingRequest.ExteriorDesc = featuresInfo.ExteriorFeatures.ToStringFromEnumMembers();
-                residentialListingRequest.FacesDesc = featuresInfo.HomeFaces?.ToStringFromEnumMember();
+                residentialListingRequest.FacesDesc = featuresInfo.HomeFaces.ToStringFromEnumMembers();
                 residentialListingRequest.FoundationDesc = featuresInfo.Foundation.ToStringFromEnumMembers();
                 residentialListingRequest.RoofDesc = featuresInfo.RoofDescription.ToStringFromEnumMembers();
                 residentialListingRequest.ConstructionDesc = featuresInfo.ConstructionMaterials.ToStringFromEnumMembers();
@@ -195,31 +212,35 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.NumberFireplaces = featuresInfo.Fireplaces?.ToString();
                 residentialListingRequest.FloorsDesc = featuresInfo.Floors.ToStringFromEnumMembers();
                 residentialListingRequest.GarageDesc = featuresInfo.GarageDescription.ToStringFromEnumMembers();
-                residentialListingRequest.AppliancesDesc = featuresInfo.Appliances.ToStringFromEnumMembers();
-                residentialListingRequest.FenceDesc = featuresInfo.Fencing.ToStringFromEnumMembers();
                 residentialListingRequest.WaterfrontFeatures = featuresInfo.WaterfrontFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.WaterDesc = featuresInfo.WaterSewer.ToStringFromEnumMembers();
-                residentialListingRequest.BodyofWater = featuresInfo.WaterBodyName?.ToStringFromEnumMember();
-                residentialListingRequest.DistanceToWaterAccess = featuresInfo.DistanceToWaterAccess?.ToStringFromEnumMember();
-                residentialListingRequest.GreenWaterConservation = featuresInfo.WaterSource.ToStringFromEnumMembers();
                 residentialListingRequest.RestrictionsDesc = featuresInfo.RestrictionsDescription.ToStringFromEnumMembers();
-                residentialListingRequest.CommonFeatures = featuresInfo.NeighborhoodAmenities.ToStringFromEnumMembers();
                 residentialListingRequest.HeatSystemDesc = featuresInfo.HeatSystem.ToStringFromEnumMembers();
                 residentialListingRequest.CoolSystemDesc = featuresInfo.CoolingSystem.ToStringFromEnumMembers();
-                residentialListingRequest.SecurityDesc = featuresInfo.SecurityFeatures.ToStringFromEnumMembers();
-                residentialListingRequest.UtilitiesDesc = featuresInfo.UtilitiesDescription.ToStringFromEnumMembers();
-                residentialListingRequest.WindowCoverings = featuresInfo.WindowFeatures.ToStringFromEnumMembers();
-                residentialListingRequest.UnitStyleDesc = featuresInfo.UnitStyle.ToStringFromEnumMembers();
                 residentialListingRequest.GarageCapacity = featuresInfo.GarageSpaces;
-                residentialListingRequest.LaundryLocDesc = featuresInfo.LaundryLocation.ToStringFromEnumMembers();
                 residentialListingRequest.InteriorDesc = featuresInfo.InteriorFeatures.ToStringFromEnumMembers();
-                residentialListingRequest.GuestAccommodationsDesc = featuresInfo.GuestAccommodationsDescription.ToStringFromEnumMembers();
                 residentialListingRequest.PublicRemarks = featuresInfo.PropertyDescription;
-                residentialListingRequest.NumGuestBeds = featuresInfo.GuestBedroomsTotal;
-                residentialListingRequest.NumGuestHalfBaths = featuresInfo.GuestHalfBathsTotal;
-                residentialListingRequest.NumGuestFullBaths = featuresInfo.GuestFullBathsTotal;
-                residentialListingRequest.PatioAndPorchFeatures = featuresInfo.PatioAndPorchFeatures.ToStringFromEnumMembers();
-                residentialListingRequest.ViewDesc = featuresInfo.View.ToStringFromEnumMembers();
+                residentialListingRequest.HasDishwasher = featuresInfo.HasDishwasher;
+                residentialListingRequest.HasCompactor = featuresInfo.HasCompactor;
+                residentialListingRequest.HasDisposal = featuresInfo.HasDisposal;
+                residentialListingRequest.HasIcemaker = featuresInfo.HasIcemaker;
+                residentialListingRequest.HasCommunityPool = featuresInfo.HasCommunityPool;
+                residentialListingRequest.OvenDesc = featuresInfo.OvenDescription.ToStringFromEnumMembers();
+                residentialListingRequest.GolfCourseName = featuresInfo.GolfCourseName?.ToStringFromEnumMember();
+                residentialListingRequest.Disclosures = featuresInfo.Disclosures.ToStringFromEnumMembers();
+                residentialListingRequest.EnergyDesc = featuresInfo.EnergyFeatures.ToStringFromEnumMembers();
+                residentialListingRequest.HasMicrowawe = featuresInfo.HasMicrowawe;
+                residentialListingRequest.HasUtilitiesDescription = featuresInfo.HasUtilitiesDescription;
+                residentialListingRequest.GreenCerts = featuresInfo.GreenCertification.ToStringFromEnumMembers();
+                residentialListingRequest.HasPool = featuresInfo.HasPool;
+                residentialListingRequest.PoolDesc = featuresInfo.Pool.ToStringFromEnumMembers();
+                residentialListingRequest.CountertopsDesc = featuresInfo.Countertops?.ToString();
+                residentialListingRequest.HousingStyleDesc = featuresInfo.HousingStyle.ToStringFromEnumMembers();
+                residentialListingRequest.AccessInstructionsDesc = featuresInfo.AccessInstructions.ToStringFromEnumMembers();
+                residentialListingRequest.RangeDesc = featuresInfo.RangeDescription.ToStringFromEnumMembers();
+                residentialListingRequest.WasherConnections = featuresInfo.WasherConnections.ToStringFromEnumMembers();
+
+                residentialListingRequest.IsActiveCommunity = featuresInfo.IsActiveCommunity;
             }
 
             void FillFinancialInfo(FinancialResponse financialInfo)
@@ -230,10 +251,9 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 }
 
                 residentialListingRequest.FinancingProposed = financialInfo.AcceptableFinancing.ToStringFromEnumMembers();
-                residentialListingRequest.ExemptionsDesc = financialInfo.TaxExemptions.ToStringFromEnumMembers();
+                residentialListingRequest.ExemptionsDesc = financialInfo.TaxExemptions;
                 residentialListingRequest.TaxRate = financialInfo.TaxRate.StrictDecimalToString();
                 residentialListingRequest.TaxYear = financialInfo.TaxYear.IntegerToString();
-                residentialListingRequest.TitleCo = financialInfo.TitleCompany;
                 residentialListingRequest.HasAgentBonus = financialInfo.HasAgentBonus;
                 residentialListingRequest.HasBonusWithAmount = financialInfo.HasBonusWithAmount;
                 residentialListingRequest.AgentBonusAmount = financialInfo.AgentBonusAmount.DecimalToString();
@@ -242,12 +262,13 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.BuyerCheckBox = financialInfo.HasBuyerIncentive;
                 residentialListingRequest.BuyerIncentive = financialInfo.BuyersAgentCommission.DecimalToString();
                 residentialListingRequest.BuyerIncentiveDesc = financialInfo.BuyersAgentCommissionType.ToStringFromEnumMember();
-                residentialListingRequest.HasHoa = financialInfo.HasHoa;
                 residentialListingRequest.HOA = financialInfo.HOARequirement?.ToStringFromEnumMember();
                 residentialListingRequest.AssocName = financialInfo.HoaName;
                 residentialListingRequest.AssocFee = financialInfo.HoaFee.HasValue ? decimal.ToInt32(financialInfo.HoaFee.Value) : 0;
-                residentialListingRequest.AssocFeeIncludes = financialInfo.HoaIncludes.ToStringFromEnumMembers();
                 residentialListingRequest.AssocFeeFrequency = financialInfo.BillingFrequency?.ToStringFromEnumMember();
+                residentialListingRequest.AssocPhone = financialInfo.HoaPhone;
+                residentialListingRequest.OtherFeesInclude = financialInfo.OtherFeesInclude;
+                residentialListingRequest.HasOtherFees = financialInfo.HasOtherFees;
             }
 
             void FillShowingInfo(ShowingResponse showingInfo)
@@ -259,17 +280,12 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
                 residentialListingRequest.AgentListApptPhone = showingInfo.ContactPhone;
                 residentialListingRequest.OtherPhone = showingInfo.OccupantPhone;
-                residentialListingRequest.LockboxTypeDesc = showingInfo.LockBoxType?.ToStringFromEnumMember();
-                residentialListingRequest.LockboxLocDesc = showingInfo.LockBoxSerialNumber;
-                residentialListingRequest.ShowingInstructions = showingInfo.ShowingInstructions;
-                residentialListingRequest.Showing = showingInfo.ShowingRequirements.ToStringFromEnumMembers();
+                residentialListingRequest.AgentPrivateRemarks = showingInfo.AgentPrivateRemarks;
+                residentialListingRequest.ShowingInstructions = showingInfo.ShowingInstructions.ToStringFromEnumMembers();
                 residentialListingRequest.RealtorContactEmail = showingInfo.RealtorContactEmail.ToStringFromCollection(";");
                 residentialListingRequest.Directions = showingInfo.Directions;
-                residentialListingRequest.AgentPrivateRemarks = showingInfo.AgentPrivateRemarks;
-                residentialListingRequest.AgentPrivateRemarks2 = showingInfo.AgentPrivateRemarksAdditional;
                 residentialListingRequest.EnableOpenHouse = showingInfo.EnableOpenHouses;
                 residentialListingRequest.AllowPendingList = showingInfo.ShowOpenHousesPending;
-                residentialListingRequest.OwnerName = showingInfo.OwnerName;
             }
 
             void FillSchoolsInfo(SchoolsResponse schoolsInfo)
@@ -280,12 +296,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 }
 
                 residentialListingRequest.SchoolDistrict = schoolsInfo.SchoolDistrict?.ToStringFromEnumMember();
-                residentialListingRequest.SchoolName1 = schoolsInfo.ElementarySchool?.ToStringFromEnumMember();
-                residentialListingRequest.SchoolName2 = schoolsInfo.MiddleSchool?.ToStringFromEnumMember();
                 residentialListingRequest.SchoolName3 = schoolsInfo.HighSchool?.ToStringFromEnumMember();
-                residentialListingRequest.SchoolName4 = schoolsInfo.OtherElementarySchool;
-                residentialListingRequest.SchoolName5 = schoolsInfo.OtherMiddleSchool;
-                residentialListingRequest.SchoolName6 = schoolsInfo.OtherHighSchool;
             }
 
             void FillStatusInfo(ListingSaleStatusFieldsResponse statusInfo)
@@ -297,7 +308,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
                 residentialListingRequest.SoldPrice = statusInfo.ClosePrice;
                 residentialListingRequest.ClosedDate = statusInfo.ClosedDate;
-                residentialListingRequest.PendingDate = statusInfo.PendingDate;
+                residentialListingRequest.ContractDate = statusInfo.ContractDate;
                 residentialListingRequest.SellConcess = statusInfo.SellConcess;
                 residentialListingRequest.OffMarketDate = statusInfo.OffMarketDate;
                 residentialListingRequest.BackOnMarketDate = statusInfo.BackOnMarketDate;
@@ -322,7 +333,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     {
                         Level = room.Level.ToStringFromEnumMember(),
                         RoomType = room.RoomType.ToStringFromEnumMember(),
-                        Features = room.Features.ToStringFromEnumMembers(),
                     });
                 }
 

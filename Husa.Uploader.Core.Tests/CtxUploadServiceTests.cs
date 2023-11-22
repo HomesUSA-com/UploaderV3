@@ -1,36 +1,29 @@
 namespace Husa.Uploader.Core.Tests
 {
     using System.Collections.ObjectModel;
-    using Husa.CompanyServicesManager.Api.Client.Interfaces;
-    using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.CTX.Api.Contracts.Response;
     using Husa.Quicklister.CTX.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.CTX.Api.Contracts.Response.SalePropertyDetail;
     using Husa.Quicklister.CTX.Domain.Enums;
     using Husa.Quicklister.CTX.Domain.Enums.Entities;
+    using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
-    using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.MarketRequests;
-    using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
     using Moq;
     using OpenQA.Selenium;
     using Xunit;
     using AddressInfoResponse = Husa.Quicklister.CTX.Api.Contracts.Response.SalePropertyDetail.AddressInfoResponse;
-    using UploadResult = Husa.Uploader.Crosscutting.Enums.UploadResult;
 
     [Collection(nameof(ApplicationServicesFixture))]
-    public class CtxUploadServiceTests
+    public class CtxUploadServiceTests : MarketUploadServiceTests<CtxUploadService, CtxListingRequest>
     {
         private readonly Mock<IUploaderClient> uploaderClient = new();
         private readonly Mock<IWebDriver> webDriver = new();
         private readonly Mock<IWebElement> webElement = new();
-        private readonly Mock<IMediaRepository> mediaRepository = new();
-        private readonly Mock<IListingRequestRepository> sqlDataLoader = new();
-        private readonly Mock<IServiceSubscriptionClient> serviceSubscriptionClient = new();
         private readonly Mock<ILogger<CtxUploadService>> logger = new();
         private readonly Mock<Models.UploadCommandInfo> uploadCommandInfo = new();
         private readonly ApplicationServicesFixture fixture;
@@ -41,97 +34,6 @@ namespace Husa.Uploader.Core.Tests
             this.uploaderClient.SetupAllProperties();
             this.webDriver.SetupAllProperties();
             this.webElement.SetupAllProperties();
-        }
-
-        [Fact]
-        public async Task Upload_ReturnSuccess()
-        {
-            // Arrange
-            var listingSale = GetListingRequestDetailResponse();
-            var ctxListing = new CtxListingRequest(listingSale).CreateFromApiResponseDetail();
-
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ctxListing);
-            this.SetUpConfigs(setUpAdditionalUploaderConfig: true);
-
-            // Act
-            var sut = this.GetSut();
-            var result = await sut.Upload(ctxListing);
-
-            // Assert
-            Assert.Equal(UploadResult.Success, result);
-        }
-
-        [Fact]
-        public async Task Upload_Fails()
-        {
-            // Arrange
-            var sut = this.GetSut();
-
-            // Act and Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.Upload((CtxListingRequest)null));
-        }
-
-        [Fact]
-        public async Task UploadVirtualTour_ReturnSuccess()
-        {
-            var ctxListing = new CtxListingRequest(new ListingSaleRequestDetailResponse());
-            this.SetUpConfigs(ctxListing);
-
-            // Act
-            var sut = this.GetSut();
-            var result = await sut.UploadVirtualTour(ctxListing);
-
-            // Assert
-            Assert.Equal(UploadResult.Success, result);
-        }
-
-        [Fact]
-        public async Task UploadVirtualTour_ReturnSuccessWithoutVirtualTours()
-        {
-            // Arrange
-            this.mediaRepository
-                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Array.Empty<ResidentialListingVirtualTour>())
-            .Verifiable();
-            var ctxListing = new CtxListingRequest(new ListingSaleRequestDetailResponse());
-            this.SetUpConfigs(ctxListing, setUpVirtualTours: false);
-
-            // Act
-            var sut = this.GetSut();
-            var result = await sut.UploadVirtualTour(ctxListing);
-
-            // Assert
-            Assert.Equal(UploadResult.Success, result);
-        }
-
-        [Fact]
-        public async Task UploadVirtualTour_Fails()
-        {
-            // Arrange
-            var sut = this.GetSut();
-
-            // Act and Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.UploadVirtualTour((CtxListingRequest)null));
-        }
-
-        [Fact]
-        public async Task UpdateCompletionDate_Success()
-        {
-            // Arrange
-            var ctxListing = new CtxListingRequest(new ListingSaleRequestDetailResponse())
-            {
-                MLSNum = "MLSNum",
-            };
-            this.SetUpConfigs(ctxListing, setUpVirtualTours: false);
-
-            // Act
-            var sut = this.GetSut();
-            var result = await sut.UpdateCompletionDate(ctxListing);
-
-            // Assert
-            Assert.Equal(UploadResult.Success, result);
         }
 
         [Fact]
@@ -177,23 +79,7 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(UploadResult.Success, result);
         }
 
-        [Fact]
-        public async Task LoginWithNoCredentials_UseDefaultSuccess()
-        {
-            // Arrange
-            this.SetUpCredentials();
-            this.SetUpCompany(null, null);
-
-            // Act
-            var sut = this.GetSut();
-            var result = await sut.Login(Guid.NewGuid());
-
-            // Assert
-            Assert.Equal(LoginResult.Logged, result);
-        }
-
-#nullable enable
-        internal void SetUpConfigs(CtxListingRequest? ctxListing = null, bool setUpVirtualTours = true, bool setUpAdditionalUploaderConfig = false)
+        protected override void SetUpConfigs(CtxListingRequest ctxListing = null, bool setUpVirtualTours = true, bool setUpAdditionalUploaderConfig = false)
         {
             this.SetUpCredentials();
             this.SetUpCompany();
@@ -217,14 +103,22 @@ namespace Husa.Uploader.Core.Tests
                 .ReturnsAsync(ctxListing);
         }
 
-        private static ResidentialListingVirtualTour GetResidentialListingVirtualTour()
+        protected override CtxUploadService GetSut()
+            => new(
+                this.uploaderClient.Object,
+                this.fixture.ApplicationOptions,
+                this.mediaRepository.Object,
+                this.sqlDataLoader.Object,
+                this.serviceSubscriptionClient.Object,
+                this.logger.Object);
+
+        protected override CtxListingRequest GetEmptyListingRequest()
+            => new CtxListingRequest(new ListingSaleRequestDetailResponse());
+
+        protected override ResidentialListingRequest GetResidentialListingRequest()
         {
-            var id = Guid.NewGuid();
-            return new()
-            {
-                Id = id,
-                MediaUri = new Uri("https://test.org/" + id.ToString()),
-            };
+            var listingSale = GetListingRequestDetailResponse();
+            return new CtxListingRequest(listingSale).CreateFromApiResponseDetail();
         }
 
         private static ListingSaleRequestDetailResponse GetListingRequestDetailResponse()
@@ -324,49 +218,5 @@ namespace Husa.Uploader.Core.Tests
             this.uploaderClient.Setup(x => x.SwitchTo().Window(It.IsAny<string>())).Returns(this.webDriver.Object);
             this.uploaderClient.SetupGet(x => x.UploadInformation).Returns(this.uploadCommandInfo.Object);
         }
-
-        private void SetUpCredentials()
-        {
-            this.serviceSubscriptionClient
-                .Setup(x => x.Corporation.GetMarketReverseProspectInformation(It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ReverseProspectInfoResponse()
-                {
-                    UserName = "UserName",
-                    Password = "password",
-                })
-            .Verifiable();
-        }
-
-        private void SetUpCompany(string username = "username", string password = "password")
-        {
-            var company = new CompanyDetail()
-            {
-                BrokerInfo = new BrokerInfoResponse()
-                {
-                    SiteUsername = username,
-                    SitePassword = password,
-                },
-            };
-            this.serviceSubscriptionClient
-                .Setup(x => x.Company.GetCompany(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(company);
-        }
-
-        private void SetUpVirtualTours()
-        {
-            this.mediaRepository
-                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ResidentialListingVirtualTour[] { GetResidentialListingVirtualTour(), GetResidentialListingVirtualTour() })
-            .Verifiable();
-        }
-
-        private CtxUploadService GetSut()
-            => new(
-                this.uploaderClient.Object,
-                this.fixture.ApplicationOptions,
-                this.mediaRepository.Object,
-                this.sqlDataLoader.Object,
-                this.serviceSubscriptionClient.Object,
-                this.logger.Object);
     }
 }

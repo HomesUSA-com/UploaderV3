@@ -96,11 +96,7 @@ namespace Husa.Uploader.Data.Entities
         public string KitchenDesc { get; set; }
         public string IsWaterFront { get; set; }
         public string IsGatedCommunity { get; set; }
-        public string IsFema100YearFloodPlain { get; set; }
-        public string IsBed1OnMain { get; set; }
-        public string InternetAllowed { get; set; }
         public string InteriorDesc { get; set; }
-        public string HowToSellDesc { get; set; }
         public string HOA { get; set; }
         public string HoaWebsite { get; set; }
         public string AssocName { get; set; }
@@ -110,14 +106,11 @@ namespace Husa.Uploader.Data.Entities
         public string AssocFeePaid { get; set; }
         public string AssocFeeIncludes { get; set; }
         public string AssocPhone { get; set; }
-        public string AssocFeeOtherDesc { get; set; }
         public IList<HoaRequest> HOAs { get; set; }
         public string NumHoas { get; set; }
         public string HeatSystemDesc { get; set; }
-        public string HasRestrictions { get; set; }
         public bool HasPool { get; set; }
         public string HasHandicapAmenities { get; set; }
-        public string HasGuestAccommodations { get; set; }
         public string GarageDesc { get; set; }
         public int? GarageCapacity { get; set; }
         public string FoundationDesc { get; set; }
@@ -153,34 +146,21 @@ namespace Husa.Uploader.Data.Entities
         public string HasWaterAccess { get; set; }
         public string HasSprinklerSys { get; set; }
         public string SprinklerSysDesc { get; set; }
-        public string InteriorStepsDesc { get; set; }
         public string UnitStyleDesc { get; set; }
-        public string IsForeclosureOrREO { get; set; }
-        public short? ClassMarketID { get; set; }
         public Guid ResidentialListingRequestGUID { get; set; }
-        public int? SysOwnedBy { get; set; }
-        public DateTime? ResourcesUpdatedOn { get; set; }
         public string MlsStatus { get; set; }
-        public string OwnershipType { get; set; }
-        public string ReqdDocAgentInfor { get; set; }
-        public string OwnerOtherPhone { get; set; }
         public string MarketName { get; set; }
 
         public abstract MarketCode MarketCode { get; }
 
-        public string MarketUsername { get; set; }
-        public string MarketPassword { get; set; }
         public string WaterfrontDesc { get; set; }
         public string UnitNum { get; set; }
-        public string TreesDesc { get; set; }
-        public string TitleDesc { get; set; }
         public string StreetDir { get; set; }
         public string PoolDesc { get; set; }
         public string NumLakes { get; set; }
         public string HandicapDesc { get; set; }
         public string FireplaceDesc { get; set; }
         public string ExteriorDesc { get; set; }
-        public Guid? PlanProfileID { get; set; }
         public decimal? Latitude { get; set; }
         public string WaterAccessDesc { get; set; }
         public string LaundryFacilityDesc { get; set; }
@@ -196,36 +176,20 @@ namespace Husa.Uploader.Data.Entities
         public bool? HasAgentBonus { get; set; }
         public bool HasContingencyInfo { get; set; }
         public string UtilityRoomDesc { get; set; }
-        public decimal SqFtPriceSold { get; set; }
-        public decimal SqFtPrice { get; set; }
+        public bool IsPlannedDevelopment { get; set; }
         public string PlannedDevelopment { get; set; }
-        public int? PhotoCount { get; set; }
         public string ListType { get; set; }
         public int? ListPriceOrig { get; set; }
         public string IsForLease { get; set; }
         public string HousingStyleDesc { get; set; }
         public string EnergyDesc { get; set; }
-        public string CompSub { get; set; }
         public string BedBathDesc { get; set; }
-        public string AppointmentCall { get; set; }
         public string AgentListApptPhone { get => this.agentListApptPhone.PhoneFormat(); set => this.agentListApptPhone = value; }
-        public decimal? Acres { get; set; }
-        public string ExteriorFeaturesDesc { get; set; }
-        public string HasOtherFees { get; set; }
         public string LotSizeSrc { get; set; }
         public string OvenDesc { get; set; }
-        public string HasCommunityPool { get; set; }
-        public string HasIcemaker { get; set; }
-        public string IsNewConstruction { get; set; }
-        public string HasDisposal { get; set; }
+        public bool IsNewConstruction { get; set; }
         public string Disclosures { get; set; }
-        public string HasMicrowave { get; set; }
-        public string StreetSurfaceDesc { get; set; }
-        public string IsPlannedDevelopment { get; set; }
         public string Bed1Dim { get; set; }
-        public string LocationDesc { get; set; }
-        public string HasDishwasher { get; set; }
-        public string HasCompactor { get; set; }
         public string Bed2Dim { get; set; }
         public string DiningRoomDim { get; set; }
         public string DefectsDesc { get; set; }
@@ -242,7 +206,6 @@ namespace Husa.Uploader.Data.Entities
         public string SectionNum { get; set; }
         public string StateCode { get; set; }
         public string GolfCourseName { get; set; }
-        public string WDConnections { get; set; }
         public string Bed5Dim { get; set; }
         public string CountertopsDesc { get; set; }
         public string LotDim { get; set; }
@@ -361,64 +324,31 @@ namespace Husa.Uploader.Data.Entities
         public string MediaRoomDim { get; set; }
         public string OtherRoom2Dim { get; set; }
         public string GarageCarportDesc { get; set; }
-        public string ContractDesc { get; set; }
-        public string IsOwnerAgent { get; set; }
         public string SupOther { get; set; }
         public string CBNCB { get; set; }
         public string MiscellaneousDesc { get; set; }
-
         public string UtilityRoomDim { get; set; }
-        public int? UserID_SubmittedBy { get; set; }
-        public int? UserID_Review { get; set; }
         public string GuestAccommodationsDesc { get; set; }
         public DateTime? BackOnMarketDate { get; set; }
         public int? NumGuestBeds { get; set; }
         public int? NumGuestFullBaths { get; set; }
         public int? NumGuestHalfBaths { get; set; }
-        public string IsLandLease { get; set; }
-        public string SchoolType3 { get; set; }
-        public string SchoolType2 { get; set; }
-        public string SchoolType1 { get; set; }
-        public int? TaxUnexempt { get; set; }
-        public string TitleCoSold { get; set; }
-        public string OfficeSell { get; set; }
-        public string AgentSell { get; set; }
         public string MapscoMapBook { get; set; }
         public string LivingRoom2Dim { get; set; }
         public string CarportDesc { get; set; }
-        public string CancelledReason { get; set; }
-        public int? Loan1Years { get; set; }
-        public decimal Loan1Amount { get; set; }
         public string SoldTerms { get; set; }
         public string HowSold { get; set; }
-        public int? RepairsAmount { get; set; }
-        public int? BuyerPoints { get; set; }
-        public string TitlePaidBy { get; set; }
         public string LockboxLocDesc { get; set; }
         public string BuyerIncentiveDesc { get; set; }
         public string BuyerIncentive { get; set; }
-        public DateTime? BuyerIncentiveExpireDate { get; set; }
         public string EES { get; set; }
         public string EESFeatures { get; set; }
-        public string PropConditionSale { get; set; }
-        public string SoldComments { get; set; }
-        public int? BuyersClsgCostPdbySell { get; set; }
-        public decimal SellerPoints { get; set; }
-        public string MContigInfo { get; set; }
-        public string Loan2Financing { get; set; }
         public string Bus3 { get; set; }
         public string Bus2 { get; set; }
         public string Bus1 { get; set; }
-        public string UpgradedEnergyEfficient { get; set; }
         public string SchoolType4 { get; set; }
         public string Bus4 { get; set; }
-        public int? CompanyMarketID { get; set; }
         public string OtherRoom1Dim { get; set; }
-        public int? NumBlocksToMetro { get; set; }
-        public string HorsesAllowed { get; set; }
-        public int? NumHorsesAllowed { get; set; }
-        public string RecentlyRepaired { get; set; }
-        public string AgentSellEmail { get; set; }
         public string Bath1Level { get; set; }
         public string Bath1Desc { get; set; }
         public string SpecialNotes { get; set; }
@@ -458,35 +388,13 @@ namespace Husa.Uploader.Data.Entities
 
         public int? ClosetLength { get; set; }
 
-        public string LegalsubdivisionDisp { get; set; }
+        public string LegalSubdivision { get; set; }
 
         public string Category { get; set; }
 
         public bool? IncludeRemarks { get; set; }
 
-        public string CityCodeName { get; set; }
-
-        public string AgentListApptPhoneFromCompany { get; set; }
-
-        public string AgentListApptPhoneFromCommunityProfile { get; set; }
-
-        public string AlternatePhoneFromCompany { get; set; }
-
-        public string OtherPhoneFromCommunityProfile { get; set; }
-
-        public string ContactEmailFromCompany { get; set; }
-
-        public string RealtorContactEmailFromCommunityProfile { get; set; }
-
         public string RemarksFormatFromCompany { get; set; }
-
-        public string HurricanePropertyFlooded { get; set; }
-
-        public string HurricaneHomeFlooded { get; set; }
-
-        public string BxlManaged { get; set; }
-
-        public int ServiceSubscription { get; set; }
 
         public string OtherFeesInclude { get; set; }
         public string VirtualTourLink { get; set; }
@@ -494,14 +402,6 @@ namespace Husa.Uploader.Data.Entities
         public string SchoolDistrictLongName { get; set; }
 
         public string MasterPlannedCommunityName { get; set; }
-
-        public string GolfCourseFullName { get; set; }
-
-        public bool RemoveCompletionDate { get; set; }
-
-        public string BrokerLicenseNum { get; set; }
-
-        public bool AutopopulateExpirationDate { get; set; }
 
         public DateTime? ContractDate { get; set; }
 
@@ -931,47 +831,17 @@ namespace Husa.Uploader.Data.Entities
 
         public string Financing { get; set; }
 
-        public string InsulationDesc { get; set; }
-
-        public string EmailRealtorsContact { get; set; }
-
-        public string SeniorCommunity { get; set; }
-
-        public bool AgreeOpenHouseConditions { get; set; }
-
         public int? Mbr2Len { get; set; }
 
         public int? Mbr2Wid { get; set; }
 
         public string MBR2LEVEL { get; set; }
 
-        public string IsSmokingAllowed { get; set; }
-
-        public string RentalTerms { get; set; }
-
-        public int? ManagementCoYN { get; set; }
-
-        public string Pets { get; set; }
-
-        public int? ApprovalRequired { get; set; }
-
         public string ManagementCompany { get; set; }
-
-        public string PhoneMgmtCo { get; set; }
 
         public string SecondAgentMarketUniqueId { get; set; }
 
-        public string SellingAgent2UID { get; set; }
-
-        public int? SolarPanels_YN { get; set; }
-
-        public string SolarPanels { get; set; }
-
         public string AgentPrivateRemarks2 { get; set; }
-
-        public string RentalType { get; set; }
-
-        public int? SmokingAllowed { get; set; }
 
         public string Bed6Location { get; set; }
 
@@ -1006,8 +876,6 @@ namespace Husa.Uploader.Data.Entities
         public abstract ResidentialListingRequest CreateFromApiResponse();
 
         public abstract ResidentialListingRequest CreateFromApiResponseDetail();
-
-        public abstract string GetBuyerAgentComp(string compBuy, string compBuyType);
 
         public UploadListingItem AsUploadItem(
             string builderName,
