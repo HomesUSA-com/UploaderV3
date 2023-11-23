@@ -234,7 +234,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.GreenCerts = featuresInfo.GreenCertification.ToStringFromEnumMembers();
                 residentialListingRequest.HasPool = featuresInfo.HasPool;
                 residentialListingRequest.PoolDesc = featuresInfo.Pool.ToStringFromEnumMembers();
-                residentialListingRequest.CountertopsDesc = featuresInfo.Countertops?.ToString();
+                residentialListingRequest.CountertopsDesc = featuresInfo.Countertops;
                 residentialListingRequest.HousingStyleDesc = featuresInfo.HousingStyle.ToStringFromEnumMembers();
                 residentialListingRequest.AccessInstructionsDesc = featuresInfo.AccessInstructions.ToStringFromEnumMembers();
                 residentialListingRequest.RangeDesc = featuresInfo.RangeDescription.ToStringFromEnumMembers();

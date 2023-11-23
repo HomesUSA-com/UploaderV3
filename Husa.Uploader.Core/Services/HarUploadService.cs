@@ -3,9 +3,11 @@ namespace Husa.Uploader.Core.Services
     using System;
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
+    using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
     using Husa.Extensions.Common.Exceptions;
     using Husa.Quicklister.Extensions.Domain.Enums;
+    using Husa.Quicklister.Har.Domain.Enums.Domain;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Enums;
@@ -109,7 +111,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
                 if (listing.IsNewListing)
                 {
-                    this.NavigateToNewPropertyInput();
+                    this.NavigateToNewPropertyInput(listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>());
                 }
                 else
                 {
@@ -141,7 +143,7 @@ namespace Husa.Uploader.Core.Services
                 {
                     if (listing.IsNewListing)
                     {
-                        this.NavigateToNewPropertyInput();
+                        this.NavigateToNewPropertyInput(listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>());
                     }
                     else
                     {
@@ -419,15 +421,35 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        private void NavigateToNewPropertyInput()
+        private void NavigateToNewPropertyInput(HousingType? housingType)
         {
-            this.uploaderClient.NavigateToUrl("http://matrix.harmls.com/Matrix/AddEditInput");
+            this.uploaderClient.NavigateToUrl("https://matrix.harmls.com/Matrix/AddEdit/MatrixAddEdit");
             this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Add new"));
-            this.uploaderClient.ClickOnElement(By.LinkText("Add new"));
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"));
-            this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.PartialLinkText("Start with a blank Property"));
-            this.uploaderClient.ClickOnElement(By.PartialLinkText("Start with a blank Property"));
+            this.uploaderClient.ClickOnElement(By.Id("m_lvInputUISections_ctrl0_lvInputUISubsections_ctrl0_lbAddNewItem"));
+
+            switch (housingType)
+            {
+                case HousingType.SingleFamily:
+                    WaitAndClick("Single-Family Add/Edit");
+                    break;
+                case HousingType.CountryHomesAcreage:
+                    WaitAndClick("Country Homes/Acreage Add/Edit");
+                    break;
+                case HousingType.TownhouseCondo:
+                    WaitAndClick("Townhouse/Condo Add/Edit");
+                    break;
+                case HousingType.MultiFamily:
+                    WaitAndClick("Multi-Family Add/Edit");
+                    break;
+            }
+
+            WaitAndClick("Start with a blank Listing");
+
+            void WaitAndClick(string text)
+            {
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(text));
+                this.uploaderClient.ClickOnElement(By.LinkText(text));
+            }
 
             Thread.Sleep(1000);
         }
