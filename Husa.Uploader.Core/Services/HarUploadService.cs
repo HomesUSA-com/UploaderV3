@@ -137,7 +137,7 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
-                Thread.Sleep(5000);
+                Thread.Sleep(2000);
 
                 try
                 {
@@ -733,28 +733,39 @@ namespace Husa.Uploader.Core.Services
 
         private void FillFinancialInformation(HarListingRequest listing)
         {
-            this.uploaderClient.ClickOnElement(By.LinkText("Financial"));
-            Thread.Sleep(200);
-            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.ClickOnElement(By.LinkText("Financial Information"));
+            Thread.Sleep(500);
 
-            this.uploaderClient.WriteTextbox(By.Id("Input_283"), listing.AssocName, true); // HOA Name
-            this.uploaderClient.WriteTextbox(By.Id("Input_285"), listing.AssocFee, true); // HOA Fee
-            this.uploaderClient.SetSelect(By.Id("Input_286"), listing.HOA, true); // Association Requirement
-            this.uploaderClient.SetSelect(By.Id("Input_287"), listing.AssocFeeFrequency, true); // HOA Frequency
-            this.uploaderClient.WriteTextbox(By.Id("Input_288"), listing.AssocTransferFee, true); // HOA Transfer Fee
-            this.uploaderClient.SetMultipleCheckboxById("Input_290", listing.AssocFeeIncludes); // HOA Fees Include (5)
+            var housingType = listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>();
+            if (housingType != HousingType.CountryHomesAcreage)
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_275"), listing.HasHoa.BoolToNumericBool()); // Mandatory HOA/Mgmt Co (1, 0)
+                this.uploaderClient.WriteTextbox(By.Id("Input_278"), listing.AssocName); // Mandatory HOA/Mgmt Co Name
+                this.uploaderClient.WriteTextbox(By.Id("Input_276"), listing.AssocPhone); // Mandatory HOA/Mgmt Co Phone
+            }
 
-            this.uploaderClient.SetMultipleCheckboxById("Input_291", listing.FinancingProposed); // Acceptable Financing (5)
-            this.uploaderClient.WriteTextbox(By.Id("Input_296"), "0"); // Estimated Taxes ($)
-            this.uploaderClient.WriteTextbox(By.Id("Input_297"), listing.TaxYear); // Tax Year
+            this.uploaderClient.SetMultiSelect(By.Id("Input_280"), listing.FinancingProposed); // Financing Considered
+            this.uploaderClient.SetMultipleCheckboxById("Input_494", listing.Disclosures);  // Disclosures
+            this.uploaderClient.SetSelect(By.Id("Input_674"), listing.IsActiveCommunity.BoolToNumericBool()); // 55+ Active Community
+            this.uploaderClient.SetSelect(By.Id("Input_347"), listing.HasOtherFees.BoolToNumericBool()); // Other Mandatory Fees
+            this.uploaderClient.WriteTextbox(By.Id("Input_286"), listing.OtherFees); // Other Mandatory Fees Amount
+            this.uploaderClient.WriteTextbox(By.Id("Input_285"), listing.OtherFeesInclude); // Other Mandatory Fees Include
+            this.uploaderClient.WriteTextbox(By.Id("Input_290"), listing.TaxYear); // Tax Year
+            this.uploaderClient.WriteTextbox(By.Id("Input_292"), listing.TaxRate);  // Total Tax Rate
+            this.uploaderClient.WriteTextbox(By.Id("Input_293"), listing.ExemptionsDesc); // Exemptions
 
-            this.uploaderClient.WriteTextbox(By.Id("Input_294"), listing.TaxRate); // Tax Rate
-            this.uploaderClient.WriteTextbox(By.Id("Input_293"), "0", true); // Tax Assessed Value
-            this.uploaderClient.SetMultipleCheckboxById("Input_295", "None"); // Buyer Incentive
-            this.uploaderClient.SetMultipleCheckboxById("Input_298", listing.ExemptionsDesc); // Tax Exemptions
-            this.uploaderClient.WriteTextbox(By.Id("Input_728"), listing.TitleCo); // Preferred Title Company
-            this.uploaderClient.ScrollDown(400);
-            this.uploaderClient.SetMultipleCheckboxById("Input_299", "Funding"); // Possession
+            if (housingType == HousingType.SingleFamily)
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_471"), listing.HOA); // Maintenance Fee
+            }
+            else
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_281"), listing.HOA.ToEnumFromEnumMember<HoaRequirement>() == HoaRequirement.No ? 0 : 1); // Maintenance Fee (1, 0)
+            }
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_282"), listing.AssocFee); // Maintenance Fee Amount
+            this.uploaderClient.SetSelect(By.Id("Input_283"), listing.AssocFeeFrequency); // Maintenance Fee Payment Sched
         }
 
         private void FillShowingInformation(ResidentialListingRequest listing)

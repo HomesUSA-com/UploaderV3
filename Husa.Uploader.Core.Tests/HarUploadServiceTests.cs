@@ -28,6 +28,30 @@ namespace Husa.Uploader.Core.Tests
             this.uploaderClient.SetupAllProperties();
         }
 
+        [Theory]
+        [InlineData(HousingType.MultiFamily)]
+        [InlineData(HousingType.SingleFamily)]
+        [InlineData(HousingType.TownhouseCondo)]
+        [InlineData(HousingType.CountryHomesAcreage)]
+        public async Task UploadByHousingType_ReturnSuccess(HousingType housingType)
+        {
+            // Arrange
+            this.SetUpConfigs(setUpAdditionalUploaderConfig: true);
+
+            var request = this.GetResidentialListingRequest();
+            request.HousingTypeDesc = housingType.ToStringFromEnumMember();
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(request);
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.Upload(request);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
         [Fact]
         public async Task UpdateStatus_HoldSuccess()
         {

@@ -41,6 +41,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             this.OpenHouse = new List<OpenHouseRequest>();
         }
 
+        public bool HasHoa { get; set; }
         public bool HasDishwasher { get; set; }
         public bool HasCompactor { get; set; }
         public bool HasCommunityPool { get; set; }
@@ -263,12 +264,14 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.BuyerIncentive = financialInfo.BuyersAgentCommission.DecimalToString();
                 residentialListingRequest.BuyerIncentiveDesc = financialInfo.BuyersAgentCommissionType.ToStringFromEnumMember();
                 residentialListingRequest.HOA = financialInfo.HOARequirement?.ToStringFromEnumMember();
+                residentialListingRequest.HasHoa = financialInfo.HasHoa;
                 residentialListingRequest.AssocName = financialInfo.HoaName;
                 residentialListingRequest.AssocFee = financialInfo.HoaFee.HasValue ? decimal.ToInt32(financialInfo.HoaFee.Value) : 0;
                 residentialListingRequest.AssocFeeFrequency = financialInfo.BillingFrequency?.ToStringFromEnumMember();
                 residentialListingRequest.AssocPhone = financialInfo.HoaPhone;
                 residentialListingRequest.OtherFeesInclude = financialInfo.OtherFeesInclude;
                 residentialListingRequest.HasOtherFees = financialInfo.HasOtherFees;
+                residentialListingRequest.OtherFees = financialInfo.OtherFeeAmount.ToString();
             }
 
             void FillShowingInfo(ShowingResponse showingInfo)
