@@ -30,5 +30,15 @@ namespace Husa.Uploader.Crosscutting.Extensions
 
         public static string IntegerToString(this int? amount) => amount.HasValue ? amount.Value.ToString() : string.Empty;
         public static string PriceWithDollarSign(this string price) => price is not null ? $"${price}" : price;
+
+        public static string AmountByType(this string amount, string amountType)
+        {
+            if (!string.IsNullOrWhiteSpace(amountType) && decimal.TryParse(amount, out decimal agentBonusAmount))
+            {
+                return amountType == "$" ? string.Format("${0:n2}", agentBonusAmount) : string.Format("{0}%", agentBonusAmount);
+            }
+
+            return string.Empty;
+        }
     }
 }

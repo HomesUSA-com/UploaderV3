@@ -733,9 +733,7 @@ namespace Husa.Uploader.Core.Services
 
         private void FillFinancialInformation(HarListingRequest listing)
         {
-            this.uploaderClient.ScrollToTop();
-            this.uploaderClient.ClickOnElement(By.LinkText("Financial Information"));
-            Thread.Sleep(500);
+            this.GoToTab("Financial Information");
 
             var housingType = listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>();
             if (housingType != HousingType.CountryHomesAcreage)
@@ -770,20 +768,18 @@ namespace Husa.Uploader.Core.Services
 
         private void FillShowingInformation(ResidentialListingRequest listing)
         {
-            this.uploaderClient.ClickOnElement(By.LinkText("Showing"));
-            Thread.Sleep(100);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_301"));
+            this.GoToTab("Showing Information");
 
-            this.uploaderClient.SetSelect(By.Id("Input_301"), "VCNT"); // Occupant
-            this.uploaderClient.WriteTextbox(By.Id("Input_302"), listing.OwnerName); // Owner Name
-            this.uploaderClient.SetMultipleCheckboxById("Input_305", listing.Showing); // Showing Requirements
-            this.uploaderClient.SetSelect(By.Id("Input_651"), listing.LockboxTypeDesc ?? "None"); // Lockbox Type
-            this.uploaderClient.WriteTextbox(By.Id("Input_312"), listing.LockboxLocDesc, true); // Lockbox Serial Number
-            this.uploaderClient.SetMultipleCheckboxById("Input_720", "OWN"); // Showing Contact Type
-            this.uploaderClient.WriteTextbox(By.Id("Input_310"), listing.OwnerName);
-            this.uploaderClient.WriteTextbox(By.Id("Input_311"), listing.AgentListApptPhone, true); // Showing Contact Phone
-            this.uploaderClient.WriteTextbox(By.Id("Input_406"), listing.OtherPhone, true);  // Showing Service Phone
-            this.uploaderClient.WriteTextbox(By.Id("Input_313"), listing.ShowingInstructions); // Showing Instructions
+            this.uploaderClient.WriteTextbox(By.Id("Input_304"), listing.AgentListApptPhone, isElementOptional: true);  // Appointment Desk Phone
+            this.uploaderClient.SetSelect(By.Id("Input_303"), "OFFIC");  // Appointment Phone Desc
+            this.uploaderClient.WriteTextbox(By.Id("Input_236"), listing.AltPhoneCommunity, isElementOptional: true);  // Agent Alternate Phone
+            this.uploaderClient.WriteTextbox(By.Id("Input_136"), listing.Directions.RemoveSlash(), true); // Directions
+            this.uploaderClient.SetMultipleCheckboxById("Input_218", listing.ShowingInstructions);  // Showing Instructions
+            this.uploaderClient.WriteTextbox(By.Id("Input_327"), listing.BuyerIncentive.AmountByType(listing.BuyerIncentiveDesc)); // Buyer Agency Compensation
+            this.uploaderClient.WriteTextbox(By.Id("Input_226"), "0%"); // Sub Agency Compensation
+            this.uploaderClient.WriteTextbox(By.Id("Input_229"), listing.GetAgentBonusAmount()); // Bonus
+            this.uploaderClient.WriteTextbox(By.Id("Input_230"), listing.CompBuyBonusExpireDate.HasValue ? listing.CompBuyBonusExpireDate.Value : string.Empty); // Bonus End Date
+            this.uploaderClient.SetSelect(By.Id("Input_216"), "0");  // Variable Compensation
         }
 
         private void FillAgentOfficeInformation(ResidentialListingRequest listing)
@@ -830,6 +826,13 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetSelect(By.Id("Input_331"), "1"); // Internet Consumer Comment
                 this.uploaderClient.SetSelect(By.Id("Input_332"), "1"); // Internet Address Display
             }
+        }
+
+        private void GoToTab(string tabText)
+        {
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.ClickOnElement(By.LinkText(tabText));
+            Thread.Sleep(500);
         }
 
         private async Task FillMedia(ResidentialListingRequest listing, CancellationToken cancellationToken)
