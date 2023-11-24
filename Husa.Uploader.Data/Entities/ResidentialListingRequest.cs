@@ -401,8 +401,6 @@ namespace Husa.Uploader.Data.Entities
 
         public string SchoolDistrictLongName { get; set; }
 
-        public string MasterPlannedCommunityName { get; set; }
-
         public DateTime? ContractDate { get; set; }
 
         public string ContingencyInfo { get; set; }

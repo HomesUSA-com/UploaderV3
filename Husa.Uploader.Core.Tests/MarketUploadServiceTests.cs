@@ -25,7 +25,7 @@ namespace Husa.Uploader.Core.Tests
         public async Task Upload_ReturnSuccess()
         {
             // Arrange
-            this.SetUpConfigs(setUpAdditionalUploaderConfig: true);
+            this.SetUpConfigs();
 
             var request = this.GetResidentialListingRequest();
             this.sqlDataLoader
@@ -167,7 +167,7 @@ namespace Husa.Uploader.Core.Tests
             .Verifiable();
         }
 
-        protected virtual void SetUpConfigs(TResidentialListingRequest request = null, bool setUpVirtualTours = true, bool setUpAdditionalUploaderConfig = false)
+        protected virtual void SetUpConfigs(TResidentialListingRequest request = null, bool setUpVirtualTours = true)
         {
             this.SetUpCredentials();
             this.SetUpCompany();

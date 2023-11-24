@@ -26,6 +26,7 @@ namespace Husa.Uploader.Core.Tests
         {
             this.fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             this.uploaderClient.SetupAllProperties();
+            this.uploaderClient.Setup(x => x.FillFieldSingleOption(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
         }
 
         [Theory]
@@ -36,10 +37,13 @@ namespace Husa.Uploader.Core.Tests
         public async Task UploadByHousingType_ReturnSuccess(HousingType housingType)
         {
             // Arrange
-            this.SetUpConfigs(setUpAdditionalUploaderConfig: true);
+            this.SetUpConfigs();
 
             var request = this.GetResidentialListingRequest();
             request.HousingTypeDesc = housingType.ToStringFromEnumMember();
+            request.ExpiredDate = DateTime.UtcNow;
+            request.LegalSubdivision = "LegalSubdivision";
+            request.TaxID = "200";
             this.sqlDataLoader
                 .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(request);
