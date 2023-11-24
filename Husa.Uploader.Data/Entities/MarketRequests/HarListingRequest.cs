@@ -47,7 +47,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
         public bool HasCommunityPool { get; set; }
         public bool HasIcemaker { get; set; }
         public bool HasDisposal { get; set; }
-        public bool HasMicrowawe { get; set; }
+        public bool HasMicrowave { get; set; }
         public bool IsActiveCommunity { get; set; }
         public bool HasUtilitiesDescription { get; set; }
         public bool HasOtherFees { get; set; }
@@ -230,7 +230,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.GolfCourseName = featuresInfo.GolfCourseName?.ToStringFromEnumMember();
                 residentialListingRequest.Disclosures = featuresInfo.Disclosures.ToStringFromEnumMembers();
                 residentialListingRequest.EnergyDesc = featuresInfo.EnergyFeatures.ToStringFromEnumMembers();
-                residentialListingRequest.HasMicrowawe = featuresInfo.HasMicrowawe;
+                residentialListingRequest.HasMicrowave = featuresInfo.HasMicrowawe;
                 residentialListingRequest.HasUtilitiesDescription = featuresInfo.HasUtilitiesDescription;
                 residentialListingRequest.GreenCerts = featuresInfo.GreenCertification.ToStringFromEnumMembers();
                 residentialListingRequest.HasPool = featuresInfo.HasPool;
