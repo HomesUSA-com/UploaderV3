@@ -464,7 +464,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetSelect(By.Id("Input_658"), listing.SchoolName1, fieldLabel: "Elementary", tabName, isElementOptional: true); // Elementary School
             this.uploaderClient.ResetImplicitWait();
             this.uploaderClient.SetSelect(By.Id("Input_659"), listing.SchoolName2, fieldLabel: "Middle", tabName, isElementOptional: true); // Middle School
-            this.uploaderClient.SetSelect(By.Id("Input_660"), listing.SchoolName3, fieldLabel: "High", tabName, isElementOptional: true); // High School
+            this.uploaderClient.SetSelect(By.Id("Input_660"), listing.HighSchool, fieldLabel: "High", tabName, isElementOptional: true); // High School
 
             this.SetLongitudeAndLatitudeValues(listing);
             this.uploaderClient.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price

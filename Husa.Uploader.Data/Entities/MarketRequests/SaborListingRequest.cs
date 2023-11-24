@@ -261,7 +261,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.SchoolDistrict = schoolsInfo.SchoolDistrict?.ToStringFromEnumMember();
                 residentialListingRequest.SchoolName1 = schoolsInfo.ElementarySchool?.ToStringFromEnumMember();
                 residentialListingRequest.SchoolName2 = schoolsInfo.MiddleSchool?.ToStringFromEnumMember();
-                residentialListingRequest.SchoolName3 = schoolsInfo.HighSchool?.ToStringFromEnumMember();
+                residentialListingRequest.HighSchool = schoolsInfo.HighSchool?.ToStringFromEnumMember();
             }
 
             void FillStatusInfo(ListingSaleStatusFieldsResponse statusInfo)

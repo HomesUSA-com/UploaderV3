@@ -52,9 +52,9 @@ namespace Husa.Uploader.Data.Entities
         public string SchoolName6 { get; set; }
         public string SchoolName5 { get; set; }
         public string SchoolName4 { get; set; }
-        public string SchoolName3 { get; set; }
         public string SchoolName2 { get; set; }
         public string SchoolName1 { get; set; }
+        public string HighSchool { get; set; }
         public string SchoolDistrict { get; set; }
         public string RoofDesc { get; set; }
         public string Restrictions { get; set; }
