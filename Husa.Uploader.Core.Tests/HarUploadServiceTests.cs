@@ -1,5 +1,6 @@
 namespace Husa.Uploader.Core.Tests
 {
+    using System.Collections.ObjectModel;
     using System.Threading;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
@@ -12,6 +13,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Microsoft.Extensions.Logging;
     using Moq;
+    using OpenQA.Selenium;
     using Xunit;
     using HarResponse = Husa.Quicklister.Har.Api.Contracts.Response;
 
@@ -27,6 +29,7 @@ namespace Husa.Uploader.Core.Tests
             this.fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             this.uploaderClient.SetupAllProperties();
             this.uploaderClient.Setup(x => x.FillFieldSingleOption(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
+            this.uploaderClient.Setup(x => x.FindElements(It.IsAny<By>(), It.IsAny<bool>())).Returns(new ReadOnlyCollection<IWebElement>(Array.Empty<IWebElement>())).Verifiable();
         }
 
         [Theory]

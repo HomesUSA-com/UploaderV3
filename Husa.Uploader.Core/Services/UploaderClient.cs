@@ -243,7 +243,7 @@ namespace Husa.Uploader.Core.Services
             try
             {
                 this.logger.LogInformation("Clicking on element by '{findBy}'", findBy);
-                if (!this.WaitUntilElementIsDisplayed(findBy))
+                if (!this.FindElements(findBy).Any())
                 {
                     this.logger.LogInformation("Element by '{by}' not found", findBy.ToString());
                     return;
@@ -626,8 +626,12 @@ namespace Husa.Uploader.Core.Services
             _ = bool.TryParse(scriptResult.ToString(), out var hasScrollBar);
             foreach (var value in splitValues)
             {
-                this.WaitUntilElementIsDisplayed(By.Id(id));
-                this.FindElement(By.Id(id));
+                if (!this.FindElements(By.Id(id)).Any())
+                {
+                    continue;
+                }
+
+                this.FindElement(By.Id(id), shouldWait: true);
                 var elementId = $"{id}_{value}";
                 try
                 {
