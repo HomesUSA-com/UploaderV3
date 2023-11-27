@@ -502,7 +502,7 @@ namespace Husa.Uploader.Core.Services
             this.SetLongitudeAndLatitudeValues(listing);
 
             this.uploaderClient.ScrollDown(1000);
-            this.FillFieldSingleOption("Input_204", listing.MLSArea); // MLS Area
+            this.uploaderClient.FillFieldSingleOption("Input_204", listing.MLSArea); // MLS Area
             this.uploaderClient.SetMultipleCheckboxById("Input_343", "N"); // FEMA 100 Yr Flood Plain
             this.uploaderClient.SetSelect(By.Id("Input_206"), "N"); // ETJ
 
@@ -510,7 +510,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetSelectIfExist(By.Id("Input_207"), listing.SchoolDistrict); // School District
             this.uploaderClient.SetSelectIfExist(By.Id("Input_209"), listing.SchoolName1); // School District/Elementary A
             this.uploaderClient.SetSelectIfExist(By.Id("Input_210"), listing.SchoolName2); // School District/Middle / Intermediate School
-            this.uploaderClient.SetSelectIfExist(By.Id("Input_211"), listing.SchoolName3); // School District/9 Grade / High School
+            this.uploaderClient.SetSelectIfExist(By.Id("Input_211"), listing.HighSchool); // School District/9 Grade / High School
             this.uploaderClient.WriteTextbox(By.Id("Input_212"), listing.SchoolName4); // Elementary Other
             this.uploaderClient.WriteTextbox(By.Id("Input_213"), listing.SchoolName5); // Middle or Junior Other
             this.uploaderClient.WriteTextbox(By.Id("Input_214"), listing.SchoolName6); // High School Other
@@ -593,39 +593,6 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_233", listing.RoofDesc); // Roof
             this.uploaderClient.SetMultipleCheckboxById("Input_232", listing.FloorsDesc); // Flooring (4)
             this.uploaderClient.SetMultipleCheckboxById("Input_240", listing.RestrictionsDesc); // Restrictions Description (5)
-        }
-
-        private void FillFieldSingleOption(string fieldName, string value)
-        {
-            if (string.IsNullOrEmpty(value))
-            {
-                this.logger.LogInformation("Cannot proceed to fill field {fieldName} with an empty value", fieldName);
-                return;
-            }
-
-            var mainWindow = this.uploaderClient.WindowHandles.FirstOrDefault(windowHandle => windowHandle == this.uploaderClient.CurrentWindowHandle);
-            this.uploaderClient.ExecuteScript(script: $"jQuery('#{fieldName}_TB').focus();");
-            this.uploaderClient.ExecuteScript(script: $"jQuery('#{fieldName}_A')[0].click();");
-
-            this.uploaderClient.SwitchToLast();
-
-            Thread.Sleep(400);
-
-            char[] fieldValue = value.ToUpper().ToArray();
-
-            foreach (var charact in fieldValue)
-            {
-                Thread.Sleep(200);
-                this.uploaderClient.FindElement(By.Id("m_txtSearch")).SendKeys(charact.ToString().ToUpper());
-            }
-
-            Thread.Sleep(400);
-            var selectElement = $"const selected = jQuery('li[title^=\"{value}\"]'); jQuery(selected).focus(); jQuery(selected).click()";
-            this.uploaderClient.ExecuteScript(script: selectElement);
-            Thread.Sleep(400);
-
-            this.uploaderClient.ExecuteScript("javascript:LBI_Popup.selectItem(true);");
-            this.uploaderClient.SwitchTo().Window(mainWindow);
         }
 
         private void FillAdditionalInformation(AborListingRequest listing)

@@ -41,12 +41,13 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             this.OpenHouse = new List<OpenHouseRequest>();
         }
 
+        public bool HasHoa { get; set; }
         public bool HasDishwasher { get; set; }
         public bool HasCompactor { get; set; }
         public bool HasCommunityPool { get; set; }
         public bool HasIcemaker { get; set; }
         public bool HasDisposal { get; set; }
-        public bool HasMicrowawe { get; set; }
+        public bool HasMicrowave { get; set; }
         public bool IsActiveCommunity { get; set; }
         public bool HasUtilitiesDescription { get; set; }
         public bool HasOtherFees { get; set; }
@@ -174,7 +175,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.IsNewConstruction = propertyInfo.IsNewConstruction;
                 residentialListingRequest.LegalSubdivision = propertyInfo.LegalSubdivision?.ToStringFromEnumMember();
                 residentialListingRequest.IsPlannedDevelopment = propertyInfo.IsPlannedCommunity;
-                residentialListingRequest.PlannedDevelopment = propertyInfo.PlannedCommunity?.ToStringFromEnumMember();
+                residentialListingRequest.PlannedDevelopment = propertyInfo.PlannedCommunity?.GetEnumDescription();
                 residentialListingRequest.HousingTypeDesc = propertyInfo.HousingType?.ToStringFromEnumMember();
             }
 
@@ -226,15 +227,15 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.HasIcemaker = featuresInfo.HasIcemaker;
                 residentialListingRequest.HasCommunityPool = featuresInfo.HasCommunityPool;
                 residentialListingRequest.OvenDesc = featuresInfo.OvenDescription.ToStringFromEnumMembers();
-                residentialListingRequest.GolfCourseName = featuresInfo.GolfCourseName?.ToStringFromEnumMember();
+                residentialListingRequest.GolfCourseName = featuresInfo.GolfCourseName?.GetEnumDescription();
                 residentialListingRequest.Disclosures = featuresInfo.Disclosures.ToStringFromEnumMembers();
                 residentialListingRequest.EnergyDesc = featuresInfo.EnergyFeatures.ToStringFromEnumMembers();
-                residentialListingRequest.HasMicrowawe = featuresInfo.HasMicrowawe;
+                residentialListingRequest.HasMicrowave = featuresInfo.HasMicrowawe;
                 residentialListingRequest.HasUtilitiesDescription = featuresInfo.HasUtilitiesDescription;
                 residentialListingRequest.GreenCerts = featuresInfo.GreenCertification.ToStringFromEnumMembers();
                 residentialListingRequest.HasPool = featuresInfo.HasPool;
                 residentialListingRequest.PoolDesc = featuresInfo.Pool.ToStringFromEnumMembers();
-                residentialListingRequest.CountertopsDesc = featuresInfo.Countertops?.ToString();
+                residentialListingRequest.CountertopsDesc = featuresInfo.Countertops;
                 residentialListingRequest.HousingStyleDesc = featuresInfo.HousingStyle.ToStringFromEnumMembers();
                 residentialListingRequest.AccessInstructionsDesc = featuresInfo.AccessInstructions.ToStringFromEnumMembers();
                 residentialListingRequest.RangeDesc = featuresInfo.RangeDescription.ToStringFromEnumMembers();
@@ -263,12 +264,14 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.BuyerIncentive = financialInfo.BuyersAgentCommission.DecimalToString();
                 residentialListingRequest.BuyerIncentiveDesc = financialInfo.BuyersAgentCommissionType.ToStringFromEnumMember();
                 residentialListingRequest.HOA = financialInfo.HOARequirement?.ToStringFromEnumMember();
+                residentialListingRequest.HasHoa = financialInfo.HasHoa;
                 residentialListingRequest.AssocName = financialInfo.HoaName;
                 residentialListingRequest.AssocFee = financialInfo.HoaFee.HasValue ? decimal.ToInt32(financialInfo.HoaFee.Value) : 0;
                 residentialListingRequest.AssocFeeFrequency = financialInfo.BillingFrequency?.ToStringFromEnumMember();
                 residentialListingRequest.AssocPhone = financialInfo.HoaPhone;
                 residentialListingRequest.OtherFeesInclude = financialInfo.OtherFeesInclude;
                 residentialListingRequest.HasOtherFees = financialInfo.HasOtherFees;
+                residentialListingRequest.OtherFees = financialInfo.OtherFeeAmount.ToString();
             }
 
             void FillShowingInfo(ShowingResponse showingInfo)
@@ -296,7 +299,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 }
 
                 residentialListingRequest.SchoolDistrict = schoolsInfo.SchoolDistrict?.ToStringFromEnumMember();
-                residentialListingRequest.SchoolName3 = schoolsInfo.HighSchool?.ToStringFromEnumMember();
+                residentialListingRequest.HighSchool = schoolsInfo.HighSchool?.ToStringFromEnumMember();
             }
 
             void FillStatusInfo(ListingSaleStatusFieldsResponse statusInfo)

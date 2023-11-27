@@ -1,5 +1,6 @@
 namespace Husa.Uploader.Core.Tests
 {
+    using System.Collections.ObjectModel;
     using System.Threading;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
@@ -12,6 +13,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Microsoft.Extensions.Logging;
     using Moq;
+    using OpenQA.Selenium;
     using Xunit;
     using HarResponse = Husa.Quicklister.Har.Api.Contracts.Response;
 
@@ -26,6 +28,35 @@ namespace Husa.Uploader.Core.Tests
         {
             this.fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             this.uploaderClient.SetupAllProperties();
+            this.uploaderClient.Setup(x => x.FillFieldSingleOption(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
+            this.uploaderClient.Setup(x => x.FindElements(It.IsAny<By>(), It.IsAny<bool>())).Returns(new ReadOnlyCollection<IWebElement>(Array.Empty<IWebElement>())).Verifiable();
+        }
+
+        [Theory]
+        [InlineData(HousingType.MultiFamily)]
+        [InlineData(HousingType.SingleFamily)]
+        [InlineData(HousingType.TownhouseCondo)]
+        [InlineData(HousingType.CountryHomesAcreage)]
+        public async Task UploadByHousingType_ReturnSuccess(HousingType housingType)
+        {
+            // Arrange
+            this.SetUpConfigs();
+
+            var request = this.GetResidentialListingRequest();
+            request.HousingTypeDesc = housingType.ToStringFromEnumMember();
+            request.ExpiredDate = DateTime.UtcNow;
+            request.LegalSubdivision = "LegalSubdivision";
+            request.TaxID = "200";
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(request);
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.Upload(request);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
         }
 
         [Fact]
@@ -228,8 +259,16 @@ namespace Husa.Uploader.Core.Tests
             var propertyInfo = new HarResponse.SalePropertyDetail.PropertyInfoResponse()
             {
                 ConstructionStage = ConstructionStage.Incomplete,
+                IsPlannedCommunity = true,
+                PlannedCommunity = PlannedCommunity.Tavola,
+                LegalSubdivision = LegalSubdivision.AlcornBend,
+                TaxId = "100",
+                ConstructionCompletionDate = DateTime.UtcNow,
             };
-            var featuresInfo = new Mock<HarResponse.SalePropertyDetail.FeaturesResponse>();
+            var featuresInfo = new HarResponse.SalePropertyDetail.FeaturesResponse()
+            {
+                GolfCourseName = GolfCourseName.AprilSoundCountryClub,
+            };
             var financialInfo = new HarResponse.SalePropertyDetail.FinancialResponse()
             {
                 HasBonusWithAmount = true,
@@ -259,7 +298,7 @@ namespace Husa.Uploader.Core.Tests
                 SpacesDimensionsInfo = spacesDimensionsInfo.Object,
                 AddressInfo = addressInfo.Object,
                 PropertyInfo = propertyInfo,
-                FeaturesInfo = featuresInfo.Object,
+                FeaturesInfo = featuresInfo,
                 FinancialInfo = financialInfo,
                 SchoolsInfo = schoolsInfo.Object,
                 ShowingInfo = showingInfo,

@@ -606,7 +606,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetAttribute(By.Name("ELEMSCHL"), listing.SchoolName1, "value"); // Elementary School
 
             this.uploaderClient.SetAttribute(By.Name("MIDSCHL"), listing.SchoolName2, "value"); // Middle School
-            this.uploaderClient.SetAttribute(By.Name("HIGHSCHL"), listing.SchoolName3, "value"); // High School
+            this.uploaderClient.SetAttribute(By.Name("HIGHSCHL"), listing.HighSchool, "value"); // High School
             this.uploaderClient.WriteTextbox(By.Name("CONSTRCTN"), entry: "NEW"); // Construction
             this.uploaderClient.FindElement(By.Name("CONSTRCTN")).SendKeys(Keys.Tab);
             this.uploaderClient.WriteTextbox(By.Name("NEW_CONST_EST_COMPLETION"), listing.BuildCompletionDate.Value.ToString("MM/yy"), isElementOptional: true); // Construction

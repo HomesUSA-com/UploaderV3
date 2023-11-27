@@ -243,7 +243,7 @@ namespace Husa.Uploader.Core.Services
             try
             {
                 this.logger.LogInformation("Clicking on element by '{findBy}'", findBy);
-                if (!this.WaitUntilElementIsDisplayed(findBy))
+                if (!this.FindElements(findBy).Any())
                 {
                     this.logger.LogInformation("Element by '{by}' not found", findBy.ToString());
                     return;
@@ -510,6 +510,42 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
+        public void FillFieldSingleOption(string fieldName, string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return;
+            }
+
+            var mainWindow = this.WindowHandles.FirstOrDefault(windowHandle => windowHandle == this.CurrentWindowHandle);
+            this.ExecuteScript(script: $"jQuery('#{fieldName}_TB').focus();");
+            this.ExecuteScript(script: $"jQuery('#{fieldName}_A')[0].click();");
+
+            this.SwitchToLast();
+
+            Thread.Sleep(400);
+
+            char[] fieldValue = value.ToUpper().ToArray();
+
+            foreach (var charact in fieldValue)
+            {
+                Thread.Sleep(200);
+                var elem = this.FindElement(By.Id("m_txtSearch"));
+                if (elem != null)
+                {
+                    elem.SendKeys(charact.ToString().ToUpper());
+                }
+            }
+
+            Thread.Sleep(400);
+            var selectElement = $"const selected = jQuery('li[title^=\"{value}\"]'); jQuery(selected).focus(); jQuery(selected).click()";
+            this.ExecuteScript(script: selectElement);
+            Thread.Sleep(400);
+
+            this.ExecuteScript("javascript:LBI_Popup.selectItem(true);");
+            this.SwitchTo().Window(mainWindow);
+        }
+
         public void SetMultiSelect(By findBy, string csvValues, bool isElementOptional = false)
         {
             try
@@ -590,8 +626,12 @@ namespace Husa.Uploader.Core.Services
             _ = bool.TryParse(scriptResult.ToString(), out var hasScrollBar);
             foreach (var value in splitValues)
             {
-                this.WaitUntilElementIsDisplayed(By.Id(id));
-                this.FindElement(By.Id(id));
+                if (!this.FindElements(By.Id(id)).Any())
+                {
+                    continue;
+                }
+
+                this.FindElement(By.Id(id), shouldWait: true);
                 var elementId = $"{id}_{value}";
                 try
                 {

@@ -1,6 +1,5 @@
 namespace Husa.Uploader.Core.Tests
 {
-    using System.Collections.ObjectModel;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.CTX.Api.Contracts.Response;
     using Husa.Quicklister.CTX.Api.Contracts.Response.ListingRequest.SaleRequest;
@@ -14,7 +13,6 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Microsoft.Extensions.Logging;
     using Moq;
-    using OpenQA.Selenium;
     using Xunit;
     using AddressInfoResponse = Husa.Quicklister.CTX.Api.Contracts.Response.SalePropertyDetail.AddressInfoResponse;
 
@@ -22,18 +20,14 @@ namespace Husa.Uploader.Core.Tests
     public class CtxUploadServiceTests : MarketUploadServiceTests<CtxUploadService, CtxListingRequest>
     {
         private readonly Mock<IUploaderClient> uploaderClient = new();
-        private readonly Mock<IWebDriver> webDriver = new();
-        private readonly Mock<IWebElement> webElement = new();
         private readonly Mock<ILogger<CtxUploadService>> logger = new();
-        private readonly Mock<Models.UploadCommandInfo> uploadCommandInfo = new();
         private readonly ApplicationServicesFixture fixture;
 
         public CtxUploadServiceTests(ApplicationServicesFixture fixture)
         {
             this.fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             this.uploaderClient.SetupAllProperties();
-            this.webDriver.SetupAllProperties();
-            this.webElement.SetupAllProperties();
+            this.uploaderClient.Setup(x => x.FillFieldSingleOption(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
         }
 
         [Fact]
@@ -77,30 +71,6 @@ namespace Husa.Uploader.Core.Tests
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
-        }
-
-        protected override void SetUpConfigs(CtxListingRequest ctxListing = null, bool setUpVirtualTours = true, bool setUpAdditionalUploaderConfig = false)
-        {
-            this.SetUpCredentials();
-            this.SetUpCompany();
-            if (setUpVirtualTours)
-            {
-                this.SetUpVirtualTours();
-            }
-
-            if (setUpAdditionalUploaderConfig)
-            {
-                this.SetUpAdditionalUploaderConfig();
-            }
-
-            if (ctxListing is null)
-            {
-                return;
-            }
-
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ctxListing);
         }
 
         protected override CtxUploadService GetSut()
@@ -204,19 +174,6 @@ namespace Husa.Uploader.Core.Tests
             };
 
             return listingSale;
-        }
-
-        private void SetUpAdditionalUploaderConfig()
-        {
-            var windowHandle = "current";
-            var windowHandles = new ReadOnlyCollection<string>(new List<string>() { windowHandle });
-            var findElementsValues = new ReadOnlyCollection<IWebElement>(new List<IWebElement>() { this.webElement.Object });
-            this.uploaderClient.SetupGet(x => x.WindowHandles).Returns(windowHandles);
-            this.uploaderClient.SetupGet(x => x.CurrentWindowHandle).Returns(windowHandle);
-            this.uploaderClient.Setup(x => x.FindElements(It.IsAny<By>(), false)).Returns(findElementsValues);
-            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).SendKeys(It.IsAny<string>()));
-            this.uploaderClient.Setup(x => x.SwitchTo().Window(It.IsAny<string>())).Returns(this.webDriver.Object);
-            this.uploaderClient.SetupGet(x => x.UploadInformation).Returns(this.uploadCommandInfo.Object);
         }
     }
 }
