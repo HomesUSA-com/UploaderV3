@@ -175,7 +175,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.IsNewConstruction = propertyInfo.IsNewConstruction;
                 residentialListingRequest.LegalSubdivision = propertyInfo.LegalSubdivision?.ToStringFromEnumMember();
                 residentialListingRequest.IsPlannedDevelopment = propertyInfo.IsPlannedCommunity;
-                residentialListingRequest.PlannedDevelopment = propertyInfo.PlannedCommunity?.ToStringFromEnumMember();
+                residentialListingRequest.PlannedDevelopment = propertyInfo.PlannedCommunity?.GetEnumDescription();
                 residentialListingRequest.HousingTypeDesc = propertyInfo.HousingType?.ToStringFromEnumMember();
             }
 
@@ -227,7 +227,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.HasIcemaker = featuresInfo.HasIcemaker;
                 residentialListingRequest.HasCommunityPool = featuresInfo.HasCommunityPool;
                 residentialListingRequest.OvenDesc = featuresInfo.OvenDescription.ToStringFromEnumMembers();
-                residentialListingRequest.GolfCourseName = featuresInfo.GolfCourseName?.ToStringFromEnumMember();
+                residentialListingRequest.GolfCourseName = featuresInfo.GolfCourseName?.GetEnumDescription();
                 residentialListingRequest.Disclosures = featuresInfo.Disclosures.ToStringFromEnumMembers();
                 residentialListingRequest.EnergyDesc = featuresInfo.EnergyFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.HasMicrowave = featuresInfo.HasMicrowawe;

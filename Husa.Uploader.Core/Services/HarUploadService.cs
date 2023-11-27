@@ -398,21 +398,19 @@ namespace Husa.Uploader.Core.Services
                 return;
             }
 
-            this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
-            Thread.Sleep(200);
-            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
+            this.GoToRemarksTab();
 
             var firstVirtualTour = virtualTours.FirstOrDefault();
             if (firstVirtualTour != null)
             {
-                this.uploaderClient.WriteTextbox(By.Id("Input_325"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+                this.uploaderClient.WriteTextbox(By.Id("Input_341"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
             }
 
             virtualTours = virtualTours.Skip(1).ToList();
             var secondVirtualTour = virtualTours.FirstOrDefault();
             if (secondVirtualTour != null)
             {
-                this.uploaderClient.WriteTextbox(By.Id("Input_324"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+                this.uploaderClient.WriteTextbox(By.Id("Input_532"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
             }
         }
 
@@ -525,6 +523,12 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_171"), listing.SectionNum); // Section #
             this.uploaderClient.WriteTextbox(By.Id("Input_302"), listing.Legal); // Legal Description
 
+            if (this.uploaderClient.FindElements(By.Id("Input_172")).Any())
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_172"), listing.IsPlannedDevelopment.BoolToNumericBool()); // Master Planned Community Y/N
+                this.uploaderClient.FillFieldSingleOption("Input_173", listing.PlannedDevelopment); // Master Planned Community
+            }
+
             if (!string.IsNullOrWhiteSpace(listing.LegalSubdivision))
             {
                 var legalsubdivision = listing.LegalSubdivision.Contains("OTHER") ? "OTHER - " + listing.Zip : listing.LegalSubdivision;
@@ -570,7 +574,11 @@ namespace Husa.Uploader.Core.Services
                 }
             }
 
-            this.uploaderClient.SetSelect(By.Id("Input_374"), "1"); // House on Property (1 , 0)
+            if (this.uploaderClient.FindElements(By.Id("Input_374")).Any())
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_374"), "1"); // House on Property (1 , 0)
+            }
+
             this.uploaderClient.SetSelect(By.Id("Input_142"), listing.HasUtilitiesDescription.BoolToNumericBool()); // Utility District  (1 , 0)
             this.uploaderClient.SetSelect(By.Id("Input_145"), listing.LotSizeSrc, isElementOptional: true); // Lot Size Source
             this.uploaderClient.WriteTextbox(By.Id("Input_147"), listing.LotSizeAcres); // Acres
@@ -580,14 +588,9 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_207", listing.AccessInstructionsDesc); // Access -- MLS-51 AccessibilityDesc -> AccessInstructionsDesc
             this.uploaderClient.SetMultipleCheckboxById("Input_203", listing.GarageDesc); // Garage Description
             this.uploaderClient.SetMultipleCheckboxById("Input_152", listing.RestrictionsDesc); // Restrictions
-
-            if (this.uploaderClient.FindElements(By.Id("Input_329")).Any())
-            {
-                this.uploaderClient.SetMultipleCheckboxById("Input_329", listing.PropSubType); // Property Type
-            }
-
+            this.FindAndSetMultipleCheckboxById(new[] { "Input_329" }, listing.PropSubType); // Property Type
             this.uploaderClient.SetMultipleCheckboxById("Input_241", listing.HousingStyleDesc);  // Style
-            this.uploaderClient.SetMultipleCheckboxById("Input_492", listing.LotDesc); // Lot Description
+            this.FindAndSetMultipleCheckboxById(new[] { "Input_146", "Input_492" }, listing.LotDesc); // Lot Description
             this.uploaderClient.SetMultipleCheckboxById("Input_150", listing.WaterfrontDesc); // Waterfront Features
             this.uploaderClient.SetSelect(By.Id("Input_208"), listing.HasMicrowave.BoolToNumericBool()); // Microwave (0, 1)
             this.uploaderClient.SetSelect(By.Id("Input_209"), listing.HasDishwasher.BoolToNumericBool()); // Dishwasher
@@ -610,30 +613,26 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetSelect(By.Id("Input_265"), listing.HasCommunityPool.BoolToNumericBool()); // Pool - Area (1, 0)
             this.uploaderClient.SetSelect(By.Id("Input_263"), listing.HasPool.BoolToNumericBool()); // Pool - Private (1, 0)
             this.uploaderClient.SetMultipleCheckboxById("Input_264", listing.PoolDesc); // Private Pool Description
-            this.uploaderClient.SetMultipleCheckboxById("Input_493", listing.InteriorDesc); // Interior Features
-            this.uploaderClient.SetMultipleCheckboxById("Input_266", listing.FloorsDesc); // Flooring
-
-            if (this.uploaderClient.FindElements(By.Id("Input_259")).Any())
-            {
-                this.uploaderClient.SetMultipleCheckboxById("Input_259", listing.ExteriorDesc); // Exterior Description
-            }
-
-            if (this.uploaderClient.FindElements(By.Id("Input_260")).Any())
-            {
-                this.uploaderClient.SetMultipleCheckboxById("Input_260", listing.ConstructionDesc); // Exterior Construction
-            }
-
-            if (this.uploaderClient.FindElements(By.Id("Input_261")).Any())
-            {
-                this.uploaderClient.SetMultipleCheckboxById("Input_261", listing.RoofDesc); // Roof Description
-            }
-
-            this.uploaderClient.SetMultipleCheckboxById("Input_500", listing.FoundationDesc); // Foundation Description
+            this.FindAndSetMultipleCheckboxById(new[] { "Input_252", "Input_493" }, listing.InteriorDesc); // Interior Features
+            this.FindAndSetMultipleCheckboxById(new[] { "Input_266" }, listing.FloorsDesc); // Flooring
+            this.FindAndSetMultipleCheckboxById(new[] { "Input_259" }, listing.ExteriorDesc); // Exterior Description
+            this.FindAndSetMultipleCheckboxById(new[] { "Input_260" }, listing.ConstructionDesc); // Exterior Construction
+            this.FindAndSetMultipleCheckboxById(new[] { "Input_261" }, listing.RoofDesc); // Roof Description
+            this.FindAndSetMultipleCheckboxById(new[] { "Input_262", "Input_500" }, listing.FoundationDesc); // Foundation Description
             this.uploaderClient.SetMultipleCheckboxById("Input_258", listing.EnergyDesc); // Energy Features
             this.uploaderClient.SetMultipleCheckboxById("Input_257", listing.GreenCerts); // Green/Energy Certifications
             this.uploaderClient.SetMultipleCheckboxById("Input_139", listing.HeatSystemDesc); // Heating System Description
-            this.uploaderClient.SetMultipleCheckboxById("Input_140", listing.CoolSystemDesc); // Cooling System Description
+            this.FindAndSetMultipleCheckboxById(new[] { "Input_140", "Input_506" }, listing.CoolSystemDesc); // Cooling System Description
             this.uploaderClient.SetMultipleCheckboxById("Input_141", listing.WaterDesc); // Water/Sewer Description
+        }
+
+        private void FindAndSetMultipleCheckboxById(IEnumerable<string> inputIds, string value)
+        {
+            var inputId = inputIds.FirstOrDefault(inputId => this.uploaderClient.FindElements(By.Id(inputId)).Any());
+            if (inputId != null)
+            {
+                this.uploaderClient.SetMultipleCheckboxById(inputId, value);
+            }
         }
 
         private void FillMapInformation(HarListingRequest listing)
@@ -713,7 +712,7 @@ namespace Husa.Uploader.Core.Services
             }
 
             this.uploaderClient.SetMultiSelect(By.Id("Input_280"), listing.FinancingProposed); // Financing Considered
-            this.uploaderClient.SetMultipleCheckboxById("Input_494", listing.Disclosures);  // Disclosures
+            this.FindAndSetMultipleCheckboxById(new[] { "Input_494", "Input_273" }, listing.Disclosures);  // Disclosures
             this.uploaderClient.SetSelect(By.Id("Input_674"), listing.IsActiveCommunity.BoolToNumericBool()); // 55+ Active Community
             this.uploaderClient.SetSelect(By.Id("Input_347"), listing.HasOtherFees.BoolToNumericBool()); // Other Mandatory Fees
             this.uploaderClient.WriteTextbox(By.Id("Input_286"), listing.OtherFees); // Other Mandatory Fees Amount

@@ -259,8 +259,16 @@ namespace Husa.Uploader.Core.Tests
             var propertyInfo = new HarResponse.SalePropertyDetail.PropertyInfoResponse()
             {
                 ConstructionStage = ConstructionStage.Incomplete,
+                IsPlannedCommunity = true,
+                PlannedCommunity = PlannedCommunity.Tavola,
+                LegalSubdivision = LegalSubdivision.AlcornBend,
+                TaxId = "100",
+                ConstructionCompletionDate = DateTime.UtcNow,
             };
-            var featuresInfo = new Mock<HarResponse.SalePropertyDetail.FeaturesResponse>();
+            var featuresInfo = new HarResponse.SalePropertyDetail.FeaturesResponse()
+            {
+                GolfCourseName = GolfCourseName.AprilSoundCountryClub,
+            };
             var financialInfo = new HarResponse.SalePropertyDetail.FinancialResponse()
             {
                 HasBonusWithAmount = true,
@@ -290,7 +298,7 @@ namespace Husa.Uploader.Core.Tests
                 SpacesDimensionsInfo = spacesDimensionsInfo.Object,
                 AddressInfo = addressInfo.Object,
                 PropertyInfo = propertyInfo,
-                FeaturesInfo = featuresInfo.Object,
+                FeaturesInfo = featuresInfo,
                 FinancialInfo = financialInfo,
                 SchoolsInfo = schoolsInfo.Object,
                 ShowingInfo = showingInfo,
