@@ -219,8 +219,6 @@ namespace Husa.Uploader.Core.Services
                 // Enter Manage Photos
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"), cancellationToken);
                 this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSave"), cancellationToken);
-
                 this.DeleteAllImages();
                 await this.ProcessImages(listing, cancellationToken);
                 return UploadResult.Success;
