@@ -451,17 +451,20 @@ namespace Husa.Uploader.Core.Services
         {
             this.uploaderClient.NavigateToUrl("https://matrix.harmls.com/Matrix/AddEdit");
             Thread.Sleep(1000);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lvInputUISections_ctrl0_tbQuickEditCommonID_m_txbInternalTextBox"));
-            this.uploaderClient.WriteTextbox(By.Id("m_lvInputUISections_ctrl0_tbQuickEditCommonID_m_txbInternalTextBox"), value: mlsNumber);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lvInputUISections_ctrl0_lbQuickEdit"));
-            this.uploaderClient.ClickOnElement(By.Id("m_lvInputUISections_ctrl0_lbQuickEdit"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Edit existing"));
+            this.uploaderClient.ClickOnElement(By.Id("m_lvInputUISections_ctrl0_lvInputUISubsections_ctrl0_lbEditItem"));
+            this.uploaderClient.WriteTextbox(By.Id("m_txtSourceCommonID"), value: mlsNumber);
+            Thread.Sleep(500);
+            this.uploaderClient.ClickOnElement(By.Id("m_lbEdit"));
+            Thread.Sleep(1000);
         }
 
         private void NavigateToEditResidentialForm(string mlsNumber, CancellationToken cancellationToken = default)
         {
             this.NavigateToQuickEdit(mlsNumber);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
-            this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Price Change"), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl00_m_btnSelect"));
+            Thread.Sleep(1000);
         }
 
         private void FillListingInformation(ResidentialListingRequest listing)
