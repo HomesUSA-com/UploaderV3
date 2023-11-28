@@ -462,7 +462,7 @@ namespace Husa.Uploader.Core.Services
         private void NavigateToEditResidentialForm(string mlsNumber, CancellationToken cancellationToken = default)
         {
             this.NavigateToQuickEdit(mlsNumber);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Price Change"), cancellationToken);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_dlInputList_ctl00_m_btnSelect"), cancellationToken);
             this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl00_m_btnSelect"));
             Thread.Sleep(1000);
         }
