@@ -376,9 +376,8 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(400);
 
                 // Enter OpenHouse
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Open Houses Input Form"), cancellationToken);
-                this.uploaderClient.ClickOnElement(By.LinkText("Open Houses Input Form"));
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_tdValidate"), cancellationToken);
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_dlInputList_ctl02_m_btnSelect"), cancellationToken);
+                this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl02_m_btnSelect"));
                 Thread.Sleep(3000);
 
                 this.CleanOpenHouse();
@@ -863,17 +862,17 @@ namespace Husa.Uploader.Core.Services
 
         private void CleanOpenHouse()
         {
-            var elems = this.uploaderClient.FindElements(By.CssSelector("table[id^=_Input_168__del_REPEAT] a"))?.Count(c => c.Displayed);
+            var elems = this.uploaderClient.FindElements(By.CssSelector("table[id^=_Input_337__del_REPEAT] a"))?.Count(c => c.Displayed);
             if (elems == null || elems == 0)
             {
                 return;
             }
 
             this.uploaderClient.ScrollDown(3000);
-            while (elems > 1)
+            while (elems > 0)
             {
                 this.uploaderClient.ScrollDown();
-                var elementId = $"_Input_168__del_REPEAT{elems - 1}_";
+                var elementId = $"_Input_337__del_REPEAT{elems - 1}_";
                 this.uploaderClient.ClickOnElementById(elementId);
                 elems--;
                 Thread.Sleep(300);
@@ -889,35 +888,31 @@ namespace Husa.Uploader.Core.Services
                 if (index != 0)
                 {
                     this.uploaderClient.ScrollDown();
-                    this.uploaderClient.ClickOnElementById(elementId: $"_Input_168_more");
+                    this.uploaderClient.ClickOnElementById(elementId: $"_Input_337_more");
                     Thread.Sleep(1000);
                 }
 
-                // Date
-                this.uploaderClient.WriteTextbox(By.Id($"_Input_168__REPEAT{index}_162"), entry: openHouse.Date);
-
-                // From Time
-                this.uploaderClient.WriteTextbox(By.Id($"_Input_168__REPEAT{index}_TextBox_163"), entry: openHouse.StartTime.To12Format());
-                var fromTimeTT = openHouse.StartTime.Hours >= 12 ? 1 : 0;
-                this.uploaderClient.ClickOnElementById($"_Input_168__REPEAT{index}_RadioButtonList_163_{fromTimeTT}");
-
-                // To Time
-                this.uploaderClient.WriteTextbox(By.Id($"_Input_168__REPEAT{index}_TextBox_164"), entry: openHouse.EndTime.To12Format());
-                var endTimeTT = openHouse.EndTime.Hours >= 12 ? 1 : 0;
-                this.uploaderClient.ClickOnElementById($"_Input_168__REPEAT{index}_RadioButtonList_164_{endTimeTT}");
-
-                // Active Status
-                this.uploaderClient.SetSelect(By.Id($"_Input_168__REPEAT{index}_165"), value: "ACT");
-
                 // Open House Type
-                var type = openHouse.Type.ToString().ToUpperInvariant();
-                this.uploaderClient.SetSelect(By.Id($"_Input_168__REPEAT{index}_161"), value: type);
+                this.uploaderClient.SetSelect(By.Id($"_Input_337__REPEAT{index}_330"), value: "Public");
 
                 // Refreshments
-                this.uploaderClient.SetMultipleCheckboxById($"_Input_168__REPEAT{index}_652", openHouse.Refreshments);
+                this.uploaderClient.SetMultipleCheckboxById($"_Input_337__REPEAT{index}_335", openHouse.Refreshments);
+
+                // Date
+                this.uploaderClient.WriteTextbox(By.Id($"_Input_337__REPEAT{index}_332"), entry: openHouse.Date);
+
+                // From Time
+                this.uploaderClient.WriteTextbox(By.Id($"_Input_337__REPEAT{index}_TextBox_333"), entry: openHouse.StartTime.To12Format());
+                var fromTimeTT = openHouse.StartTime.Hours >= 12 ? 1 : 0;
+                this.uploaderClient.ClickOnElementById($"_Input_337__REPEAT{index}_RadioButtonList_333_{fromTimeTT}");
+
+                // To Time
+                this.uploaderClient.WriteTextbox(By.Id($"_Input_337__REPEAT{index}_TextBox_334"), entry: openHouse.EndTime.To12Format());
+                var endTimeTT = openHouse.EndTime.Hours >= 12 ? 1 : 0;
+                this.uploaderClient.ClickOnElementById($"_Input_337__REPEAT{index}_RadioButtonList_334_{endTimeTT}");
 
                 // Comments
-                this.uploaderClient.WriteTextbox(By.Id($"_Input_168__REPEAT{index}_167"), entry: openHouse.Comments);
+                this.uploaderClient.WriteTextbox(By.Id($"_Input_337__REPEAT{index}_339"), entry: openHouse.Comments);
 
                 index++;
             }

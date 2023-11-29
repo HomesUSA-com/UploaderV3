@@ -196,6 +196,7 @@ namespace Husa.Uploader.Core.Tests
 
             // Act
             var result = await sut.UpdateOpenHouse(harListing);
+            this.uploaderClient.Verify(client => client.ScrollDown(It.IsAny<int>()), Times.AtLeastOnce);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
