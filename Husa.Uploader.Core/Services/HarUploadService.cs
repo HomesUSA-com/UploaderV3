@@ -315,6 +315,13 @@ namespace Husa.Uploader.Core.Services
                         Thread.Sleep(500);
                         this.uploaderClient.WriteTextbox(By.Id("Input_522"), currentDate); // terminated date
                         break;
+                    case "WITH":
+                        buttonText = "Change to Withdrawn";
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                        Thread.Sleep(500);
+                        this.uploaderClient.WriteTextbox(By.Id("Input_113"), listing.OffMarketDate.Value.ToShortDateString()); // Withdrawn Date
+                        break;
 
                     default:
                         throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for Houston Listing with Id '{listing.ResidentialListingID}'");
