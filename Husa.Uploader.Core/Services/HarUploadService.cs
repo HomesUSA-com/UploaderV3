@@ -640,15 +640,10 @@ namespace Husa.Uploader.Core.Services
 
         private void FillMapInformation(HarListingRequest listing)
         {
-            this.GoToTab("Map Information");
-            this.SetLongitudeAndLatitudeValues(listing);
-
-            if (!listing.IsNewListing)
+            if (listing.IsNewListing)
             {
-                this.uploaderClient.SetSelect(By.Id("Input_177"), listing.SchoolDistrict); // SchoolDistrict
-                this.uploaderClient.SetSelect(By.Id("Input_180"), listing.HighSchool); // High School
-                this.uploaderClient.SetSelect(By.Id("Input_168"), listing.MLSArea, isElementOptional: true); // Area
-                this.uploaderClient.SetSelect(By.Id("Input_168"), listing.MLSSubArea, isElementOptional: true); // Market Area
+                this.GoToTab("Map Information");
+                this.SetLongitudeAndLatitudeValues(listing);
             }
         }
 
