@@ -128,17 +128,15 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Fact]
-        public async Task UpdateStatus_ActiveUnderContractSuccess()
+        public async Task UpdateStatus_TerminatedSuccess()
         {
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
             var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
-            harListing.ListStatus = "ActiveUnderContract";
-            harListing.PendingDate = DateTime.Now;
-            harListing.ClosedDate = DateTime.Now;
-            harListing.EstClosedDate = DateTime.Now;
-            harListing.HasContingencyInfo = false;
+            harListing.ListStatus = "TERM";
+            harListing.BackOnMarketDate = DateTime.Now;
+            harListing.OffMarketDate = DateTime.Now;
             this.sqlDataLoader
                 .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(harListing);
