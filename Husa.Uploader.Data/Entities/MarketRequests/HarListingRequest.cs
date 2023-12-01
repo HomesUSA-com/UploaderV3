@@ -186,15 +186,15 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     throw new ArgumentNullException(nameof(spacesDimensionsInfo));
                 }
 
-                residentialListingRequest.NumStories = spacesDimensionsInfo.Stories?.ToString();
+                residentialListingRequest.Beds = spacesDimensionsInfo.NumBedrooms;
                 residentialListingRequest.BathsFull = spacesDimensionsInfo.BathsFull;
                 residentialListingRequest.BathsHalf = spacesDimensionsInfo.BathsHalf;
-                residentialListingRequest.Beds = spacesDimensionsInfo.NumBedrooms;
-                residentialListingRequest.SqFtTotal = spacesDimensionsInfo.SqftTotal;
+                residentialListingRequest.BedroomDescription = spacesDimensionsInfo.BedroomDescription.ToStringFromEnumMembers();
                 residentialListingRequest.RoomDescription = spacesDimensionsInfo.RoomDescription.ToStringFromEnumMembers();
                 residentialListingRequest.BedBathDesc = spacesDimensionsInfo.PrimaryBathDescription.ToStringFromEnumMembers();
-                residentialListingRequest.BedroomDescription = spacesDimensionsInfo.BedroomDescription.ToStringFromEnumMembers();
                 residentialListingRequest.KitchenDescription = spacesDimensionsInfo.KitchenDescription.ToStringFromEnumMembers();
+                residentialListingRequest.NumStories = spacesDimensionsInfo.Stories?.ToString();
+                residentialListingRequest.SqFtTotal = spacesDimensionsInfo.SqftTotal;
             }
 
             void FillFeaturesInfo(FeaturesResponse featuresInfo)
@@ -334,6 +334,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 {
                     this.Rooms.Add(new()
                     {
+                        Width = room.Width,
+                        Length = room.Length,
                         Level = room.Level.ToStringFromEnumMember(),
                         RoomType = room.RoomType.ToStringFromEnumMember(),
                     });

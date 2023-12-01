@@ -654,6 +654,14 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(200);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
 
+            this.uploaderClient.WriteTextbox(By.Id("Input_267"), listing.Beds); // Bedrooms
+            this.uploaderClient.WriteTextbox(By.Id("Input_268"), listing.BathsFull); // Baths - Full
+            this.uploaderClient.WriteTextbox(By.Id("Input_196"), listing.BathsHalf); // Baths - Half
+            this.uploaderClient.SetMultipleCheckboxById("Input_635", listing.BedroomDescription); // Bedroom Description
+            this.uploaderClient.SetMultipleCheckboxById("Input_636", listing.RoomDescription); // Room Description
+            this.uploaderClient.SetMultipleCheckboxById("Input_637", listing.BedBathDesc); // Bathroom Description
+            this.uploaderClient.SetMultipleCheckboxById("Input_634", listing.KitchenDescription); // Kitchen Description
+
             if (!listing.IsNewListing)
             {
                 int index = 0;
@@ -671,7 +679,7 @@ namespace Husa.Uploader.Core.Services
                     {
                         this.uploaderClient.ScrollToTop();
                         this.uploaderClient.ClickOnElement(By.Id("m_rpPageList_ctl02_lbPageLink"));
-                        this.uploaderClient.ExecuteScript("Subforms['s_349'].deleteRow('_Input_349__del_REPEAT" + index + "_');");
+                        this.uploaderClient.ExecuteScript("Subforms['s_191'].deleteRow('_Input_191__del_REPEAT" + index + "_');");
                         Thread.Sleep(400);
                     }
                 }
@@ -682,15 +690,19 @@ namespace Husa.Uploader.Core.Services
             {
                 if (i > 0)
                 {
-                    this.uploaderClient.ClickOnElement(By.Id("_Input_349_more"));
+                    this.uploaderClient.ClickOnElement(By.Id("_Input_191_more"));
                     this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(400));
                 }
 
-                var roomType = $"_Input_349__REPEAT{i}_345";
-                this.uploaderClient.SetSelect(By.Id($"_Input_349__REPEAT{i}_345"), room.RoomType, "Room Type", tabName);
+                var roomType = $"_Input_191__REPEAT{i}_187";
+                this.uploaderClient.SetSelect(By.Id($"_Input_191__REPEAT{i}_187"), room.RoomType, "Room Type", tabName);
                 this.uploaderClient.ResetImplicitWait();
-                this.uploaderClient.SetSelect(By.Id($"_Input_349__REPEAT{i}_346"), room.Level, "Level", tabName, isElementOptional: true);
-                this.uploaderClient.SetMultipleCheckboxById($"_Input_349__REPEAT{i}_347", room.Features);
+                if (room.HasDimensions)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id($"_Input_191__REPEAT{i}_189"), room.Dimensions, isElementOptional: true);
+                }
+
+                this.uploaderClient.SetSelect(By.Id($"_Input_191__REPEAT{i}_190"), room.Level, "Level", tabName, isElementOptional: true);
 
                 this.uploaderClient.ScrollDownToElementHTML(roomType);
                 i++;
