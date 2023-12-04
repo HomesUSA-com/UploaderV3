@@ -245,7 +245,7 @@ namespace Husa.Uploader.Core.Services
 
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Price Change"), cancellationToken);
                 this.uploaderClient.ClickOnElement(By.LinkText("Price Change"));
-                this.uploaderClient.WriteTextbox(By.Id("Input_77"), listing.ListPrice); // List Price
+                this.uploaderClient.WriteTextbox(By.Id("Input_9"), listing.ListPrice); // List Price
                 return UploadResult.Success;
             }
         }
