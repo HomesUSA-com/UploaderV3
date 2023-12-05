@@ -30,6 +30,10 @@ namespace Husa.Uploader.Core.Tests
             this.uploaderClient.SetupAllProperties();
             this.uploaderClient.Setup(x => x.FillFieldSingleOption(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
             this.uploaderClient.Setup(x => x.FindElements(It.IsAny<By>(), It.IsAny<bool>())).Returns(new ReadOnlyCollection<IWebElement>(Array.Empty<IWebElement>())).Verifiable();
+            this.uploaderClient.Setup(x => x.WaitUntilElementDisappears(
+                It.Is<By>(x => x == By.LinkText("Manage Tours Links")),
+                It.IsAny<CancellationToken>())).Returns(true);
+            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
         }
 
         [Theory]
@@ -60,35 +64,13 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Fact]
-        public async Task UpdateStatus_HoldSuccess()
-        {
-            // Arrange
-            this.SetUpCredentials();
-            this.SetUpCompany();
-            var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
-            harListing.ListStatus = "Hold";
-            harListing.BackOnMarketDate = DateTime.Now;
-            harListing.OffMarketDate = DateTime.Now;
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(harListing);
-            var sut = this.GetSut();
-
-            // Act
-            var result = await sut.UpdateStatus(harListing);
-
-            // Assert
-            Assert.Equal(UploadResult.Success, result);
-        }
-
-        [Fact]
         public async Task UpdateStatus_PendingSuccess()
         {
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
             var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
-            harListing.ListStatus = "Pending";
+            harListing.ListStatus = "PEND";
             harListing.PendingDate = DateTime.Now;
             harListing.EstClosedDate = DateTime.Now;
             harListing.ExpiredDate = DateTime.Now;
@@ -112,7 +94,7 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCredentials();
             this.SetUpCompany();
             var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
-            harListing.ListStatus = "Closed";
+            harListing.ListStatus = "CLOSD";
             harListing.PendingDate = DateTime.Now;
             harListing.ClosedDate = DateTime.Now;
             this.sqlDataLoader
@@ -128,13 +110,13 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Fact]
-        public async Task UpdateStatus_ActiveUnderContractSuccess()
+        public async Task UpdateStatus_PendingContinueToShowSuccess()
         {
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
             var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
-            harListing.ListStatus = "ActiveUnderContract";
+            harListing.ListStatus = "PSHO";
             harListing.PendingDate = DateTime.Now;
             harListing.ClosedDate = DateTime.Now;
             harListing.EstClosedDate = DateTime.Now;
