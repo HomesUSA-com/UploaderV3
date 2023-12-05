@@ -274,38 +274,120 @@ namespace Husa.Uploader.Core.Services
                 var buttonText = string.Empty;
                 switch (listing.ListStatus)
                 {
-                    case "Hold":
-                        buttonText = "Change to Hold";
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
-                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_528"));
-                        this.uploaderClient.WriteTextbox(By.Id("Input_528"), listing.OffMarketDate.Value.ToShortDateString()); // Hold Date
-                        this.uploaderClient.WriteTextbox(By.Id("Input_81"), listing.BackOnMarketDate.Value.ToShortDateString()); // Expiration Date
-                        break;
-                    case "Closed":
-                        buttonText = "Change to Closed";
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                    case "CLOSD":
+                        buttonText = "Change to Sold";
                         this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
                         Thread.Sleep(500);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // pending date
-                        this.uploaderClient.WriteTextbox(By.Id("Input_85"), listing.ClosedDate.Value.ToShortDateString()); // close date
-                        this.uploaderClient.SetSelect(By.Id($"Input_524"), value: "EXCL"); // Property Condition at Closing
-                        this.uploaderClient.WriteTextbox(By.Id("Input_84"), listing.SoldPrice); // close price
-                        this.uploaderClient.WriteTextbox(By.Id("Input_526"), "None"); // closed Comments
-                        this.uploaderClient.SetSelect(By.Id($"Input_655"), value: listing.HasContingencyInfo.BoolToNumericBool()); // Property Sale Contingency
-                        this.uploaderClient.WriteTextbox(By.Id("Input_517"), listing.SellConcess); // Buyer Clsg Cost Pd By Sell($)
-                        this.uploaderClient.SetMultipleCheckboxById("Input_525", listing.SoldTerms, "Buyer Financing", " "); // Buyer Financing
-                        this.uploaderClient.WriteTextbox(By.Id("Input_519"), "0"); // Repairs Amount
+
+                        this.uploaderClient.WriteTextbox(By.Id("Input_74"), listing.SoldPrice); // Sale Price
+
+                        if (listing.PendingDate != null)
+                        {
+                            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.PendingDate.Value.ToShortDateString()); // Pending Date
+                        }
+
+                        if (listing.ClosedDate != null)
+                        {
+                            this.uploaderClient.WriteTextbox(By.Id("Input_120"), listing.ClosedDate.Value.ToShortDateString()); // Closed Date
+                        }
+
+                        this.uploaderClient.SetSelect(By.Id("Input_119"), "0"); // Coop Sale
+
+                        ////this.uploaderClient.WriteTextbox(By.Id("Input_121"), listing.SellerPaid); // Seller Pd Buyer Clsg Costs
+                        this.uploaderClient.WriteTextbox(By.Id("Input_123"), "0"); // Repair Paid Seller
+
+                        ////this.uploaderClient.SetSelect(By.Id("Input_122"), listing.TitlePaidBy); // Title Paid By
+                        if (listing.SellingAgentPresent != null && listing.SellingAgentPresent == true)
+                        {
+                            this.uploaderClient.SetSelect(By.Id("Input_310"), "Y");  // Did Selling Agent Represent Buyer
+                        }
+                        else
+                        {
+                            this.uploaderClient.SetSelect(By.Id("Input_310"), "N");  // Did Selling Agent Represent Buyer
+                        }
+
+                        this.uploaderClient.SetSelect(By.Id("Input_525"), listing.SoldTerms); // Sold Terms
+
+                        if (!string.IsNullOrEmpty(listing.SellingAgentUID))
+                        {
+                            this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.SellingAgentUID); // Selling Agent MLSID
+
+                            string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
+                            this.uploaderClient.ExecuteScript(@js);
+                        }
+
+                        this.uploaderClient.ScrollDown();
+                        if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
+                        {
+                            this.uploaderClient.SetSelect(By.Id("Input_124"), "0"); // Buyer Represented by NONMLS Licensed Agent
+                            this.uploaderClient.WriteTextbox(By.Id("Input_125"), listing.SellingAgentLicenseNum); // TREC License Number
+                        }
+
+                        if (!string.IsNullOrEmpty(listing.SellTeamID) && this.uploaderClient.IsElementPresent(By.Id("Input_614")))
+                        {
+                            this.uploaderClient.WriteTextbox(By.Id("Input_614"), listing.SellTeamID); // Selling Team ID
+
+                            string js = " document.getElementById('Input_614_Refresh').value='1';RefreshToSamePage(); ";
+                            this.uploaderClient.ExecuteScript(@js);
+                        }
+
+                        if (!string.IsNullOrEmpty(listing.SellingAgent2ID))
+                        {
+                            this.uploaderClient.WriteTextbox(By.Id("Input_344"), listing.SellingAgent2ID); // Co Selling Associate MLSID
+
+                            string js = " document.getElementById('Input_344_Refresh').value='1';RefreshToSamePage(); ";
+                            this.uploaderClient.ExecuteScript(@js);
+                        }
+
                         break;
-                    case "Pending":
+                    case "PEND":
                         buttonText = "Change to Pending";
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
                         this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_512"));
-                        this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // Pending Date
-                        this.uploaderClient.WriteTextbox(By.Id("Input_515"), listing.EstClosedDate.Value.ToShortDateString()); // Tentative Close Date
-                        this.uploaderClient.WriteTextbox(By.Id("Input_81"), listing.ExpiredDate.Value.ToShortDateString()); // Expiration Date
-                        this.uploaderClient.SetSelect(By.Id("Input_655"), listing.HasContingencyInfo.BoolToNumericBool()); // Property Sale Contingency YN
+                        Thread.Sleep(500);
+
+                        if (listing.PendingDate != null)
+                        {
+                            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.PendingDate.Value.ToShortDateString()); // Pending Date
+                        }
+
+                        if (listing.EstClosedDate != null)
+                        {
+                            this.uploaderClient.WriteTextbox(By.Id("Input_311"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
+                        }
+
+                        if (listing.SellingAgentPresent != null && listing.SellingAgentPresent == true)
+                        {
+                            this.uploaderClient.SetSelect(By.Id("Input_310"), "Y");  // Did Selling Agent Represent Buyer
+                        }
+                        else
+                        {
+                            this.uploaderClient.SetSelect(By.Id("Input_310"), "N");  // Did Selling Agent Represent Buyer
+                        }
+
+                        if (!string.IsNullOrEmpty(listing.ContingencyInfo))
+                        {
+                            this.uploaderClient.SetSelect(By.Id("Input_132"), "1"); // Contingent on Sale of Other Property
+                        }
+                        else
+                        {
+                            this.uploaderClient.SetSelect(By.Id("Input_132"), "0"); // Contingent on Sale of Other Property
+                        }
+
+                        if (!string.IsNullOrEmpty(listing.SellingAgentUID))
+                        {
+                            this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.SellingAgentUID); // Selling Agent MLSID
+
+                            string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
+                            this.uploaderClient.ExecuteScript(@js);
+                        }
+
+                        this.uploaderClient.ScrollDown();
+                        if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
+                        {
+                            this.uploaderClient.SetSelect(By.Id("Input_528"), "0"); // Buyer Represented by NONMLS Licensed Agent
+                            this.uploaderClient.WriteTextbox(By.Id("Input_131"), listing.SellingAgentLicenseNum); // TREC License Number
+                        }
+
                         break;
                     case "TERM":
                         buttonText = "Change to Terminated";
@@ -342,7 +424,46 @@ namespace Husa.Uploader.Core.Services
                         }
 
                         break;
+                    case "PSHO":
+                        buttonText = "Change to Pending Continue to Show";
+                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                        Thread.Sleep(500);
 
+                        if (listing.PendingDate != null)
+                        {
+                            this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.PendingDate.Value.ToShortDateString()); // Pending Date
+                        }
+
+                        if (listing.EstClosedDate != null)
+                        {
+                            this.uploaderClient.WriteTextbox(By.Id("Input_128"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
+                        }
+
+                        if (listing.SellingAgentPresent != null && listing.SellingAgentPresent == true)
+                        {
+                            this.uploaderClient.SetSelect(By.Id("Input_310"), "Y");  // Did Selling Agent Represent Buyer
+                        }
+                        else
+                        {
+                            this.uploaderClient.SetSelect(By.Id("Input_310"), "N");  // Did Selling Agent Represent Buyer
+                        }
+
+                        if (!string.IsNullOrEmpty(listing.SellingAgentUID))
+                        {
+                            this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.SellingAgentUID); // Selling Agent MLSID
+
+                            string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
+                            this.uploaderClient.ExecuteScript(@js);
+                        }
+
+                        if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
+                        {
+                            this.uploaderClient.ScrollDown();
+                            this.uploaderClient.SetSelect(By.Id("Input_130"), "0"); // Buyer Represented by NONMLS Licensed Agent
+                            this.uploaderClient.WriteTextbox(By.Id("Input_131"), listing.SellingAgentLicenseNum); // TREC License Number
+                        }
+
+                        break;
                     default:
                         throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for Houston Listing with Id '{listing.ResidentialListingID}'");
                 }
@@ -365,9 +486,11 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Updating VirtualTour for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
-                this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
+                this.NavigateToQuickEdit(listing.MLSNum);
 
-                await this.UpdateVirtualTour(listing, cancellationToken);
+                this.GoToManageTourLinks();
+
+                await this.UpdateVirtualTourLinks(listing, cancellationToken);
 
                 return UploadResult.Success;
             }
@@ -465,6 +588,29 @@ namespace Husa.Uploader.Core.Services
             }
 
             Thread.Sleep(1000);
+        }
+
+        private async Task UpdateVirtualTourLinks(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        {
+            var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.Houston, cancellationToken);
+
+            if (!virtualTours.Any())
+            {
+                return;
+            }
+
+            var firstVirtualTour = virtualTours.FirstOrDefault();
+            if (firstVirtualTour != null)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_341"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+            }
+
+            virtualTours = virtualTours.Skip(1).ToList();
+            var secondVirtualTour = virtualTours.FirstOrDefault();
+            if (secondVirtualTour != null)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_532"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+            }
         }
 
         private void NavigateToQuickEdit(string mlsNumber)
@@ -798,6 +944,12 @@ namespace Husa.Uploader.Core.Services
         private void GoToPropertyInformationTab()
         {
             this.GoToTab("Property Information");
+        }
+
+        private void GoToManageTourLinks()
+        {
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Tours Links"));
+            this.uploaderClient.FindElement(By.LinkText("Manage Tours Links")).Click();
         }
 
         private void GoToTab(string tabText)
