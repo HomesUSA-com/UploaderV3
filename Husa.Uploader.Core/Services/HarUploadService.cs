@@ -322,6 +322,26 @@ namespace Husa.Uploader.Core.Services
                         Thread.Sleep(500);
                         this.uploaderClient.WriteTextbox(By.Id("Input_113"), listing.OffMarketDate.Value.ToShortDateString()); // Withdrawn Date
                         break;
+                    case "OP":
+                        buttonText = "Change to Option Pending";
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                        Thread.Sleep(500);
+                        this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
+                        this.uploaderClient.WriteTextbox(By.Id("Input_128"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
+                        this.uploaderClient.WriteTextbox(By.Id("Input_129"), listing.ExpiredDate.Value.ToShortDateString()); // Option End Date
+                        this.uploaderClient.SetSelect(By.Id($"Input_132"), value: listing.HasContingencyInfo.BoolToNumericBool()); // Contingent on Sale of Other Property
+                        if (listing.AgentMarketUniqueId != string.Empty)
+                        {
+                            this.uploaderClient.SetSelect(By.Id($"Input_310"), value: "Y"); // Did Selling Agent Represent Buyer
+                            this.uploaderClient.WriteTextbox(By.Id($"Input_342"), value: listing.AgentMarketUniqueId); // Selling Associate MLSID
+                        }
+                        else
+                        {
+                            this.uploaderClient.SetSelect(By.Id($"Input_310"), value: "N"); // Did Selling Agent Represent Buyer
+                        }
+
+                        break;
 
                     default:
                         throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for Houston Listing with Id '{listing.ResidentialListingID}'");
