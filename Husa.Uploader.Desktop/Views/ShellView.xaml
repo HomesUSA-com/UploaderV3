@@ -323,91 +323,95 @@
                             Grid.Row="1"
                             Grid.RowSpan="2"
                             Margin="10,10,10,35"
-                            Background="#FFFFFFFF"
-                            Visibility="{Binding ShowPanelAction, Converter={StaticResource BooleanToVisibilityConverter }}">
-                            <TextBlock Name="SelectedListingRequest_MlsNumber" TextWrapping="WrapWithOverflow" FontSize="18" FontWeight="Bold" Margin="10,10,10,0" Foreground="#FF1B3861">
+                            Background="#FFFFFFFF">
+                            <StackPanel Visibility="{Binding ShowPanelAction, Converter={StaticResource BooleanToVisibilityConverter }}">
+                                <TextBlock Name="SelectedListingRequest_MlsNumber" TextWrapping="WrapWithOverflow" FontSize="18" FontWeight="Bold" Margin="10,10,10,0" Foreground="#FF1B3861">
                                 <Run Text="MlsNum: "/>
                                 <Run Text="{Binding SelectedListingRequest.MlsNumber}"/>
-                            </TextBlock>
-                            <TextBlock Name="SelectedListingRequest_Market" TextWrapping="WrapWithOverflow" FontSize="14" FontWeight="Bold" Margin="10,0" Foreground="#FF1B3861">
+                                </TextBlock>
+                                <TextBlock Name="SelectedListingRequest_Market" TextWrapping="WrapWithOverflow" FontSize="14" FontWeight="Bold" Margin="10,0" Foreground="#FF1B3861">
                                 <Run Text="Market: "/>
                                 <Run Text="{Binding SelectedListingRequest.Market}"/>
-                            </TextBlock>
-                            <TextBlock Name="SelectedListingRequest_Status" TextWrapping="WrapWithOverflow" Margin="10,0" Foreground="#FF1B3861">
+                                </TextBlock>
+                                <TextBlock Name="SelectedListingRequest_Status" TextWrapping="WrapWithOverflow" Margin="10,0" Foreground="#FF1B3861">
                                 <Run Text="Status: "/>
                                 <Run Text="{Binding SelectedListingRequest.Status}"/>
-                            </TextBlock>
-                            <TextBlock Name="SelectedListingRequest_Address" TextWrapping="WrapWithOverflow" Margin="10,0" Foreground="#FF1B3861">
+                                </TextBlock>
+                                <TextBlock Name="SelectedListingRequest_Address" TextWrapping="WrapWithOverflow" Margin="10,0" Foreground="#FF1B3861">
                                 <Run Text="Address: "/>
                                 <Run Text="{Binding SelectedListingRequest.Address}"/>
-                            </TextBlock>
+                                </TextBlock>
 
-                            <StackPanel Margin="10,0">
-                                <StackPanel Visibility="{Binding IsReadyListing, Converter={StaticResource BooleanToVisibilityConverter }}">
-                                    <GroupBox Header="Listing Actions" Margin="5,5,5,0" >
-                                        <GroupBox.Style>
-                                            <Style TargetType="{x:Type GroupBox}">
-                                                <Style.BasedOn>
-                                                    <Style TargetType="{x:Type GroupBox}">
-                                                        <Setter Property="Background" Value="Transparent"/>
-                                                        <Setter Property="Foreground" Value="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type FrameworkElement}}}"/>
-                                                        <Setter Property="Padding" Value="9"/>
-                                                        <Setter Property="BorderThickness" Value="1"/>
-                                                        <Setter Property="SnapsToDevicePixels" Value="True"/>
-                                                        <Setter Property="materialDesign:ShadowAssist.ShadowDepth" Value="Depth0"/>
-                                                        <Setter Property="materialDesign:ColorZoneAssist.Mode" Value="PrimaryMid"/>
-                                                        <Setter Property="Template">
-                                                            <Setter.Value>
-                                                                <ControlTemplate TargetType="{x:Type GroupBox}">
-                                                                    <Grid>
-                                                                        <Border BorderBrush="#FF1B3861" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}"/>
-                                                                        <DockPanel Background="#FF1B3861">
-                                                                            <materialDesign:ColorZone x:Name="PART_ColorZone" DockPanel.Dock="Top" Mode="{Binding (materialDesign:ColorZoneAssist.Mode), RelativeSource={RelativeSource TemplatedParent}}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" materialDesign:ShadowAssist.ShadowEdges="{Binding (materialDesign:ShadowAssist.ShadowEdges), RelativeSource={RelativeSource TemplatedParent}}" UseLayoutRounding="True">
-                                                                                <materialDesign:ColorZone.Effect>
-                                                                                    <Binding Path="(materialDesign:ShadowAssist.ShadowDepth)" RelativeSource="{RelativeSource TemplatedParent}">
-                                                                                        <Binding.Converter>
-                                                                                            <materialDesign:ShadowConverter/>
-                                                                                        </Binding.Converter>
-                                                                                    </Binding>
-                                                                                </materialDesign:ColorZone.Effect>
-                                                                                <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" ContentStringFormat="{TemplateBinding HeaderStringFormat}" ContentSource="Header" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                                                                            </materialDesign:ColorZone>
-                                                                            <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" Margin="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                                                                        </DockPanel>
-                                                                    </Grid>
-                                                                </ControlTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </Style>
-                                                </Style.BasedOn>
-                                            </Style>
-                                        </GroupBox.Style>
-                                        <StackPanel>
-                                            <Button Name="StartEdit" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartEditCommand}">Edit</Button>
-                                            <Button Name="StartUpload" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartUploadCommand}">Upload</Button>
-                                            <Button Name="StartStatusUpdate" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartStatusUpdateCommand}">Update Status</Button>
-                                            <Button Name="StartPriceUpdate" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartPriceUpdateCommand}">Update Price</Button>
-                                            <Button Name="StartCompletionDateUpdate" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartCompletionDateUpdateCommand}">Update Completion Date</Button>
-                                            <Button Name="StartImageUpdate" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartImageUpdateCommand}">Update Images</Button>
-                                            <Button Name="StartOHUpdate" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartOHUpdateCommand}">Update Open House</Button>
-                                            <Button Name="StartVTUpload" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartVTUploadCommand}">Upload Virtual Tour</Button>
-                                        </StackPanel>
-                                    </GroupBox>
+                                <StackPanel Margin="10,0">
+                                    <StackPanel Visibility="{Binding IsReadyListing, Converter={StaticResource BooleanToVisibilityConverter }}">
+                                        <GroupBox Header="Listing Actions" Margin="5,5,5,0" >
+                                            <GroupBox.Style>
+                                                <Style TargetType="{x:Type GroupBox}">
+                                                    <Style.BasedOn>
+                                                        <Style TargetType="{x:Type GroupBox}">
+                                                            <Setter Property="Background" Value="Transparent"/>
+                                                            <Setter Property="Foreground" Value="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type FrameworkElement}}}"/>
+                                                            <Setter Property="Padding" Value="9"/>
+                                                            <Setter Property="BorderThickness" Value="1"/>
+                                                            <Setter Property="SnapsToDevicePixels" Value="True"/>
+                                                            <Setter Property="materialDesign:ShadowAssist.ShadowDepth" Value="Depth0"/>
+                                                            <Setter Property="materialDesign:ColorZoneAssist.Mode" Value="PrimaryMid"/>
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="{x:Type GroupBox}">
+                                                                        <Grid>
+                                                                            <Border BorderBrush="#FF1B3861" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}"/>
+                                                                            <DockPanel Background="#FF1B3861">
+                                                                                <materialDesign:ColorZone x:Name="PART_ColorZone" DockPanel.Dock="Top" Mode="{Binding (materialDesign:ColorZoneAssist.Mode), RelativeSource={RelativeSource TemplatedParent}}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" materialDesign:ShadowAssist.ShadowEdges="{Binding (materialDesign:ShadowAssist.ShadowEdges), RelativeSource={RelativeSource TemplatedParent}}" UseLayoutRounding="True">
+                                                                                    <materialDesign:ColorZone.Effect>
+                                                                                        <Binding Path="(materialDesign:ShadowAssist.ShadowDepth)" RelativeSource="{RelativeSource TemplatedParent}">
+                                                                                            <Binding.Converter>
+                                                                                                <materialDesign:ShadowConverter/>
+                                                                                            </Binding.Converter>
+                                                                                        </Binding>
+                                                                                    </materialDesign:ColorZone.Effect>
+                                                                                    <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" ContentStringFormat="{TemplateBinding HeaderStringFormat}" ContentSource="Header" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                                                                </materialDesign:ColorZone>
+                                                                                <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" Margin="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                                                            </DockPanel>
+                                                                        </Grid>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Style>
+                                                    </Style.BasedOn>
+                                                </Style>
+                                            </GroupBox.Style>
+                                            <StackPanel>
+                                                <Button Name="StartEdit" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartEditCommand}">Edit</Button>
+                                                <Button Name="StartUpload" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartUploadCommand}">Upload</Button>
+                                                <Button Name="StartStatusUpdate" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartStatusUpdateCommand}">Update Status</Button>
+                                                <Button Name="StartPriceUpdate" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartPriceUpdateCommand}">Update Price</Button>
+                                                <Button Name="StartCompletionDateUpdate" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartCompletionDateUpdateCommand}">Update Completion Date</Button>
+                                                <Button Name="StartImageUpdate" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartImageUpdateCommand}">Update Images</Button>
+                                                <Button Name="StartOHUpdate" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartOHUpdateCommand}">Update Open House</Button>
+                                                <Button Name="StartVTUpload" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartVTUploadCommand}">Upload Virtual Tour</Button>
+                                            </StackPanel>
+                                        </GroupBox>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <StackPanel Margin="10,0" Visibility="{Binding UploadSucceeded, Converter={StaticResource BooleanToVisibilityConverter }}">
+                                    <TextBlock Foreground="Green" TextAlignment="Center" FontWeight="Black" TextWrapping="WrapWithOverflow" Margin="10,5">The upload succeeded</TextBlock>
+                                    <Button Name="MarkCompleted" Margin="5,5,5,0" Width="261" Command="{Binding MarkCompletedCommand}">Finish Upload</Button>
+                                    <TextBlock Margin="0,5,0,0" Foreground="Gray" TextWrapping="WrapWithOverflow" TextAlignment="Center" FontSize="10" >If there is an issue with this listing, please let us know:</TextBlock>
+                                    <Button Name="ReportProblem" Margin="5,5,5,0" Width="261" Command="{Binding ReportProblemCommand}">Report a problem</Button>
+                                </StackPanel>
+                                <StackPanel Visibility="{Binding UploadFailed, Converter={StaticResource BooleanToVisibilityConverter }}">
+                                    <TextBlock Foreground="Red" TextAlignment="Center" FontWeight="Black" TextWrapping="WrapWithOverflow" Margin="40,5,39,5">The upload failed.</TextBlock>
+                                    <Button x:Name="ReportFailure" Margin="5,5,5,0" Content="Notify the DevTeam" Width="261" Command="{Binding ReportProblemCommand}"/>
                                 </StackPanel>
                             </StackPanel>
-
-                            <StackPanel Margin="10,0" Visibility="{Binding UploadSucceeded, Converter={StaticResource BooleanToVisibilityConverter }}">
-                                <TextBlock Foreground="Green" TextAlignment="Center" FontWeight="Black" TextWrapping="WrapWithOverflow" Margin="10,5">The upload succeeded</TextBlock>
-                                <Button Name="MarkCompleted" Margin="5,5,5,0" Width="261" Command="{Binding MarkCompletedCommand}">Finish Upload</Button>
-                                <TextBlock Margin="0,5,0,0" Foreground="Gray" TextWrapping="WrapWithOverflow" TextAlignment="Center" FontSize="10" >If there is an issue with this listing, please let us know:</TextBlock>
-                                <Button Name="ReportProblem" Margin="5,5,5,0" Width="261" Command="{Binding ReportProblemCommand}">Report a problem</Button>
+                            <StackPanel Margin="10,0" >
+                                <StackPanel>
+                                    <Button Name="StartBulkUpload" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartBulkUploadCommand}">Bulk Upload
+                                </Button>
                             </StackPanel>
-                            <StackPanel Visibility="{Binding UploadFailed, Converter={StaticResource BooleanToVisibilityConverter }}">
-                                <TextBlock Foreground="Red" TextAlignment="Center" FontWeight="Black" TextWrapping="WrapWithOverflow" Margin="40,5,39,5">The upload failed.</TextBlock>
-                                <Button x:Name="ReportFailure" Margin="5,5,5,0" Content="Notify the DevTeam" Width="261" Command="{Binding ReportProblemCommand}"/>
-                            </StackPanel>
-                            <StackPanel Visibility="{Binding ShowCancelButton, Converter={StaticResource BooleanToVisibilityConverter }}">
-                                <Button x:Name="CancelProcess" Margin="5,5,5,0" Content="Cancel/Terminate Process" Width="261" Command="{Binding CancelProcessCommand}"/>
                             </StackPanel>
                         </StackPanel>
                     </Grid>

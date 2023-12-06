@@ -8,6 +8,7 @@ namespace Husa.Uploader.Data.Repositories
     using Husa.Quicklister.Extensions.Api.Client.Interfaces;
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ListingRequest;
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ListingRequest.SaleRequest;
+    using Husa.Quicklister.Har.Api.Client;
     using Husa.Quicklister.Sabor.Api.Client;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
@@ -22,6 +23,7 @@ namespace Husa.Uploader.Data.Repositories
         private readonly IQuicklisterSaborClient quicklisterSaborClient;
         private readonly IQuicklisterCtxClient quicklisterCtxClient;
         private readonly IQuicklisterAborClient quicklisterAborClient;
+        private readonly IQuicklisterHarClient quicklisterHarClient;
         private readonly ILogger<ListingRequestRepository> logger;
         private readonly MarketConfiguration marketConfiguration;
 
@@ -30,11 +32,13 @@ namespace Husa.Uploader.Data.Repositories
             IQuicklisterSaborClient quicklisterSaborClient,
             IQuicklisterCtxClient quicklisterCtxClient,
             IQuicklisterAborClient quicklisterAborClient,
+            IQuicklisterHarClient quicklisterHarClient,
             ILogger<ListingRequestRepository> logger)
         {
             this.quicklisterSaborClient = quicklisterSaborClient ?? throw new ArgumentNullException(nameof(quicklisterSaborClient));
             this.quicklisterCtxClient = quicklisterCtxClient ?? throw new ArgumentNullException(nameof(quicklisterCtxClient));
             this.quicklisterAborClient = quicklisterAborClient ?? throw new ArgumentNullException(nameof(quicklisterAborClient));
+            this.quicklisterHarClient = quicklisterHarClient ?? throw new ArgumentNullException(nameof(quicklisterHarClient));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.marketConfiguration = applicationOptions?.Value?.MarketInfo ?? throw new ArgumentNullException(nameof(applicationOptions));
         }
@@ -57,6 +61,11 @@ namespace Husa.Uploader.Data.Repositories
                     this.marketConfiguration.Abor,
                     this.quicklisterAborClient.ListingSaleRequest,
                     request => new AborListingRequest(request).CreateFromApiResponse(),
+                    token),
+                this.GetRequestByMarket(
+                    this.marketConfiguration.Har,
+                    this.quicklisterHarClient.ListingSaleRequest,
+                    request => new HarListingRequest(request).CreateFromApiResponse(),
                     token),
             };
 
@@ -83,6 +92,7 @@ namespace Husa.Uploader.Data.Repositories
                 MarketCode.SanAntonio => await GetFromSabor(),
                 MarketCode.CTX => await GetFromCtx(),
                 MarketCode.Austin => await GetFromAbor(),
+                MarketCode.Houston => await GetFromHar(),
                 _ => throw new NotSupportedException($"The market {marketCode} is not yet supported"),
             };
 
@@ -104,6 +114,12 @@ namespace Husa.Uploader.Data.Repositories
             {
                 var request = await this.quicklisterAborClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
                 return new AborListingRequest(request).CreateFromApiResponseDetail();
+            }
+
+            async Task<ResidentialListingRequest> GetFromHar()
+            {
+                var request = await this.quicklisterHarClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
+                return new HarListingRequest(request).CreateFromApiResponseDetail();
             }
         }
 

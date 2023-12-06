@@ -49,6 +49,7 @@ namespace Husa.Uploader.Core.Interfaces
         void SetSelectWithScript(string fieldId, string containerClassName, int childIndex, string fieldValue, string fieldName, string fieldSection);
         void SetSelectByText(By findBy, string value, string fieldLabel, string fieldSection, bool isElementOptional = false);
         void SetMultiSelect(By findBy, string csvValues, bool isElementOptional = false);
+        void FillFieldSingleOption(string fieldName, string value);
 
         void SetMultipleCheckboxById(string id, string csvValues);
         void SetMultipleCheckboxById(string id, string csvValues, string fieldLabel, string fieldSection);

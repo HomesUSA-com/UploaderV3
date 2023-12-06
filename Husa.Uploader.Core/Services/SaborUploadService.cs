@@ -4,6 +4,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
     using Husa.Extensions.Common.Exceptions;
+    using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Enums;
@@ -605,7 +606,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetAttribute(By.Name("ELEMSCHL"), listing.SchoolName1, "value"); // Elementary School
 
             this.uploaderClient.SetAttribute(By.Name("MIDSCHL"), listing.SchoolName2, "value"); // Middle School
-            this.uploaderClient.SetAttribute(By.Name("HIGHSCHL"), listing.SchoolName3, "value"); // High School
+            this.uploaderClient.SetAttribute(By.Name("HIGHSCHL"), listing.HighSchool, "value"); // High School
             this.uploaderClient.WriteTextbox(By.Name("CONSTRCTN"), entry: "NEW"); // Construction
             this.uploaderClient.FindElement(By.Name("CONSTRCTN")).SendKeys(Keys.Tab);
             this.uploaderClient.WriteTextbox(By.Name("NEW_CONST_EST_COMPLETION"), listing.BuildCompletionDate.Value.ToString("MM/yy"), isElementOptional: true); // Construction
@@ -617,14 +618,9 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WriteTextbox(By.Name("NGHBRHDMNT"), listing.CommonFeatures); // Neighborhood Amenities
                 if (listing.HasHandicapAmenities == "YES")
                 {
-                    //// this.uploaderClient.WriteTextbox(By.Name("ACCESS_HOME"), "YES", true);//Accessible/Adaptive Details
-                    //// this.uploaderClient.ExecuteScript("verifyVals('ACCESS_HOME', 'Accessible/Adaptive Home', true, true, true, false, false); ; ACCESS_HOMEActions()");
-                    //// this.uploaderClient.ExecuteScript(" selectVals('ACCESS_HOME');;ACCESS_HOMEActions();closeDiv(); ");
                     if (!string.IsNullOrEmpty(listing.AccessibilityDesc))
                     {
                         this.uploaderClient.WriteTextbox(By.Name("ACESIBILTY"), listing.AccessibilityDesc, isElementOptional: false); // Accessible/Adaptive Details
-                        //// this.uploaderClient.ExecuteScript(" verifyVals('ACESIBILTY', 'Accessible/Adaptive Details', false, true, true, false, false); ");
-                        //// this.uploaderClient.ExecuteScript(" selectVals('ACESIBILTY');;closeDiv(); ");
                     }
                 }
             }
@@ -1108,10 +1104,7 @@ namespace Husa.Uploader.Core.Services
                 }
 
                 var now = listDate.ToString("MM/dd/yyyy");
-                // var next = ListDate.AddDays(365).ToString("MM/dd/yyyy");
-                // this.uploaderClient.WriteTextbox(By.Name("SCHEDULED_ACTIVATION"), "N"); //Scheduled Activation
                 this.uploaderClient.WriteTextbox(By.Name("LSTDATE"), now); // List Date
-                // this.uploaderClient.WriteTextbox(By.Name("EXPDATE"), listing.ExpiredDate);//Expiration Date
                 this.uploaderClient.WriteTextbox(By.Name("EXPDATE"), listing.ExpiredDate.Value.Date.ToString("MM/dd/yyyy")); // Expiration Date
             }
 
@@ -1122,7 +1115,6 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.WriteTextbox(By.Name("SHWCONTCT"), listing.Showing); // Showing Contact
             this.uploaderClient.WriteTextbox(By.Name("LOCKBOX"), entry: "NONE"); // Lockbox Type
-            // this.uploaderClient.WriteTextbox(By.Name("LOCKBOX"), listing.LockboxTypeDesc); //Lockbox Type
             this.uploaderClient.WriteTextbox(By.Name("OCCUPANCY"), entry: "VACNT", isElementOptional: true); // Occupancy
             this.uploaderClient.WriteTextbox(By.Name("CURRENTLY_LEASED"), entry: "NO", isElementOptional: true); // Currently Being Leased
             this.uploaderClient.WriteTextbox(By.Name("OWNER"), listing.OwnerName); // Owner
@@ -1130,7 +1122,6 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Name("BUYAGTCOM"), listing.GetBuyerAgentComp(listing.CompBuy, listing.CompBuyType)); // Buyer Agent Com
             this.uploaderClient.WriteTextbox(By.Name("BONUS"), entry: listing.GetAgentBonusAmount()); // Bonus
 
-            // this.uploaderClient.WriteTextbox(By.Name("BONUS"), listing.CompBuyBonus);
             this.uploaderClient.WriteTextbox(By.Name("LREAORLREB"), "NO"); // Owner LREA/LREB
             this.uploaderClient.WriteTextbox(By.Name("PRFTITLECO"), listing.TitleCo); // Preferred Title Company
             this.uploaderClient.WriteTextbox(By.Name("POT_SS_YNID"), "NO", isElementOptional: true); // Potential Short Sale

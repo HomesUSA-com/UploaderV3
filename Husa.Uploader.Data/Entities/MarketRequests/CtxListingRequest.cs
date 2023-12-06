@@ -279,7 +279,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.HasAgentBonus = showingInfo.HasAgentBonus;
                 residentialListingRequest.HasBonusWithAmount = showingInfo.HasBonusWithAmount;
                 residentialListingRequest.AgentBonusAmount = showingInfo.AgentBonusAmount.DecimalToString();
-                residentialListingRequest.AgentBonusAmountType = showingInfo.AgentBonusAmountType?.ToStringFromEnumMember();
+                residentialListingRequest.AgentBonusAmountType = showingInfo.AgentBonusAmountType.ToStringFromEnumMember();
                 residentialListingRequest.CompBuyBonusExpireDate = showingInfo.BonusExpirationDate;
                 residentialListingRequest.EnableOpenHouse = showingInfo.EnableOpenHouses;
             }
@@ -294,7 +294,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.SchoolDistrict = this.listingDetailResponse.SaleProperty.SchoolsInfo.SchoolDistrict?.GetEnumDescription();
                 residentialListingRequest.SchoolName1 = this.listingDetailResponse.SaleProperty.SchoolsInfo.ElementarySchool?.ToStringFromEnumMember();
                 residentialListingRequest.SchoolName2 = this.listingDetailResponse.SaleProperty.SchoolsInfo.MiddleSchool?.ToStringFromEnumMember();
-                residentialListingRequest.SchoolName3 = this.listingDetailResponse.SaleProperty.SchoolsInfo.HighSchool?.ToStringFromEnumMember();
+                residentialListingRequest.HighSchool = this.listingDetailResponse.SaleProperty.SchoolsInfo.HighSchool?.ToStringFromEnumMember();
             }
 
             void FillStatusInfo(ListingSaleStatusFieldsResponse statusInfo)
@@ -356,11 +356,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
                 residentialListingRequest.OpenHouse = this.OpenHouse;
             }
-        }
-
-        public override string GetBuyerAgentComp(string compBuy, string compBuyType)
-        {
-            throw new NotImplementedException();
         }
 
         public override string GetAgentBonusRemarksMessage()

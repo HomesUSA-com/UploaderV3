@@ -263,7 +263,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.LockboxLocDesc = showingInfo.LockBoxSerialNumber;
                 residentialListingRequest.ShowingInstructions = showingInfo.ShowingInstructions;
                 residentialListingRequest.Showing = showingInfo.ShowingRequirements.ToStringFromEnumMembers();
-                residentialListingRequest.RealtorContactEmail = showingInfo.RealtorContactEmail;
+                residentialListingRequest.RealtorContactEmail = showingInfo.RealtorContactEmail.ToStringFromCollection(";");
                 residentialListingRequest.Directions = showingInfo.Directions;
                 residentialListingRequest.AgentPrivateRemarks = showingInfo.AgentPrivateRemarks;
                 residentialListingRequest.AgentPrivateRemarks2 = showingInfo.AgentPrivateRemarksAdditional;
@@ -282,7 +282,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.SchoolDistrict = schoolsInfo.SchoolDistrict?.ToStringFromEnumMember();
                 residentialListingRequest.SchoolName1 = schoolsInfo.ElementarySchool?.ToStringFromEnumMember();
                 residentialListingRequest.SchoolName2 = schoolsInfo.MiddleSchool?.ToStringFromEnumMember();
-                residentialListingRequest.SchoolName3 = schoolsInfo.HighSchool?.ToStringFromEnumMember();
+                residentialListingRequest.HighSchool = schoolsInfo.HighSchool?.ToStringFromEnumMember();
                 residentialListingRequest.SchoolName4 = schoolsInfo.OtherElementarySchool;
                 residentialListingRequest.SchoolName5 = schoolsInfo.OtherMiddleSchool;
                 residentialListingRequest.SchoolName6 = schoolsInfo.OtherHighSchool;
@@ -351,11 +351,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
                 residentialListingRequest.OpenHouse = this.OpenHouse;
             }
-        }
-
-        public override string GetBuyerAgentComp(string compBuy, string compBuyType)
-        {
-            throw new NotImplementedException();
         }
 
         public override string GetAgentBonusRemarksMessage()
