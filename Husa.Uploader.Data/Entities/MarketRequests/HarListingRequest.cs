@@ -97,6 +97,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 SysModifiedBy = this.listingDetailResponse.SysModifiedBy,
                 ExpectedActiveDate = DateTime.Now.ToString("MM/dd/yy"),
                 ExpiredDate = this.listingDetailResponse.ExpirationDate,
+                SellerBuyerCost = this.SellerBuyerCost,
             };
 
             FillSalePropertyInfo(this.listingDetailResponse.SaleProperty.SalePropertyInfo);

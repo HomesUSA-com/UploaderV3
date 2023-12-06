@@ -281,9 +281,9 @@ namespace Husa.Uploader.Core.Services
 
                         this.uploaderClient.WriteTextbox(By.Id("Input_74"), listing.SoldPrice); // Sale Price
 
-                        if (listing.PendingDate != null)
+                        if (listing.ContractDate != null)
                         {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.PendingDate.Value.ToShortDateString()); // Pending Date
+                            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
                         }
 
                         if (listing.ClosedDate != null)
@@ -293,7 +293,7 @@ namespace Husa.Uploader.Core.Services
 
                         this.uploaderClient.SetSelect(By.Id("Input_119"), "0"); // Coop Sale
 
-                        ////this.uploaderClient.WriteTextbox(By.Id("Input_121"), listing.SellerPaid); // Seller Pd Buyer Clsg Costs
+                        this.uploaderClient.WriteTextbox(By.Id("Input_121"), listing.SellerBuyerCost); // Seller Pd Buyer Clsg Costs
                         this.uploaderClient.WriteTextbox(By.Id("Input_123"), "0"); // Repair Paid Seller
 
                         ////this.uploaderClient.SetSelect(By.Id("Input_122"), listing.TitlePaidBy); // Title Paid By
@@ -345,9 +345,9 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
                         Thread.Sleep(500);
 
-                        if (listing.PendingDate != null)
+                        if (listing.ContractDate != null)
                         {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.PendingDate.Value.ToShortDateString()); // Pending Date
+                            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
                         }
 
                         if (listing.EstClosedDate != null)
@@ -364,7 +364,7 @@ namespace Husa.Uploader.Core.Services
                             this.uploaderClient.SetSelect(By.Id("Input_310"), "N");  // Did Selling Agent Represent Buyer
                         }
 
-                        if (!string.IsNullOrEmpty(listing.ContingencyInfo))
+                        if (listing.HasContingencyInfo)
                         {
                             this.uploaderClient.SetSelect(By.Id("Input_132"), "1"); // Contingent on Sale of Other Property
                         }
@@ -429,9 +429,9 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
                         Thread.Sleep(500);
 
-                        if (listing.PendingDate != null)
+                        if (listing.ContractDate != null)
                         {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.PendingDate.Value.ToShortDateString()); // Pending Date
+                            this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
                         }
 
                         if (listing.EstClosedDate != null)
@@ -483,9 +483,12 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UploadListingVirtualTour()
             {
+                listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken);
                 this.logger.LogInformation("Updating VirtualTour for the listing {requestId}", listing.ResidentialListingRequestID);
-                this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
+                this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
                 await this.Login(listing.CompanyId);
+                Thread.Sleep(1000);
+
                 this.NavigateToQuickEdit(listing.MLSNum);
 
                 this.GoToManageTourLinks();
