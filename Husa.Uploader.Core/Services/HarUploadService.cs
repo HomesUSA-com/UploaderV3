@@ -219,8 +219,6 @@ namespace Husa.Uploader.Core.Services
                 // Enter Manage Photos
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"), cancellationToken);
                 this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSave"), cancellationToken);
-
                 this.DeleteAllImages();
                 await this.ProcessImages(listing, cancellationToken);
                 return UploadResult.Success;
@@ -247,7 +245,7 @@ namespace Husa.Uploader.Core.Services
 
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Price Change"), cancellationToken);
                 this.uploaderClient.ClickOnElement(By.LinkText("Price Change"));
-                this.uploaderClient.WriteTextbox(By.Id("Input_77"), listing.ListPrice); // List Price
+                this.uploaderClient.WriteTextbox(By.Id("Input_9"), listing.ListPrice); // List Price
                 return UploadResult.Success;
             }
         }
@@ -391,6 +389,41 @@ namespace Husa.Uploader.Core.Services
                         }
 
                         break;
+                    case "TERM":
+                        buttonText = "Change to Terminated";
+                        string currentDate = DateTime.Today.ToString("MM/dd/yyyy");
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                        Thread.Sleep(500);
+                        this.uploaderClient.WriteTextbox(By.Id("Input_522"), currentDate); // terminated date
+                        break;
+                    case "WITH":
+                        buttonText = "Change to Withdrawn";
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                        Thread.Sleep(500);
+                        this.uploaderClient.WriteTextbox(By.Id("Input_113"), listing.OffMarketDate.Value.ToShortDateString()); // Withdrawn Date
+                        break;
+                    case "OP":
+                        buttonText = "Change to Option Pending";
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                        Thread.Sleep(500);
+                        this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
+                        this.uploaderClient.WriteTextbox(By.Id("Input_128"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
+                        this.uploaderClient.WriteTextbox(By.Id("Input_129"), listing.ExpiredDate.Value.ToShortDateString()); // Option End Date
+                        this.uploaderClient.SetSelect(By.Id($"Input_132"), value: listing.HasContingencyInfo.BoolToNumericBool()); // Contingent on Sale of Other Property
+                        if (listing.AgentMarketUniqueId != string.Empty)
+                        {
+                            this.uploaderClient.SetSelect(By.Id($"Input_310"), value: "Y"); // Did Selling Agent Represent Buyer
+                            this.uploaderClient.WriteTextbox(By.Id($"Input_342"), value: listing.AgentMarketUniqueId); // Selling Associate MLSID
+                        }
+                        else
+                        {
+                            this.uploaderClient.SetSelect(By.Id($"Input_310"), value: "N"); // Did Selling Agent Represent Buyer
+                        }
+
+                        break;
                     case "PSHO":
                         buttonText = "Change to Pending Continue to Show";
                         this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
@@ -489,9 +522,8 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(400);
 
                 // Enter OpenHouse
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Open Houses Input Form"), cancellationToken);
-                this.uploaderClient.ClickOnElement(By.LinkText("Open Houses Input Form"));
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_tdValidate"), cancellationToken);
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_dlInputList_ctl02_m_btnSelect"), cancellationToken);
+                this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl02_m_btnSelect"));
                 Thread.Sleep(3000);
 
                 this.CleanOpenHouse();
@@ -596,7 +628,7 @@ namespace Husa.Uploader.Core.Services
         private void NavigateToEditResidentialForm(string mlsNumber, CancellationToken cancellationToken = default)
         {
             this.NavigateToQuickEdit(mlsNumber);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Price Change"), cancellationToken);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_dlInputList_ctl00_m_btnSelect"), cancellationToken);
             this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl00_m_btnSelect"));
             Thread.Sleep(1000);
         }
@@ -728,7 +760,7 @@ namespace Husa.Uploader.Core.Services
             this.FindAndSetMultipleCheckboxById(new[] { "Input_329" }, listing.PropSubType); // Property Type
             this.uploaderClient.SetMultipleCheckboxById("Input_241", listing.HousingStyleDesc);  // Style
             this.FindAndSetMultipleCheckboxById(new[] { "Input_146", "Input_492" }, listing.LotDesc); // Lot Description
-            this.uploaderClient.SetMultipleCheckboxById("Input_150", listing.WaterfrontDesc); // Waterfront Features
+            this.uploaderClient.SetMultipleCheckboxById("Input_150", listing.WaterfrontFeatures); // Waterfront Features
             this.uploaderClient.SetSelect(By.Id("Input_208"), listing.HasMicrowave.BoolToNumericBool()); // Microwave (0, 1)
             this.uploaderClient.SetSelect(By.Id("Input_209"), listing.HasDishwasher.BoolToNumericBool()); // Dishwasher
             this.uploaderClient.SetSelect(By.Id("Input_210"), listing.HasDisposal.BoolToNumericBool()); // Disposal
@@ -774,15 +806,10 @@ namespace Husa.Uploader.Core.Services
 
         private void FillMapInformation(HarListingRequest listing)
         {
-            this.GoToTab("Map Information");
-            this.SetLongitudeAndLatitudeValues(listing);
-
-            if (!listing.IsNewListing)
+            if (listing.IsNewListing)
             {
-                this.uploaderClient.SetSelect(By.Id("Input_177"), listing.SchoolDistrict); // SchoolDistrict
-                this.uploaderClient.SetSelect(By.Id("Input_180"), listing.HighSchool); // High School
-                this.uploaderClient.SetSelect(By.Id("Input_168"), listing.MLSArea, isElementOptional: true); // Area
-                this.uploaderClient.SetSelect(By.Id("Input_168"), listing.MLSSubArea, isElementOptional: true); // Market Area
+                this.GoToTab("Map Information");
+                this.SetLongitudeAndLatitudeValues(listing);
             }
         }
 
@@ -792,6 +819,14 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElement(By.LinkText(tabName));
             Thread.Sleep(200);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_267"), listing.Beds); // Bedrooms
+            this.uploaderClient.WriteTextbox(By.Id("Input_268"), listing.BathsFull); // Baths - Full
+            this.uploaderClient.WriteTextbox(By.Id("Input_196"), listing.BathsHalf); // Baths - Half
+            this.uploaderClient.SetMultipleCheckboxById("Input_635", listing.BedroomDescription); // Bedroom Description
+            this.uploaderClient.SetMultipleCheckboxById("Input_636", listing.RoomDescription); // Room Description
+            this.uploaderClient.SetMultipleCheckboxById("Input_637", listing.BedBathDesc); // Bathroom Description
+            this.uploaderClient.SetMultipleCheckboxById("Input_634", listing.KitchenDescription); // Kitchen Description
 
             if (!listing.IsNewListing)
             {
@@ -810,7 +845,7 @@ namespace Husa.Uploader.Core.Services
                     {
                         this.uploaderClient.ScrollToTop();
                         this.uploaderClient.ClickOnElement(By.Id("m_rpPageList_ctl02_lbPageLink"));
-                        this.uploaderClient.ExecuteScript("Subforms['s_349'].deleteRow('_Input_349__del_REPEAT" + index + "_');");
+                        this.uploaderClient.ExecuteScript("Subforms['s_191'].deleteRow('_Input_191__del_REPEAT" + index + "_');");
                         Thread.Sleep(400);
                     }
                 }
@@ -821,15 +856,19 @@ namespace Husa.Uploader.Core.Services
             {
                 if (i > 0)
                 {
-                    this.uploaderClient.ClickOnElement(By.Id("_Input_349_more"));
+                    this.uploaderClient.ClickOnElement(By.Id("_Input_191_more"));
                     this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(400));
                 }
 
-                var roomType = $"_Input_349__REPEAT{i}_345";
-                this.uploaderClient.SetSelect(By.Id($"_Input_349__REPEAT{i}_345"), room.RoomType, "Room Type", tabName);
+                var roomType = $"_Input_191__REPEAT{i}_187";
+                this.uploaderClient.SetSelect(By.Id($"_Input_191__REPEAT{i}_187"), room.RoomType, "Room Type", tabName);
                 this.uploaderClient.ResetImplicitWait();
-                this.uploaderClient.SetSelect(By.Id($"_Input_349__REPEAT{i}_346"), room.Level, "Level", tabName, isElementOptional: true);
-                this.uploaderClient.SetMultipleCheckboxById($"_Input_349__REPEAT{i}_347", room.Features);
+                if (room.HasDimensions)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id($"_Input_191__REPEAT{i}_189"), room.Dimensions, isElementOptional: true);
+                }
+
+                this.uploaderClient.SetSelect(By.Id($"_Input_191__REPEAT{i}_190"), room.Level, "Level", tabName, isElementOptional: true);
 
                 this.uploaderClient.ScrollDownToElementHTML(roomType);
                 i++;
@@ -1005,17 +1044,17 @@ namespace Husa.Uploader.Core.Services
 
         private void CleanOpenHouse()
         {
-            var elems = this.uploaderClient.FindElements(By.CssSelector("table[id^=_Input_168__del_REPEAT] a"))?.Count(c => c.Displayed);
+            var elems = this.uploaderClient.FindElements(By.CssSelector("table[id^=_Input_337__del_REPEAT] a"))?.Count(c => c.Displayed);
             if (elems == null || elems == 0)
             {
                 return;
             }
 
             this.uploaderClient.ScrollDown(3000);
-            while (elems > 1)
+            while (elems > 0)
             {
                 this.uploaderClient.ScrollDown();
-                var elementId = $"_Input_168__del_REPEAT{elems - 1}_";
+                var elementId = $"_Input_337__del_REPEAT{elems - 1}_";
                 this.uploaderClient.ClickOnElementById(elementId);
                 elems--;
                 Thread.Sleep(300);
@@ -1031,35 +1070,31 @@ namespace Husa.Uploader.Core.Services
                 if (index != 0)
                 {
                     this.uploaderClient.ScrollDown();
-                    this.uploaderClient.ClickOnElementById(elementId: $"_Input_168_more");
+                    this.uploaderClient.ClickOnElementById(elementId: $"_Input_337_more");
                     Thread.Sleep(1000);
                 }
 
-                // Date
-                this.uploaderClient.WriteTextbox(By.Id($"_Input_168__REPEAT{index}_162"), entry: openHouse.Date);
-
-                // From Time
-                this.uploaderClient.WriteTextbox(By.Id($"_Input_168__REPEAT{index}_TextBox_163"), entry: openHouse.StartTime.To12Format());
-                var fromTimeTT = openHouse.StartTime.Hours >= 12 ? 1 : 0;
-                this.uploaderClient.ClickOnElementById($"_Input_168__REPEAT{index}_RadioButtonList_163_{fromTimeTT}");
-
-                // To Time
-                this.uploaderClient.WriteTextbox(By.Id($"_Input_168__REPEAT{index}_TextBox_164"), entry: openHouse.EndTime.To12Format());
-                var endTimeTT = openHouse.EndTime.Hours >= 12 ? 1 : 0;
-                this.uploaderClient.ClickOnElementById($"_Input_168__REPEAT{index}_RadioButtonList_164_{endTimeTT}");
-
-                // Active Status
-                this.uploaderClient.SetSelect(By.Id($"_Input_168__REPEAT{index}_165"), value: "ACT");
-
                 // Open House Type
-                var type = openHouse.Type.ToString().ToUpperInvariant();
-                this.uploaderClient.SetSelect(By.Id($"_Input_168__REPEAT{index}_161"), value: type);
+                this.uploaderClient.SetSelect(By.Id($"_Input_337__REPEAT{index}_330"), value: "Public");
 
                 // Refreshments
-                this.uploaderClient.SetMultipleCheckboxById($"_Input_168__REPEAT{index}_652", openHouse.Refreshments);
+                this.uploaderClient.SetMultipleCheckboxById($"_Input_337__REPEAT{index}_335", openHouse.Refreshments);
+
+                // Date
+                this.uploaderClient.WriteTextbox(By.Id($"_Input_337__REPEAT{index}_332"), entry: openHouse.Date);
+
+                // From Time
+                this.uploaderClient.WriteTextbox(By.Id($"_Input_337__REPEAT{index}_TextBox_333"), entry: openHouse.StartTime.To12Format());
+                var fromTimeTT = openHouse.StartTime.Hours >= 12 ? 1 : 0;
+                this.uploaderClient.ClickOnElementById($"_Input_337__REPEAT{index}_RadioButtonList_333_{fromTimeTT}");
+
+                // To Time
+                this.uploaderClient.WriteTextbox(By.Id($"_Input_337__REPEAT{index}_TextBox_334"), entry: openHouse.EndTime.To12Format());
+                var endTimeTT = openHouse.EndTime.Hours >= 12 ? 1 : 0;
+                this.uploaderClient.ClickOnElementById($"_Input_337__REPEAT{index}_RadioButtonList_334_{endTimeTT}");
 
                 // Comments
-                this.uploaderClient.WriteTextbox(By.Id($"_Input_168__REPEAT{index}_167"), entry: openHouse.Comments);
+                this.uploaderClient.WriteTextbox(By.Id($"_Input_337__REPEAT{index}_339"), entry: openHouse.Comments);
 
                 index++;
             }
