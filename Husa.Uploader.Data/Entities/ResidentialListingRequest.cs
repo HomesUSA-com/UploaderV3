@@ -866,6 +866,8 @@ namespace Husa.Uploader.Data.Entities
 
         public string AtticRoom { get; set; }
 
+        public bool HasBuyerAgent { get; set; }
+
         public List<ResidentialListingRequestRoom> Rooms { get; set; }
 
         public List<OpenHouseRequest> OpenHouse { get; set; }
