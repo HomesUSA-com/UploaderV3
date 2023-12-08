@@ -383,7 +383,7 @@
                                                 </Style>
                                             </GroupBox.Style>
                                             <StackPanel>
-                                                <Button Name="StartEdit" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartEditCommand}">Edit</Button>
+                                                <Button Name="StartEdit" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartEditCommand}">View</Button>
                                                 <Button Name="StartUpload" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartUploadCommand}">Upload</Button>
                                                 <Button Name="StartStatusUpdate" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartStatusUpdateCommand}">Update Status</Button>
                                                 <Button Name="StartPriceUpdate" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartPriceUpdateCommand}">Update Price</Button>

@@ -140,6 +140,11 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCredentials();
             this.SetUpCompany();
             var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+            harListing.ListStatus = "PEND";
+            harListing.PendingDate = DateTime.Now;
+            harListing.EstClosedDate = DateTime.Now;
+            harListing.ExpiredDate = DateTime.Now;
+            harListing.HasContingencyInfo = false;
             harListing.ListStatus = "WITH";
             harListing.OffMarketDate = DateTime.Now;
             this.sqlDataLoader
@@ -161,6 +166,9 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCredentials();
             this.SetUpCompany();
             var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+            harListing.ListStatus = "CLOSD";
+            harListing.PendingDate = DateTime.Now;
+            harListing.ClosedDate = DateTime.Now;
             harListing.ListStatus = "OP";
             harListing.ContractDate = DateTime.Now;
             harListing.EstClosedDate = DateTime.Now;

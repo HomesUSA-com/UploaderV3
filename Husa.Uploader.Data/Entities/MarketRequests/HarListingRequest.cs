@@ -97,6 +97,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 SysModifiedBy = this.listingDetailResponse.SysModifiedBy,
                 ExpectedActiveDate = DateTime.Now.ToString("MM/dd/yy"),
                 ExpiredDate = this.listingDetailResponse.ExpirationDate,
+                SellerBuyerCost = this.SellerBuyerCost,
             };
 
             FillSalePropertyInfo(this.listingDetailResponse.SaleProperty.SalePropertyInfo);
@@ -315,13 +316,15 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.SellConcess = statusInfo.SellConcess;
                 residentialListingRequest.OffMarketDate = statusInfo.OffMarketDate;
                 residentialListingRequest.BackOnMarketDate = statusInfo.BackOnMarketDate;
-                residentialListingRequest.SoldTerms = statusInfo.SaleTerms.ToStringFromEnumMembers();
+                residentialListingRequest.SoldTerms = statusInfo.SoldTerms.ToString();
                 residentialListingRequest.HasContingencyInfo = statusInfo.HasContingencyInfo;
                 residentialListingRequest.EstClosedDate = statusInfo.EstimatedClosedDate;
                 residentialListingRequest.AgentMarketUniqueId = statusInfo.AgentMarketUniqueId;
                 residentialListingRequest.SecondAgentMarketUniqueId = statusInfo.SecondAgentMarketUniqueId;
                 residentialListingRequest.ContingencyInfo = statusInfo.ContingencyInfo.ToStringFromEnumMembers();
                 residentialListingRequest.ExpiredDate = statusInfo.ExpiredDate;
+                residentialListingRequest.SellingAgentLicenseNum = statusInfo.TrecLicenseNumber;
+                residentialListingRequest.HasBuyerAgent = statusInfo.HasBuyerAgent;
             }
 
             void FillRoomsInfo(IEnumerable<RoomResponse> rooms)

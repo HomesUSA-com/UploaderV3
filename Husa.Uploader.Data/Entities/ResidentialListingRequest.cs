@@ -285,6 +285,7 @@ namespace Husa.Uploader.Data.Entities
         public string SellConcess { get; set; }
         public string SellConcessDescription { get; set; }
         public decimal? SoldPrice { get; set; }
+        public decimal? SellerBuyerCost { get; set; }
         public int? OtherRoom1Width { get; set; }
         public string OtherRoom1Level { get; set; }
         public int? OtherRoom1Length { get; set; }
@@ -864,6 +865,8 @@ namespace Husa.Uploader.Data.Entities
         public string GreenWaterConservation { get; set; }
 
         public string AtticRoom { get; set; }
+
+        public bool HasBuyerAgent { get; set; }
 
         public List<ResidentialListingRequestRoom> Rooms { get; set; }
 
