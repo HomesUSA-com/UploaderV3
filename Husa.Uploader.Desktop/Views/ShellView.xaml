@@ -408,10 +408,13 @@
                                 </StackPanel>
                             </StackPanel>
                             <StackPanel Margin="10,0" >
-                                <StackPanel>
+                                <StackPanel Visibility="{Binding ShowBulkUploadButton, Converter={StaticResource BooleanToVisibilityConverter }}">
                                     <Button Name="StartBulkUpload" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartBulkUploadCommand}">Bulk Upload
-                                </Button>
-                            </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                                <StackPanel Visibility="{Binding ShowCancelButton, Converter={StaticResource BooleanToVisibilityConverter }}">
+                                    <Button x:Name="CancelProcess" Margin="5,5,5,0" Content="Cancel/Terminate Process" Width="261" Command="{Binding CancelProcessCommand}"/>
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </Grid>
