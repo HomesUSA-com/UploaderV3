@@ -218,6 +218,8 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         public bool UploadFailed => this.State == UploaderState.UploadFailed;
 
+        public bool ShowBulkUploadButton => this.State == UploaderState.Ready;
+
         public Dictionary<string, Item> Workers { get; set; }
 
         public UploaderState State
