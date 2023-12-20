@@ -29,6 +29,25 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Fact]
+        public async Task UploadWithExistingListing()
+        {
+            // Arrange
+            this.SetUpConfigs();
+
+            var request = this.GetResidentialListingRequest(false);
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(request);
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.Upload(request);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
         public async Task UpdateStatus_HoldSuccess()
         {
             // Arrange
@@ -215,13 +234,13 @@ namespace Husa.Uploader.Core.Tests
         protected override AborListingRequest GetEmptyListingRequest()
             => new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
 
-        protected override ResidentialListingRequest GetResidentialListingRequest()
+        protected override ResidentialListingRequest GetResidentialListingRequest(bool isNewListing = true)
         {
-            var listingSale = GetListingRequestDetailResponse();
+            var listingSale = GetListingRequestDetailResponse(isNewListing);
             return new AborListingRequest(listingSale).CreateFromApiResponseDetail();
         }
 
-        private static AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse GetListingRequestDetailResponse()
+        private static AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse GetListingRequestDetailResponse(bool isNewListing)
         {
             var spacesDimensionsInfo = new Mock<AborResponse.SalePropertyDetail.SpacesDimensionsResponse>();
             var addressInfo = new Mock<AborResponse.SalePropertyDetail.AddressInfoResponse>();
@@ -307,6 +326,7 @@ namespace Husa.Uploader.Core.Tests
                 SaleProperty = saleProperty,
                 ListPrice = 127738,
                 StatusFieldsInfo = statusFields.Object,
+                MlsNumber = isNewListing ? null : "mlsNumber",
             };
             listingSale.SaleProperty.OpenHouses = openHouses;
 

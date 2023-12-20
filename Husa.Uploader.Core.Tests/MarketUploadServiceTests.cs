@@ -130,7 +130,7 @@ namespace Husa.Uploader.Core.Tests
 
         protected abstract TUploadService GetSut();
         protected abstract TResidentialListingRequest GetEmptyListingRequest();
-        protected abstract ResidentialListingRequest GetResidentialListingRequest();
+        protected abstract ResidentialListingRequest GetResidentialListingRequest(bool isNewListing = true);
 
         protected void SetUpCompany(string username = "username", string password = "password")
         {

@@ -171,7 +171,11 @@ namespace Husa.Uploader.Core.Services
                     this.FillAgentOfficeInformation(listing);
                     this.FillRemarks(listing as AborListingRequest);
 
-                    await this.UpdateVirtualTour(listing, cancellationToken);
+                    if (listing.IsNewListing)
+                    {
+                        await this.UpdateVirtualTour(listing, cancellationToken);
+                    }
+
                     await this.FillMedia(listing, cancellationToken);
                 }
                 catch (Exception exception)
