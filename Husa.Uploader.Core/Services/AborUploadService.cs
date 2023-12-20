@@ -646,31 +646,30 @@ namespace Husa.Uploader.Core.Services
         private void FillRoomInformation(ResidentialListingRequest listing)
         {
             string tabName = "Rooms";
-            this.uploaderClient.ClickOnElement(By.LinkText(tabName));
-            Thread.Sleep(200);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
+            this.NavigateToTab(tabName);
 
             if (!listing.IsNewListing)
             {
                 int index = 0;
+                this.uploaderClient.ExecuteScript("jQuery(document).scrollTop(0);");
 
                 while (this.uploaderClient.FindElements(By.LinkText("Delete")) != null &&
                     this.uploaderClient.FindElements(By.LinkText("Delete")).Count > 1)
                 {
                     try
                     {
-                        this.uploaderClient.ScrollToTop();
                         this.uploaderClient.ClickOnElement(By.LinkText("Delete"));
                         Thread.Sleep(400);
                     }
                     catch
                     {
-                        this.uploaderClient.ScrollToTop();
                         this.uploaderClient.ClickOnElement(By.Id("m_rpPageList_ctl02_lbPageLink"));
                         this.uploaderClient.ExecuteScript("Subforms['s_349'].deleteRow('_Input_349__del_REPEAT" + index + "_');");
                         Thread.Sleep(400);
                     }
                 }
+
+                this.NavigateToTab(tabName);
             }
 
             var i = 0;
@@ -929,6 +928,14 @@ namespace Husa.Uploader.Core.Services
 
                 index++;
             }
+        }
+
+        private void NavigateToTab(string tabName)
+        {
+            this.uploaderClient.ClickOnElement(By.LinkText(tabName));
+            this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(800));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
+            this.uploaderClient.ResetImplicitWait();
         }
     }
 }
