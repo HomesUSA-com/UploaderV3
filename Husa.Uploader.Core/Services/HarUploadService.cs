@@ -868,6 +868,8 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.ExecuteScript("Subforms['s_191'].deleteRow('_Input_191__del_REPEAT" + index + "_');");
                         Thread.Sleep(400);
                     }
+
+                    this.NavigateToTab(tabName);
                 }
             }
 
@@ -1118,6 +1120,14 @@ namespace Husa.Uploader.Core.Services
 
                 index++;
             }
+        }
+
+        private void NavigateToTab(string tabName)
+        {
+            this.uploaderClient.ClickOnElement(By.LinkText(tabName));
+            this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(800));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
+            this.uploaderClient.ResetImplicitWait();
         }
     }
 }
