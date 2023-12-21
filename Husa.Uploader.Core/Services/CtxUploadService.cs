@@ -530,11 +530,7 @@ namespace Husa.Uploader.Core.Services
         private void FillRooms(ResidentialListingRequest listing)
         {
             const string tabName = "Rooms";
-            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
-
-            this.uploaderClient.ClickOnElement(By.LinkText("Rooms")); // click in tab Listing Information
-
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer")); // Look if the footer elements has been loaded
+            this.NavigateToTab(tabName);
             this.uploaderClient.WriteTextbox(By.Id("Input_193"), listing.Beds); // Bedrooms
             this.uploaderClient.WriteTextbox(By.Id("Input_194"), listing.BathsFull); // Full Baths
             this.uploaderClient.WriteTextbox(By.Id("Input_195"), listing.BathsHalf); // Half Baths
@@ -551,6 +547,8 @@ namespace Husa.Uploader.Core.Services
                     elem.Click();
                 }
             }
+
+            this.NavigateToTab(tabName);
 
             var i = 0;
             foreach (var room in listing.Rooms)
@@ -847,6 +845,13 @@ namespace Husa.Uploader.Core.Services
 
                 index++;
             }
+        }
+
+        private void NavigateToTab(string tabName)
+        {
+            this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // click in tab Listing Information
+            this.uploaderClient.ExecuteScript("jQuery(document).scrollTop(0);");
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer")); // Look if the footer elements has been loaded
         }
     }
 }
