@@ -868,9 +868,9 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.ExecuteScript("Subforms['s_191'].deleteRow('_Input_191__del_REPEAT" + index + "_');");
                         Thread.Sleep(400);
                     }
-
-                    this.NavigateToTab(tabName);
                 }
+
+                this.NavigateToTab(tabName);
             }
 
             var i = 0;
