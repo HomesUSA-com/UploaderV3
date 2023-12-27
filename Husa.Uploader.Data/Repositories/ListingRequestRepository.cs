@@ -71,7 +71,7 @@ namespace Husa.Uploader.Data.Repositories
 
             var requestsByMarket = await Task.WhenAll(tasks);
 
-            var pendingRequests = requestsByMarket.SelectMany(a => a).ToList();
+            var pendingRequests = requestsByMarket.SelectMany(a => a).OrderByDescending(x => x.SysCreatedOn).ToList();
             return pendingRequests.Distinct();
         }
 
