@@ -38,6 +38,25 @@ namespace Husa.Uploader.Core.Tests
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
         }
 
+        [Fact]
+        public async Task UploadWithExistingListing()
+        {
+            // Arrange
+            this.SetUpConfigs();
+
+            var request = this.GetResidentialListingRequest(false);
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(request);
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.Upload(request);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
         [Theory]
         [InlineData(HousingType.MultiFamily)]
         [InlineData(HousingType.SingleFamily)]
@@ -307,13 +326,13 @@ namespace Husa.Uploader.Core.Tests
         protected override HarListingRequest GetEmptyListingRequest()
             => new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
 
-        protected override ResidentialListingRequest GetResidentialListingRequest()
+        protected override ResidentialListingRequest GetResidentialListingRequest(bool isNewListing = true)
         {
-            var listingSale = GetListingRequestDetailResponse();
+            var listingSale = GetListingRequestDetailResponse(isNewListing);
             return new HarListingRequest(listingSale).CreateFromApiResponseDetail();
         }
 
-        private static HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse GetListingRequestDetailResponse()
+        private static HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse GetListingRequestDetailResponse(bool isNewListing)
         {
             var spacesDimensionsInfo = new Mock<HarResponse.SalePropertyDetail.SpacesDimensionsResponse>();
             var addressInfo = new Mock<HarResponse.SalePropertyDetail.AddressInfoResponse>();
@@ -401,6 +420,7 @@ namespace Husa.Uploader.Core.Tests
                 SaleProperty = saleProperty,
                 ListPrice = 127738,
                 StatusFieldsInfo = statusFields.Object,
+                MlsNumber = isNewListing ? null : "mlsNumber",
             };
             listingSale.SaleProperty.OpenHouses = openHouses;
 
