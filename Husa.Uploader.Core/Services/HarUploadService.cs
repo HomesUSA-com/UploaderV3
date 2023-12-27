@@ -167,7 +167,11 @@ namespace Husa.Uploader.Core.Services
                     this.FillShowingInformation(listing);
                     this.FillRemarks(listing as HarListingRequest);
 
-                    await this.UpdateVirtualTour(listing, cancellationToken);
+                    if (listing.IsNewListing)
+                    {
+                        await this.UpdateVirtualTour(listing, cancellationToken);
+                    }
+
                     await this.FillMedia(listing, cancellationToken);
                 }
                 catch (Exception exception)
@@ -865,6 +869,8 @@ namespace Husa.Uploader.Core.Services
                         Thread.Sleep(400);
                     }
                 }
+
+                this.NavigateToTab(tabName);
             }
 
             var i = 0;
@@ -1114,6 +1120,14 @@ namespace Husa.Uploader.Core.Services
 
                 index++;
             }
+        }
+
+        private void NavigateToTab(string tabName)
+        {
+            this.uploaderClient.ClickOnElement(By.LinkText(tabName));
+            this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(800));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
+            this.uploaderClient.ResetImplicitWait();
         }
     }
 }

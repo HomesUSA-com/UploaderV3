@@ -85,13 +85,13 @@ namespace Husa.Uploader.Core.Tests
         protected override CtxListingRequest GetEmptyListingRequest()
             => new CtxListingRequest(new ListingSaleRequestDetailResponse());
 
-        protected override ResidentialListingRequest GetResidentialListingRequest()
+        protected override ResidentialListingRequest GetResidentialListingRequest(bool isNewListing = true)
         {
-            var listingSale = GetListingRequestDetailResponse();
+            var listingSale = GetListingRequestDetailResponse(isNewListing);
             return new CtxListingRequest(listingSale).CreateFromApiResponseDetail();
         }
 
-        private static ListingSaleRequestDetailResponse GetListingRequestDetailResponse()
+        private static ListingSaleRequestDetailResponse GetListingRequestDetailResponse(bool isNewListing)
         {
             var spacesDimensionsInfo = new Mock<SpacesDimensionsResponse>();
             var addressInfo = new AddressInfoResponse()
@@ -171,6 +171,7 @@ namespace Husa.Uploader.Core.Tests
                 ListingSaleId = Guid.NewGuid(),
                 LockedStatus = Quicklister.Extensions.Domain.Enums.LockedStatus.NoLocked,
                 MlsStatus = MarketStatuses.Active,
+                MlsNumber = isNewListing ? null : "mlsNumber",
             };
 
             return listingSale;
