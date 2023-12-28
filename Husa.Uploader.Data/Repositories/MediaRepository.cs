@@ -116,7 +116,7 @@ namespace Husa.Uploader.Data.Repositories
                 market,
                 token);
 
-            return result.OrderBy(m => m.Order);
+            return result.Where(m => !m.IsBrokenLink).OrderBy(m => m.Order);
         }
 
         public async Task<IEnumerable<ResidentialListingVirtualTour>> GetListingVirtualTours(Guid residentialListingRequestId, MarketCode market, CancellationToken token)
@@ -221,6 +221,11 @@ namespace Husa.Uploader.Data.Repositories
                         image.Extension = modifiedImage.Extension;
                         image.PathOnDisk = modifiedImage.PathOnDisk;
                     }
+                }
+                catch (HttpRequestException ex)
+                {
+                    this.logger.LogWarning(ex, "Failed to retrieve the image {imageId} in this {mediaUri}", image.Id, image.MediaUri.ToString());
+                    image.IsBrokenLink = true;
                 }
                 catch (Exception ex)
                 {

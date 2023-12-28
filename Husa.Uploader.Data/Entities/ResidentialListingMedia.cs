@@ -20,6 +20,8 @@ namespace Husa.Uploader.Data.Entities
 
         public int Order { get; set; }
 
+        public bool IsBrokenLink { get; set; } = false;
+
         public string Extension
         {
             get
