@@ -766,7 +766,7 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.SetSelect(By.Id("Input_142"), listing.HasUtilitiesDescription.BoolToNumericBool()); // Utility District  (1 , 0)
             this.uploaderClient.SetSelect(By.Id("Input_145"), listing.LotSizeSrc, isElementOptional: true); // Lot Size Source
-            this.uploaderClient.WriteTextbox(By.Id("Input_147"), listing.LotSizeAcres); // Acres
+            this.uploaderClient.WriteTextbox(By.Id("Input_143"), listing.LotSizeAcres); // Acres
             this.uploaderClient.SetSelect(By.Id("Input_148"), listing.LotSize); // Acreage
             this.uploaderClient.WriteTextbox(By.Id("Input_144"), listing.LotDim); // Lot Dimensions
             this.uploaderClient.WriteTextbox(By.Id("Input_202"), listing.GarageCapacity); // Garage - Number of Spaces
