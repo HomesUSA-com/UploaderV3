@@ -325,6 +325,10 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.ExpiredDate = statusInfo.ExpiredDate;
                 residentialListingRequest.SellingAgentLicenseNum = statusInfo.TrecLicenseNumber;
                 residentialListingRequest.HasBuyerAgent = statusInfo.HasBuyerAgent;
+                if (!string.IsNullOrEmpty(statusInfo.SellerBuyerCost))
+                {
+                    residentialListingRequest.SellerBuyerCost = decimal.Parse(statusInfo.SellerBuyerCost);
+                }
             }
 
             void FillRoomsInfo(IEnumerable<RoomResponse> rooms)
