@@ -868,6 +868,9 @@ namespace Husa.Uploader.Data.Entities
 
         public bool HasBuyerAgent { get; set; }
 
+        public string TitlePaidBy { get; set; }
+
+        public string RepairsPaidBySeller { get; set; }
         public List<ResidentialListingRequestRoom> Rooms { get; set; }
 
         public List<OpenHouseRequest> OpenHouse { get; set; }
