@@ -307,9 +307,9 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.SetSelect(By.Id("Input_119"), "0"); // Coop Sale
 
                         this.uploaderClient.WriteTextbox(By.Id("Input_121"), listing.SellerBuyerCost); // Seller Pd Buyer Clsg Costs
-                        this.uploaderClient.WriteTextbox(By.Id("Input_123"), "0"); // Repair Paid Seller
+                        this.uploaderClient.WriteTextbox(By.Id("Input_123"), listing.RepairsPaidBySeller); // Repair Paid Seller
 
-                        ////this.uploaderClient.SetSelect(By.Id("Input_122"), listing.TitlePaidBy); // Title Paid By
+                        this.uploaderClient.SetSelect(By.Id("Input_122"), listing.TitlePaidBy); // Title Paid By
                         if (listing.HasBuyerAgent)
                         {
                             this.uploaderClient.SetSelect(By.Id("Input_310"), "Y");  // Did Selling Agent Represent Buyer
@@ -319,7 +319,7 @@ namespace Husa.Uploader.Core.Services
                             this.uploaderClient.SetSelect(By.Id("Input_310"), "N");  // Did Selling Agent Represent Buyer
                         }
 
-                        this.uploaderClient.SetSelectIfExist(By.Id("Input_525"), listing.SoldTerms); // Sold Terms
+                        this.uploaderClient.SetSelect(By.Id("Input_525"), listing.SoldTerms); // Sold Terms
 
                         if (!string.IsNullOrEmpty(listing.SellingAgentUID))
                         {
