@@ -43,10 +43,9 @@ namespace Husa.Uploader.Crosscutting.Extensions
 
         public static string FormatPhoneNumber(this string phoneNumber)
         {
-            string cleanNumber = new string(phoneNumber.Where(char.IsDigit).ToArray());
-            cleanNumber = $"{cleanNumber.Substring(0, 3)}-{cleanNumber.Substring(3, 3)}-{cleanNumber.Substring(6)}";
+            var cleanNumber = new string(phoneNumber.Where(char.IsDigit).ToArray());
 
-            return cleanNumber;
+            return $"{cleanNumber.Substring(0, 3)}-{cleanNumber.Substring(3, 3)}-{cleanNumber.Substring(6)}";
         }
     }
 }
