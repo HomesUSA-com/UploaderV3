@@ -43,7 +43,7 @@ namespace Husa.Uploader.Crosscutting.Extensions
 
         public static string FormatPhoneNumber(this string phoneNumber)
         {
-            string cleanNumber = new string(phoneNumber.Where(char.IsDigit).ToArray());
+            var cleanNumber = new string(phoneNumber.Where(char.IsDigit).ToArray());
 
             return $"{cleanNumber.Substring(0, 3)}-{cleanNumber.Substring(3, 3)}-{cleanNumber.Substring(6)}";
         }
