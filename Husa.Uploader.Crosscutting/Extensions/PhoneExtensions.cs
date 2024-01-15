@@ -4,7 +4,7 @@ namespace Husa.Uploader.Crosscutting.Extensions
 
     public static partial class PhoneExtensions
     {
-        public static string PhoneFormat(this string strPhone)
+        public static string PhoneFormat(this string strPhone, bool withoutParentheses = false)
         {
             if (string.IsNullOrWhiteSpace(strPhone))
             {
@@ -12,7 +12,7 @@ namespace Husa.Uploader.Crosscutting.Extensions
             }
 
             var phone = CleanPhoneNumberRegex().Replace(strPhone, replacement: string.Empty);
-            phone = PhoneNumberRegex().Replace(phone, "($1) $2-$3");
+            phone = withoutParentheses ? PhoneNumberRegex().Replace(phone, "$1-$2-$3") : PhoneNumberRegex().Replace(phone, "($1) $2-$3");
             return phone;
         }
 

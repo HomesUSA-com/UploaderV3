@@ -40,12 +40,5 @@ namespace Husa.Uploader.Crosscutting.Extensions
 
             return string.Empty;
         }
-
-        public static string FormatPhoneNumber(this string phoneNumber)
-        {
-            var cleanNumber = new string(phoneNumber.Where(char.IsDigit).ToArray());
-
-            return $"{cleanNumber.Substring(0, 3)}-{cleanNumber.Substring(3, 3)}-{cleanNumber.Substring(6)}";
-        }
     }
 }
