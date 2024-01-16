@@ -171,7 +171,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.LotDesc = propertyInfo.LotDescription.ToStringFromEnumMembers();
                 residentialListingRequest.LotSize = propertyInfo.LotSize?.ToStringFromEnumMember();
                 residentialListingRequest.LotSizeAcres = propertyInfo.LotSizeSqft?.ToString();
-                residentialListingRequest.LotSizeSrc = propertyInfo.LotSizeSource?.ToStringFromEnumMember();
+                residentialListingRequest.LotSizeSrc = propertyInfo.LotSizeSource.HasValue ? propertyInfo.LotSizeSource?.ToStringFromEnumMember() : "OTHER";
                 residentialListingRequest.MapscoMapCoord = propertyInfo.MapscoGrid;
                 residentialListingRequest.IsNewConstruction = propertyInfo.IsNewConstruction;
                 residentialListingRequest.LegalSubdivision = propertyInfo.LegalSubdivision?.ToStringFromEnumMember();
