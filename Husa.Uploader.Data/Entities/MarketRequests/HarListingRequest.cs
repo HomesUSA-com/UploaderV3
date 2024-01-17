@@ -171,7 +171,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.LotDesc = propertyInfo.LotDescription.ToStringFromEnumMembers();
                 residentialListingRequest.LotSize = propertyInfo.LotSize?.ToStringFromEnumMember();
                 residentialListingRequest.LotSizeAcres = propertyInfo.LotSizeSqft?.ToString();
-                residentialListingRequest.LotSizeSrc = propertyInfo.LotSizeSource?.ToStringFromEnumMember();
+                residentialListingRequest.LotSizeSrc = propertyInfo.LotSizeSource.HasValue ? propertyInfo.LotSizeSource?.ToStringFromEnumMember() : "OTHER";
                 residentialListingRequest.MapscoMapCoord = propertyInfo.MapscoGrid;
                 residentialListingRequest.IsNewConstruction = propertyInfo.IsNewConstruction;
                 residentialListingRequest.LegalSubdivision = propertyInfo.LegalSubdivision?.ToStringFromEnumMember();
@@ -310,13 +310,13 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     throw new ArgumentNullException(nameof(statusInfo));
                 }
 
-                residentialListingRequest.SoldPrice = statusInfo.ClosePrice;
+                residentialListingRequest.SoldPrice = statusInfo.ClosePrice.HasValue ? Math.Floor(statusInfo.ClosePrice.Value) : 0;
                 residentialListingRequest.ClosedDate = statusInfo.ClosedDate;
                 residentialListingRequest.ContractDate = statusInfo.ContractDate;
                 residentialListingRequest.SellConcess = statusInfo.SellConcess;
                 residentialListingRequest.OffMarketDate = statusInfo.OffMarketDate;
                 residentialListingRequest.BackOnMarketDate = statusInfo.BackOnMarketDate;
-                residentialListingRequest.SoldTerms = statusInfo.SoldTerms.ToString();
+                residentialListingRequest.SoldTerms = statusInfo.SoldTerms?.ToStringFromEnumMember();
                 residentialListingRequest.HasContingencyInfo = statusInfo.HasContingencyInfo;
                 residentialListingRequest.EstClosedDate = statusInfo.EstimatedClosedDate;
                 residentialListingRequest.AgentMarketUniqueId = statusInfo.AgentMarketUniqueId;
@@ -325,6 +325,9 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.ExpiredDate = statusInfo.ExpiredDate;
                 residentialListingRequest.SellingAgentLicenseNum = statusInfo.TrecLicenseNumber;
                 residentialListingRequest.HasBuyerAgent = statusInfo.HasBuyerAgent;
+                residentialListingRequest.TitlePaidBy = statusInfo.TitlePaidBy?.ToStringFromEnumMember();
+                residentialListingRequest.RepairsPaidBySeller = statusInfo.RepairsAmount;
+
                 if (!string.IsNullOrEmpty(statusInfo.SellerBuyerCost))
                 {
                     residentialListingRequest.SellerBuyerCost = decimal.Parse(statusInfo.SellerBuyerCost);

@@ -307,9 +307,9 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.SetSelect(By.Id("Input_119"), "0"); // Coop Sale
 
                         this.uploaderClient.WriteTextbox(By.Id("Input_121"), listing.SellerBuyerCost); // Seller Pd Buyer Clsg Costs
-                        this.uploaderClient.WriteTextbox(By.Id("Input_123"), "0"); // Repair Paid Seller
+                        this.uploaderClient.WriteTextbox(By.Id("Input_123"), listing.RepairsPaidBySeller); // Repair Paid Seller
 
-                        ////this.uploaderClient.SetSelect(By.Id("Input_122"), listing.TitlePaidBy); // Title Paid By
+                        this.uploaderClient.SetSelect(By.Id("Input_122"), listing.TitlePaidBy); // Title Paid By
                         if (listing.HasBuyerAgent)
                         {
                             this.uploaderClient.SetSelect(By.Id("Input_310"), "Y");  // Did Selling Agent Represent Buyer
@@ -319,7 +319,7 @@ namespace Husa.Uploader.Core.Services
                             this.uploaderClient.SetSelect(By.Id("Input_310"), "N");  // Did Selling Agent Represent Buyer
                         }
 
-                        this.uploaderClient.SetSelectIfExist(By.Id("Input_525"), listing.SoldTerms); // Sold Terms
+                        this.uploaderClient.SetSelect(By.Id("Input_525"), listing.SoldTerms); // Sold Terms
 
                         if (!string.IsNullOrEmpty(listing.SellingAgentUID))
                         {
@@ -906,7 +906,7 @@ namespace Husa.Uploader.Core.Services
             {
                 this.uploaderClient.SetSelect(By.Id("Input_275"), listing.HasHoa.BoolToNumericBool()); // Mandatory HOA/Mgmt Co (1, 0)
                 this.uploaderClient.WriteTextbox(By.Id("Input_278"), listing.AssocName); // Mandatory HOA/Mgmt Co Name
-                this.uploaderClient.WriteTextbox(By.Id("Input_276"), listing.AssocPhone); // Mandatory HOA/Mgmt Co Phone
+                this.uploaderClient.WriteTextbox(By.Id("Input_276"), listing.AssocPhone.PhoneFormat(true)); // Mandatory HOA/Mgmt Co Phone
             }
 
             this.uploaderClient.SetMultiSelect(By.Id("Input_280"), listing.FinancingProposed); // Financing Considered
@@ -936,9 +936,9 @@ namespace Husa.Uploader.Core.Services
         {
             this.GoToTab("Showing Information");
 
-            this.uploaderClient.WriteTextbox(By.Id("Input_304"), listing.AgentListApptPhone, isElementOptional: true);  // Appointment Desk Phone
+            this.uploaderClient.WriteTextbox(By.Id("Input_304"), listing.AgentListApptPhone.PhoneFormat(true), isElementOptional: true);  // Appointment Desk Phone
             this.uploaderClient.SetSelect(By.Id("Input_303"), "OFFIC");  // Appointment Phone Desc
-            this.uploaderClient.WriteTextbox(By.Id("Input_236"), listing.AltPhoneCommunity, isElementOptional: true);  // Agent Alternate Phone
+            this.uploaderClient.WriteTextbox(By.Id("Input_236"), listing.OtherPhone.PhoneFormat(true), isElementOptional: true);  // Agent Alternate Phone
             this.uploaderClient.WriteTextbox(By.Id("Input_136"), listing.Directions.RemoveSlash(), true); // Directions
             this.uploaderClient.SetMultipleCheckboxById("Input_218", listing.ShowingInstructions);  // Showing Instructions
             this.uploaderClient.WriteTextbox(By.Id("Input_327"), listing.BuyerIncentive.AmountByType(listing.BuyerIncentiveDesc)); // Buyer Agency Compensation
