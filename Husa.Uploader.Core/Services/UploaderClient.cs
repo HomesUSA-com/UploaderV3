@@ -538,7 +538,8 @@ namespace Husa.Uploader.Core.Services
             }
 
             Thread.Sleep(400);
-            var selectElement = $"const selected = jQuery('li[title=\"{value}\"]'); jQuery(selected).focus(); jQuery(selected).click()";
+            var apostropheAdaptedValue = value.Replace("'", "\\'");
+            var selectElement = $"const selected = jQuery('li[title=\"{apostropheAdaptedValue}\"]'); jQuery(selected).focus(); jQuery(selected).click()";
             this.ExecuteScript(script: selectElement);
             Thread.Sleep(400);
 
