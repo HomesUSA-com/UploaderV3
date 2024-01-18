@@ -150,9 +150,11 @@ namespace Husa.Uploader.Core.Services
 
                 try
                 {
+                    var housingType = listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>();
+
                     if (listing.IsNewListing)
                     {
-                        this.NavigateToNewPropertyInput(listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>());
+                        this.NavigateToNewPropertyInput(housingType);
                     }
                     else
                     {
@@ -161,11 +163,11 @@ namespace Husa.Uploader.Core.Services
 
                     this.FillListingInformation(listing);
                     this.FillMapInformation(listing as HarListingRequest);
-                    this.FillPropertyInformation(listing as HarListingRequest);
+                    this.FillPropertyInformation(listing as HarListingRequest, housingType);
                     this.FillRoomInformation(listing);
-                    this.FillFinancialInformation(listing as HarListingRequest);
+                    this.FillFinancialInformation(listing as HarListingRequest, housingType);
                     this.FillShowingInformation(listing);
-                    this.FillRemarks(listing as HarListingRequest);
+                    this.FillRemarks(listing as HarListingRequest, housingType);
 
                     if (listing.IsNewListing)
                     {
@@ -199,13 +201,13 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Updating CompletionDate for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
-
+                var housingType = listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>();
                 this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
 
                 this.GoToPropertyInformationTab();
                 this.UpdateYearBuiltDescription(listing);
 
-                this.GoToRemarksTab();
+                this.GoToRemarksTab(housingType);
                 this.UpdatePublicRemarksInRemarksTab(listing);
 
                 return UploadResult.Success;
@@ -555,13 +557,13 @@ namespace Husa.Uploader.Core.Services
         private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
             var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.Houston, cancellationToken);
-
+            var housingType = listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>();
             if (!virtualTours.Any())
             {
                 return;
             }
 
-            this.GoToRemarksTab();
+            this.GoToRemarksTab(housingType);
 
             var firstVirtualTour = virtualTours.FirstOrDefault();
             if (firstVirtualTour != null)
@@ -659,7 +661,6 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.SetSelect(By.Id("Input_181"), "EXAGY"); // List Type
             this.uploaderClient.WriteTextbox(By.Id("Input_182"), listing.ListPrice); // List Price
-
             if (listing.IsNewListing)
             {
                 DateTime? listDate = null;
@@ -694,7 +695,15 @@ namespace Husa.Uploader.Core.Services
             }
 
             this.uploaderClient.SetSelect(By.Id("Input_185"), "0"); // Also For Lease
-            this.uploaderClient.SetSelect(By.Id("Input_186"), "0"); // Priced at Lot Value Only
+            if (this.uploaderClient.FindElements(By.Id("Input_350")).Any())
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_350"), "TOWN"); // Townhouse or Condo
+            }
+            else
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_186"), "0"); // Priced at Lot Value Only
+            }
+
             this.uploaderClient.WriteTextbox(By.Id("Input_156"), listing.StreetNum); // Street Number
             this.uploaderClient.WriteTextbox(By.Id("Input_158"), listing.StreetName); // Street Name
             this.uploaderClient.WriteTextbox(By.Id("Input_160"), listing.UnitNum); // Unit #
@@ -736,12 +745,30 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_175"), listing.MapscoMapPage); // Key Map
         }
 
-        private void FillPropertyInformation(HarListingRequest listing)
+        private void FillPropertyInformation(HarListingRequest listing, HousingType housingType)
         {
             this.GoToPropertyInformationTab();
 
             this.uploaderClient.WriteTextbox(By.Id("Input_245"), listing.SqFtTotal); // Building SqFt
-            this.uploaderClient.SetSelect(By.Id("Input_246"), "BUILD"); // SqFt Source
+            if (housingType == HousingType.TownhouseCondo)
+            {
+                var hasWasherDryerConnection = listing.WasherConnections?.Length > 0;
+                this.uploaderClient.SetSelect(By.Id("Input_700"), "BUILD"); // SqFt Source
+                this.uploaderClient.WriteTextbox(By.Id("Input_485"), listing.NumStories); // Number of Building Stories
+                this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.NumStories); // Number of Unit Stories
+                this.uploaderClient.SetMultipleCheckboxById("Input_702", listing.HousingStyleDesc);  // Style
+                this.uploaderClient.SetMultipleCheckboxById("Input_475", listing.WaterDesc); // Water/Sewer Description
+                this.uploaderClient.SetSelect(By.Id("Input_496"), hasWasherDryerConnection.BoolToNumericBool()); // washer Dryer Connection
+                this.uploaderClient.SetMultipleCheckboxById("Input_369", listing.WasherConnections.ReplaceStringValues("ELDRY", "ELCDR")); // Appliances
+            }
+            else
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_246"), "BUILD"); // SqFt Source
+                this.uploaderClient.SetMultipleCheckboxById("Input_241", listing.HousingStyleDesc);  // Style
+                this.uploaderClient.SetMultipleCheckboxById("Input_141", listing.WaterDesc); // Water/Sewer Description
+                this.uploaderClient.SetMultipleCheckboxById("Input_328", listing.WasherConnections); // Washer Dryer Connection
+            }
+
             this.uploaderClient.SetSelect(By.Id("Input_244"), "BUILD"); // Year Built Source
             this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.NumStories); // Stories
             this.uploaderClient.SetSelect(By.Id("Input_247"), "1"); // New Construction (1 , 0)
@@ -776,9 +803,18 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_202"), listing.GarageCapacity); // Garage - Number of Spaces
             this.uploaderClient.SetMultipleCheckboxById("Input_207", listing.AccessInstructionsDesc); // Access -- MLS-51 AccessibilityDesc -> AccessInstructionsDesc
             this.uploaderClient.SetMultipleCheckboxById("Input_203", listing.GarageDesc); // Garage Description
-            this.uploaderClient.SetMultipleCheckboxById("Input_152", listing.RestrictionsDesc); // Restrictions
+
+            if (this.uploaderClient.FindElements(By.Id("Input_152")).Any())
+            {
+                this.uploaderClient.SetMultipleCheckboxById("Input_152", listing.RestrictionsDesc); // Restrictions
+            }
+
+            if (this.uploaderClient.FindElements(By.Id("Input_356")).Any())
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_356"), "ALVLS"); // Unit Level
+            }
+
             this.FindAndSetMultipleCheckboxById(new[] { "Input_329" }, listing.PropSubType); // Property Type
-            this.uploaderClient.SetMultipleCheckboxById("Input_241", listing.HousingStyleDesc);  // Style
             this.FindAndSetMultipleCheckboxById(new[] { "Input_146", "Input_492" }, listing.LotDesc); // Lot Description
             this.uploaderClient.SetMultipleCheckboxById("Input_150", listing.WaterfrontFeatures); // Waterfront Features
             this.uploaderClient.SetSelect(By.Id("Input_208"), listing.HasMicrowave.BoolToNumericBool()); // Microwave (0, 1)
@@ -792,7 +828,6 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_254", listing.FacesDesc); // Front Door Faces
             this.uploaderClient.SetMultipleCheckboxById("Input_269", listing.OvenDesc); // Oven Type
             this.uploaderClient.SetMultipleCheckboxById("Input_270", listing.RangeDesc);  // Stove Type
-            this.uploaderClient.SetMultipleCheckboxById("Input_328", listing.WasherConnections); // Washer Dryer Connection
 
             if (!string.IsNullOrEmpty(listing.GolfCourseName) && this.uploaderClient.FindElements(By.Id("Input_151")).Any())
             {
@@ -812,7 +847,6 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_257", listing.GreenCerts); // Green/Energy Certifications
             this.uploaderClient.SetMultipleCheckboxById("Input_139", listing.HeatSystemDesc); // Heating System Description
             this.FindAndSetMultipleCheckboxById(new[] { "Input_140", "Input_506" }, listing.CoolSystemDesc); // Cooling System Description
-            this.uploaderClient.SetMultipleCheckboxById("Input_141", listing.WaterDesc); // Water/Sewer Description
         }
 
         private void FindAndSetMultipleCheckboxById(IEnumerable<string> inputIds, string value)
@@ -897,16 +931,24 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        private void FillFinancialInformation(HarListingRequest listing)
+        private void FillFinancialInformation(HarListingRequest listing, HousingType housingType)
         {
             this.GoToTab("Financial Information");
 
-            var housingType = listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>();
             if (housingType != HousingType.CountryHomesAcreage)
             {
-                this.uploaderClient.SetSelect(By.Id("Input_275"), listing.HasHoa.BoolToNumericBool()); // Mandatory HOA/Mgmt Co (1, 0)
+                if (housingType == HousingType.TownhouseCondo)
+                {
+                    this.uploaderClient.SetSelect(By.Id("Input_497"), listing.HasHoa.BoolToNumericBool()); // Mandatory HOA/Mgmt Co (1, 0)
+                    this.uploaderClient.WriteTextbox(By.Id("Input_693"), listing.AssocPhone.PhoneFormat(true)); // Mandatory HOA/Mgmt Co Phone
+                }
+                else
+                {
+                    this.uploaderClient.SetSelect(By.Id("Input_275"), listing.HasHoa.BoolToNumericBool()); // Mandatory HOA/Mgmt Co (1, 0)
+                    this.uploaderClient.WriteTextbox(By.Id("Input_276"), listing.AssocPhone.PhoneFormat(true)); // Mandatory HOA/Mgmt Co Phone
+                }
+
                 this.uploaderClient.WriteTextbox(By.Id("Input_278"), listing.AssocName); // Mandatory HOA/Mgmt Co Name
-                this.uploaderClient.WriteTextbox(By.Id("Input_276"), listing.AssocPhone.PhoneFormat(true)); // Mandatory HOA/Mgmt Co Phone
             }
 
             this.uploaderClient.SetMultiSelect(By.Id("Input_280"), listing.FinancingProposed); // Financing Considered
@@ -930,6 +972,10 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.WriteTextbox(By.Id("Input_282"), listing.AssocFee); // Maintenance Fee Amount
             this.uploaderClient.SetSelect(By.Id("Input_283"), listing.AssocFeeFrequency); // Maintenance Fee Payment Sched
+            if (this.uploaderClient.FindElements(By.Id("Input_352")).Any())
+            {
+                this.uploaderClient.SetMultipleCheckboxById("Input_352", "OTHER"); // Maintenance Fee Includes
+            }
         }
 
         private void FillShowingInformation(ResidentialListingRequest listing)
@@ -948,9 +994,9 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetSelect(By.Id("Input_216"), "0");  // Variable Compensation
         }
 
-        private void FillRemarks(HarListingRequest listing)
+        private void FillRemarks(HarListingRequest listing, HousingType housingType)
         {
-            this.GoToRemarksTab();
+            this.GoToRemarksTab(housingType);
 
             this.UpdatePublicRemarksInRemarksTab(listing);
 
@@ -958,9 +1004,16 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_137"), listing.GetAgentRemarksMessage(), true); // Agent Remarks
         }
 
-        private void GoToRemarksTab()
+        private void GoToRemarksTab(HousingType housingType)
         {
-            this.GoToTab("Remarks/Tour Links");
+            if (housingType == HousingType.TownhouseCondo)
+            {
+                this.GoToTab("Remarks/Tour Remarks");
+            }
+            else
+            {
+                this.GoToTab("Remarks/Tour Links");
+            }
         }
 
         private void GoToPropertyInformationTab()
