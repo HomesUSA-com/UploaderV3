@@ -231,6 +231,27 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Fact]
+        public async Task UpdateStatus_ExpiredSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+            harListing.ListStatus = "EXP";
+            harListing.ExpiredDate = DateTime.Now;
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(harListing);
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdateStatus(harListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
         public async Task AddOpenHouseSuccess()
         {
             // Arrange
