@@ -602,6 +602,15 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.WriteTextbox(By.Name("SQFEET"), listing.SqFtTotal, true); // Square Feet
             this.uploaderClient.WriteTextbox(By.Name("SOURCESQFT"), listing.SqFtSource, true); // Source SQFT/Acre
+            if (string.IsNullOrWhiteSpace(listing.SqFtSource))
+            {
+                this.uploaderClient.WriteTextbox(By.Name("SOURCESQFT"), "B"); // Source SQFT/Acre
+            }
+            else
+            {
+                this.uploaderClient.WriteTextbox(By.Name("SOURCESQFT"), listing.SqFtSource); // Source SQFT/Acre
+            }
+
             this.uploaderClient.SetAttribute(By.Name("SCHLDIST"), listing.SchoolDistrict.ToUpper(), "value"); // School District
             this.uploaderClient.SetAttribute(By.Name("ELEMSCHL"), listing.SchoolName1, "value"); // Elementary School
 
