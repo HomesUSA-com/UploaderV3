@@ -1159,6 +1159,7 @@ namespace Husa.Uploader.Core.Services
 
                 // Refreshments
                 this.uploaderClient.SetMultipleCheckboxById($"_Input_337__REPEAT{index}_335", openHouse.Refreshments);
+                this.uploaderClient.ScrollDown();
 
                 // Date
                 this.uploaderClient.WriteTextbox(By.Id($"_Input_337__REPEAT{index}_332"), entry: openHouse.Date);
