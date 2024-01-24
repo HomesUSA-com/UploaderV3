@@ -873,7 +873,6 @@ namespace Husa.Uploader.Core.Services
 
         private void FillMapInformation(HarListingRequest listing)
         {
-            Console.WriteLine(listing.Latitude);
             if (listing.IsNewListing)
             {
                 this.GoToTab("Map Information");

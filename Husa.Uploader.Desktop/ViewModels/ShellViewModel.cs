@@ -1124,22 +1124,19 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private async Task StartUpload()
         {
-            if (string.IsNullOrEmpty(this.SelectedListingRequest.FullListing.MLSNum))
+            if (string.IsNullOrEmpty(this.SelectedListingRequest.FullListing.MLSNum) && this.selectedListingRequest.FullListing.UpdateGeocodes)
             {
-                if (this.selectedListingRequest.FullListing.UpdateGeocodes)
-                {
-                    var locationInfo = this.RequestLocationInfo();
+                var locationInfo = this.RequestLocationInfo();
 
-                    if (locationInfo.IsValidLocation)
-                    {
-                        this.SelectedListingRequest.FullListing.Latitude = locationInfo.Latitude;
-                        this.SelectedListingRequest.FullListing.Longitude = locationInfo.Longitude;
-                    }
-                    else
-                    {
-                        await this.FinishUpload();
-                        return;
-                    }
+                if (locationInfo.IsValidLocation)
+                {
+                    this.SelectedListingRequest.FullListing.Latitude = locationInfo.Latitude;
+                    this.SelectedListingRequest.FullListing.Longitude = locationInfo.Longitude;
+                }
+                else
+                {
+                    await this.FinishUpload();
+                    return;
                 }
             }
 
