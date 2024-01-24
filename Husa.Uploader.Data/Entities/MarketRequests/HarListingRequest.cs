@@ -77,6 +77,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             SysCreatedOn = this.listingResponse.SysCreatedOn,
             SysCreatedBy = this.listingResponse.SysCreatedBy,
             EnableOpenHouse = this.listingResponse.EnableOpenHouse,
+            UpdateGeocodes = this.listingResponse.UpdateGeocodes,
         };
 
         public override ResidentialListingRequest CreateFromApiResponseDetail()
