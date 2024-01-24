@@ -1126,16 +1126,20 @@ namespace Husa.Uploader.Desktop.ViewModels
         {
             if (string.IsNullOrEmpty(this.SelectedListingRequest.FullListing.MLSNum))
             {
-                var locationInfo = this.RequestLocationInfo();
-                if (locationInfo.IsValidLocation)
+                if (this.selectedListingRequest.FullListing.UpdateGeocodes)
                 {
-                    this.SelectedListingRequest.FullListing.Latitude = locationInfo.Latitude;
-                    this.SelectedListingRequest.FullListing.Longitude = locationInfo.Longitude;
-                }
-                else
-                {
-                    await this.FinishUpload();
-                    return;
+                    var locationInfo = this.RequestLocationInfo();
+
+                    if (locationInfo.IsValidLocation)
+                    {
+                        this.SelectedListingRequest.FullListing.Latitude = locationInfo.Latitude;
+                        this.SelectedListingRequest.FullListing.Longitude = locationInfo.Longitude;
+                    }
+                    else
+                    {
+                        await this.FinishUpload();
+                        return;
+                    }
                 }
             }
 
