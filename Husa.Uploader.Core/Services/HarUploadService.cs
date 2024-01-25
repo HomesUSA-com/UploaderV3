@@ -1047,17 +1047,14 @@ namespace Husa.Uploader.Core.Services
             {
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
 
+                this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(3000));
                 this.uploaderClient.FindElement(By.Id("m_ucImageLoader_m_tblImageLoader")).FindElement(By.CssSelector("input[type=file]")).SendKeys(image.PathOnDisk);
-                Thread.Sleep(3000);
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id($"photoCell_{imageOrder}"), cancellationToken);
+                this.uploaderClient.ResetImplicitWait();
 
                 if (!string.IsNullOrEmpty(image.Caption))
                 {
-                    this.uploaderClient.ExecuteScript($"jQuery('#photoCell_{imageOrder} a')[0].click();");
-                    Thread.Sleep(500);
-                    this.uploaderClient.ExecuteScript($"jQuery('#m_tbxDescription').val('{image.Caption}');");
-                    Thread.Sleep(500);
-                    this.uploaderClient.ClickOnElementById("m_ucDetailsView_m_btnSave");
+                    this.uploaderClient.ExecuteScript($"jQuery('#m_rptPhotoRows_ctl00_m_rptPhotoCells_ctl0{imageOrder}_m_ucPhotoCell_m_tbxDescription').val('{image.Caption}');");
                 }
 
                 imageOrder++;
@@ -1101,6 +1098,7 @@ namespace Husa.Uploader.Core.Services
 
                 // Refreshments
                 this.uploaderClient.SetMultipleCheckboxById($"_Input_337__REPEAT{index}_335", openHouse.Refreshments);
+                this.uploaderClient.ScrollDown();
 
                 // Date
                 this.uploaderClient.WriteTextbox(By.Id($"_Input_337__REPEAT{index}_332"), entry: openHouse.Date);
