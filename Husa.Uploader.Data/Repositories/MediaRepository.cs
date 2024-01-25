@@ -100,7 +100,7 @@ namespace Husa.Uploader.Data.Repositories
                 var residentialListingMedia = new ResidentialListingMedia
                 {
                     Id = mediaDetail.Id,
-                    Caption = !string.IsNullOrWhiteSpace(mediaDetail.Description) ? mediaDetail.Description : string.Empty,
+                    Caption = GetCaption(mediaDetail.Title, mediaDetail.Description),
                     MediaUri = mediaDetail.Uri,
                     Order = mediaDetail.Order ?? count,
                     IsPrimary = mediaDetail.IsPrimary,
@@ -136,6 +136,21 @@ namespace Husa.Uploader.Data.Repositories
             }
 
             return result;
+        }
+
+        private static string GetCaption(string title = null, string description = null)
+        {
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                return Path.GetFileNameWithoutExtension(title);
+            }
+
+            if (!string.IsNullOrWhiteSpace(description))
+            {
+                return description;
+            }
+
+            return string.Empty;
         }
 
         private static List<MediaDetail> ConsolidateImages(IEnumerable<MediaDetail> resources)

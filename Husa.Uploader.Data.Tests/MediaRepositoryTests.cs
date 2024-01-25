@@ -64,8 +64,11 @@ namespace Husa.Uploader.Data.Tests
             Assert.Equal(mediaId, result.First().Id);
         }
 
-        [Fact]
-        public async Task GetListingImages_ReturnsImages()
+        [Theory]
+        [InlineData("some-title", "some-description")]
+        [InlineData("", "some-description")]
+        [InlineData("", "")]
+        public async Task GetListingImages_ReturnsImages(string title, string description)
         {
             // Arrange
             var mediaId = new Guid("6546a37c-c1c9-4a5d-afbc-bc157273891d");
@@ -75,8 +78,8 @@ namespace Husa.Uploader.Data.Tests
             {
                 Id = mediaId,
                 IsPrimary = true,
-                Title = "some-title",
-                Description = "some-description",
+                Title = title,
+                Description = description,
                 MimeType = MimeType.Image,
                 Order = 0,
                 Uri = new Uri($"{BaseImageUrl}media/{mediaId}"),
@@ -98,6 +101,33 @@ namespace Husa.Uploader.Data.Tests
             // Assert
             Assert.NotEmpty(result);
             Assert.Equal(mediaId, result.First().Id);
+        }
+
+        [Fact]
+        public async Task GetListingImages_NoUri_ReturnsEmpty()
+        {
+            // Arrange
+            var mediaId = Guid.NewGuid();
+            var listingRequestId = Guid.NewGuid();
+
+            var mediaDetail = new MediaDetail
+            {
+                Id = mediaId,
+            };
+            this.mediaServiceClient
+                .Setup(m => m.GetResources(It.Is<Guid>(id => id == listingRequestId), It.Is<MediaType>(type => type == MediaType.ListingRequest), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ResourceResponse
+                {
+                    Media = new[] { mediaDetail },
+                });
+
+            var repository = this.GetSut();
+
+            // Act
+            var result = await repository.GetListingImages(listingRequestId, MarketCode.SanAntonio, default);
+
+            // Assert
+            Assert.Empty(result);
         }
 
         [Fact]
