@@ -888,7 +888,8 @@ namespace Husa.Uploader.Data.Entities
             string isLot,
             Entity currentEntity,
             string worker,
-            string workingStatus) => new()
+            string workingStatus,
+            string workingSourceAction) => new()
             {
                 RequestId = this.ResidentialListingRequestID,
                 MlsNumber = this.IsNewListing ? $"New {currentEntity}" : this.MLSNum,
@@ -905,6 +906,7 @@ namespace Husa.Uploader.Data.Entities
                 InternalLotRequestId = this.InternalLotRequestID,
                 WorkingBy = worker,
                 WorkingStatus = workingStatus,
+                WorkingSourceAction = workingSourceAction,
             };
 
         public virtual string GetAgentRemarksMessage()
