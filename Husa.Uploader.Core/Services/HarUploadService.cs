@@ -142,6 +142,9 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UploadListing()
             {
+                var newLatitude = listing.Latitude;
+                var newLongitude = listing.Longitude;
+
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken);
                 this.logger.LogInformation("Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
@@ -159,6 +162,8 @@ namespace Husa.Uploader.Core.Services
                         this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
                     }
 
+                    listing.Longitude = newLongitude;
+                    listing.Latitude = newLatitude;
                     this.FillListingInformation(listing);
                     this.FillMapInformation(listing as HarListingRequest);
                     this.FillPropertyInformation(listing as HarListingRequest);
@@ -1019,12 +1024,20 @@ namespace Husa.Uploader.Core.Services
                 return;
             }
 
-            var getLatLongFromAddress = "Get Lat/Long from address";
-
-            if (this.uploaderClient.FindElements(By.LinkText(getLatLongFromAddress)).Any())
+            if (listing.UpdateGeocodes)
             {
-                this.uploaderClient.ClickOnElement(By.LinkText(getLatLongFromAddress));
-                Thread.Sleep(1000);
+                this.uploaderClient.WriteTextbox(By.Id("INPUT__93"), listing.Latitude); // latitude
+                this.uploaderClient.WriteTextbox(By.Id("INPUT__94"), listing.Longitude); // longitude
+            }
+            else
+            {
+                var getLatLongFromAddress = "Get Lat/Long from address";
+
+                if (this.uploaderClient.FindElements(By.LinkText(getLatLongFromAddress)).Any())
+                {
+                    this.uploaderClient.ClickOnElement(By.LinkText(getLatLongFromAddress));
+                    Thread.Sleep(1000);
+                }
             }
         }
 
