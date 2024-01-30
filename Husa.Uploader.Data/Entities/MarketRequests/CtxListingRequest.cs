@@ -68,6 +68,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             SysCreatedBy = this.listingResponse.SysCreatedBy,
             AllowPendingList = this.listingResponse.ShowOpenHousesPending,
             EnableOpenHouse = this.listingResponse.EnableOpenHouses,
+            UpdateGeocodes = this.listingResponse.UpdateGeocodes,
         };
 
         public override ResidentialListingRequest CreateFromApiResponseDetail()
@@ -159,8 +160,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.ListType = propertyInfo.ListingType?.ToStringFromEnumMember();
                 residentialListingRequest.Occupancy = propertyInfo.Occupancy;
                 residentialListingRequest.UpdateGeocodes = propertyInfo.UpdateGeocodes;
-                residentialListingRequest.Latitude = propertyInfo.Latitude;
-                residentialListingRequest.Longitude = propertyInfo.Longitude;
                 residentialListingRequest.FacesDesc = propertyInfo.FrontFaces?.ToStringFromEnumMember();
                 residentialListingRequest.SqFtTotal = propertyInfo.SqFtTotal;
                 residentialListingRequest.SqFtSource = propertyInfo.SqFtSource?.ToStringFromEnumMember();

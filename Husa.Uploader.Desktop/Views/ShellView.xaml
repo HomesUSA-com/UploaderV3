@@ -39,7 +39,7 @@
                             <ScrollViewer
                                 Padding="{TemplateBinding Padding}"
                                 Style="{DynamicResource MetroGridViewScrollViewerStyle}">
-                                <ItemsPresenter/>
+                                    <ItemsPresenter/>
                             </ScrollViewer>
                             <VisualStateManager.VisualStateGroups>
 
@@ -102,7 +102,7 @@
             </Style.Triggers>
         </Style>
     </mam:MetroWindow.Resources>
-
+   
     <Window.Triggers>
         <EventTrigger RoutedEvent="ButtonBase.Click" SourceName="ButtonOpenMenu">
             <EventTrigger.Actions>
@@ -224,14 +224,15 @@
                             </Button>
                         </StackPanel>
                         <ListView
-                            Name="ListingRequests"
-                            Margin="5,5,10,35"
+                            Name="ListingRequestsHeaders"
+                            Margin="4,5,9,35"
+                            Padding="-20,0,0,0"
                             Grid.Row="0"
-                            Grid.RowSpan="3"
+                            Grid.RowSpan="1"
                             Grid.Column="0"
                             IsEnabled="{Binding NoUploadInProgress}"
-                            Style="{DynamicResource ListViewStyle}"
-                            ItemsSource="{Binding ListingRequests}" 
+                            Style="{DynamicResource ListViewStyleHeader}"
+                            ItemsSource="{Binding ListingRequestsHeader}"
                             SelectedItem="{Binding SelectedListingRequest, Mode=TwoWay}" Background="White" BorderBrush="Black">
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="{x:Type ListViewItem}">
@@ -246,10 +247,6 @@
                                                     Background="{TemplateBinding Background}" 
                                                     Padding="{TemplateBinding Padding}"
                                                     SnapsToDevicePixels="true">
-                                                    <GridViewRowPresenter 
-                                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
-                                                        SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-                                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                                                 </Border>
                                             </ControlTemplate>
                                         </Setter.Value>
@@ -284,35 +281,113 @@
                             </ListView.ItemContainerStyle>
                             <ListView.View>
                                 <GridView>
-                                    <GridViewColumn Width="110" DisplayMemberBinding="{Binding BuilderName}">
+                                    <GridViewColumn Header="Listing Agent" Width="140"/>
+                                    <GridViewColumn Header="Broker Office" Width="140"/>
+                                    <GridViewColumn Header="Builder" Width="150"/>
+                                    <GridViewColumn Header="Market" Width="110"/>
+                                    <GridViewColumn Header="MLS Number" Width="140"/>
+                                    <GridViewColumn Header="Address" Width="130"/>
+                                    <GridViewColumn Header="Unit #" Width="120"/>
+                                    <GridViewColumn Header="Status" Width="120"/>
+                                    <GridViewColumn Header="Working By" Width="140"/>
+                                    <GridViewColumn Header="Working Status" Width="150"/>
+                                    <GridViewColumn Header="Source Action" Width="160"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                        <ListView
+                            Name="ListingRequests"
+                            Margin="5,-31,10,35"
+                            Grid.Row="1"
+                            Grid.RowSpan="3"
+                            Grid.Column="0"
+                            IsEnabled="{Binding NoUploadInProgress}"
+                            Style="{DynamicResource ListViewStyle}"
+                            ItemsSource="{Binding ListingRequests}" 
+                            SelectedItem="{Binding SelectedListingRequest, Mode=TwoWay}" Background="White" BorderBrush="Black">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="{x:Type ListViewItem}">
+                                    <Setter Property="Background" Value="#FFFFFF" />
+                                    <Setter Property="Foreground" Value="#555555" />
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                                <Border x:Name="Bd"
+                                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                                    Background="{TemplateBinding Background}" 
+                                                    Padding="{TemplateBinding Padding}"
+                                                    SnapsToDevicePixels="true">
+                                                    <GridViewRowPresenter 
+                                                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                                                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <MultiTrigger>
+                                            <MultiTrigger.Conditions>
+                                                <Condition Property="IsMouseOver" Value="True"/>
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="Background" Value="#FF2196F3"/>
+                                            <Setter Property="BorderBrush" Value="#FF2196F3"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </MultiTrigger>
+                                        <MultiTrigger>
+                                            <MultiTrigger.Conditions>
+                                                <Condition Property="IsSelected" Value="True"/>
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="Background" Value="#FF1B3861"/>
+                                            <Setter Property="BorderBrush" Value="#54A9DC"/>
+                                            <Setter Property="Foreground" Value="#FFFFFF"/>
+                                        </MultiTrigger>
+                                        <MultiTrigger>
+                                            <MultiTrigger.Conditions>
+                                                <Condition Property="IsMouseOver" Value="True"/>
+                                                <Condition Property="IsSelected" Value="True"/>
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="Background" Value="#BEC5CB"/>
+                                            <Setter Property="BorderBrush" Value="#BEC5CB"/>
+                                        </MultiTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Width="140" DisplayMemberBinding="{Binding BuilderName}">
                                         <GridViewColumnHeader Content="Listing Agent" />
                                     </GridViewColumn>
-                                    <GridViewColumn Width="110" DisplayMemberBinding="{Binding BrokerOffice}">
+                                    <GridViewColumn Width="140" DisplayMemberBinding="{Binding BrokerOffice}">
                                         <GridViewColumnHeader Content="Broker Office"/>
                                     </GridViewColumn>
-                                    <GridViewColumn Width="140" DisplayMemberBinding="{Binding CompanyName}">
+                                    <GridViewColumn Width="150" DisplayMemberBinding="{Binding CompanyName}">
                                         <GridViewColumnHeader Content="Builder"/>
                                     </GridViewColumn>
-                                    <GridViewColumn Width="120" DisplayMemberBinding="{Binding Market}">
+                                    <GridViewColumn Width="110" DisplayMemberBinding="{Binding Market}">
                                         <GridViewColumnHeader Content="Market"/>
                                     </GridViewColumn>
-                                    <GridViewColumn Width="100" DisplayMemberBinding="{Binding MlsNumber}">
+                                    <GridViewColumn Width="140" DisplayMemberBinding="{Binding MlsNumber}">
                                         <GridViewColumnHeader Content="MLS Number"/>
                                     </GridViewColumn>
-                                    <GridViewColumn Width="160" DisplayMemberBinding="{Binding Address}">
+                                    <GridViewColumn Width="130" DisplayMemberBinding="{Binding Address}">
                                         <GridViewColumnHeader Content="Address"/>
                                     </GridViewColumn>
-                                    <GridViewColumn Width="65" DisplayMemberBinding="{Binding UnitNumber}">
+                                    <GridViewColumn Width="120" DisplayMemberBinding="{Binding UnitNumber}">
                                         <GridViewColumnHeader Content="Unit #"/>
                                     </GridViewColumn>
-                                    <GridViewColumn Width="65" DisplayMemberBinding="{Binding Status}">
+                                    <GridViewColumn Width="120" DisplayMemberBinding="{Binding Status}">
                                         <GridViewColumnHeader Content="Status"/>
                                     </GridViewColumn>
-                                    <GridViewColumn Width="120" DisplayMemberBinding="{Binding WorkingBy}">
+                                    <GridViewColumn Width="140" DisplayMemberBinding="{Binding WorkingBy}">
                                         <GridViewColumnHeader Content="Working By"/>
                                     </GridViewColumn>
-                                    <GridViewColumn Width="120" DisplayMemberBinding="{Binding WorkingStatus}">
+                                    <GridViewColumn Width="150" DisplayMemberBinding="{Binding WorkingStatus}">
                                         <GridViewColumnHeader Content="Working Status"/>
+                                    </GridViewColumn>
+                                    <GridViewColumn Width="160" DisplayMemberBinding="{Binding WorkingSourceAction}">
+                                        <GridViewColumnHeader Content="Source Action"/>
                                     </GridViewColumn>
                                 </GridView>
                             </ListView.View>
@@ -322,7 +397,7 @@
                             Grid.Column="2"
                             Grid.Row="1"
                             Grid.RowSpan="2"
-                            Margin="10,10,10,35"
+                            Margin="10,-95,10,35"
                             Background="#FFFFFFFF">
                             <StackPanel Visibility="{Binding ShowPanelAction, Converter={StaticResource BooleanToVisibilityConverter }}">
                                 <TextBlock Name="SelectedListingRequest_MlsNumber" TextWrapping="WrapWithOverflow" FontSize="18" FontWeight="Bold" Margin="10,10,10,0" Foreground="#FF1B3861">
@@ -423,7 +498,7 @@
                             <TextBlock Margin="36,6,0,7" Grid.Row="0" Foreground="Green" Visibility="{Binding UpdateAvailable, Converter={StaticResource BooleanToVisibilityConverter }}" FontWeight="Black" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12" Width="442" Height="14" Grid.ColumnSpan="2">New Uploader Version Available. Please Restart the application.</TextBlock>
                         </StackPanel>
                         <StackPanel VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Right">
-                            <TextBlock x:Name="UserFullName" Text="User" VerticalAlignment="Center" FontSize="18" Margin="10" Foreground="#FF1B3861" Width="371" TextAlignment="Right" Padding="0,0,25,0"/>
+                            <TextBlock x:Name="UserFullName" Text="{Binding UserFullName}" VerticalAlignment="Center" FontSize="18" Margin="10" Foreground="#FF1B3861" Width="371" TextAlignment="Right" Padding="0,0,25,0"/>
                             <materialDesign:PopupBox HorizontalAlignment="Right" PlacementMode="BottomAndAlignRightEdges" StaysOpen="False" >
                                 <StackPanel Width="180" >
                                     <ListView ScrollViewer.HorizontalScrollBarVisibility="Hidden">
