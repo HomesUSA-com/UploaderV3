@@ -6,7 +6,7 @@ namespace Husa.Uploader.Crosscutting.Models
 
     public class Item
     {
-        public Item(string selectedItemId, UploaderState uploaderStatus)
+        public Item(string selectedItemId, UploaderState uploaderStatus, string statusSource)
         {
             if (string.IsNullOrWhiteSpace(selectedItemId))
             {
@@ -15,10 +15,11 @@ namespace Husa.Uploader.Crosscutting.Models
 
             this.SelectedItemID = selectedItemId;
             this.Status = uploaderStatus.GetEnumDescription();
+            this.SourceAction = statusSource;
             this.UploaderStatus = uploaderStatus;
         }
 
-        public Item(Guid? selectedItemId, UploaderState uploaderStatus)
+        public Item(Guid? selectedItemId, UploaderState uploaderStatus, string statusSource)
             : this()
         {
             if (!selectedItemId.HasValue)
@@ -28,6 +29,7 @@ namespace Husa.Uploader.Crosscutting.Models
 
             this.SelectedItemID = selectedItemId.Value.ToString();
             this.Status = uploaderStatus.GetEnumDescription();
+            this.SourceAction = statusSource;
             this.UploaderStatus = uploaderStatus;
         }
 
@@ -35,12 +37,15 @@ namespace Husa.Uploader.Crosscutting.Models
         {
             this.SelectedItemID = string.Empty;
             this.Status = string.Empty;
+            this.SourceAction = string.Empty;
             this.UploaderStatus = UploaderState.None;
         }
 
         public string SelectedItemID { get; set; }
 
         public string Status { get; set; }
+
+        public string SourceAction { get; set; }
 
         public UploaderState UploaderStatus { get; set; }
 
