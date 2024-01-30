@@ -189,6 +189,29 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(UploadResult.Success, result);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task SetGeocodesSuccess(bool updateGeocodes)
+        {
+            // Arrange
+            this.SetUpConfigs();
+            var request = this.GetResidentialListingRequest();
+            request.UpdateGeocodes = updateGeocodes;
+            request.Longitude = 24;
+            request.Latitude = -97;
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(request);
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.Upload(request);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
         [Fact]
         public void GetComments_RefreshmentsAndLunch_ReturnsCombinedString()
         {
@@ -247,6 +270,7 @@ namespace Husa.Uploader.Core.Tests
             var propertyInfo = new AborResponse.SalePropertyDetail.PropertyInfoResponse()
             {
                 ConstructionStage = ConstructionStage.Incomplete,
+                UpdateGeocodes = true,
             };
             var featuresInfo = new Mock<AborResponse.SalePropertyDetail.FeaturesResponse>();
             var financialInfo = new AborResponse.SalePropertyDetail.FinancialResponse()
