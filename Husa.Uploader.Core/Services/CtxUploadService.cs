@@ -143,6 +143,8 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UploadListing()
             {
+                var newLatitude = listing.Latitude;
+                var newLongitude = listing.Longitude;
                 listing = await this.sqlDataLoader.GetListingRequest(listing.ResidentialListingRequestID, this.CurrentMarket, cancellationToken);
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
@@ -162,6 +164,8 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
                     }
 
+                    listing.Longitude = newLongitude;
+                    listing.Latitude = newLatitude;
                     this.FillStatusInformation(listing);
                     this.FillListingInformation(listing);
                     this.FillRooms(listing);
@@ -753,8 +757,20 @@ namespace Husa.Uploader.Core.Services
                 return;
             }
 
-            this.uploaderClient.WriteTextbox(By.Id("INPUT__93"), value: listing.Latitude); // Latitude
-            this.uploaderClient.WriteTextbox(By.Id("INPUT__94"), value: listing.Longitude); // Longitude
+            if (listing.UpdateGeocodes)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("INPUT__93"), value: listing.Latitude); // Latitude
+                this.uploaderClient.WriteTextbox(By.Id("INPUT__94"), value: listing.Longitude); // Longitude
+            }
+            else
+            {
+                var getLatLongFromAddress = "Get Lat/Long from address";
+                if (this.uploaderClient.FindElements(By.LinkText(getLatLongFromAddress))?.Any() == true)
+                {
+                    this.uploaderClient.ClickOnElement(By.LinkText(getLatLongFromAddress));
+                    Thread.Sleep(1000);
+                }
+            }
         }
 
         private void DeleteAllImages()
