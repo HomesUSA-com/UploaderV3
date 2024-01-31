@@ -40,5 +40,15 @@ namespace Husa.Uploader.Crosscutting.Extensions
 
             return string.Empty;
         }
+
+        public static string ReplaceStringValues(this string stringValue, string valueToReplace, string replacementValue)
+        {
+            if (string.IsNullOrEmpty(stringValue) || string.IsNullOrEmpty(valueToReplace))
+            {
+                return stringValue;
+            }
+
+            return stringValue.Replace(valueToReplace, replacementValue);
+        }
     }
 }

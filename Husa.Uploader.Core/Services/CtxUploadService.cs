@@ -842,12 +842,12 @@ namespace Husa.Uploader.Core.Services
                 // From Time
                 this.uploaderClient.WriteTextbox(By.Id($"_Input_349__REPEAT{index}_TextBox_344"), entry: openHouse.StartTime.To12Format());
                 var fromTimeTT = openHouse.StartTime.Hours >= 12 ? 1 : 0;
-                this.uploaderClient.ClickOnElementById($"_Input_349__REPEAT{index}_RadioButtonList_344_{fromTimeTT}");
+                this.uploaderClient.ClickOnElementById($"_Input_349__REPEAT{index}_RadioButtonList_344_{fromTimeTT}", shouldWait: true, waitTime: 5);
 
                 // To Time
                 this.uploaderClient.WriteTextbox(By.Id($"_Input_349__REPEAT{index}_TextBox_345"), entry: openHouse.EndTime.To12Format());
                 var endTimeTT = openHouse.EndTime.Hours >= 12 ? 1 : 0;
-                this.uploaderClient.ClickOnElementById($"_Input_349__REPEAT{index}_RadioButtonList_345_{endTimeTT}");
+                this.uploaderClient.ClickOnElementById($"_Input_349__REPEAT{index}_RadioButtonList_345_{endTimeTT}", shouldWait: true, waitTime: 5);
 
                 // Active Status
                 this.uploaderClient.SetSelect(By.Id($"_Input_349__REPEAT{index}_346"), value: Convert.ToInt32(openHouse.Active));
