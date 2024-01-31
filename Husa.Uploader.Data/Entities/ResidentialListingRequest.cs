@@ -1049,7 +1049,7 @@ namespace Husa.Uploader.Data.Entities
 
                 if (string.IsNullOrWhiteSpace(this.PublicRemarks) || !this.PublicRemarks.Contains('~'))
                 {
-                    remark = (builtNote + this.PublicRemarks ?? string.Empty).RemoveSlash();
+                    remark = (builtNote + (this.PublicRemarks ?? string.Empty)).RemoveSlash();
                 }
                 else
                 {

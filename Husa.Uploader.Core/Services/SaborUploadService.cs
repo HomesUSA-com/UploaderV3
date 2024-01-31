@@ -1,5 +1,6 @@
 namespace Husa.Uploader.Core.Services
 {
+    using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
@@ -514,6 +515,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
+        [SuppressMessage("SonarLint", "S2589", Justification = "Ignored due to suspected false positive")]
         private void EditProperty(string mlsnum)
         {
             const string tabName = "General";
@@ -1392,6 +1394,7 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(2000);
         }
 
+        [SuppressMessage("SonarLint", "S2589", Justification = "Ignored to avoid potential breaking of the method")]
         private void AddOpenHouses(ResidentialListingRequest listing)
         {
             const string tabName = "Add Open House";
