@@ -9,6 +9,7 @@ namespace Husa.Uploader.Desktop.ViewModels
     using System.Windows;
     using System.Windows.Input;
     using System.Windows.Threading;
+    using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
@@ -57,6 +58,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private DataBaseStatus databaseOnline;
         private SignalRStatus signalROnline;
         private UploaderState state;
+        private string sourceAction;
 
         private string userName;
         private string password;
@@ -133,6 +135,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             this.CorrelationIdBox = string.Empty;
             this.LastUpdated = "Last Updated: 12/12/12 22:22:22";
             this.State = UploaderState.Ready;
+            this.SourceAction = string.Empty;
         }
 
         public int SelectedTabItem
@@ -228,6 +231,16 @@ namespace Husa.Uploader.Desktop.ViewModels
             set
             {
                 this.state = value;
+                this.Refresh();
+            }
+        }
+
+        public string SourceAction
+        {
+            get => this.sourceAction;
+            set
+            {
+                this.sourceAction = value;
                 this.Refresh();
             }
         }
@@ -829,7 +842,8 @@ namespace Husa.Uploader.Desktop.ViewModels
                         .Where(entry =>
                             this.Workers.ContainsKey(entry.Key) &&
                             (this.Workers[entry.Key].SelectedItemID != entry.Value.SelectedItemID ||
-                             this.Workers[entry.Key].Status != entry.Value.Status))
+                             this.Workers[entry.Key].Status != entry.Value.Status ||
+                             this.Workers[entry.Key].SourceAction != entry.Value.SourceAction))
                         .ToDictionary(entry => entry.Key, entry => entry.Value);
                     if (diff.Any())
                     {
@@ -868,6 +882,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                         var itemIndex = uploadListItems.IndexOf(contains);
                         uploadListItems[itemIndex].WorkingBy = worker.Key;
                         uploadListItems[itemIndex].WorkingStatus = worker.Value.Status;
+                        uploadListItems[itemIndex].WorkingSourceAction = worker.Value.SourceAction;
                     }
                 }
 
@@ -893,6 +908,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                 {
                     var worker = string.Empty;
                     var workingStatus = string.Empty;
+                    var workingSourceAction = string.Empty;
                     if (this.Workers != null)
                     {
                         foreach (var workerItem in this.Workers)
@@ -901,6 +917,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                             {
                                 worker = workerItem.Key;
                                 workingStatus = workerItem.Value.Status;
+                                workingSourceAction = workerItem.Value.SourceAction;
                             }
                         }
                     }
@@ -912,7 +929,8 @@ namespace Husa.Uploader.Desktop.ViewModels
                         isLot: "No",
                         this.CurrentEntity,
                         worker,
-                        workingStatus);
+                        workingStatus,
+                        workingSourceAction);
 
                     return uploadItem;
                 }).ToList();
@@ -973,7 +991,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                 }
 
                 // send message
-                var item = new Item(selectedId, uploaderStatus: this.State);
+                var item = new Item(selectedId, uploaderStatus: this.State, statusSource: this.SourceAction);
                 await this.hubConnection.InvokeAsync("SendSelectedItem", this.UserFullName, item);
             }
             catch (Exception exception)
@@ -1007,6 +1025,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             var selectedIndex = availableListingsToUpload.IndexOf(selectedListingItem);
             availableListingsToUpload[selectedIndex].WorkingBy = responseUserName;
             availableListingsToUpload[selectedIndex].WorkingStatus = responseItem.Status;
+            availableListingsToUpload[selectedIndex].WorkingSourceAction = responseItem.SourceAction;
             try
             {
                 this.ListingRequests = await Task.Run(() => new ObservableCollection<UploadListingItem>(availableListingsToUpload));
@@ -1017,7 +1036,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        private async Task Start(UploadType opType, Func<ResidentialListingRequest, CancellationToken, Task<UploadResult>> action)
+        private async Task Start(UploadType opType, Func<ResidentialListingRequest, CancellationToken, Task<UploadResult>> action, string sourceAction)
         {
             var listing = this.SelectedListingRequest.FullListing;
             this.ShowCancelButton = true;
@@ -1037,12 +1056,13 @@ namespace Husa.Uploader.Desktop.ViewModels
             {
                 this.signalRConnectionTriesError = 0;
                 this.State = UploaderState.UploadInProgress;
+                this.SourceAction = sourceAction;
 
                 // 1. Broadcast the current seleted request ID to other users
                 await this.BroadcastSelectedList(selectedId: entityID);
 
                 // 2. Refresh the table
-                await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(listing.ResidentialListingRequestID, this.State));
+                await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(listing.ResidentialListingRequestID, this.State, this.SourceAction));
 
                 // 2. Execute de action
                 var response = await this.RunAction(action);
@@ -1074,7 +1094,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                 await this.BroadcastSelectedList(selectedId: entityID);
 
                 // 2. Refresh the table
-                await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(listing.ResidentialListingRequestID, this.State));
+                await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(listing.ResidentialListingRequestID, this.State, this.SourceAction));
 
                 try
                 {
@@ -1118,15 +1138,18 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private async Task StartEdit()
         {
+            this.SourceAction = Crosscutting.Enums.SourceAction.View.GetEnumDescription();
             var uploader = this.uploadFactory.Create<IEditListing>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.Start(opType: UploadType.Edit, action: uploader.Edit);
+            await this.Start(opType: UploadType.Edit, action: uploader.Edit, sourceAction: this.SourceAction);
         }
 
         private async Task StartUpload()
         {
-            if (string.IsNullOrEmpty(this.SelectedListingRequest.FullListing.MLSNum))
+            this.SourceAction = Crosscutting.Enums.SourceAction.Upload.GetEnumDescription();
+            if (string.IsNullOrEmpty(this.SelectedListingRequest.FullListing.MLSNum) && this.selectedListingRequest.FullListing.UpdateGeocodes)
             {
                 var locationInfo = this.RequestLocationInfo();
+
                 if (locationInfo.IsValidLocation)
                 {
                     this.SelectedListingRequest.FullListing.Latitude = locationInfo.Latitude;
@@ -1141,53 +1164,60 @@ namespace Husa.Uploader.Desktop.ViewModels
 
             this.ShowCancelButton = true;
             var uploader = this.uploadFactory.Create<IUploadListing>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.Start(opType: UploadType.InserOrUpdate, action: uploader.Upload);
+            await this.Start(opType: UploadType.InserOrUpdate, action: uploader.Upload, sourceAction: this.SourceAction);
         }
 
         private async Task StartStatusUpdate()
         {
+            this.SourceAction = Crosscutting.Enums.SourceAction.UpdateStatus.GetEnumDescription();
             var uploader = this.uploadFactory.Create<IUpdateStatus>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.Start(opType: UploadType.Status, action: uploader.UpdateStatus);
+            await this.Start(opType: UploadType.Status, action: uploader.UpdateStatus, sourceAction: this.SourceAction);
         }
 
         private async Task StartPriceUpdate()
         {
+            this.SourceAction = Crosscutting.Enums.SourceAction.UpdatePrice.GetEnumDescription();
             var uploader = this.uploadFactory.Create<IUpdatePrice>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.Start(opType: UploadType.Price, action: uploader.UpdatePrice);
+            await this.Start(opType: UploadType.Price, action: uploader.UpdatePrice, sourceAction: this.SourceAction);
         }
 
         private async Task StartCompletionDateUpdate()
         {
+            this.SourceAction = Crosscutting.Enums.SourceAction.UpdateCompletionDate.GetEnumDescription();
             var uploader = this.uploadFactory.Create<IUpdateCompletionDate>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.Start(opType: UploadType.CompletionDate, action: uploader.UpdateCompletionDate);
+            await this.Start(opType: UploadType.CompletionDate, action: uploader.UpdateCompletionDate, sourceAction: this.SourceAction);
         }
 
         private async Task StartOHUpdate()
         {
+            this.SourceAction = Crosscutting.Enums.SourceAction.UpdateOpenHouse.GetEnumDescription();
             var uploader = this.uploadFactory.Create<IUpdateOpenHouse>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.Start(opType: UploadType.OpenHouse, action: uploader.UpdateOpenHouse);
+            await this.Start(opType: UploadType.OpenHouse, action: uploader.UpdateOpenHouse, sourceAction: this.SourceAction);
         }
 
         private async Task StartImageUpdate()
         {
+            this.SourceAction = Crosscutting.Enums.SourceAction.UpdateImages.GetEnumDescription();
+
             if (!this.MediaUpload())
             {
                 return;
             }
 
             var uploader = this.uploadFactory.Create<IUpdateImages>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.Start(opType: UploadType.Image, action: uploader.UpdateImages);
+            await this.Start(opType: UploadType.Image, action: uploader.UpdateImages, sourceAction: this.SourceAction);
         }
 
         private async Task StartVTUpload()
         {
+            this.SourceAction = Crosscutting.Enums.SourceAction.UploadVirtualTour.GetEnumDescription();
             if (!this.MediaUpload())
             {
                 return;
             }
 
             var uploader = this.uploadFactory.Create<IUpdateVirtualTour>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.Start(opType: UploadType.VirtualTour, action: uploader.UploadVirtualTour);
+            await this.Start(opType: UploadType.VirtualTour, action: uploader.UploadVirtualTour, sourceAction: this.SourceAction);
         }
 
         private bool MediaUpload()
@@ -1218,7 +1248,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             await this.BroadcastSelectedList(selectedId: this.SelectedListingRequest.RequestId);
 
             // 2. Refresh the table
-            await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new Item(this.SelectedListingRequest.RequestId, this.State));
+            await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new Item(this.SelectedListingRequest.RequestId, this.State, this.SourceAction));
         }
 
         private async Task MarkCompleted()
@@ -1240,11 +1270,12 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
 
             this.State = UploaderState.Ready;
+
             // 1. Broadcast to the other user the entity request is free
             await this.BroadcastSelectedList(selectedId: null);
 
             // 2. Refresh the table
-            await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(this.SelectedListingRequest.RequestId, uploaderStatus: UploaderState.Cancelled));
+            await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(this.SelectedListingRequest.RequestId, uploaderStatus: UploaderState.Cancelled, this.SourceAction));
         }
 
         private string RequestMlsNumber()

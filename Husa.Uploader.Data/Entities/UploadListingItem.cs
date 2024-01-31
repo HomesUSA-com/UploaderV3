@@ -17,6 +17,7 @@ namespace Husa.Uploader.Data.Entities
         public string IsLot { get; set; }
         public string WorkingBy { get; set; }
         public string WorkingStatus { get; set; }
+        public string WorkingSourceAction { get; set; }
         public string UnitNumber { get; set; }
         public bool IsNewListing => this.FullListing.IsNewListing || string.IsNullOrWhiteSpace(this.MlsNumber) || this.MlsNumber == NewListingMlsNumber;
 
