@@ -373,10 +373,8 @@ namespace Husa.Uploader.Data.Entities
         public string SellingAgentLicenseNum { get; set; }
         public DateTime? ContingencyDate { get; set; }
         public DateTime? ExpirationDate { get; set; }
-        public string SellingAgentUID { get; set; }
         public string SellingAgentLastName { get; set; }
         public string SellingAgentFristName { get; set; }
-        public string SellingAgentUIDOFFICE { get; set; }
         public string BrokerName { get; set; }
         public string BrokerOffice { get; set; }
         public string RealtorContactEmail { get; set; }
