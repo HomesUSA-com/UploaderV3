@@ -1128,7 +1128,7 @@ namespace Husa.Uploader.Core.Services
 
                 if (!string.IsNullOrEmpty(image.Caption))
                 {
-                    this.uploaderClient.ExecuteScript($"jQuery('#m_rptPhotoRows_ctl00_m_rptPhotoCells_ctl0{imageOrder}_m_ucPhotoCell_m_tbxDescription').val('{image.Caption}');");
+                    this.uploaderClient.ExecuteScript(script: $"jQuery('#m_rptPhotoRows_ctl00_m_rptPhotoCells_ctl0{imageOrder}_m_ucPhotoCell_m_tbxDescription').val('{image.Caption.Replace("'", "\\'")}');");
                 }
 
                 imageOrder++;
