@@ -328,9 +328,9 @@ namespace Husa.Uploader.Core.Services
 
                         this.uploaderClient.SetSelect(By.Id("Input_525"), listing.SoldTerms); // Sold Terms
 
-                        if (!string.IsNullOrEmpty(listing.SellingAgentUID))
+                        if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
                         {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.SellingAgentUID); // Selling Agent MLSID
+                            this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
 
                             string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
                             this.uploaderClient.ExecuteScript(@js);
@@ -386,7 +386,7 @@ namespace Husa.Uploader.Core.Services
 
                         this.uploaderClient.ScrollDown();
 
-                        if (!string.IsNullOrEmpty(listing.SellingAgentUID))
+                        if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
                         {
                             this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
 
@@ -433,7 +433,7 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.WriteTextbox(By.Id("Input_128"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
                         this.uploaderClient.WriteTextbox(By.Id("Input_129"), listing.ExpiredDate.Value.ToShortDateString()); // Option End Date
                         this.uploaderClient.SetSelect(By.Id($"Input_132"), value: listing.HasContingencyInfo.BoolToNumericBool()); // Contingent on Sale of Other Property
-                        if (listing.AgentMarketUniqueId != string.Empty)
+                        if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
                         {
                             this.uploaderClient.SetSelect(By.Id($"Input_310"), value: "Y"); // Did Selling Agent Represent Buyer
                             this.uploaderClient.WriteTextbox(By.Id($"Input_342"), value: listing.AgentMarketUniqueId); // Selling Associate MLSID
@@ -472,9 +472,9 @@ namespace Husa.Uploader.Core.Services
 
                         this.uploaderClient.ScrollDown();
 
-                        if (!string.IsNullOrEmpty(listing.SellingAgentUID))
+                        if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
                         {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.SellingAgentUID); // Selling Agent MLSID
+                            this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
 
                             string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
                             this.uploaderClient.ExecuteScript(@js);
