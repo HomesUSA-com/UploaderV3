@@ -1,6 +1,7 @@
 namespace Husa.Uploader.Core.Services
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common;
@@ -1113,10 +1114,13 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
+        [SuppressMessage("SonarLint", "S2583", Justification = "Ignored due to suspected false positive")]
         private async Task ProcessImages(ResidentialListingRequest listing, CancellationToken cancellationToken)
         {
             var media = await this.mediaRepository.GetListingImages(listing.ResidentialListingRequestID, market: this.CurrentMarket, cancellationToken);
             var imageOrder = 0;
+            var imageRow = 0;
+            var imageCell = 0;
             foreach (var image in media)
             {
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
@@ -1128,10 +1132,16 @@ namespace Husa.Uploader.Core.Services
 
                 if (!string.IsNullOrEmpty(image.Caption))
                 {
-                    this.uploaderClient.ExecuteScript(script: $"jQuery('#m_rptPhotoRows_ctl00_m_rptPhotoCells_ctl0{imageOrder}_m_ucPhotoCell_m_tbxDescription').val('{image.Caption.Replace("'", "\\'")}');");
+                    this.uploaderClient.ExecuteScript(script: $"jQuery('#m_rptPhotoRows_ctl{imageRow:D2}_m_rptPhotoCells_ctl{imageCell:D2}_m_ucPhotoCell_m_tbxDescription').val('{image.Caption.Replace("'", "\\'")}');");
                 }
 
                 imageOrder++;
+                imageCell++;
+                if (imageOrder % 5 == 0)
+                {
+                    imageRow++;
+                    imageCell = 0;
+                }
             }
         }
 
