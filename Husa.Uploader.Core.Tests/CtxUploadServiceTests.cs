@@ -61,9 +61,6 @@ namespace Husa.Uploader.Core.Tests
             request.UpdateGeocodes = updateGeocodes;
             request.Longitude = 24;
             request.Latitude = -97;
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(request);
             var sut = this.GetSut();
 
             // Act
@@ -84,10 +81,6 @@ namespace Husa.Uploader.Core.Tests
                 MLSNum = "mlsNum",
             };
 
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(ctxListing);
-
             // Act
             var sut = this.GetSut();
             var result = await sut.UpdateOpenHouse(ctxListing);
@@ -101,7 +94,6 @@ namespace Husa.Uploader.Core.Tests
                 this.uploaderClient.Object,
                 this.fixture.ApplicationOptions,
                 this.mediaRepository.Object,
-                this.sqlDataLoader.Object,
                 this.serviceSubscriptionClient.Object,
                 this.logger.Object);
 

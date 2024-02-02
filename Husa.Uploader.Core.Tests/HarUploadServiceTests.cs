@@ -45,9 +45,6 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpConfigs();
 
             var request = this.GetResidentialListingRequest(false);
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(request);
 
             // Act
             var sut = this.GetSut();
@@ -72,9 +69,6 @@ namespace Husa.Uploader.Core.Tests
             request.ExpiredDate = DateTime.UtcNow;
             request.LegalSubdivision = "LegalSubdivision";
             request.TaxID = "200";
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(request);
 
             // Act
             var sut = this.GetSut();
@@ -95,9 +89,6 @@ namespace Husa.Uploader.Core.Tests
             request.UpdateGeocodes = updateGeocodes;
             request.Longitude = 24;
             request.Latitude = -97;
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(request);
             var sut = this.GetSut();
 
             // Act
@@ -119,9 +110,6 @@ namespace Husa.Uploader.Core.Tests
             harListing.EstClosedDate = DateTime.Now;
             harListing.ExpiredDate = DateTime.Now;
             harListing.HasContingencyInfo = false;
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(harListing);
             var sut = this.GetSut();
 
             // Act
@@ -141,9 +129,6 @@ namespace Husa.Uploader.Core.Tests
             harListing.ListStatus = "CLOSD";
             harListing.PendingDate = DateTime.Now;
             harListing.ClosedDate = DateTime.Now;
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(harListing);
             var sut = this.GetSut();
 
             // Act
@@ -163,9 +148,6 @@ namespace Husa.Uploader.Core.Tests
             harListing.ListStatus = "TERM";
             harListing.BackOnMarketDate = DateTime.Now;
             harListing.OffMarketDate = DateTime.Now;
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(harListing);
             var sut = this.GetSut();
 
             // Act
@@ -189,9 +171,6 @@ namespace Husa.Uploader.Core.Tests
             harListing.HasContingencyInfo = false;
             harListing.ListStatus = "WITH";
             harListing.OffMarketDate = DateTime.Now;
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(harListing);
             var sut = this.GetSut();
 
             // Act
@@ -217,9 +196,6 @@ namespace Husa.Uploader.Core.Tests
             harListing.ExpiredDate = DateTime.Now;
             harListing.HasContingencyInfo = true;
             harListing.AgentMarketUniqueId = "123456789";
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(harListing);
             var sut = this.GetSut();
 
             // Act
@@ -241,9 +217,6 @@ namespace Husa.Uploader.Core.Tests
             harListing.ClosedDate = DateTime.Now;
             harListing.EstClosedDate = DateTime.Now;
             harListing.HasContingencyInfo = false;
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(harListing);
             var sut = this.GetSut();
 
             // Act
@@ -262,9 +235,6 @@ namespace Husa.Uploader.Core.Tests
             var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
             harListing.ListStatus = "EXP";
             harListing.ExpiredDate = DateTime.Now;
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(harListing);
             var sut = this.GetSut();
 
             // Act
@@ -312,9 +282,6 @@ namespace Husa.Uploader.Core.Tests
 
             var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
             harListing.OpenHouse = openHouses;
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(harListing);
             var sut = this.GetSut();
 
             // Act
@@ -377,9 +344,6 @@ namespace Husa.Uploader.Core.Tests
                 },
             };
 
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(request);
             this.mediaRepository
                 .Setup(x => x.GetListingImages(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(listingImages);
@@ -399,7 +363,6 @@ namespace Husa.Uploader.Core.Tests
                 this.uploaderClient.Object,
                 this.fixture.ApplicationOptions,
                 this.mediaRepository.Object,
-                this.sqlDataLoader.Object,
                 this.serviceSubscriptionClient.Object,
                 this.logger.Object);
 
