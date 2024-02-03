@@ -28,9 +28,6 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpConfigs();
 
             var request = this.GetResidentialListingRequest();
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(request);
 
             // Act
             var sut = this.GetSut();
@@ -101,9 +98,6 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCompany();
             var request = this.GetEmptyListingRequest();
             request.MLSNum = "MLSNum";
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(request);
             var sut = this.GetSut();
 
             // Act
@@ -174,13 +168,6 @@ namespace Husa.Uploader.Core.Tests
             if (setUpVirtualTours)
             {
                 this.SetUpVirtualTours();
-            }
-
-            if (request != null)
-            {
-                this.sqlDataLoader
-                    .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(request);
             }
         }
 

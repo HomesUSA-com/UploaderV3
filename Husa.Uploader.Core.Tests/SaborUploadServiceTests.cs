@@ -55,10 +55,6 @@ namespace Husa.Uploader.Core.Tests
                 It.Is<By>(x => x == By.ClassName("fileupload-progress")),
                 It.IsAny<CancellationToken>())).Returns(true);
 
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(saborListing);
-
             // Act
             var sut = this.GetSut();
             var result = await sut.Upload(saborListing);
@@ -132,9 +128,6 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpVirtualTours();
             this.SetUpCompany();
             var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse());
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(saborListing);
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
             this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
             this.uploaderClient.Setup(x => x.SwitchTo().Frame(It.IsAny<int>())).Returns(new Mock<IWebDriver>().Object);
@@ -158,9 +151,6 @@ namespace Husa.Uploader.Core.Tests
                 .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Array.Empty<ResidentialListingVirtualTour>())
             .Verifiable();
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(saborListing);
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
             this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
             this.uploaderClient.Setup(x => x.SwitchTo().Frame(It.IsAny<int>())).Returns(new Mock<IWebDriver>().Object);
@@ -193,9 +183,6 @@ namespace Husa.Uploader.Core.Tests
             {
                 MLSNum = "MLSNum",
             };
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(saborListing);
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
             this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
 
@@ -228,9 +215,6 @@ namespace Husa.Uploader.Core.Tests
                 ListStatus = "SLD",
                 ClosedDate = DateTime.UtcNow,
             };
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(saborListing);
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
             this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
             this.uploaderClient.Setup(x => x.SwitchTo().Frame(It.IsAny<int>())).Returns(new Mock<IWebDriver>().Object);
@@ -253,9 +237,6 @@ namespace Husa.Uploader.Core.Tests
             {
                 ListPrice = 100,
             };
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(saborListing);
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
             this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
             this.uploaderClient.Setup(x => x.SwitchTo().Frame(It.IsAny<int>())).Returns(new Mock<IWebDriver>().Object);
@@ -275,9 +256,6 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCredentials();
             this.SetUpCompany();
             var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse());
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(saborListing);
             this.uploaderClient.Setup(x => x.WaitUntilElementDisappears(
                 It.Is<By>(x => x == By.ClassName("fileupload-progress")),
                 It.IsAny<CancellationToken>())).Returns(true);
@@ -300,9 +278,6 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCredentials();
             this.SetUpCompany();
             var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse());
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(saborListing);
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
             this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
             this.uploaderClient.SetupGet(x => x.UploadInformation).Returns(this.uploadCommandInfo.Object);
@@ -351,9 +326,6 @@ namespace Husa.Uploader.Core.Tests
                 MLSNum = "mlsNum",
                 OpenHouse = openHouses,
             };
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(saborListing);
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
             this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
 
@@ -546,7 +518,6 @@ namespace Husa.Uploader.Core.Tests
                 this.uploaderClient.Object,
                 this.fixture.ApplicationOptions,
                 this.mediaRepository.Object,
-                this.sqlDataLoader.Object,
                 this.serviceSubscriptionClient.Object,
                 this.logger.Object);
     }

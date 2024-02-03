@@ -8,7 +8,6 @@ namespace Husa.Uploader.Data.Tests
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.Har.Api.Client;
     using Husa.Quicklister.Sabor.Api.Client;
-    using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Repositories;
     using Microsoft.Extensions.Logging;
     using Moq;
@@ -35,7 +34,7 @@ namespace Husa.Uploader.Data.Tests
         }
 
         [Fact]
-        public async Task GetListingData_ReturnsResidentialListingRequests()
+        public async Task GetListingRequests_ReturnsResidentialListingRequests()
         {
             // Arrange
             var saborResponse = new SaborResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestQueryResponse();
@@ -69,60 +68,62 @@ namespace Husa.Uploader.Data.Tests
             var sut = this.GetSut();
 
             // Act
-            var result = await sut.GetListingData();
+            var result = await sut.GetListingRequests();
 
             // Assert
             Assert.NotEmpty(result);
             Assert.Equal(4, result.Count());
         }
 
-        [Fact]
-        public async Task GetListingRequest_ReturnsResidentialListingRequest()
+        [Theory]
+        [InlineData(MarketCode.SanAntonio)]
+        [InlineData(MarketCode.Houston)]
+        [InlineData(MarketCode.Austin)]
+        [InlineData(MarketCode.CTX)]
+        public async Task GetListingRequest_ReturnsResidentialListingRequest(MarketCode marketCode)
         {
             // Arrange
             var requestId = Guid.NewGuid();
-            var listingId = Guid.NewGuid();
-            var userId = Guid.NewGuid();
-            var requestDate = DateTime.UtcNow;
-            var saborResponse = new SaborResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse
-            {
-                Id = requestId,
-                ListingSaleId = listingId,
-                ListPrice = 1234567,
-                MlsNumber = "fake-mls-num",
-                MlsStatus = SaborEnums.MarketStatuses.Active,
-                SysCreatedOn = requestDate,
-                SysCreatedBy = userId,
-                SysModifiedOn = requestDate.AddMonths(1),
-                SysModifiedBy = userId,
-                SaleProperty = new()
-                {
-                    AddressInfo = new(),
-                    FeaturesInfo = new(),
-                    FinancialInfo = new(),
-                    SalePropertyInfo = new(),
-                    PropertyInfo = new(),
-                    SchoolsInfo = new(),
-                    ShowingInfo = new(),
-                    SpacesDimensionsInfo = new(),
-                    Hoas = new List<SaborResponseContracts.SalePropertyDetail.HoaResponse>(),
-                    OpenHouses = new List<SaborResponseContracts.OpenHouseResponse>(),
-                    Rooms = new List<SaborResponseContracts.RoomResponse>(),
-                },
-                StatusFieldsInfo = new(),
-            };
-            this.mockSaborClient
-                .Setup(x => x.ListingSaleRequest.GetListRequestSaleByIdAsync(requestId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(saborResponse);
+            this.SetUpGetRequestById(marketCode, requestId);
             var sut = this.GetSut();
 
             // Act
-            var result = await sut.GetListingRequest(requestId, marketCode: MarketCode.SanAntonio);
+            var result = await sut.GetListingRequest(requestId, marketCode: marketCode);
 
             // Assert
-            var type = Assert.IsType<SaborListingRequest>(result);
-            Assert.Equal(saborResponse.Id, result.ResidentialListingRequestID);
-            Assert.Equal(MarketCode.SanAntonio, type.MarketCode);
+            Assert.Equal(requestId, result.ResidentialListingRequestID);
+            Assert.Equal(marketCode, result.MarketCode);
+        }
+
+        [Theory]
+        [InlineData(MarketCode.SanAntonio)]
+        [InlineData(MarketCode.Houston)]
+        [InlineData(MarketCode.Austin)]
+        [InlineData(MarketCode.CTX)]
+        public async Task GetListingMlsNumber_Succeess(MarketCode marketCode)
+        {
+            // Arrange
+            var listingId = Guid.NewGuid();
+            var mlsNumber = "14526";
+            this.SetUpGetListingById(marketCode, listingId, mlsNumber);
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.GetListingMlsNumber(listingId, marketCode: marketCode);
+
+            // Assert
+            Assert.NotEmpty(result);
+            Assert.Equal(mlsNumber, result);
+        }
+
+        [Fact]
+        public async Task GetListingMlsNumber_Exception()
+        {
+            // Arrange
+            var sut = this.GetSut();
+
+            // Assert
+            await Assert.ThrowsAsync<ArgumentException>(() => sut.GetListingMlsNumber(Guid.Empty, marketCode: MarketCode.SanAntonio));
         }
 
         private static ListingRequestGridResponse<TSaleListingRequestResponse> GetListingRequestGridResponse<TSaleListingRequestResponse>(IEnumerable<TSaleListingRequestResponse> data)
@@ -141,5 +142,209 @@ namespace Husa.Uploader.Data.Tests
             this.mockAborClient.Object,
             this.mockHarClient.Object,
             this.mockLogger.Object);
+
+        private void SetUpGetListingById(MarketCode market, Guid listingId, string mlsNumber)
+        {
+            switch (market)
+            {
+                case MarketCode.SanAntonio:
+                    {
+                        this.mockSaborClient
+                            .Setup(x => x.SaleListing.GetByIdAsync(listingId, It.IsAny<CancellationToken>()))
+                            .ReturnsAsync(new SaborResponseContracts.ListingSaleDetailResponse()
+                            {
+                                Id = listingId,
+                                MlsNumber = mlsNumber,
+                            });
+                        break;
+                    }
+
+                case MarketCode.Houston:
+                    {
+                        this.mockHarClient
+                            .Setup(x => x.SaleListing.GetByIdAsync(listingId, It.IsAny<CancellationToken>()))
+                            .ReturnsAsync(new HarResponseContracts.ListingSaleDetailResponse()
+                            {
+                                Id = listingId,
+                                MlsNumber = mlsNumber,
+                            });
+                        break;
+                    }
+
+                case MarketCode.Austin:
+                    {
+                        this.mockAborClient
+                            .Setup(x => x.SaleListing.GetByIdAsync(listingId, It.IsAny<CancellationToken>()))
+                            .ReturnsAsync(new AborResponseContracts.ListingSaleDetailResponse()
+                            {
+                                Id = listingId,
+                                MlsNumber = mlsNumber,
+                            });
+                        break;
+                    }
+
+                case MarketCode.CTX:
+                    {
+                        this.mockCtxClient
+                            .Setup(x => x.SaleListing.GetByIdAsync(listingId, It.IsAny<CancellationToken>()))
+                            .ReturnsAsync(new CtxResponseContracts.ListingSaleDetailResponse()
+                            {
+                                Id = listingId,
+                                MlsNumber = mlsNumber,
+                            });
+                        break;
+                    }
+
+                default:
+                    break;
+            }
+        }
+
+        private void SetUpGetRequestById(MarketCode market, Guid requestId)
+        {
+            var listingId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var requestDate = DateTime.UtcNow;
+
+            switch (market)
+            {
+                case MarketCode.SanAntonio:
+                    {
+                        var saborResponse = new SaborResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse
+                        {
+                            Id = requestId,
+                            ListingSaleId = listingId,
+                            ListPrice = 1234567,
+                            MlsNumber = "fake-mls-num",
+                            MlsStatus = SaborEnums.MarketStatuses.Active,
+                            SysCreatedOn = requestDate,
+                            SysCreatedBy = userId,
+                            SysModifiedOn = requestDate.AddMonths(1),
+                            SysModifiedBy = userId,
+                            SaleProperty = new()
+                            {
+                                AddressInfo = new(),
+                                FeaturesInfo = new(),
+                                FinancialInfo = new(),
+                                SalePropertyInfo = new(),
+                                PropertyInfo = new(),
+                                SchoolsInfo = new(),
+                                ShowingInfo = new(),
+                                SpacesDimensionsInfo = new(),
+                                Hoas = new List<SaborResponseContracts.SalePropertyDetail.HoaResponse>(),
+                                OpenHouses = new List<SaborResponseContracts.OpenHouseResponse>(),
+                                Rooms = new List<SaborResponseContracts.RoomResponse>(),
+                            },
+                            StatusFieldsInfo = new(),
+                        };
+                        this.mockSaborClient
+                            .Setup(x => x.ListingSaleRequest.GetListRequestSaleByIdAsync(requestId, It.IsAny<CancellationToken>()))
+                            .ReturnsAsync(saborResponse);
+                        break;
+                    }
+
+                case MarketCode.Houston:
+                    {
+                        var response = new HarResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse
+                        {
+                            Id = requestId,
+                            ListingSaleId = listingId,
+                            ListPrice = 1234567,
+                            MlsNumber = "fake-mls-num",
+                            SysCreatedOn = requestDate,
+                            SysCreatedBy = userId,
+                            SysModifiedOn = requestDate.AddMonths(1),
+                            SysModifiedBy = userId,
+                            SaleProperty = new()
+                            {
+                                AddressInfo = new(),
+                                FeaturesInfo = new(),
+                                FinancialInfo = new(),
+                                SalePropertyInfo = new(),
+                                PropertyInfo = new(),
+                                SchoolsInfo = new(),
+                                ShowingInfo = new(),
+                                SpacesDimensionsInfo = new(),
+                                OpenHouses = new List<HarResponseContracts.OpenHouseResponse>(),
+                                Rooms = new List<HarResponseContracts.RoomResponse>(),
+                            },
+                            StatusFieldsInfo = new(),
+                        };
+                        this.mockHarClient
+                            .Setup(x => x.ListingSaleRequest.GetListRequestSaleByIdAsync(requestId, It.IsAny<CancellationToken>()))
+                            .ReturnsAsync(response);
+                        break;
+                    }
+
+                case MarketCode.Austin:
+                    {
+                        var response = new AborResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse
+                        {
+                            Id = requestId,
+                            ListingSaleId = listingId,
+                            ListPrice = 1234567,
+                            MlsNumber = "fake-mls-num",
+                            SysCreatedOn = requestDate,
+                            SysCreatedBy = userId,
+                            SysModifiedOn = requestDate.AddMonths(1),
+                            SysModifiedBy = userId,
+                            SaleProperty = new()
+                            {
+                                AddressInfo = new(),
+                                FeaturesInfo = new(),
+                                FinancialInfo = new(),
+                                SalePropertyInfo = new(),
+                                PropertyInfo = new(),
+                                SchoolsInfo = new(),
+                                ShowingInfo = new(),
+                                SpacesDimensionsInfo = new(),
+                                OpenHouses = new List<AborResponseContracts.OpenHouseResponse>(),
+                                Rooms = new List<AborResponseContracts.RoomResponse>(),
+                            },
+                            StatusFieldsInfo = new(),
+                        };
+                        this.mockAborClient
+                            .Setup(x => x.ListingSaleRequest.GetListRequestSaleByIdAsync(requestId, It.IsAny<CancellationToken>()))
+                            .ReturnsAsync(response);
+                        break;
+                    }
+
+                case MarketCode.CTX:
+                    {
+                        var response = new CtxResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse
+                        {
+                            Id = requestId,
+                            ListingSaleId = listingId,
+                            ListPrice = 1234567,
+                            MlsNumber = "fake-mls-num",
+                            SysCreatedOn = requestDate,
+                            SysCreatedBy = userId,
+                            SysModifiedOn = requestDate.AddMonths(1),
+                            SysModifiedBy = userId,
+                            SaleProperty = new()
+                            {
+                                AddressInfo = new(),
+                                FeaturesInfo = new(),
+                                FinancialInfo = new(),
+                                SalePropertyInfo = new(),
+                                PropertyInfo = new(),
+                                SchoolsInfo = new(),
+                                ShowingInfo = new(),
+                                SpacesDimensionsInfo = new(),
+                                OpenHouses = new List<CtxResponseContracts.OpenHouseResponse>(),
+                                Rooms = new List<CtxResponseContracts.RoomResponse>(),
+                            },
+                            StatusFieldsInfo = new(),
+                        };
+                        this.mockCtxClient
+                            .Setup(x => x.ListingSaleRequest.GetListRequestSaleByIdAsync(requestId, It.IsAny<CancellationToken>()))
+                            .ReturnsAsync(response);
+                        break;
+                    }
+
+                default:
+                    break;
+            }
+        }
     }
 }
