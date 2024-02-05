@@ -7,6 +7,10 @@
         <SonarQubeExclude>true</SonarQubeExclude>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Husa.Uploader.Crosscutting\Husa.Uploader.Crosscutting.csproj" />
   </ItemGroup>
