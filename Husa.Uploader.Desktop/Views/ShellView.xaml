@@ -418,7 +418,7 @@
                                 </TextBlock>
 
                                 <StackPanel Margin="10,0">
-                                    <StackPanel Visibility="{Binding IsReadyListing, Converter={StaticResource BooleanToVisibilityConverter }}">
+                                    <StackPanel Visibility="{Binding ShowListingActions, Converter={StaticResource BooleanToVisibilityConverter }}">
                                         <GroupBox Header="Listing Actions" Margin="5,5,5,0" >
                                             <GroupBox.Style>
                                                 <Style TargetType="{x:Type GroupBox}">
@@ -473,7 +473,8 @@
 
                                 <StackPanel Margin="10,0" Visibility="{Binding UploadSucceeded, Converter={StaticResource BooleanToVisibilityConverter }}">
                                     <TextBlock Foreground="Green" TextAlignment="Center" FontWeight="Black" TextWrapping="WrapWithOverflow" Margin="10,5">The upload succeeded</TextBlock>
-                                    <Button Name="MarkCompleted" Margin="5,5,5,0" Width="261" Command="{Binding MarkCompletedCommand}">Finish Upload</Button>
+                                    <Button Name="MarkCompleted" Margin="5,5,5,0" Width="261" Command="{Binding MarkCompletedCommand}">Mark Completed</Button>
+                                    <Button Name="FinishUpload" Margin="5,5,5,0" Width="261" Command="{Binding FinishUploadCommand}">Finish Upload</Button>
                                     <TextBlock Margin="0,5,0,0" Foreground="Gray" TextWrapping="WrapWithOverflow" TextAlignment="Center" FontSize="10" >If there is an issue with this listing, please let us know:</TextBlock>
                                     <Button Name="ReportProblem" Margin="5,5,5,0" Width="261" Command="{Binding ReportProblemCommand}">Report a problem</Button>
                                 </StackPanel>

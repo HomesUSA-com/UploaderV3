@@ -8,6 +8,8 @@ namespace Husa.Uploader.Crosscutting.Enums
         Loaded,
         [Description("Ready")]
         Ready,
+        [Description("Upload succeeded and Ready for new actions")]
+        SucceededAndReady,
         [Description("Upload in progress")]
         UploadInProgress,
         [Description("Upload failed")]

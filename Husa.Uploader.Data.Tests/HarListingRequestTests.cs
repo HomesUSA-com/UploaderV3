@@ -5,6 +5,7 @@ namespace Husa.Uploader.Data.Tests
     using Husa.Quicklister.Har.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.Har.Domain.Enums;
     using Husa.Quicklister.Har.Domain.Enums.Domain;
+    using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Xunit;
 
@@ -260,6 +261,58 @@ namespace Husa.Uploader.Data.Tests
 
             // Assert
             Assert.Contains("For more information call (999) 999-9999 or (888) 888-8888. Sales Office at 11 Sales Off St.", result);
+        }
+
+        [Fact]
+        public void UploadListingItem_SetMlsNumber()
+        {
+            // Arrange
+            var mlsNumber = "454455";
+            var harRequest = new HarListingRequest(new ListingSaleRequestQueryResponse())
+            {
+                MLSNum = null,
+            };
+
+            var sut = new UploadListingItem()
+            {
+                FullListing = harRequest.CreateFromApiResponse(),
+            };
+
+            // act
+            sut.SetMlsNumber(mlsNumber);
+
+            // Assert
+            Assert.Equal(mlsNumber, sut.MlsNumber);
+            Assert.Equal(mlsNumber, sut.FullListing.MLSNum);
+        }
+
+        [Fact]
+        public void UploadListingItem_SetFullListing()
+        {
+            // Arrange
+            var mlsNumber = "454455";
+            var harRequest = new HarListingRequest(new ListingSaleRequestQueryResponse())
+            {
+                MLSNum = null,
+            };
+
+            var sut = new UploadListingItem()
+            {
+                FullListing = harRequest.CreateFromApiResponse(),
+            };
+
+            var newHarRequest = new HarListingRequest(new ListingSaleRequestQueryResponse())
+            {
+                MLSNum = mlsNumber,
+            };
+
+            // act
+            sut.SetFullListing(newHarRequest);
+
+            // Assert
+            Assert.True(sut.FullListingConfigured);
+            Assert.Equal(mlsNumber, sut.FullListing.MLSNum);
+            Assert.False(sut.IsNewListing);
         }
 
         private static ListingSaleRequestDetailResponse GetDetailResponse(

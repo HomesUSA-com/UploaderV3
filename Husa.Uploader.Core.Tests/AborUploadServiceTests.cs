@@ -1,8 +1,6 @@
 namespace Husa.Uploader.Core.Tests
 {
-    using System.Threading;
     using Husa.Extensions.Common;
-    using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Abor.Domain.Enums.Domain;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
@@ -35,9 +33,6 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpConfigs();
 
             var request = this.GetResidentialListingRequest(false);
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(request);
 
             // Act
             var sut = this.GetSut();
@@ -57,9 +52,6 @@ namespace Husa.Uploader.Core.Tests
             aborListing.ListStatus = "Hold";
             aborListing.BackOnMarketDate = DateTime.Now;
             aborListing.OffMarketDate = DateTime.Now;
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(aborListing);
             var sut = this.GetSut();
 
             // Act
@@ -81,9 +73,6 @@ namespace Husa.Uploader.Core.Tests
             aborListing.EstClosedDate = DateTime.Now;
             aborListing.ExpiredDate = DateTime.Now;
             aborListing.HasContingencyInfo = false;
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(aborListing);
             var sut = this.GetSut();
 
             // Act
@@ -103,9 +92,6 @@ namespace Husa.Uploader.Core.Tests
             aborListing.ListStatus = "Closed";
             aborListing.PendingDate = DateTime.Now;
             aborListing.ClosedDate = DateTime.Now;
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(aborListing);
             var sut = this.GetSut();
 
             // Act
@@ -127,9 +113,6 @@ namespace Husa.Uploader.Core.Tests
             aborListing.ClosedDate = DateTime.Now;
             aborListing.EstClosedDate = DateTime.Now;
             aborListing.HasContingencyInfo = false;
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(aborListing);
             var sut = this.GetSut();
 
             // Act
@@ -177,9 +160,6 @@ namespace Husa.Uploader.Core.Tests
 
             var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
             aborListing.OpenHouse = openHouses;
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(aborListing);
             var sut = this.GetSut();
 
             // Act
@@ -200,9 +180,6 @@ namespace Husa.Uploader.Core.Tests
             request.UpdateGeocodes = updateGeocodes;
             request.Longitude = 24;
             request.Latitude = -97;
-            this.sqlDataLoader
-                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(request);
             var sut = this.GetSut();
 
             // Act
@@ -250,7 +227,6 @@ namespace Husa.Uploader.Core.Tests
                 this.uploaderClient.Object,
                 this.fixture.ApplicationOptions,
                 this.mediaRepository.Object,
-                this.sqlDataLoader.Object,
                 this.serviceSubscriptionClient.Object,
                 this.logger.Object);
 
