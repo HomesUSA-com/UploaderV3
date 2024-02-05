@@ -1,6 +1,7 @@
 namespace Husa.Uploader.Core.Services
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common;
@@ -328,9 +329,9 @@ namespace Husa.Uploader.Core.Services
 
                         this.uploaderClient.SetSelect(By.Id("Input_525"), listing.SoldTerms); // Sold Terms
 
-                        if (!string.IsNullOrEmpty(listing.SellingAgentUID))
+                        if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
                         {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.SellingAgentUID); // Selling Agent MLSID
+                            this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
 
                             string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
                             this.uploaderClient.ExecuteScript(@js);
@@ -386,7 +387,7 @@ namespace Husa.Uploader.Core.Services
 
                         this.uploaderClient.ScrollDown();
 
-                        if (!string.IsNullOrEmpty(listing.SellingAgentUID))
+                        if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
                         {
                             this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
 
@@ -433,7 +434,7 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.WriteTextbox(By.Id("Input_128"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
                         this.uploaderClient.WriteTextbox(By.Id("Input_129"), listing.ExpiredDate.Value.ToShortDateString()); // Option End Date
                         this.uploaderClient.SetSelect(By.Id($"Input_132"), value: listing.HasContingencyInfo.BoolToNumericBool()); // Contingent on Sale of Other Property
-                        if (listing.AgentMarketUniqueId != string.Empty)
+                        if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
                         {
                             this.uploaderClient.SetSelect(By.Id($"Input_310"), value: "Y"); // Did Selling Agent Represent Buyer
                             this.uploaderClient.WriteTextbox(By.Id($"Input_342"), value: listing.AgentMarketUniqueId); // Selling Associate MLSID
@@ -472,9 +473,9 @@ namespace Husa.Uploader.Core.Services
 
                         this.uploaderClient.ScrollDown();
 
-                        if (!string.IsNullOrEmpty(listing.SellingAgentUID))
+                        if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
                         {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.SellingAgentUID); // Selling Agent MLSID
+                            this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
 
                             string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
                             this.uploaderClient.ExecuteScript(@js);
@@ -1113,10 +1114,13 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
+        [SuppressMessage("SonarLint", "S2583", Justification = "Ignored due to suspected false positive")]
         private async Task ProcessImages(ResidentialListingRequest listing, CancellationToken cancellationToken)
         {
             var media = await this.mediaRepository.GetListingImages(listing.ResidentialListingRequestID, market: this.CurrentMarket, cancellationToken);
             var imageOrder = 0;
+            var imageRow = 0;
+            var imageCell = 0;
             foreach (var image in media)
             {
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
@@ -1128,10 +1132,16 @@ namespace Husa.Uploader.Core.Services
 
                 if (!string.IsNullOrEmpty(image.Caption))
                 {
-                    this.uploaderClient.ExecuteScript($"jQuery('#m_rptPhotoRows_ctl00_m_rptPhotoCells_ctl0{imageOrder}_m_ucPhotoCell_m_tbxDescription').val('{image.Caption}');");
+                    this.uploaderClient.ExecuteScript(script: $"jQuery('#m_rptPhotoRows_ctl{imageRow:D2}_m_rptPhotoCells_ctl{imageCell:D2}_m_ucPhotoCell_m_tbxDescription').val('{image.Caption.Replace("'", "\\'")}');");
                 }
 
                 imageOrder++;
+                imageCell++;
+                if (imageOrder % 5 == 0)
+                {
+                    imageRow++;
+                    imageCell = 0;
+                }
             }
         }
 

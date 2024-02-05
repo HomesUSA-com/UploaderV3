@@ -50,6 +50,29 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(UploadResult.Success, result);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task SetGeocodesSuccess(bool updateGeocodes)
+        {
+            // Arrange
+            this.SetUpConfigs();
+            var request = this.GetResidentialListingRequest();
+            request.UpdateGeocodes = updateGeocodes;
+            request.Longitude = 24;
+            request.Latitude = -97;
+            this.sqlDataLoader
+                .Setup(x => x.GetListingRequest(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(request);
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.Upload(request);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
         [Fact]
         public async Task UpdateOpenHouseNoOpenHousesSuccess()
         {
@@ -105,6 +128,7 @@ namespace Husa.Uploader.Core.Tests
             {
                 ConstructionStage = ConstructionStage.UnderConstruction,
                 DocumentsAvailable = new List<DocumentsAvailableDescription> { DocumentsAvailableDescription.BuildingPlans },
+                UpdateGeocodes = true,
             };
             var featuresInfo = new Mock<FeaturesResponse>();
             var financialInfo = new FinancialResponse()
