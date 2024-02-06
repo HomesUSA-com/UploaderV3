@@ -1,6 +1,7 @@
 namespace Husa.Uploader.Core.Services
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
@@ -839,7 +840,7 @@ namespace Husa.Uploader.Core.Services
 
         private void DeleteAllImages()
         {
-            if (this.uploaderClient.FindElements(By.Id("cbxCheckAll")).Any())
+            if (this.uploaderClient.FindElements(By.Id("cbxCheckAll"))?.Any() == true)
             {
                 this.uploaderClient.ClickOnElement(By.Id("cbxCheckAll"));
                 this.uploaderClient.ClickOnElement(By.Id("m_lbDeleteChecked"));
@@ -848,10 +849,13 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
+        [SuppressMessage("SonarLint", "S2583", Justification = "Ignored due to suspected false positive")]
         private async Task ProcessImages(ResidentialListingRequest listing, CancellationToken cancellationToken)
         {
             var media = await this.mediaRepository.GetListingImages(listing.ResidentialListingRequestID, market: this.CurrentMarket, cancellationToken);
             var imageOrder = 0;
+            var imageRow = 0;
+            var imageCell = 0;
             foreach (var image in media)
             {
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
@@ -862,14 +866,18 @@ namespace Husa.Uploader.Core.Services
 
                 if (!string.IsNullOrEmpty(image.Caption))
                 {
-                    this.uploaderClient.ExecuteScript($"jQuery('#photoCell_{imageOrder} a')[0].click();");
-                    Thread.Sleep(500);
-                    this.uploaderClient.ExecuteScript($"jQuery('#m_tbxDescription').val('{image.Caption}');");
-                    Thread.Sleep(500);
-                    this.uploaderClient.ClickOnElementById("m_ucDetailsView_m_btnSave");
+                    this.uploaderClient.ExecuteScript(script: $"jQuery('#m_rptPhotoRows_ctl{imageRow:D2}_m_rptPhotoCells_ctl{imageCell:D2}_m_ucPhotoCell_m_tbxDescription').val('{image.Caption.Replace("'", "\\'")}');");
                 }
 
                 imageOrder++;
+                imageCell++;
+                if (imageOrder % 5 == 0)
+                {
+                    imageRow++;
+                    imageCell = 0;
+                }
+
+                this.uploaderClient.ScrollDown(200);
             }
         }
 

@@ -13,6 +13,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Microsoft.Extensions.Logging;
     using Moq;
+    using OpenQA.Selenium;
     using Xunit;
     using AddressInfoResponse = Husa.Quicklister.CTX.Api.Contracts.Response.SalePropertyDetail.AddressInfoResponse;
 
@@ -65,6 +66,90 @@ namespace Husa.Uploader.Core.Tests
 
             // Act
             var result = await sut.Upload(request);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UpdateImagesSuccess()
+        {
+            // Arrange
+            this.SetUpConfigs();
+
+            var request = this.GetResidentialListingRequest(false);
+            var listingImages = new List<ResidentialListingMedia>()
+            {
+                new()
+                {
+                    Caption = "test.jpg",
+                },
+                new()
+                {
+                    Caption = string.Empty,
+                },
+            };
+
+            this.mediaRepository
+                .Setup(x => x.GetListingImages(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(listingImages);
+            this.uploaderClient
+                .Setup(x => x.FindElement(It.IsAny<By>(), false, false).FindElement(It.IsAny<By>()).SendKeys(It.IsAny<string>()));
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.UpdateImages(request);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UpdateImagesFailure()
+        {
+            // Arrange
+            this.SetUpConfigs();
+
+            var request = this.GetResidentialListingRequest(false);
+
+            this.mediaRepository
+                .Setup(x => x.GetListingImages(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("error getting images"));
+            this.uploaderClient
+                .Setup(x => x.FindElement(It.IsAny<By>(), false, false).FindElement(It.IsAny<By>()).SendKeys(It.IsAny<string>()));
+
+            // Act
+            var sut = this.GetSut();
+            var exception = await Assert.ThrowsAsync<Exception>(() => sut.UpdateImages(request));
+            Assert.Equal("error getting images", exception.Message);
+        }
+
+        [Fact]
+        public async Task UpdateImages_ProcessesMultipleImages()
+        {
+            // Arrange
+            this.SetUpConfigs();
+
+            var request = this.GetResidentialListingRequest(false);
+
+            // Configure mediaRepository to return at least five images.
+            var listingImages = new List<ResidentialListingMedia>();
+            for (int i = 0; i < 5; i++)
+            {
+                listingImages.Add(new ResidentialListingMedia { Caption = $"Image{i}.jpg", PathOnDisk = $"/path/to/image{i}.jpg" });
+            }
+
+            this.mediaRepository
+                .Setup(x => x.GetListingImages(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(listingImages);
+
+            this.uploaderClient
+                 .Setup(x => x.FindElement(It.IsAny<By>(), false, false).FindElement(It.IsAny<By>()).SendKeys(It.IsAny<string>()));
+
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdateImages(request);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
