@@ -1138,6 +1138,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
             finally
             {
+                this.cancellationTokenSource.Dispose();
                 this.cancellationTokenSource = null;
             }
         }

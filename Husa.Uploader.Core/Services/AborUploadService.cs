@@ -1,6 +1,7 @@
 namespace Husa.Uploader.Core.Services
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
@@ -500,7 +501,7 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.ScrollDown(1000);
             this.uploaderClient.FillFieldSingleOption("Input_204", listing.MLSArea); // MLS Area
-            this.uploaderClient.SetMultipleCheckboxById("Input_343", "N"); // FEMA 100 Yr Flood Plain
+            this.uploaderClient.SetMultipleCheckboxById("Input_343", listing.FemaFloodPlain); // FEMA 100 Yr Flood Plain
             this.uploaderClient.SetSelect(By.Id("Input_206"), "N"); // ETJ
 
             // School Information
@@ -848,12 +849,14 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
+        [SuppressMessage("SonarLint", "S2583", Justification = "Ignored due to suspected false positive")]
         private async Task ProcessImages(ResidentialListingRequest listing, CancellationToken cancellationToken)
         {
             var media = await this.mediaRepository.GetListingImages(listing.ResidentialListingRequestID, market: this.CurrentMarket, cancellationToken);
             var imageOrder = 0;
             var imageRow = 0;
             var imageCell = 0;
+            var maxCol = 5;
             foreach (var image in media)
             {
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
@@ -869,7 +872,7 @@ namespace Husa.Uploader.Core.Services
 
                 imageOrder++;
                 imageCell++;
-                if (imageOrder % 5 == 0)
+                if (imageOrder % maxCol == 0)
                 {
                     imageRow++;
                     imageCell = 0;
