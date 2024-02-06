@@ -258,7 +258,7 @@ namespace Husa.Uploader.Core.Services
             }
             catch (Exception exception)
                 when (exception is NoSuchElementException ||
-                      exception?.InnerException is NoSuchElementException ||
+                      exception.InnerException is NoSuchElementException ||
                       exception is ElementNotVisibleException)
             {
                 this.logger.LogWarning(exception, "Element by '{by}' was not found or is not visible", findBy.ToString());

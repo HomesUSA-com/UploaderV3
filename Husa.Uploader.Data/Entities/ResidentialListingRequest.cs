@@ -869,6 +869,7 @@ namespace Husa.Uploader.Data.Entities
         public string TitlePaidBy { get; set; }
 
         public string RepairsPaidBySeller { get; set; }
+        public string FemaFloodPlain { get; set; }
         public List<ResidentialListingRequestRoom> Rooms { get; set; }
 
         public List<OpenHouseRequest> OpenHouse { get; set; }
@@ -1047,7 +1048,7 @@ namespace Husa.Uploader.Data.Entities
 
                 if (string.IsNullOrWhiteSpace(this.PublicRemarks) || !this.PublicRemarks.Contains('~'))
                 {
-                    remark = (builtNote + this.PublicRemarks ?? string.Empty).RemoveSlash();
+                    remark = (builtNote + (this.PublicRemarks ?? string.Empty)).RemoveSlash();
                 }
                 else
                 {

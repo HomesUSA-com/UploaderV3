@@ -159,6 +159,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.LotDesc = propertyInfo.LotDescription.ToStringFromEnumMembers();
                 residentialListingRequest.OtherFees = propertyInfo.TaxLot;
                 residentialListingRequest.PropSubType = propertyInfo.PropertyType?.ToStringFromEnumMember();
+                residentialListingRequest.FemaFloodPlain = propertyInfo.FemaFloodPlain.ToStringFromEnumMembers();
             }
 
             void FillSpacesDimensionsInfo(SpacesDimensionsResponse spacesDimensionsInfo)
