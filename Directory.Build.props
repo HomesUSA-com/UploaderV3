@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' != '.dcproj'">
-		<TargetFramework>net7.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <RunCodeAnalysis>false</RunCodeAnalysis>
         <NeutralLanguage>en</NeutralLanguage>
@@ -19,7 +19,7 @@
     </PropertyGroup>
     <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.dcproj'">
         <AdditionalFiles Include="..\stylecop.json" />
-        <PackageReference Include="SonarAnalyzer.CSharp" Version="9.5.0.73987">
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="9.19.0.84025">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

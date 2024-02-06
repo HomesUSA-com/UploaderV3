@@ -1,9 +1,7 @@
 namespace Husa.Uploader.Crosscutting.Exceptions
 {
     using System;
-    using System.Runtime.Serialization;
 
-    [Serializable]
     public class ClickOnceDeploymentException : Exception
     {
         public ClickOnceDeploymentException()
@@ -17,11 +15,6 @@ namespace Husa.Uploader.Crosscutting.Exceptions
 
         public ClickOnceDeploymentException(string message, Exception innerException)
             : base(message, innerException)
-        {
-        }
-
-        protected ClickOnceDeploymentException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
         {
         }
     }
