@@ -43,7 +43,7 @@ namespace Husa.Uploader.Data.Repositories
             this.marketConfiguration = applicationOptions?.Value?.MarketInfo ?? throw new ArgumentNullException(nameof(applicationOptions));
         }
 
-        public async Task<IEnumerable<ResidentialListingRequest>> GetListingData(CancellationToken token = default)
+        public async Task<IEnumerable<ResidentialListingRequest>> GetListingRequests(CancellationToken token = default)
         {
             var tasks = new[]
             {
@@ -83,6 +83,54 @@ namespace Husa.Uploader.Data.Repositories
             }
 
             return this.GetRequestById(residentialListingRequestId, marketCode, token);
+        }
+
+        public Task<string> GetListingMlsNumber(Guid residentialListingId, MarketCode marketCode, CancellationToken token = default)
+        {
+            if (residentialListingId == Guid.Empty)
+            {
+                throw new ArgumentException($"'{nameof(residentialListingId)}' cannot be null or empty.", nameof(residentialListingId));
+            }
+
+            return this.GetListingMlsNumberById(residentialListingId, marketCode, token);
+        }
+
+        private async Task<string> GetListingMlsNumberById(Guid residentialListingId, MarketCode marketCode, CancellationToken token)
+        {
+            var mlsNumber = marketCode switch
+            {
+                MarketCode.SanAntonio => await GetFromSabor(),
+                MarketCode.CTX => await GetFromCtx(),
+                MarketCode.Austin => await GetFromAbor(),
+                MarketCode.Houston => await GetFromHar(),
+                _ => throw new NotSupportedException($"The market {marketCode} is not yet supported"),
+            };
+
+            return mlsNumber;
+
+            async Task<string> GetFromSabor()
+            {
+                var listing = await this.quicklisterSaborClient.SaleListing.GetByIdAsync(residentialListingId, token);
+                return listing.MlsNumber;
+            }
+
+            async Task<string> GetFromCtx()
+            {
+                var listing = await this.quicklisterCtxClient.SaleListing.GetByIdAsync(residentialListingId, token);
+                return listing.MlsNumber;
+            }
+
+            async Task<string> GetFromAbor()
+            {
+                var listing = await this.quicklisterAborClient.SaleListing.GetByIdAsync(residentialListingId, token);
+                return listing.MlsNumber;
+            }
+
+            async Task<string> GetFromHar()
+            {
+                var listing = await this.quicklisterHarClient.SaleListing.GetByIdAsync(residentialListingId, token);
+                return listing.MlsNumber;
+            }
         }
 
         private async Task<ResidentialListingRequest> GetRequestById(Guid residentialListingRequestId, MarketCode marketCode, CancellationToken token)

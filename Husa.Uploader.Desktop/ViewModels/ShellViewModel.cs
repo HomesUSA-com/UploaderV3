@@ -11,6 +11,7 @@ namespace Husa.Uploader.Desktop.ViewModels
     using System.Windows.Threading;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
+    using Husa.Extensions.Common.Exceptions;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.ServiceActions;
@@ -79,6 +80,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private ICommand loginCommand;
         private ICommand searchListingCommand;
         private ICommand markCompletedCommand;
+        private ICommand finishUploadCommand;
         private ICommand cancelProcessCommand;
         private ICommand reportProblemCommand;
         private ICommand reportFailureCommand;
@@ -248,8 +250,10 @@ namespace Husa.Uploader.Desktop.ViewModels
         public bool NoUploadInProgress => !NoUploadInProgressStatuses.Contains(this.State) && !this.LoadFailed;
 
         public bool IsReadyListing => this.CurrentEntity == Entity.Listing && this.State == UploaderState.Ready && this.SelectedListingRequest != null;
+        public bool IsSucceededAndReady => this.CurrentEntity == Entity.Listing && this.State == UploaderState.SucceededAndReady && this.SelectedListingRequest != null;
 
-        public bool ShowPanelAction => this.IsReadyListing || this.UploadSucceeded || this.UploadFailed || this.ShowCancelButton;
+        public bool ShowListingActions => this.IsReadyListing || this.IsSucceededAndReady;
+        public bool ShowPanelAction => this.IsReadyListing || this.IsSucceededAndReady || this.UploadSucceeded || this.UploadFailed || this.ShowCancelButton;
 
         public string UserName
         {
@@ -447,6 +451,15 @@ namespace Husa.Uploader.Desktop.ViewModels
             {
                 this.searchListingCommand ??= new RelayAsyncCommand(param => this.SearchCorrelationId(), canExecute: param => true);
                 return this.searchListingCommand;
+            }
+        }
+
+        public ICommand FinishUploadCommand
+        {
+            get
+            {
+                this.finishUploadCommand ??= new RelayAsyncCommand(param => this.FinishUpload(), param => true);
+                return this.finishUploadCommand;
             }
         }
 
@@ -770,7 +783,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                 case Entity.Listing:
                     try
                     {
-                        var fullListings = await this.sqlDataLoader.GetListingData();
+                        var fullListings = await this.sqlDataLoader.GetListingRequests();
                         this.DatabaseOnline = DataBaseStatus.Online;
                         this.ProcessListingData(fullListings);
                         this.LastUpdated = $"Total {entity} records: [{fullListings.Count()}]. Last Updated: {DateTime.Now:MM/dd/yyyy h:mm:ss tt}";
@@ -1114,6 +1127,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             try
             {
                 this.logger.LogInformation("Starting the requested upload operation");
+                await this.SetFullRequestInformation();
                 var listing = this.SelectedListingRequest.FullListing;
                 var token = this.cancellationTokenSource.Token;
                 return await Task.Run(() => action(listing, token));
@@ -1124,6 +1138,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
             finally
             {
+                this.cancellationTokenSource.Dispose();
                 this.cancellationTokenSource = null;
             }
         }
@@ -1227,33 +1242,21 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private async Task FinishUpload()
         {
-            if (this.State == UploaderState.UploadInProgress)
-            {
-                try
-                {
-                    this.uploadFactory.Uploader.Logout();
-                }
-                catch (Exception ex)
-                {
-                    this.logger.LogWarning(ex, "Failed to logout of listing {ResidentialListingRequestId} with {uploaderType}", this.SelectedListingRequest.FullListing.ResidentialListingRequestID, this.uploadFactory.Uploader.GetType().ToString());
-                }
-
-                this.uploadFactory.Uploader.CancelOperation();
-            }
-
-            this.ShowCancelButton = false;
-            this.State = UploaderState.Ready;
-
-            // 1. Broadcast to the other user the entity request is free
-            await this.BroadcastSelectedList(selectedId: this.SelectedListingRequest.RequestId);
-
-            // 2. Refresh the table
-            await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new Item(this.SelectedListingRequest.RequestId, this.State, this.SourceAction));
+            await this.FinishUploadAndChangeState(UploaderState.Ready);
         }
 
         private async Task MarkCompleted()
         {
-            await this.FinishUpload();
+            if (this.SelectedListingRequest.IsNewListing)
+            {
+                var mlsNumber = await this.sqlDataLoader.GetListingMlsNumber(
+                    this.SelectedListingRequest.FullListing.ResidentialListingID,
+                    this.SelectedListingRequest.FullListing.MarketCode,
+                    this.cancellationTokenSource?.Token ?? default);
+                this.SelectedListingRequest.SetMlsNumber(mlsNumber);
+            }
+
+            await this.FinishUploadAndChangeState(UploaderState.SucceededAndReady);
         }
 
         private async Task CancelProcess()
@@ -1319,6 +1322,47 @@ namespace Husa.Uploader.Desktop.ViewModels
             {
                 this.ShowCancelButton = false;
             }
+        }
+
+        private async Task SetFullRequestInformation()
+        {
+            if (this.SelectedListingRequest.FullListingConfigured)
+            {
+                return;
+            }
+
+            var requestData = await this.sqlDataLoader.GetListingRequest(
+                this.SelectedListingRequest.RequestId,
+                this.SelectedListingRequest.FullListing.MarketCode,
+                this.cancellationTokenSource.Token)
+                ?? throw new NotFoundException<ResidentialListingRequest>(this.SelectedListingRequest.RequestId);
+            this.SelectedListingRequest.SetFullListing(requestData);
+        }
+
+        private async Task FinishUploadAndChangeState(UploaderState newState)
+        {
+            if (this.State == UploaderState.UploadInProgress)
+            {
+                try
+                {
+                    this.uploadFactory.Uploader.Logout();
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogWarning(ex, "Failed to logout of listing {ResidentialListingRequestId} with {uploaderType}", this.SelectedListingRequest.FullListing.ResidentialListingRequestID, this.uploadFactory.Uploader.GetType().ToString());
+                }
+
+                this.uploadFactory.Uploader.CancelOperation();
+            }
+
+            this.ShowCancelButton = false;
+            this.State = newState;
+
+            // 1. Broadcast to the other user the entity request is free
+            await this.BroadcastSelectedList(selectedId: this.SelectedListingRequest.RequestId);
+
+            // 2. Refresh the table
+            await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new Item(this.SelectedListingRequest.RequestId, this.State, this.SourceAction));
         }
     }
 }
