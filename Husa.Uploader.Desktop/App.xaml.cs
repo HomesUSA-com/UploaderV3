@@ -1,6 +1,7 @@
 namespace Husa.Uploader.Desktop
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Threading;
     using System.Windows;
@@ -12,12 +13,12 @@ namespace Husa.Uploader.Desktop
     using Husa.Uploader.Desktop.Factories;
     using Husa.Uploader.Desktop.Views;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.AspNetCore.SignalR.Client;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Serilog;
 
+    [ExcludeFromCodeCoverage]
     public partial class App : Application
     {
         public App()
@@ -56,8 +57,8 @@ namespace Husa.Uploader.Desktop
                     services.ConfigureDataAccess();
                     services.ConfigureHttpClients();
                     services.ConfigureNavigationServices();
-                    services.ConfigureSignalR();
                     services.ConfigureServices();
+                    services.ConfigureSignalR();
                     services
                         .AddOptions<JsonOptions>()
                         .Configure<IConfiguration>((jsonOptions, config) => jsonOptions.JsonSerializerOptions.SetConfiguration());
@@ -83,14 +84,14 @@ namespace Husa.Uploader.Desktop
         protected override async void OnExit(ExitEventArgs e)
         {
             await AppHost.StopAsync();
-            await GracefulShutdown();
+            GracefulShutdown();
             base.OnExit(e);
         }
 
-        protected async void AppDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        protected void AppDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             Log.Fatal(e.Exception, "The uploader CRASHED with an UnhandledException");
-            await GracefulShutdown();
+            GracefulShutdown();
             Thread.Sleep(TimeSpan.FromSeconds(2));
             e.Handled = true;
         }
@@ -111,13 +112,10 @@ namespace Husa.Uploader.Desktop
             }
         }
 
-        private static async Task GracefulShutdown()
+        private static void GracefulShutdown()
         {
             var uploadFactory = AppHost.Services.GetRequiredService<IUploadFactory>();
             uploadFactory.CloseDriver();
-
-            var hubConnection = AppHost.Services.GetRequiredService<HubConnection>();
-            await hubConnection.StopAsync();
         }
     }
 }

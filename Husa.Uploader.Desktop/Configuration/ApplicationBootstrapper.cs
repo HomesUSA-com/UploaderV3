@@ -26,7 +26,6 @@ namespace Husa.Uploader.Desktop.Configuration
     using Husa.Uploader.Desktop.Factories;
     using Husa.Uploader.Desktop.ViewModels;
     using Husa.Uploader.Desktop.Views;
-    using Microsoft.AspNetCore.SignalR.Client;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
@@ -217,18 +216,6 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddSingleton<IAbstractFactory<TForm>, AbstractFactory<TForm>>();
         }
 
-        public static void ConfigureSignalR(this IServiceCollection services)
-        {
-            services.AddSingleton(provider =>
-            {
-                var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
-
-                return new HubConnectionBuilder()
-                .WithUrl($"{options.SignalRURLServer}/uploaderHub")
-                .Build();
-            });
-        }
-
         public static IHostBuilder SetCultureInfo(this IHostBuilder hostBuilder)
         {
             var customCulture = new CultureInfo("en-US");
@@ -239,6 +226,11 @@ namespace Husa.Uploader.Desktop.Configuration
             Thread.CurrentThread.CurrentUICulture = customCulture;
 
             return hostBuilder;
+        }
+
+        public static void ConfigureSignalR(this IServiceCollection services)
+        {
+            services.AddTransient<ISignalRConnectionService, SignalRConnectionService>();
         }
     }
 }
