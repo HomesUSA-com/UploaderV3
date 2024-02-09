@@ -4,6 +4,7 @@
         <PackageReference Include="Husa.CompanyServiceManager.Client" Version="1.3.3" />
         <PackageReference Include="Husa.Extensions.Common" Version="3.10.0" />
         <PackageReference Include="Husa.Migration.Api.Client" Version="1.1.1" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.10" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
 		<PackageReference Include="Selenium.Support" Version="4.11.0" />
 		<PackageReference Include="Selenium.WebDriver" Version="4.11.0" />
