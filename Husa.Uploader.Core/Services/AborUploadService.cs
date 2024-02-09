@@ -840,7 +840,7 @@ namespace Husa.Uploader.Core.Services
 
         private void DeleteAllImages()
         {
-            if (this.uploaderClient.FindElements(By.Id("cbxCheckAll")).Any())
+            if (this.uploaderClient.FindElements(By.Id("cbxCheckAll"))?.Any() == true)
             {
                 this.uploaderClient.ClickOnElement(By.Id("cbxCheckAll"));
                 this.uploaderClient.ClickOnElement(By.Id("m_lbDeleteChecked"));

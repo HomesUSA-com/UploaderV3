@@ -6,7 +6,7 @@ namespace Husa.Uploader.Crosscutting.Extensions
     {
         public static string To12Format(this TimeSpan value)
         {
-            var hours = value.Hours == 12 ? 0 : value.Hours;
+            var hours = value.Hours;
             var minutes = value.Minutes < 10 ? $"0{value.Minutes}" : value.Minutes.ToString();
 
             if (hours > 12)
