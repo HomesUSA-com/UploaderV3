@@ -12,7 +12,7 @@ namespace Husa.Uploader.Crosscutting.Options
         [Required(AllowEmptyStrings = false)]
         public string PublishingPath { get; set; }
 
-        [Range(1, int.MaxValue, ErrorMessage = "Value must be greater than 0.")]
+        [Range(2, int.MaxValue, ErrorMessage = "Value must be greater than 0.")]
         public int SignalRRefreshIntervalSeconds { get; set; }
 
         [Range(45, int.MaxValue, ErrorMessage = "Value must be greater than 0.")]
