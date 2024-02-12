@@ -501,7 +501,7 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.ScrollDown(1000);
             this.uploaderClient.FillFieldSingleOption("Input_204", listing.MLSArea); // MLS Area
-            this.uploaderClient.SetMultipleCheckboxById("Input_343", "N"); // FEMA 100 Yr Flood Plain
+            this.uploaderClient.SetMultipleCheckboxById("Input_343", listing.FemaFloodPlain); // FEMA 100 Yr Flood Plain
             this.uploaderClient.SetSelect(By.Id("Input_206"), "N"); // ETJ
 
             // School Information
