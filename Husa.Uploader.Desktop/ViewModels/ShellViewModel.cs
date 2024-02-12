@@ -1275,7 +1275,8 @@ namespace Husa.Uploader.Desktop.ViewModels
                 var mlsNumber = await this.sqlDataLoader.GetListingMlsNumber(
                     this.SelectedListingRequest.FullListing.ResidentialListingID,
                     this.SelectedListingRequest.FullListing.MarketCode,
-                    this.cancellationTokenSource?.Token ?? default);
+                    this.cancellationTokenSource?.Token ?? default) ?? this.RequestMlsNumber();
+
                 this.SelectedListingRequest.SetMlsNumber(mlsNumber);
             }
 
@@ -1314,7 +1315,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                 return childViewModel.MlsNum;
             }
 
-            return string.Empty;
+            return null;
         }
 
         private async Task OpenMlsIssueReportView(bool isFailure)
