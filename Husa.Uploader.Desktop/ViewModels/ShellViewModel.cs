@@ -42,6 +42,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private const int MaxSignalRReconnectAttempts = 50;
 
         private readonly IOptions<ApplicationOptions> options;
+        private readonly ISignalRConnectionService signalRConnectionService;
         private readonly IListingRequestRepository sqlDataLoader;
         private readonly IAuthenticationService authenticationClient;
         private readonly IVersionManagerService versionManagerService;
@@ -49,7 +50,6 @@ namespace Husa.Uploader.Desktop.ViewModels
         private readonly IAbstractFactory<LatLonInputView> locationViewFactory;
         private readonly IAbstractFactory<MlsnumInputView> mlsNumberInputFactory;
         private readonly IUploadFactory uploadFactory;
-        private readonly HubConnection hubConnection;
         private readonly ILogger<ShellView> logger;
 
         private CancellationTokenSource cancellationTokenSource;
@@ -96,6 +96,7 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         public ShellViewModel(
             IOptions<ApplicationOptions> options,
+            ISignalRConnectionService signalRConnectionService,
             IListingRequestRepository sqlDataLoader,
             IAuthenticationService authenticationClient,
             IVersionManagerService versionManagerService,
@@ -105,11 +106,11 @@ namespace Husa.Uploader.Desktop.ViewModels
             IAbstractFactory<MlsnumInputView> mlsNumberInputFactory,
             IUploadFactory uploadFactory,
             IBulkUploadFactory bulkUploadFactory,
-            HubConnection hubConnection,
             ILogger<ShellView> logger)
             : this()
         {
             this.options = options ?? throw new ArgumentNullException(nameof(options));
+            this.signalRConnectionService = signalRConnectionService ?? throw new ArgumentNullException(nameof(signalRConnectionService));
             this.sqlDataLoader = sqlDataLoader ?? throw new ArgumentNullException(nameof(sqlDataLoader));
             this.authenticationClient = authenticationClient ?? throw new ArgumentNullException(nameof(authenticationClient));
             this.versionManagerService = versionManagerService ?? throw new ArgumentNullException(nameof(versionManagerService));
@@ -119,7 +120,6 @@ namespace Husa.Uploader.Desktop.ViewModels
             this.mlsNumberInputFactory = mlsNumberInputFactory ?? throw new ArgumentNullException(nameof(mlsNumberInputFactory));
             this.uploadFactory = uploadFactory ?? throw new ArgumentNullException(nameof(uploadFactory));
             this.bulkUploadFactory = bulkUploadFactory ?? throw new ArgumentNullException(nameof(bulkUploadFactory));
-            this.hubConnection = hubConnection ?? throw new ArgumentNullException(nameof(hubConnection));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             this.ConfigureVersionCheck();
@@ -707,7 +707,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        private async void ReloadSignalR(object sender, EventArgs e)
+        private void ReloadSignalR(object sender, EventArgs e)
         {
             if (!string.IsNullOrEmpty(this.CorrelationIdBox))
             {
@@ -729,7 +729,7 @@ namespace Husa.Uploader.Desktop.ViewModels
 
             try
             {
-                await this.ReceiveWorkerList();
+                this.ReceiveWorkerList();
                 this.signalRConnectionTriesError = 0;
             }
             catch
@@ -801,7 +801,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        private async Task ReceiveWorkerList()
+        private void ReceiveWorkerList()
         {
             if (!this.options.Value.FeatureFlags.EnableSignalR)
             {
@@ -818,18 +818,30 @@ namespace Husa.Uploader.Desktop.ViewModels
 
             try
             {
-                // receiving data from other users
-                this.hubConnection.On<Dictionary<string, Item>>("updateWorkerList", this.HandleWorkerItems);
+                var connection = this.signalRConnectionService.GetConnectionAsync();
 
-                // Start signalR service
+                // receiving data from other users
+                connection.On<Dictionary<string, Item>>("updateWorkerList", this.HandleWorkerItems);
+
                 if (this.SignalROnline != SignalRStatus.Online)
                 {
-                    await this.hubConnection.StartAsync();
-                    this.SignalROnline = SignalRStatus.Online;
+                    // Start signalR service
+                    connection.StartAsync().ContinueWith(task =>
+                    {
+                        if (!task.IsFaulted)
+                        {
+                            this.SignalROnline = SignalRStatus.Online;
+                            // send message
+                            connection.InvokeAsync("GetWorkerItems");
+                        }
+                    }).Wait();
+                }
+                else
+                {
+                    // send message
+                    connection.InvokeAsync("GetWorkerItems");
                 }
 
-                // send message
-                await this.hubConnection.InvokeAsync("GetWorkerItems");
                 this.signalRConnectionTriesError = 0;
             }
             catch (Exception exception)
@@ -979,7 +991,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        private async Task BroadcastSelectedList(Guid? selectedId = null)
+        private void BroadcastSelectedList(Guid? selectedId = null)
         {
             if (!this.options.Value.FeatureFlags.EnableSignalR)
             {
@@ -996,16 +1008,27 @@ namespace Husa.Uploader.Desktop.ViewModels
 
             try
             {
+                var connection = this.signalRConnectionService.GetConnectionAsync();
+                var item = new Item(selectedId, uploaderStatus: this.State, statusSource: this.SourceAction);
+
                 if (this.SignalROnline != SignalRStatus.Online)
                 {
-                    // Start signalr service
-                    await this.hubConnection.StartAsync();
-                    this.SignalROnline = SignalRStatus.Online;
+                    // Start signalR service
+                    connection.StartAsync().ContinueWith(task =>
+                    {
+                        if (!task.IsFaulted)
+                        {
+                            this.SignalROnline = SignalRStatus.Online;
+                            // send message
+                            connection.InvokeAsync("SendSelectedItem", this.UserFullName, item);
+                        }
+                    }).Wait();
                 }
-
-                // send message
-                var item = new Item(selectedId, uploaderStatus: this.State, statusSource: this.SourceAction);
-                await this.hubConnection.InvokeAsync("SendSelectedItem", this.UserFullName, item);
+                else
+                {
+                    // send message
+                    connection.InvokeAsync("SendSelectedItem", this.UserFullName, item);
+                }
             }
             catch (Exception exception)
             {
@@ -1072,7 +1095,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                 this.SourceAction = sourceAction;
 
                 // 1. Broadcast the current seleted request ID to other users
-                await this.BroadcastSelectedList(selectedId: entityID);
+                this.BroadcastSelectedList(selectedId: entityID);
 
                 // 2. Refresh the table
                 await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(listing.ResidentialListingRequestID, this.State, this.SourceAction));
@@ -1104,7 +1127,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                 }
 
                 // 1. roadcast message to other users
-                await this.BroadcastSelectedList(selectedId: entityID);
+                this.BroadcastSelectedList(selectedId: entityID);
 
                 // 2. Refresh the table
                 await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(listing.ResidentialListingRequestID, this.State, this.SourceAction));
@@ -1275,7 +1298,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             this.State = UploaderState.Ready;
 
             // 1. Broadcast to the other user the entity request is free
-            await this.BroadcastSelectedList(selectedId: null);
+            this.BroadcastSelectedList(selectedId: null);
 
             // 2. Refresh the table
             await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(this.SelectedListingRequest.RequestId, uploaderStatus: UploaderState.Cancelled, this.SourceAction));
@@ -1359,7 +1382,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             this.State = newState;
 
             // 1. Broadcast to the other user the entity request is free
-            await this.BroadcastSelectedList(selectedId: this.SelectedListingRequest.RequestId);
+            this.BroadcastSelectedList(selectedId: this.SelectedListingRequest.RequestId);
 
             // 2. Refresh the table
             await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new Item(this.SelectedListingRequest.RequestId, this.State, this.SourceAction));
