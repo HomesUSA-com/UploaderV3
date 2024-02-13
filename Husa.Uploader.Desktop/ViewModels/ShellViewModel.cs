@@ -1365,7 +1365,7 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private async Task FinishUploadAndChangeState(UploaderState newState)
         {
-            if (this.State == UploaderState.UploadInProgress)
+            if (this.State == UploaderState.UploadInProgress || this.State == UploaderState.UploadSucceeded)
             {
                 try
                 {
