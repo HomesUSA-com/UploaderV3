@@ -1016,7 +1016,11 @@ namespace Husa.Uploader.Data.Entities
             switch (this.BuiltStatus)
             {
                 case BuiltStatus.ToBeBuilt:
-                    builtNote += "To Be Built! ~ ";
+                    if (this.BuildCompletionDate.HasValue)
+                    {
+                        builtNote += this.BuildCompletionDate.Value.ToString("MMMM") + " completion ~ ";
+                    }
+
                     break;
 
                 case BuiltStatus.ReadyNow:
