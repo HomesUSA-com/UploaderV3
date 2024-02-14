@@ -806,6 +806,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_202"), listing.GarageCapacity); // Garage - Number of Spaces
             this.uploaderClient.SetMultipleCheckboxById("Input_207", listing.AccessInstructionsDesc); // Access -- MLS-51 AccessibilityDesc -> AccessInstructionsDesc
             this.uploaderClient.SetMultipleCheckboxById("Input_203", listing.GarageDesc); // Garage Description
+            this.uploaderClient.SetMultipleCheckboxById("Input_206", listing.GarageCarpotDesc); // Garage Carpot Description
 
             if (this.uploaderClient.FindElements(By.Id("Input_152")).Any())
             {

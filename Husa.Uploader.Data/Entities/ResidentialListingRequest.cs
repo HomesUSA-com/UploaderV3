@@ -112,6 +112,7 @@ namespace Husa.Uploader.Data.Entities
         public bool HasPool { get; set; }
         public string HasHandicapAmenities { get; set; }
         public string GarageDesc { get; set; }
+        public string GarageCarpotDesc { get; set; }
         public int? GarageCapacity { get; set; }
         public string FoundationDesc { get; set; }
         public string FloorsDesc { get; set; }
