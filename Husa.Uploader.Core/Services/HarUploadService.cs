@@ -888,13 +888,13 @@ namespace Husa.Uploader.Core.Services
             if (!listing.IsNewListing)
             {
                 int index = 0;
+                this.uploaderClient.ScrollDown(200);
 
                 while (this.uploaderClient.FindElements(By.LinkText("Delete")) != null &&
                     this.uploaderClient.FindElements(By.LinkText("Delete")).Count > 1)
                 {
                     try
                     {
-                        this.uploaderClient.ScrollToTop();
                         this.uploaderClient.ClickOnElement(By.LinkText("Delete"));
                         Thread.Sleep(400);
                     }

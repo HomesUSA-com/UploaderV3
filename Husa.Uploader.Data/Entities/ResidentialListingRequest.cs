@@ -932,10 +932,11 @@ namespace Husa.Uploader.Data.Entities
 
             if (!string.IsNullOrWhiteSpace(this.RealtorContactEmail))
             {
-                return privateRemarks + $" Email contact: {this.RealtorContactEmail}.";
+                privateRemarks += $" Email contact: {this.RealtorContactEmail}.";
             }
 
             const string homeUnderConstruction = "Home is under construction. For your safety, call appt number for showings.";
+
             return this.BuiltStatus != BuiltStatus.ReadyNow ? $"{homeUnderConstruction} {privateRemarks}" : privateRemarks;
         }
 
