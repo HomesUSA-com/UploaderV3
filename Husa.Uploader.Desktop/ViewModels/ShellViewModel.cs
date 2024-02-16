@@ -1236,6 +1236,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private async Task StartImageUpdate()
         {
             this.SourceAction = Crosscutting.Enums.SourceAction.UpdateImages.GetEnumDescription();
+            this.AskAndSetMlsNumber();
 
             if (!this.MediaUpload())
             {
@@ -1249,6 +1250,8 @@ namespace Husa.Uploader.Desktop.ViewModels
         private async Task StartVTUpload()
         {
             this.SourceAction = Crosscutting.Enums.SourceAction.UploadVirtualTour.GetEnumDescription();
+            this.AskAndSetMlsNumber();
+
             if (!this.MediaUpload())
             {
                 return;
@@ -1387,6 +1390,15 @@ namespace Husa.Uploader.Desktop.ViewModels
 
             // 2. Refresh the table
             await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new Item(this.SelectedListingRequest.RequestId, this.State, this.SourceAction));
+        }
+
+        private void AskAndSetMlsNumber()
+        {
+            if (string.IsNullOrWhiteSpace(this.SelectedListingRequest.FullListing.MLSNum))
+            {
+                var mlsNumber = this.RequestMlsNumber();
+                this.SelectedListingRequest.SetMlsNumber(mlsNumber);
+            }
         }
     }
 }
