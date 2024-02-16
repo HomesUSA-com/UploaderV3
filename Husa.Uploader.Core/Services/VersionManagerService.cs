@@ -171,10 +171,7 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogDebug("HttpClientFactory > returning HttpClient for url: {publishUrl}", this.options.PublishingPath);
                 var uri = new Uri(this.options.PublishingPath);
                 var client = this.httpClientFactory.CreateClient(name: HttpClientKey);
-                if (uri is not null)
-                {
-                    client.BaseAddress = uri;
-                }
+                client.BaseAddress = uri;
 
                 return client;
             }

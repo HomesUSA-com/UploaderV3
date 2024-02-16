@@ -213,6 +213,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.NumberFireplaces = featuresInfo.Fireplaces?.ToString();
                 residentialListingRequest.FloorsDesc = featuresInfo.Floors.ToStringFromEnumMembers();
                 residentialListingRequest.GarageDesc = featuresInfo.GarageDescription.ToStringFromEnumMembers();
+                residentialListingRequest.GarageCarpotDesc = featuresInfo.GarageCarpotDescription.ToStringFromEnumMembers();
                 residentialListingRequest.WaterfrontFeatures = featuresInfo.WaterfrontFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.WaterDesc = featuresInfo.WaterSewer.ToStringFromEnumMembers();
                 residentialListingRequest.RestrictionsDesc = featuresInfo.RestrictionsDescription.ToStringFromEnumMembers();

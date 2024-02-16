@@ -112,6 +112,7 @@ namespace Husa.Uploader.Data.Entities
         public bool HasPool { get; set; }
         public string HasHandicapAmenities { get; set; }
         public string GarageDesc { get; set; }
+        public string GarageCarpotDesc { get; set; }
         public int? GarageCapacity { get; set; }
         public string FoundationDesc { get; set; }
         public string FloorsDesc { get; set; }
@@ -931,10 +932,11 @@ namespace Husa.Uploader.Data.Entities
 
             if (!string.IsNullOrWhiteSpace(this.RealtorContactEmail))
             {
-                return privateRemarks + $" Email contact: {this.RealtorContactEmail}.";
+                privateRemarks += $" Email contact: {this.RealtorContactEmail}.";
             }
 
             const string homeUnderConstruction = "Home is under construction. For your safety, call appt number for showings.";
+
             return this.BuiltStatus != BuiltStatus.ReadyNow ? $"{homeUnderConstruction} {privateRemarks}" : privateRemarks;
         }
 
@@ -1015,7 +1017,11 @@ namespace Husa.Uploader.Data.Entities
             switch (this.BuiltStatus)
             {
                 case BuiltStatus.ToBeBuilt:
-                    builtNote += "To Be Built! ~ ";
+                    if (this.BuildCompletionDate.HasValue)
+                    {
+                        builtNote += this.BuildCompletionDate.Value.ToString("MMMM") + " completion ~ ";
+                    }
+
                     break;
 
                 case BuiltStatus.ReadyNow:
@@ -1048,7 +1054,7 @@ namespace Husa.Uploader.Data.Entities
 
                 if (string.IsNullOrWhiteSpace(this.PublicRemarks) || !this.PublicRemarks.Contains('~'))
                 {
-                    remark = (builtNote + this.PublicRemarks ?? string.Empty).RemoveSlash();
+                    remark = (builtNote + (this.PublicRemarks ?? string.Empty)).RemoveSlash();
                 }
                 else
                 {

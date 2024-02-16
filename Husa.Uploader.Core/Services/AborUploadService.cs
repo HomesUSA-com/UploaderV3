@@ -856,6 +856,7 @@ namespace Husa.Uploader.Core.Services
             var imageOrder = 0;
             var imageRow = 0;
             var imageCell = 0;
+            var maxCol = 5;
             foreach (var image in media)
             {
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
@@ -871,7 +872,7 @@ namespace Husa.Uploader.Core.Services
 
                 imageOrder++;
                 imageCell++;
-                if (imageOrder % 5 == 0)
+                if (imageOrder % maxCol == 0)
                 {
                     imageRow++;
                     imageCell = 0;

@@ -1161,6 +1161,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
             finally
             {
+                this.cancellationTokenSource.Dispose();
                 this.cancellationTokenSource = null;
             }
         }
@@ -1185,18 +1186,18 @@ namespace Husa.Uploader.Desktop.ViewModels
             this.SourceAction = Crosscutting.Enums.SourceAction.Upload.GetEnumDescription();
             if (string.IsNullOrEmpty(this.SelectedListingRequest.FullListing.MLSNum) && this.selectedListingRequest.FullListing.UpdateGeocodes)
             {
-                    var locationInfo = this.RequestLocationInfo();
+                var locationInfo = this.RequestLocationInfo();
 
-                    if (locationInfo.IsValidLocation)
-                    {
-                        this.SelectedListingRequest.FullListing.Latitude = locationInfo.Latitude;
-                        this.SelectedListingRequest.FullListing.Longitude = locationInfo.Longitude;
-                    }
-                    else
-                    {
-                        await this.FinishUpload();
-                        return;
-                    }
+                if (locationInfo.IsValidLocation)
+                {
+                    this.SelectedListingRequest.FullListing.Latitude = locationInfo.Latitude;
+                    this.SelectedListingRequest.FullListing.Longitude = locationInfo.Longitude;
+                }
+                else
+                {
+                    await this.FinishUpload();
+                    return;
+                }
             }
 
             this.ShowCancelButton = true;
@@ -1364,7 +1365,7 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private async Task FinishUploadAndChangeState(UploaderState newState)
         {
-            if (this.State == UploaderState.UploadInProgress)
+            if (this.State == UploaderState.UploadInProgress || this.State == UploaderState.UploadSucceeded)
             {
                 try
                 {
