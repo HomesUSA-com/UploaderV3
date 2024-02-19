@@ -245,6 +245,26 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Fact]
+        public async Task FillCompletionDate_Fail()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var request = this.GetEmptyListingRequest();
+            request.MLSNum = "MLSNum";
+            request.BuildCompletionDate = DateTime.Now;
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdateCompletionDate(request);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+            this.uploaderClient.Verify(client => client.WriteTextbox(By.Id("Input_301"), "12/31/2023", false, true, false, false), Times.Never);
+            this.uploaderClient.Verify(client => client.WriteTextbox(By.Id("Input_249"), string.Empty, true, true, false, false), Times.Never);
+        }
+
+        [Fact]
         public async Task AddOpenHouseSuccess()
         {
             // Arrange

@@ -205,6 +205,7 @@ namespace Husa.Uploader.Core.Services
 
                 this.GoToPropertyInformationTab();
                 this.UpdateYearBuiltDescription(listing);
+                this.FillCompletionDate(listing);
 
                 this.GoToRemarksTab(housingType);
                 this.UpdatePublicRemarksInRemarksTab(listing);
@@ -778,20 +779,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_251"), listing.BuilderName);  // Builder Name
             this.UpdateYearBuiltDescription(listing);
 
-            if (listing.BuildCompletionDate.HasValue)
-            {
-                var yearBuiltDesc = listing.YearBuiltDesc.ToEnumFromEnumMember<ConstructionStage>();
-                if (yearBuiltDesc == ConstructionStage.Complete)
-                {
-                    this.uploaderClient.WriteTextbox(By.Id("Input_249"), string.Empty, true, true); // Approx Completion Date
-                    this.uploaderClient.WriteTextbox(By.Id("Input_301"), listing.BuildCompletionDate.Value.ToShortDateString(), true, true); // Completion Date
-                }
-                else if (yearBuiltDesc == ConstructionStage.Incomplete)
-                {
-                    this.uploaderClient.WriteTextbox(By.Id("Input_301"), string.Empty, true, true); // Approx Completion Date
-                    this.uploaderClient.WriteTextbox(By.Id("Input_249"), listing.BuildCompletionDate.Value.ToShortDateString(), true, true); // Completion Date
-                }
-            }
+            this.FillCompletionDate(listing);
 
             if (this.uploaderClient.FindElements(By.Id("Input_374")).Any())
             {
@@ -806,7 +794,11 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_202"), listing.GarageCapacity); // Garage - Number of Spaces
             this.uploaderClient.SetMultipleCheckboxById("Input_207", listing.AccessInstructionsDesc); // Access -- MLS-51 AccessibilityDesc -> AccessInstructionsDesc
             this.uploaderClient.SetMultipleCheckboxById("Input_203", listing.GarageDesc); // Garage Description
-            this.uploaderClient.SetMultipleCheckboxById("Input_206", listing.GarageCarpotDesc); // Garage Carpot Description
+
+            if (this.uploaderClient.FindElements(By.Id("Input_206"))?.Any() == true)
+            {
+                this.uploaderClient.SetMultipleCheckboxById("Input_206", listing.GarageCarpotDesc); // Garage Carpot Description
+            }
 
             if (this.uploaderClient.FindElements(By.Id("Input_152")).Any())
             {
@@ -1059,6 +1051,24 @@ namespace Husa.Uploader.Core.Services
         {
             this.uploaderClient.WriteTextbox(By.Id("Input_243"), listing.YearBuilt); // Year Built
             this.uploaderClient.SetSelect(By.Id("Input_248"), listing.YearBuiltDesc); // New Construction Desc
+        }
+
+        private void FillCompletionDate(ResidentialListingRequest listing)
+        {
+            if (listing.BuildCompletionDate.HasValue)
+            {
+                var yearBuiltDesc = listing.YearBuiltDesc.ToEnumFromEnumMember<ConstructionStage>();
+                if (yearBuiltDesc == ConstructionStage.Complete)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_249"), string.Empty, false, true); // Approx Completion Date
+                    this.uploaderClient.WriteTextbox(By.Id("Input_301"), listing.BuildCompletionDate.Value.ToShortDateString(), true, true); // Completion Date
+                }
+                else if (yearBuiltDesc == ConstructionStage.Incomplete)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_301"), string.Empty, true, true); // Approx Completion Date
+                    this.uploaderClient.WriteTextbox(By.Id("Input_249"), listing.BuildCompletionDate.Value.ToShortDateString(), true, true); // Completion Date
+                }
+            }
         }
 
         private void UpdatePublicRemarksInRemarksTab(ResidentialListingRequest listing)
