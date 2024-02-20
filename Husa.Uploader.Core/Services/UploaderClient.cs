@@ -297,16 +297,17 @@ namespace Husa.Uploader.Core.Services
             bool doNotClear = false,
             bool isSecondAttemp = false)
         {
-            if (string.IsNullOrEmpty(entry))
-            {
-                this.logger.LogInformation("Tried to write a null value to textbox with locator: {by} when processing the request.", findBy);
-                return;
-            }
-
             var element = this.FindElement(findBy, isElementOptional: isElementOptional);
             if (isElementOptional && element is null)
             {
                 this.logger.LogInformation("Textbox {by} not found, skipping process.", findBy);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(entry))
+            {
+                this.logger.LogInformation("Tried to write a null value to textbox with locator: {by} when processing the request.", findBy);
+                element.Clear();
                 return;
             }
 
