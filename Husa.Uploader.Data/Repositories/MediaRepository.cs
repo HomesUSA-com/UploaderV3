@@ -218,15 +218,10 @@ namespace Husa.Uploader.Data.Repositories
                         savePath: filePath,
                         token);
 
-                    if (image.MediaType == ManagedMediaTypes.Gif || image.MediaType == ManagedMediaTypes.Png)
+                    if (image.MediaType == ManagedMediaTypes.Gif || image.MediaType == ManagedMediaTypes.Png || image.MediaType == ManagedMediaTypes.Jpeg)
                     {
                         this.ConvertFilePngToJpg(filePath, image.Extension);
                         image.Extension = ManagedFileExtensions.Jpg;
-                    }
-                    else if (marketName == MarketCode.SanAntonio && image.MediaType == ManagedMediaTypes.Jpeg)
-                    {
-                        this.ConvertFileJpgToPng(filePath, image.Extension);
-                        image.Extension = ManagedFileExtensions.Png;
                     }
 
                     image.PathOnDisk = $"{filePath}{image.Extension}";
