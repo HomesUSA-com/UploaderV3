@@ -1,6 +1,7 @@
 namespace Husa.Uploader.Core.Services
 {
     using System.Diagnostics.CodeAnalysis;
+    using System.Drawing.Imaging;
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
@@ -1191,6 +1192,8 @@ namespace Husa.Uploader.Core.Services
 
         private async Task ProcessImages(Guid residentialListingRequestID, CancellationToken token)
         {
+            string mediaFolderName = "Husa.Core.Uploader";
+
             this.uploaderClient.WaitUntilElementExists(By.Id("photo-browser"), token);
             if (!this.uploaderClient.UploadInformation.IsNewListing)
             {
@@ -1200,9 +1203,12 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(1000);
 
             var mediaFiles = await this.mediaRepository.GetListingImages(residentialListingRequestID, market: MarketCode.SanAntonio, token);
+            var folder = Path.Combine(Path.GetTempPath(), mediaFolderName, Path.GetRandomFileName());
+            Directory.CreateDirectory(folder);
             foreach (var photo in mediaFiles)
             {
                 Thread.Sleep(500);
+                await this.mediaRepository.PrepareImage(photo, MarketCode.SanAntonio, token, folder);
                 this.uploaderClient.FindElement(By.Name("files[]")).SendKeys(photo.PathOnDisk);
             }
 
@@ -1219,6 +1225,21 @@ namespace Husa.Uploader.Core.Services
                     isUploadInProgress = false;
                 }
             }
+        }
+
+        private ImageCodecInfo GetEncoder(ImageFormat format)
+        {
+            var codecs = ImageCodecInfo.GetImageDecoders();
+            foreach (var codec in codecs)
+            {
+                if (codec.FormatID == format.Guid)
+                {
+                    this.logger.LogInformation("Codec {codecName} found for the image", codec.CodecName);
+                    return codec;
+                }
+            }
+
+            return null;
         }
 
         private void DeleteResources()

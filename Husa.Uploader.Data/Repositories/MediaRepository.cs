@@ -33,7 +33,7 @@ namespace Husa.Uploader.Data.Repositories
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IEnumerable<IListingMedia>> GetListingMedia(Guid residentialListingRequestId, MarketCode market, CancellationToken token)
+        /*public async Task<IEnumerable<IListingMedia>> GetListingMedia(Guid residentialListingRequestId, MarketCode market, CancellationToken token)
         {
             var listingMedia = await this.mediaServiceClient.GetResources(entityId: residentialListingRequestId, type: MediaType.ListingRequest, token);
             var consolidatedMedia = ConsolidateImages(listingMedia.Media);
@@ -80,7 +80,7 @@ namespace Husa.Uploader.Data.Repositories
             }
 
             return result;
-        }
+        }*/
 
         public async Task<IEnumerable<ResidentialListingMedia>> GetListingImages(Guid residentialListingRequestId, MarketCode market, CancellationToken token)
         {
@@ -111,11 +111,6 @@ namespace Husa.Uploader.Data.Repositories
                 count++;
             }
 
-            await this.PrepareImages(
-                requestMedia: result,
-                market,
-                token);
-
             return result.Where(m => !m.IsBrokenLink).OrderBy(m => m.Order);
         }
 
@@ -136,6 +131,69 @@ namespace Husa.Uploader.Data.Repositories
             }
 
             return result;
+        }
+
+        public Task<string> DownloadImageAsync(ResidentialListingMedia media, string savePath, CancellationToken token)
+        {
+            if (media is null)
+            {
+                throw new ArgumentNullException(nameof(media));
+            }
+
+            return DownloadImages();
+
+            async Task<string> DownloadImages()
+            {
+                var response = await this.httpClient.GetAsync(media.MediaUri.ToString(), token);
+
+                response.EnsureSuccessStatusCode();
+                media.MediaType = response.Content.Headers.ContentType.MediaType;
+
+                using var contentStream = await response.Content.ReadAsStreamAsync(token);
+                using var imageAsFileStream = File.Create(path: $"{savePath}{media.Extension}");
+                contentStream.Seek(0, SeekOrigin.Begin);
+                await contentStream.CopyToAsync(imageAsFileStream, token);
+
+                return response.Content.Headers.ContentType.MediaType;
+            }
+        }
+
+        public void ConvertFilePngToJpg(string pathFile, string actualExt) => this.ConvertImageFormat(pathFile, actualExt, ManagedFileExtensions.Jpg, ImageFormat.Jpeg);
+
+        public async Task PrepareImage(ResidentialListingMedia image, MarketCode marketName, CancellationToken token, string folder)
+        {
+            var filePath = Path.Combine(folder, image.Id.ToString("N"));
+            try
+            {
+                await this.DownloadImageAsync(
+                    media: image,
+                    savePath: filePath,
+                    token);
+
+                if (image.MediaType == ManagedMediaTypes.Gif || image.MediaType == ManagedMediaTypes.Png || image.MediaType == ManagedMediaTypes.Jpeg)
+                {
+                    this.ConvertFilePngToJpg(filePath, image.Extension);
+                    image.Extension = ManagedFileExtensions.Jpg;
+                }
+
+                image.PathOnDisk = $"{filePath}{image.Extension}";
+                if (marketName == MarketCode.Houston)
+                {
+                    var modifiedImage = this.ChangeSize(filePath, image);
+                    image.Extension = modifiedImage.Extension;
+                    image.PathOnDisk = modifiedImage.PathOnDisk;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                this.logger.LogWarning(ex, "Failed to retrieve the image {imageId} in this {mediaUri}", image.Id, image.MediaUri.ToString());
+                image.IsBrokenLink = true;
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Failed to create the on-disk file for the image with {imageId} in this {filePath}", image.Id, folder);
+                throw;
+            }
         }
 
         private static string GetCaption(string title = null, string description = null)
@@ -176,78 +234,6 @@ namespace Husa.Uploader.Data.Repositories
             }
 
             return mlsResToReturn;
-        }
-
-        private Task<string> DownloadImageAsync(ResidentialListingMedia media, string savePath, CancellationToken token)
-        {
-            if (media is null)
-            {
-                throw new ArgumentNullException(nameof(media));
-            }
-
-            return DownloadImages();
-
-            async Task<string> DownloadImages()
-            {
-                var response = await this.httpClient.GetAsync(media.MediaUri.ToString(), token);
-
-                response.EnsureSuccessStatusCode();
-                media.MediaType = response.Content.Headers.ContentType.MediaType;
-
-                using var contentStream = await response.Content.ReadAsStreamAsync(token);
-                using var imageAsFileStream = File.Create(path: $"{savePath}{media.Extension}");
-                contentStream.Seek(0, SeekOrigin.Begin);
-                await contentStream.CopyToAsync(imageAsFileStream, token);
-
-                return response.Content.Headers.ContentType.MediaType;
-            }
-        }
-
-        private async Task PrepareImages(IEnumerable<ResidentialListingMedia> requestMedia, MarketCode marketName, CancellationToken token)
-        {
-            var folder = Path.Combine(Path.GetTempPath(), MediaFolderName, Path.GetRandomFileName());
-            Directory.CreateDirectory(folder);
-
-            foreach (var image in requestMedia)
-            {
-                var filePath = Path.Combine(folder, image.Id.ToString("N"));
-                try
-                {
-                    await this.DownloadImageAsync(
-                        media: image,
-                        savePath: filePath,
-                        token);
-
-                    if (image.MediaType == ManagedMediaTypes.Gif || image.MediaType == ManagedMediaTypes.Png)
-                    {
-                        this.ConvertFilePngToJpg(filePath, image.Extension);
-                        image.Extension = ManagedFileExtensions.Jpg;
-                    }
-                    else if (marketName == MarketCode.SanAntonio && image.MediaType == ManagedMediaTypes.Jpeg)
-                    {
-                        this.ConvertFileJpgToPng(filePath, image.Extension);
-                        image.Extension = ManagedFileExtensions.Png;
-                    }
-
-                    image.PathOnDisk = $"{filePath}{image.Extension}";
-                    if (marketName == MarketCode.Houston)
-                    {
-                        var modifiedImage = this.ChangeSize(filePath, image);
-                        image.Extension = modifiedImage.Extension;
-                        image.PathOnDisk = modifiedImage.PathOnDisk;
-                    }
-                }
-                catch (HttpRequestException ex)
-                {
-                    this.logger.LogWarning(ex, "Failed to retrieve the image {imageId} in this {mediaUri}", image.Id, image.MediaUri.ToString());
-                    image.IsBrokenLink = true;
-                }
-                catch (Exception ex)
-                {
-                    this.logger.LogError(ex, "Failed to create the on-disk file for the image with {imageId} in this {filePath}", image.Id, folder);
-                    throw;
-                }
-            }
         }
 
         private ResidentialListingMedia ChangeSize(string pathFile, ResidentialListingMedia img)
@@ -301,8 +287,6 @@ namespace Husa.Uploader.Data.Repositories
             return img;
         }
 
-        private void ConvertFilePngToJpg(string pathFile, string actualExt) => this.ConvertImageFormat(pathFile, actualExt, ManagedFileExtensions.Jpg, ImageFormat.Jpeg);
-
         private void ConvertFileJpgToPng(string pathFile, string actualExt) => this.ConvertImageFormat(pathFile, actualExt, ManagedFileExtensions.Png, ImageFormat.Png);
 
         private void ConvertImageFormat(string filePath, string actualExt, string newExtension, ImageFormat imageFormat)
@@ -353,5 +337,10 @@ namespace Husa.Uploader.Data.Repositories
 
             return null;
         }
+
+        /*public Task<IEnumerable<IListingMedia>> GetListingMedia(Guid residentialListingRequestId, MarketCode market, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }*/
     }
 }

@@ -857,13 +857,15 @@ namespace Husa.Uploader.Core.Services
             var imageRow = 0;
             var imageCell = 0;
             var maxCol = 5;
+            string mediaFolderName = "Husa.Core.Uploader";
+            var folder = Path.Combine(Path.GetTempPath(), mediaFolderName, Path.GetRandomFileName());
+            Directory.CreateDirectory(folder);
             foreach (var image in media)
             {
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
-
+                await this.mediaRepository.PrepareImage(image, MarketCode.Austin, cancellationToken, folder);
                 this.uploaderClient.FindElement(By.Id("m_ucImageLoader_m_tblImageLoader")).FindElement(By.CssSelector("input[type=file]")).SendKeys(image.PathOnDisk);
                 Thread.Sleep(3000);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id($"photoCell_{imageOrder}"), cancellationToken);
 
                 if (!string.IsNullOrEmpty(image.Caption))
                 {
@@ -876,9 +878,8 @@ namespace Husa.Uploader.Core.Services
                 {
                     imageRow++;
                     imageCell = 0;
+                    this.uploaderClient.ScrollDown(200);
                 }
-
-                this.uploaderClient.ScrollDown(200);
             }
         }
 

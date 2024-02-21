@@ -19,7 +19,7 @@ namespace Husa.Uploader.Data.Tests
         private readonly Mock<IMediaServiceClient> mediaServiceClient = new();
         private readonly Mock<ILogger<MediaRepository>> logger = new();
 
-        [Fact]
+        /*[Fact]
         public async Task GetRequestMediaSuccess()
         {
             // Arrange
@@ -62,7 +62,7 @@ namespace Husa.Uploader.Data.Tests
             // Assert
             Assert.NotEmpty(result);
             Assert.Equal(mediaId, result.First().Id);
-        }
+        }*/
 
         [Theory]
         [InlineData("some-title", "some-description")]
