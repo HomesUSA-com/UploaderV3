@@ -9,9 +9,6 @@ namespace Husa.Uploader.Data.Interfaces
 
         Task<IEnumerable<ResidentialListingVirtualTour>> GetListingVirtualTours(Guid residentialListingRequestId, MarketCode market, CancellationToken token);
 
-        Task<string> DownloadImageAsync(ResidentialListingMedia media, string savePath, CancellationToken token);
-
-        void ConvertFilePngToJpg(string pathFile, string actualExt);
         Task PrepareImage(ResidentialListingMedia image, MarketCode marketName, CancellationToken token, string folder);
     }
 }

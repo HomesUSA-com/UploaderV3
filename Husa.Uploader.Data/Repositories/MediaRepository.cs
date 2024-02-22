@@ -22,6 +22,8 @@ namespace Husa.Uploader.Data.Repositories
         private readonly HttpClient httpClient;
         private readonly IMediaServiceClient mediaServiceClient;
         private readonly ILogger<MediaRepository> logger;
+        private int maxWidth;
+        private int maxHeight;
 
         public MediaRepository(
             HttpClient httpClient,
@@ -32,55 +34,6 @@ namespace Husa.Uploader.Data.Repositories
             this.mediaServiceClient = mediaServiceClient ?? throw new ArgumentNullException(nameof(mediaServiceClient));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
-
-        /*public async Task<IEnumerable<IListingMedia>> GetListingMedia(Guid residentialListingRequestId, MarketCode market, CancellationToken token)
-        {
-            var listingMedia = await this.mediaServiceClient.GetResources(entityId: residentialListingRequestId, type: MediaType.ListingRequest, token);
-            var consolidatedMedia = ConsolidateImages(listingMedia.Media);
-            var result = new List<IListingMedia>();
-            int count = 0;
-
-            foreach (var mediaDetail in consolidatedMedia)
-            {
-                if (mediaDetail.Uri == null)
-                {
-                    this.logger.LogWarning("Skipping image {mediaId}", mediaDetail.Id);
-                    continue;
-                }
-
-                var residentialListingMedia = new ResidentialListingMedia
-                {
-                    Id = mediaDetail.Id,
-                    Caption = !string.IsNullOrWhiteSpace(mediaDetail.Description) ? mediaDetail.Description : string.Empty,
-                    MediaUri = mediaDetail.Uri,
-                    Order = mediaDetail.Order ?? count,
-                    IsPrimary = mediaDetail.IsPrimary,
-                    ExternalUrl = mediaDetail.Uri.ToString(),
-                };
-
-                result.Add(residentialListingMedia);
-                count++;
-            }
-
-            await this.PrepareImages(
-                requestMedia: result.OfType<ResidentialListingMedia>(),
-                market,
-                token);
-
-            foreach (var virtualTourDetail in listingMedia.VirtualTour)
-            {
-                var virtualTour = new ResidentialListingVirtualTour
-                {
-                    Id = virtualTourDetail.Id,
-                    Caption = !string.IsNullOrWhiteSpace(virtualTourDetail.Description) ? virtualTourDetail.Description : string.Empty,
-                    MediaUri = virtualTourDetail.Uri,
-                };
-
-                result.Add(virtualTour);
-            }
-
-            return result;
-        }*/
 
         public async Task<IEnumerable<ResidentialListingMedia>> GetListingImages(Guid residentialListingRequestId, MarketCode market, CancellationToken token)
         {
@@ -109,6 +62,22 @@ namespace Husa.Uploader.Data.Repositories
 
                 result.Add(residentialListingMedia);
                 count++;
+            }
+
+            switch (market)
+            {
+                case MarketCode.CTX:
+                    this.maxWidth = 1024;
+                    this.maxHeight = 768;
+                    break;
+                case MarketCode.SanAntonio:
+                    this.maxWidth = 1280;
+                    this.maxHeight = 853;
+                    break;
+                default:
+                    this.maxWidth = 2048;
+                    this.maxHeight = 1536;
+                    break;
             }
 
             return result.Where(m => !m.IsBrokenLink).OrderBy(m => m.Order);
@@ -177,12 +146,9 @@ namespace Husa.Uploader.Data.Repositories
                 }
 
                 image.PathOnDisk = $"{filePath}{image.Extension}";
-                if (marketName == MarketCode.Houston)
-                {
-                    var modifiedImage = this.ChangeSize(filePath, image);
-                    image.Extension = modifiedImage.Extension;
-                    image.PathOnDisk = modifiedImage.PathOnDisk;
-                }
+                var modifiedImage = this.ChangeSize(filePath, image);
+                image.Extension = modifiedImage.Extension;
+                image.PathOnDisk = modifiedImage.PathOnDisk;
             }
             catch (HttpRequestException ex)
             {
@@ -244,38 +210,27 @@ namespace Husa.Uploader.Data.Repositories
             var newImage = Image.FromFile(newFileName + img.Extension);
             int newImageWidth = newImage.Width;
             int newImageHeight = newImage.Height;
-            if ((newImageWidth * newImageHeight) >= MaxImageArea)
+
+            int maxImageArea = this.maxWidth * this.maxHeight;
+
+            if ((newImageWidth * newImageHeight) >= maxImageArea)
             {
-                int percentage = (100 - int.Parse(Math.Abs((15000000 * 100) / (newImageWidth * newImageHeight)).ToString())) / 2;
-                newImageWidth -= (newImageWidth * percentage) / 100;
-                newImageHeight -= (newImageHeight * percentage) / 100;
+                double percentage = (double)maxImageArea / (newImageWidth * newImageHeight);
+                percentage = (Math.Sqrt(percentage) * 100) - 100;
 
-                var newFileSize = new Size(newImageWidth, newImageHeight);
-                var photoFile = new Bitmap(newImage, newFileSize);
-                photoFile.SetResolution(newImage.HorizontalResolution, newImage.VerticalResolution);
-                using (var imageGraphics = Graphics.FromImage(photoFile))
-                {
-                    imageGraphics.Clear(Color.White);
-                    imageGraphics.DrawImageUnscaled(newImage, x: 0, y: 0);
-                }
+                newImageWidth = (int)(newImageWidth * (1 + (percentage / 100)));
+                newImageHeight = (int)(newImageHeight * (1 + (percentage / 100)));
 
-                var imageEncoder = this.GetEncoder(ImageFormat.Jpeg);
-                var myEncoderParameters = new EncoderParameters(count: EncoderParametersCount);
-                var myEncoderParameter = new EncoderParameter(encoder: Encoder.Quality, value: BitmapQualityLevel);
-                myEncoderParameters.Param[0] = myEncoderParameter;
+                var resizedImage = new Bitmap(newImage, newImageWidth, newImageHeight);
 
-                photoFile.Save(
-                    filename: $"{@pathFile}{ManagedFileExtensions.Jpg}",
-                    encoder: imageEncoder,
-                    encoderParams: myEncoderParameters);
+                resizedImage.Save($"{pathFile}{ManagedFileExtensions.Jpg}", ImageFormat.Jpeg);
 
                 img.Extension = ManagedFileExtensions.Jpg;
-                img.PathOnDisk = $"{@pathFile}{ManagedFileExtensions.Jpg}";
+                img.PathOnDisk = $"{pathFile}{ManagedFileExtensions.Jpg}";
 
-                photoFile.Dispose();
+                resizedImage.Dispose();
                 newImage.Dispose();
 
-                // Delete the original file
                 File.Delete(newFileName + img.Extension);
             }
             else
@@ -337,10 +292,5 @@ namespace Husa.Uploader.Data.Repositories
 
             return null;
         }
-
-        /*public Task<IEnumerable<IListingMedia>> GetListingMedia(Guid residentialListingRequestId, MarketCode market, CancellationToken token)
-        {
-            throw new NotImplementedException();
-        }*/
     }
 }

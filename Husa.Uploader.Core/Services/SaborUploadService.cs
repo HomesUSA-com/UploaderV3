@@ -455,8 +455,7 @@ namespace Husa.Uploader.Core.Services
             // Second Page of new listing
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("save-page"));
 
-            // this.uploaderClient.WriteTextbox(By.Id("AREAID"), listing.MLSArea); // Area
-            this.uploaderClient.WriteTextbox(By.Id("AREAID"), "3100" /*listing.MLSArea*/); // Area
+            this.uploaderClient.WriteTextbox(By.Id("AREAID"), listing.MLSArea); // Area
             try
             {
                 this.uploaderClient.WriteTextbox(By.Id("FERGUSON"), listing.MapscoMapCoord); // Mapsco Grid

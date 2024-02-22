@@ -865,7 +865,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
                 await this.mediaRepository.PrepareImage(image, MarketCode.Austin, cancellationToken, folder);
                 this.uploaderClient.FindElement(By.Id("m_ucImageLoader_m_tblImageLoader")).FindElement(By.CssSelector("input[type=file]")).SendKeys(image.PathOnDisk);
-                Thread.Sleep(3000);
+                Thread.Sleep(1000);
 
                 if (!string.IsNullOrEmpty(image.Caption))
                 {

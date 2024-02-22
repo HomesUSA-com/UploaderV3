@@ -1129,11 +1129,9 @@ namespace Husa.Uploader.Core.Services
             {
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
 
-                this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(3000));
                 await this.mediaRepository.PrepareImage(image, MarketCode.Houston, cancellationToken, folder);
                 this.uploaderClient.FindElement(By.Id("m_ucImageLoader_m_tblImageLoader")).FindElement(By.CssSelector("input[type=file]")).SendKeys(image.PathOnDisk);
-                this.uploaderClient.ResetImplicitWait();
-
+                Thread.Sleep(1000);
                 if (!string.IsNullOrEmpty(image.Caption))
                 {
                     this.uploaderClient.ExecuteScript(script: $"jQuery('#m_rptPhotoRows_ctl{imageRow:D2}_m_rptPhotoCells_ctl{imageCell:D2}_m_ucPhotoCell_m_tbxDescription').val('{image.Caption.Replace("'", "\\'")}');");
