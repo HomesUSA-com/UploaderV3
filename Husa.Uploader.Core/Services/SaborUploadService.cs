@@ -1,7 +1,6 @@
 namespace Husa.Uploader.Core.Services
 {
     using System.Diagnostics.CodeAnalysis;
-    using System.Drawing.Imaging;
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
@@ -1224,21 +1223,6 @@ namespace Husa.Uploader.Core.Services
                     isUploadInProgress = false;
                 }
             }
-        }
-
-        private ImageCodecInfo GetEncoder(ImageFormat format)
-        {
-            var codecs = ImageCodecInfo.GetImageDecoders();
-            foreach (var codec in codecs)
-            {
-                if (codec.FormatID == format.Guid)
-                {
-                    this.logger.LogInformation("Codec {codecName} found for the image", codec.CodecName);
-                    return codec;
-                }
-            }
-
-            return null;
         }
 
         private void DeleteResources()
