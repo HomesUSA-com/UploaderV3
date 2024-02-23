@@ -1121,19 +1121,27 @@ namespace Husa.Uploader.Core.Services
             var imageOrder = 0;
             var imageRow = 0;
             var imageCell = 0;
+            string mediaFolderName = "Husa.Core.Uploader";
+            var folder = Path.Combine(Path.GetTempPath(), mediaFolderName, Path.GetRandomFileName());
+            Directory.CreateDirectory(folder);
+            var captionImageId = string.Empty;
             foreach (var image in media)
             {
+                captionImageId = $"m_rptPhotoRows_ctl{imageRow:D2}_m_rptPhotoCells_ctl{imageCell:D2}_m_ucPhotoCell_m_tbxDescription";
+
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
 
-                this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(3000));
+                await this.mediaRepository.PrepareImage(image, MarketCode.Houston, cancellationToken, folder);
                 this.uploaderClient.FindElement(By.Id("m_ucImageLoader_m_tblImageLoader")).FindElement(By.CssSelector("input[type=file]")).SendKeys(image.PathOnDisk);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id($"photoCell_{imageOrder}"), cancellationToken);
-                this.uploaderClient.ResetImplicitWait();
-
-                if (!string.IsNullOrEmpty(image.Caption))
-                {
-                    this.uploaderClient.ExecuteScript(script: $"jQuery('#m_rptPhotoRows_ctl{imageRow:D2}_m_rptPhotoCells_ctl{imageCell:D2}_m_ucPhotoCell_m_tbxDescription').val('{image.Caption.Replace("'", "\\'")}');");
-                }
+                this.WaitForElementAndThenDoAction(
+                        By.Id(captionImageId),
+                        (element) =>
+                        {
+                            if (!string.IsNullOrEmpty(image.Caption))
+                            {
+                                this.uploaderClient.ExecuteScript(script: $"jQuery('#{captionImageId}').val('{image.Caption.Replace("'", "\\'")}');");
+                            }
+                        });
 
                 imageOrder++;
                 imageCell++;
@@ -1142,6 +1150,22 @@ namespace Husa.Uploader.Core.Services
                     imageRow++;
                     imageCell = 0;
                 }
+
+                this.uploaderClient.ScrollDown(200);
+            }
+        }
+
+        private void WaitForElementAndThenDoAction(By findBy, Action<IWebElement> action)
+        {
+            try
+            {
+                this.uploaderClient.WaitForElementToBeVisible(findBy, TimeSpan.FromSeconds(10));
+                var element = this.uploaderClient.FindElement(findBy);
+                action(element);
+            }
+            catch (WebDriverTimeoutException)
+            {
+                Console.WriteLine("Item not found after 10 seconds.");
             }
         }
 

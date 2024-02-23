@@ -88,6 +88,28 @@ namespace Husa.Uploader.Core.Services
             return isAlertPresent;
         }
 
+        public void WaitForElementToBeVisible(By findBy, TimeSpan timeout)
+        {
+            var customWait = new WebDriverWait(this.driver, timeout);
+            customWait.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
+            customWait.Until(driver =>
+            {
+                try
+                {
+                    var element = driver.FindElement(findBy);
+                    return element != null && element.Displayed;
+                }
+                catch (NoSuchElementException)
+                {
+                    return false;
+                }
+                catch (StaleElementReferenceException)
+                {
+                    return false;
+                }
+            });
+        }
+
         public bool WaitUntilElementIsDisplayed(By findBy, CancellationToken token = default)
         {
             this.logger.LogInformation("Waiting for the element '{by}' to be displayed", findBy.ToString());
