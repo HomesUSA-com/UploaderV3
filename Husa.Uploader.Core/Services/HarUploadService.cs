@@ -159,6 +159,7 @@ namespace Husa.Uploader.Core.Services
                         this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
                     }
 
+                    this.NavigateToNewPropertyInput(housingType);
                     listing.Longitude = newLongitude;
                     listing.Latitude = newLatitude;
                     this.FillListingInformation(listing);

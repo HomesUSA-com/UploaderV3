@@ -764,7 +764,6 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
 
             this.uploaderClient.WriteTextbox(By.Id("Input_320"), listing.Directions); // Directions
-            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.GetAgentRemarksMessage());
             this.uploaderClient.ScrollDown(200);
 
             this.UpdatePublicRemarksInRemarksTab(listing);
@@ -810,6 +809,7 @@ namespace Husa.Uploader.Core.Services
         {
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_322"));
             var remarks = listing.GetPublicRemarks();
+            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.GetAgentRemarksMessage());
             this.uploaderClient.WriteTextbox(By.Id("Input_322"), remarks); // Internet / Remarks / Desc. of Property
             this.uploaderClient.WriteTextbox(By.Id("Input_323"), remarks); // Syndication Remarks
         }
