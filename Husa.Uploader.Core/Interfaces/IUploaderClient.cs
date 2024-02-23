@@ -15,6 +15,7 @@ namespace Husa.Uploader.Core.Interfaces
 
         void InitializeUploadInfo(Guid listingRequestId, bool isNewListing);
         bool AcceptAlertWindow(bool isElementOptional = false, bool shouldWait = false);
+        void WaitForElementToBeVisible(By findBy, TimeSpan timeout);
         bool WaitUntilElementIsDisplayed(By findBy, CancellationToken token = default);
         bool WaitUntilElementIsDisplayed(By findBy, TimeSpan waitTime, CancellationToken token = default);
         bool WaitUntilElementIsDisplayed(Func<IWebDriver, bool> waitCondition, CancellationToken token = default);
