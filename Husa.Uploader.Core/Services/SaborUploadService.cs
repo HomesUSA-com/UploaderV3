@@ -454,8 +454,7 @@ namespace Husa.Uploader.Core.Services
             // Second Page of new listing
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("save-page"));
 
-            // this.uploaderClient.WriteTextbox(By.Id("AREAID"), listing.MLSArea); // Area
-            this.uploaderClient.WriteTextbox(By.Id("AREAID"), "3100" /*listing.MLSArea*/); // Area
+            this.uploaderClient.WriteTextbox(By.Id("AREAID"), listing.MLSArea); // Area
             try
             {
                 this.uploaderClient.WriteTextbox(By.Id("FERGUSON"), listing.MapscoMapCoord); // Mapsco Grid
@@ -1191,6 +1190,8 @@ namespace Husa.Uploader.Core.Services
 
         private async Task ProcessImages(Guid residentialListingRequestID, CancellationToken token)
         {
+            string mediaFolderName = "Husa.Core.Uploader";
+
             this.uploaderClient.WaitUntilElementExists(By.Id("photo-browser"), token);
             if (!this.uploaderClient.UploadInformation.IsNewListing)
             {
@@ -1200,9 +1201,12 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(1000);
 
             var mediaFiles = await this.mediaRepository.GetListingImages(residentialListingRequestID, market: MarketCode.SanAntonio, token);
+            var folder = Path.Combine(Path.GetTempPath(), mediaFolderName, Path.GetRandomFileName());
+            Directory.CreateDirectory(folder);
             foreach (var photo in mediaFiles)
             {
                 Thread.Sleep(500);
+                await this.mediaRepository.PrepareImage(photo, MarketCode.SanAntonio, token, folder);
                 this.uploaderClient.FindElement(By.Name("files[]")).SendKeys(photo.PathOnDisk);
             }
 

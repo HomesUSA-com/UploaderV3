@@ -254,8 +254,10 @@ namespace Husa.Uploader.Core.Tests
             request.MLSNum = "MLSNum";
             request.BuildCompletionDate = DateTime.Now;
             var sut = this.GetSut();
+
             // Act
             var result = await sut.UpdateCompletionDate(request);
+
             // Assert
             Assert.Equal(UploadResult.Success, result);
             this.uploaderClient.Verify(client => client.WriteTextbox(By.Id("Input_301"), "12/31/2023", false, true, false, false), Times.Never);
