@@ -3,7 +3,7 @@ param(
     [string]$path
 )
 
-$chromedriverUrl = "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$version/win32/chromedriver-win32.zip"
+$chromedriverUrl = "https://storage.googleapis.com/chrome-for-testing-public/$version/win32/chromedriver-win32.zip"
 $zipPath = Join-Path $path "chromedriver-win32.zip"
 Invoke-WebRequest -Uri $chromedriverUrl -OutFile $zipPath
 
