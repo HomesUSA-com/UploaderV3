@@ -134,6 +134,15 @@ steps:
     configuration: 'Release'
     logFileVerbosity: 'detailed'
 
+- task: ArchiveFiles@2
+  condition: ne(variables.isPullRequest, true)
+  inputs:
+    rootFolderOrFile: '$(Build.ArtifactStagingDirectory)' 
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    replaceExistingArchive: false
+
 - task: PublishBuildArtifacts@1
   condition: ne(variables.isPullRequest, true)
   displayName: 'publish Artifact: drop'
