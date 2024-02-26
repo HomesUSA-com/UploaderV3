@@ -700,8 +700,6 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
             this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // Financial Information
             this.UpdatePublicRemarksInRemarksTab(listing); // Public Remarks
-
-            this.uploaderClient.WriteTextbox(By.Id("Input_141"), listing.GetAgentRemarksMessage()); // Agent Remarks
         }
 
         private async Task FillMedia(ResidentialListingRequest listing, CancellationToken cancellationToken)
@@ -736,6 +734,7 @@ namespace Husa.Uploader.Core.Services
             // driver.wait.Until(x => ExpectedConditions.ElementIsVisible(By.Id("Input_917")));
             Thread.Sleep(400);
             this.uploaderClient.WriteTextbox(By.Id("Input_140"), listing.GetPublicRemarks()); // Internet / Remarks / Desc. of Property
+            this.uploaderClient.WriteTextbox(By.Id("Input_141"), listing.GetAgentRemarksMessage()); // Agent Remarks
             this.uploaderClient.WriteTextbox(By.Id("Input_142"), listing.Directions); // Syndication Remarks
         }
 
