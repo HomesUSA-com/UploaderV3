@@ -45,8 +45,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
         public override MarketCode MarketCode => MarketCode.CTX;
         public override BuiltStatus BuiltStatus => this.YearBuiltDesc switch
         {
-            "TB" => BuiltStatus.ToBeBuilt,
-            "NW" => BuiltStatus.ReadyNow,
+            "TOBEB" => BuiltStatus.ToBeBuilt,
+            "COMPL" => BuiltStatus.ReadyNow,
             "UC" => BuiltStatus.WithCompletion,
             _ => BuiltStatus.WithCompletion,
         };

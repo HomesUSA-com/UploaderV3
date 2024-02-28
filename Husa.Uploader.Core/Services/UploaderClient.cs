@@ -88,6 +88,28 @@ namespace Husa.Uploader.Core.Services
             return isAlertPresent;
         }
 
+        public void WaitForElementToBeVisible(By findBy, TimeSpan timeout)
+        {
+            var customWait = new WebDriverWait(this.driver, timeout);
+            customWait.IgnoreExceptionTypes(typeof(NoSuchElementException), typeof(StaleElementReferenceException));
+            customWait.Until(driver =>
+            {
+                try
+                {
+                    var element = driver.FindElement(findBy);
+                    return element != null && element.Displayed;
+                }
+                catch (NoSuchElementException)
+                {
+                    return false;
+                }
+                catch (StaleElementReferenceException)
+                {
+                    return false;
+                }
+            });
+        }
+
         public bool WaitUntilElementIsDisplayed(By findBy, CancellationToken token = default)
         {
             this.logger.LogInformation("Waiting for the element '{by}' to be displayed", findBy.ToString());
@@ -297,16 +319,17 @@ namespace Husa.Uploader.Core.Services
             bool doNotClear = false,
             bool isSecondAttemp = false)
         {
-            if (string.IsNullOrEmpty(entry))
-            {
-                this.logger.LogInformation("Tried to write a null value to textbox with locator: {by} when processing the request.", findBy);
-                return;
-            }
-
             var element = this.FindElement(findBy, isElementOptional: isElementOptional);
             if (isElementOptional && element is null)
             {
                 this.logger.LogInformation("Textbox {by} not found, skipping process.", findBy);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(entry))
+            {
+                this.logger.LogInformation("Tried to write a null value to textbox with locator: {by} when processing the request.", findBy);
+                element.Clear();
                 return;
             }
 

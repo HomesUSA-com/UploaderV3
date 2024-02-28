@@ -159,6 +159,7 @@ namespace Husa.Uploader.Core.Services
                         this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
                     }
 
+                    this.NavigateToNewPropertyInput(housingType);
                     listing.Longitude = newLongitude;
                     listing.Latitude = newLatitude;
                     this.FillListingInformation(listing);
@@ -205,6 +206,7 @@ namespace Husa.Uploader.Core.Services
 
                 this.GoToPropertyInformationTab();
                 this.UpdateYearBuiltDescription(listing);
+                this.FillCompletionDate(listing);
 
                 this.GoToRemarksTab(housingType);
                 this.UpdatePublicRemarksInRemarksTab(listing);
@@ -778,20 +780,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_251"), listing.BuilderName);  // Builder Name
             this.UpdateYearBuiltDescription(listing);
 
-            if (listing.BuildCompletionDate.HasValue)
-            {
-                var yearBuiltDesc = listing.YearBuiltDesc.ToEnumFromEnumMember<ConstructionStage>();
-                if (yearBuiltDesc == ConstructionStage.Complete)
-                {
-                    this.uploaderClient.WriteTextbox(By.Id("Input_249"), string.Empty, true, true); // Approx Completion Date
-                    this.uploaderClient.WriteTextbox(By.Id("Input_301"), listing.BuildCompletionDate.Value.ToShortDateString(), true, true); // Completion Date
-                }
-                else if (yearBuiltDesc == ConstructionStage.Incomplete)
-                {
-                    this.uploaderClient.WriteTextbox(By.Id("Input_301"), string.Empty, true, true); // Approx Completion Date
-                    this.uploaderClient.WriteTextbox(By.Id("Input_249"), listing.BuildCompletionDate.Value.ToShortDateString(), true, true); // Completion Date
-                }
-            }
+            this.FillCompletionDate(listing);
 
             if (this.uploaderClient.FindElements(By.Id("Input_374")).Any())
             {
@@ -806,7 +795,11 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_202"), listing.GarageCapacity); // Garage - Number of Spaces
             this.uploaderClient.SetMultipleCheckboxById("Input_207", listing.AccessInstructionsDesc); // Access -- MLS-51 AccessibilityDesc -> AccessInstructionsDesc
             this.uploaderClient.SetMultipleCheckboxById("Input_203", listing.GarageDesc); // Garage Description
-            this.uploaderClient.SetMultipleCheckboxById("Input_206", listing.GarageCarpotDesc); // Garage Carpot Description
+
+            if (this.uploaderClient.FindElements(By.Id("Input_206"))?.Any() == true)
+            {
+                this.uploaderClient.SetMultipleCheckboxById("Input_206", listing.GarageCarpotDesc); // Garage Carpot Description
+            }
 
             if (this.uploaderClient.FindElements(By.Id("Input_152")).Any())
             {
@@ -1061,10 +1054,29 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetSelect(By.Id("Input_248"), listing.YearBuiltDesc); // New Construction Desc
         }
 
+        private void FillCompletionDate(ResidentialListingRequest listing)
+        {
+            if (listing.BuildCompletionDate.HasValue)
+            {
+                var yearBuiltDesc = listing.YearBuiltDesc.ToEnumFromEnumMember<ConstructionStage>();
+                if (yearBuiltDesc == ConstructionStage.Complete)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_249"), string.Empty, false, true); // Approx Completion Date
+                    this.uploaderClient.WriteTextbox(By.Id("Input_301"), listing.BuildCompletionDate.Value.ToShortDateString(), true, true); // Completion Date
+                }
+                else if (yearBuiltDesc == ConstructionStage.Incomplete)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_301"), string.Empty, true, true); // Approx Completion Date
+                    this.uploaderClient.WriteTextbox(By.Id("Input_249"), listing.BuildCompletionDate.Value.ToShortDateString(), true, true); // Completion Date
+                }
+            }
+        }
+
         private void UpdatePublicRemarksInRemarksTab(ResidentialListingRequest listing)
         {
             var remarks = listing.GetPublicRemarks();
             this.uploaderClient.WriteTextbox(By.Id("Input_135"), remarks, true); // Public Remarks
+            this.uploaderClient.WriteTextbox(By.Id("Input_137"), listing.GetAgentRemarksMessage(), true); // Agent Remarks
         }
 
         private void SetLongitudeAndLatitudeValues(ResidentialListingRequest listing)
@@ -1110,19 +1122,27 @@ namespace Husa.Uploader.Core.Services
             var imageOrder = 0;
             var imageRow = 0;
             var imageCell = 0;
+            string mediaFolderName = "Husa.Core.Uploader";
+            var folder = Path.Combine(Path.GetTempPath(), mediaFolderName, Path.GetRandomFileName());
+            Directory.CreateDirectory(folder);
+            var captionImageId = string.Empty;
             foreach (var image in media)
             {
+                captionImageId = $"m_rptPhotoRows_ctl{imageRow:D2}_m_rptPhotoCells_ctl{imageCell:D2}_m_ucPhotoCell_m_tbxDescription";
+
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
 
-                this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(3000));
+                await this.mediaRepository.PrepareImage(image, MarketCode.Houston, cancellationToken, folder);
                 this.uploaderClient.FindElement(By.Id("m_ucImageLoader_m_tblImageLoader")).FindElement(By.CssSelector("input[type=file]")).SendKeys(image.PathOnDisk);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id($"photoCell_{imageOrder}"), cancellationToken);
-                this.uploaderClient.ResetImplicitWait();
-
-                if (!string.IsNullOrEmpty(image.Caption))
-                {
-                    this.uploaderClient.ExecuteScript(script: $"jQuery('#m_rptPhotoRows_ctl{imageRow:D2}_m_rptPhotoCells_ctl{imageCell:D2}_m_ucPhotoCell_m_tbxDescription').val('{image.Caption.Replace("'", "\\'")}');");
-                }
+                this.WaitForElementAndThenDoAction(
+                        By.Id(captionImageId),
+                        (element) =>
+                        {
+                            if (!string.IsNullOrEmpty(image.Caption))
+                            {
+                                this.uploaderClient.ExecuteScript(script: $"jQuery('#{captionImageId}').val('{image.Caption.Replace("'", "\\'")}');");
+                            }
+                        });
 
                 imageOrder++;
                 imageCell++;
@@ -1131,6 +1151,22 @@ namespace Husa.Uploader.Core.Services
                     imageRow++;
                     imageCell = 0;
                 }
+
+                this.uploaderClient.ScrollDown(200);
+            }
+        }
+
+        private void WaitForElementAndThenDoAction(By findBy, Action<IWebElement> action)
+        {
+            try
+            {
+                this.uploaderClient.WaitForElementToBeVisible(findBy, TimeSpan.FromSeconds(10));
+                var element = this.uploaderClient.FindElement(findBy);
+                action(element);
+            }
+            catch (WebDriverTimeoutException)
+            {
+                Console.WriteLine("Item not found after 10 seconds.");
             }
         }
 
