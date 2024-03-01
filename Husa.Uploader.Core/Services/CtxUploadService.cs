@@ -450,6 +450,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_532"), listing.LotNum, isElementOptional: true); // Lot
             this.uploaderClient.WriteTextbox(By.Id("Input_533"), listing.Block, isElementOptional: true); // Block
             this.uploaderClient.SetSelect(By.Id("Input_534"), listing.FacesDesc, fieldLabel: "Front Faces", tabName, isElementOptional: true); // Front Faces
+            this.uploaderClient.ScrollDown(250);
 
             this.uploaderClient.SetSelect(By.Id("Input_535_TB"), listing.SchoolDistrict.ToUpper(), fieldLabel: "School District", tabName); // School District
 
