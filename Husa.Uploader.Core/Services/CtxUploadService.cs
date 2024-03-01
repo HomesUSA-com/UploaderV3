@@ -196,8 +196,8 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
+                Thread.Sleep(5000);
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
                 this.NavigateToQuickEdit(listing.MLSNum);
 
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
@@ -723,11 +723,13 @@ namespace Husa.Uploader.Core.Services
 
         private void UpdateYearBuiltDescriptionInGeneralTab(ResidentialListingRequest listing)
         {
-            const string tabName = "General";
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_185"));
+            const string tabName = "Listing Information";
+            this.uploaderClient.ClickOnElement(By.LinkText(tabName));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_553"));
             this.uploaderClient.ScrollDown();
-            this.uploaderClient.SetSelect(By.Id("Input_184"), listing.YearBuiltDesc, fieldLabel: "Construction Status", tabName); // Construction Status
-            this.uploaderClient.WriteTextbox(By.Id("Input_185"), listing.YearBuilt); // Year Built
+            this.uploaderClient.SetSelect(By.Id("Input_547"), listing.YearBuiltDesc, fieldLabel: "Construction Status", tabName); // Construction Status
+            this.uploaderClient.WriteTextbox(By.Id("Input_549"), listing.BuildCompletionDate); // Estimated Completion Date
+            this.uploaderClient.WriteTextbox(By.Id("Input_553"), listing.YearBuilt); // Year Built
         }
 
         private void UpdatePublicRemarksInRemarksTab(ResidentialListingRequest listing)
