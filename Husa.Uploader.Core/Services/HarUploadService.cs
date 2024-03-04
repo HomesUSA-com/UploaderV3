@@ -859,6 +859,7 @@ namespace Husa.Uploader.Core.Services
             if (listing.IsNewListing)
             {
                 this.GoToTab("Map Information");
+                this.uploaderClient.ScrollDown(250);
                 this.SetLongitudeAndLatitudeValues(listing);
             }
         }
