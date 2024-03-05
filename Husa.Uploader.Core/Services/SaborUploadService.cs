@@ -175,7 +175,7 @@ namespace Husa.Uploader.Core.Services
                 {
                     Thread.Sleep(1000);
                     this.EditProperty(listing.MLSNum);
-                    this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(26) > a:first').click();");
+                    this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
                     Thread.Sleep(1000);
                     this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[2].click();");
                     Thread.Sleep(1000);
@@ -218,7 +218,7 @@ namespace Husa.Uploader.Core.Services
                 this.EditProperty(listing.MLSNum);
 
                 Thread.Sleep(2000);
-                this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(26) > a:first').click();");
+                this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
                 Thread.Sleep(1000);
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
                 this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[0].click();");
@@ -273,7 +273,7 @@ namespace Husa.Uploader.Core.Services
                 this.EditProperty(listing.MLSNum);
 
                 Thread.Sleep(1000);
-                this.uploaderClient.ExecuteScript("jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(26) > a:first').click();");
+                this.uploaderClient.ExecuteScript("jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
                 Thread.Sleep(1000);
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
                 this.uploaderClient.ExecuteScript("jQuery('.modal-body > .inner-modal-body > div').find('button')[1].click();");
@@ -346,7 +346,7 @@ namespace Husa.Uploader.Core.Services
                 this.EditProperty(listing.MLSNum);
 
                 Thread.Sleep(1000);
-                this.uploaderClient.ExecuteScript("jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(26) > a:first').click();");
+                this.uploaderClient.ExecuteScript("jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
                 Thread.Sleep(1000);
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
                 Thread.Sleep(1000);
@@ -376,7 +376,7 @@ namespace Husa.Uploader.Core.Services
                 this.EditProperty(listing.MLSNum);
                 Thread.Sleep(1000);
 
-                this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(26) > a:first').click();");
+                this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
                 Thread.Sleep(1000);
 
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
@@ -438,7 +438,7 @@ namespace Husa.Uploader.Core.Services
         private void NewProperty(ResidentialListingRequest listing)
         {
             const string tabName = "General";
-            const string errorMessageScript = "  $.iGrowl({type: 'error',title: 'HomesUSA - Uploader',message: 'Please, enter a valid area code within 5 minutes and click in the button Continue. <button onclick=\'javascript:document.getElementById(\"save-page\").click()\'>Continue</button> <div id=\"time\" style=\"font-weight: bold\"></div>',delay: 0,small: false,placement:{ x: 'right', y: 'top'}, offset: {x: 30,y: 50},animShow: 'fadeInDown',animHide: 'bounceOutUp'}); var fiveMinutes = 60 * 5,display = document.getElementById('time'); startTimer(fiveMinutes, display);";
+            const string errorMessageScript = "  $.iGrowl({type: 'error',title: 'HomesUSA - Uploader',message: 'Please, enter a valid area code within 5 minutes and click in the button Continue. <button onclick=\'javascript:document.getElementByName(\"save-page\").click()\'>Continue</button> <div id=\"time\" style=\"font-weight: bold\"></div>',delay: 0,small: false,placement:{ x: 'right', y: 'top'}, offset: {x: 30,y: 50},animShow: 'fadeInDown',animHide: 'bounceOutUp'}); var fiveMinutes = 60 * 5,display = document.getElementById('time'); startTimer(fiveMinutes, display);";
             Thread.Sleep(1000);
 
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("dcModal"));
@@ -447,12 +447,12 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetSelectWithScript("category", "property-type-selector", 0, propertyCategoryType, "Class", tabName); // Class
             this.uploaderClient.ExecuteScript("$('.search-options input[type=\"checkbox\"]').attr('id', 'autoPopulateFromTax');$('#autoPopulateFromTax').click();"); // Auto-populate from Tax data
             this.uploaderClient.ExecuteScript("$('.search-options input[type=\"checkbox\"]:last').attr('id', 'manuallyEnterAllData');$('#manuallyEnterAllData').click();"); // Manually enter all listing data
-            this.uploaderClient.ExecuteScript("$('.modal-header button:eq(1)').click();"); // Next>>
+            this.uploaderClient.ExecuteScript("$('.modal-header button:eq(2)').click();"); // Next>>
 
-            Thread.Sleep(1000);
+            Thread.Sleep(3000);
 
             // Second Page of new listing
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("save-page"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("save-page"));
 
             this.uploaderClient.WriteTextbox(By.Id("AREAID"), listing.MLSArea); // Area
             try
@@ -492,12 +492,12 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("MULTIPLE_CANSID"), entry: "NO"); // Multiple County AcctNos
             if (this.uploaderClient.FindElement(By.Id("AREAID")) != null)
             {
-                this.uploaderClient.ClickOnElementById(elementId: "save-page");
+                this.uploaderClient.ClickOnElementByName(elementName: "save-page");
                 var addressSuggestion = this.uploaderClient.FindElement(By.ClassName("address-suggestion"), isElementOptional: true);
                 if (addressSuggestion != null && addressSuggestion.Displayed)
                 {
                     this.uploaderClient.ExecuteScript(script: "ignoreSuggestions();", isScriptOptional: true);
-                    this.uploaderClient.ClickOnElementById(elementId: "save-page", isElementOptional: true);
+                    this.uploaderClient.ClickOnElementByName(elementName: "save-page", isElementOptional: true);
                 }
             }
         }
@@ -644,7 +644,7 @@ namespace Husa.Uploader.Core.Services
         private void FillExteriorInformation(ResidentialListingRequest listing)
         {
             Thread.Sleep(1000);
-            this.uploaderClient.ExecuteScript(" SP('1') ");
+            this.uploaderClient.ExecuteScript(" next_tab('1') ");
             Thread.Sleep(2000);
 
             this.uploaderClient.WriteTextbox(By.Name("STYLE"), listing.HousingStyleDesc); // Style
@@ -659,6 +659,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.FindElement(By.Name("EXTERIOR")).SendKeys(Keys.Tab);
             Thread.Sleep(500);
 
+            this.uploaderClient.SetAttribute(By.Name("ROOF"), listing.RoofDesc, "value"); // Roof
             this.uploaderClient.SetAttribute(By.Name("ROOF"), listing.RoofDesc, "value"); // Roof
             this.uploaderClient.FindElement(By.Name("ROOF")).SendKeys(Keys.Tab);
             Thread.Sleep(500);
@@ -718,7 +719,7 @@ namespace Husa.Uploader.Core.Services
         private void FillInteriorInformation(ResidentialListingRequest listing)
         {
             Thread.Sleep(1000);
-            this.uploaderClient.ExecuteScript(" SP('2') ");
+            this.uploaderClient.ExecuteScript(" next_tab('2') ");
             Thread.Sleep(2000);
 
             this.uploaderClient.WriteTextbox(By.Name("INTERIOR"), listing.InteriorDesc); // Interior
@@ -973,7 +974,7 @@ namespace Husa.Uploader.Core.Services
         private void FillUtilitiesInformation(ResidentialListingRequest listing)
         {
             Thread.Sleep(1000);
-            this.uploaderClient.ExecuteScript(" SP('3') ");
+            this.uploaderClient.ExecuteScript(" next_tab('3') ");
             Thread.Sleep(2000);
 
             this.uploaderClient.WriteTextbox(By.Name("AIRCNDTNNG"), listing.CoolSystemDesc); // Air Conditioning
@@ -999,7 +1000,7 @@ namespace Husa.Uploader.Core.Services
         private void FillTaxHoaInformation(ResidentialListingRequest listing)
         {
             Thread.Sleep(1000);
-            this.uploaderClient.ExecuteScript(" SP('4') ");
+            this.uploaderClient.ExecuteScript(" next_tab('4') ");
             Thread.Sleep(2000);
 
             this.uploaderClient.WriteTextbox(By.Name("MTPLCNTY"), "NO"); // Taxed by Mltpl Counties
@@ -1017,6 +1018,8 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ExecuteScript("openPicklist('HOAMNDTRY')");
                 this.uploaderClient.ExecuteScript("selectVals('HOAMNDTRY'); ; HOAMNDTRYActions(); closeDiv();");
                 Thread.Sleep(1000);
+                this.uploaderClient.AcceptAlertWindow(isElementOptional: true);
+
                 this.uploaderClient.WriteTextbox(By.Name("MLTPLHOA"), listing.HasMultipleHOA); // Multiple
                 if (listing.HasMultipleHOA == "YES")
                 {
@@ -1079,7 +1082,7 @@ namespace Husa.Uploader.Core.Services
         private void FillOfficeInformation(SaborListingRequest listing)
         {
             Thread.Sleep(1000);
-            this.uploaderClient.ExecuteScript(" SP('5') ");
+            this.uploaderClient.ExecuteScript(" next_tab('5') ");
             Thread.Sleep(2000);
 
             this.uploaderClient.WriteTextbox(By.Name("CONTRACT"), "EA"); // Contract
@@ -1128,7 +1131,7 @@ namespace Husa.Uploader.Core.Services
         private void FillRemarksInformation(SaborListingRequest listing, bool isCompletionUpdate = false)
         {
             Thread.Sleep(1000);
-            this.uploaderClient.ExecuteScript(" SP('6') ");
+            this.uploaderClient.ExecuteScript(" next_tab('6') ");
             Thread.Sleep(2000);
 
             if (!isCompletionUpdate)
@@ -1154,7 +1157,7 @@ namespace Husa.Uploader.Core.Services
         private async Task FillMedia(Guid residentialListingRequestID, CancellationToken cancellationToken)
         {
             Thread.Sleep(1000);
-            this.uploaderClient.ExecuteScript(script: " SP('7') ");
+            this.uploaderClient.ExecuteScript(script: " next_tab('7') ");
             Thread.Sleep(2000);
 
             this.uploaderClient.WriteTextbox(By.Name("RTS"), entry: "NO"); // Are any property photos virtually staged?
@@ -1228,28 +1231,19 @@ namespace Husa.Uploader.Core.Services
         private void DeleteResources()
         {
             this.uploaderClient.WaitUntilScriptIsComplete(script: "return document.readyState", expectedCompletedResult: "complete");
-            // this.uploaderClient.SwitchTo("main");
-            // this.uploaderClient.SwitchTo("workspace");
             var photos = this.uploaderClient.FindElement(By.Id("sortable-list")).FindElements(By.TagName("li"));
             if (photos != null && photos.Count > 0)
             {
-                foreach (var photo in photos)
+                for (int i = 1; i < photos.Count; i++)
                 {
-                    photo.FindElement(By.ClassName("delete-icon")).Click();
+                    photos[i].FindElement(By.ClassName("photo-checkbox")).Click();
                 }
 
-                // Check all images have been deleted and delete if needed.
-                photos = this.uploaderClient.FindElement(By.Id("sortable-list")).FindElements(By.TagName("li"));
-                if (photos != null && photos.Count > 0)
-                {
-                    foreach (var photo in photos)
-                    {
-                        photo.FindElement(By.ClassName("delete-icon")).Click();
-                    }
-                }
+                this.uploaderClient.ScrollToTop();
+                this.uploaderClient.ExecuteScript("javascript: deleteSelected()");
+                Thread.Sleep(500);
+                this.uploaderClient.ExecuteScript("jQuery('.ui-dialog.ui-widget > #delete-photos-dialog').parent().find('div:eq(3)').find('button:eq(0)').click()");
             }
-
-            this.uploaderClient.WaitUntilElementIsDisplayed(webDriver => webDriver.FindElement(By.Id("sortable-list")).FindElements(By.TagName("li")).Count == 0);
         }
 
         private void FillCompletionInformation(ResidentialListingRequest listing)
@@ -1312,7 +1306,7 @@ namespace Husa.Uploader.Core.Services
             {
                 try
                 {
-                    this.uploaderClient.FindElement(By.Id("save-page")).Click();
+                    this.uploaderClient.FindElement(By.Name("save-page")).Click();
                 }
                 catch
                 {
@@ -1321,7 +1315,7 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("workspace"));
                     this.uploaderClient.SwitchTo("workspace");
                     this.uploaderClient.ScrollDown();
-                    this.uploaderClient.FindElement(By.Id("save-page")).Click();
+                    this.uploaderClient.FindElement(By.Name("save-page")).Click();
                 }
             }
             else
