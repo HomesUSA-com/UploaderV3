@@ -141,7 +141,7 @@ namespace Husa.Uploader.Core.Services
                     this.EditProperty(listing.MLSNum);
 
                     Thread.Sleep(2000);
-                    this.uploaderClient.ExecuteScript(script: $"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(26) > a:first').click();");
+                    this.uploaderClient.ExecuteScript(script: $"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(27) > span > a:first').click();");
                     Thread.Sleep(1000);
                     this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[2].click();");
                     Thread.Sleep(1000);
@@ -316,7 +316,7 @@ namespace Husa.Uploader.Core.Services
                 this.EditProperty(listing.MLSNum);
 
                 Thread.Sleep(1000);
-                this.uploaderClient.ExecuteScript($"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(26) > a:first').click();");
+                this.uploaderClient.ExecuteScript($"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(27) > span > a:first').click();");
                 Thread.Sleep(1000);
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
                 this.uploaderClient.ExecuteScript("jQuery('.modal-body > .inner-modal-body > div').find('button')[5].click();");
@@ -416,19 +416,19 @@ namespace Husa.Uploader.Core.Services
                 this.EditProperty(listing.MLSNum);
 
                 Thread.Sleep(1000);
-                this.uploaderClient.ExecuteScript(script: $"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(26) > a:first').click();");
+                this.uploaderClient.ExecuteScript(script: $"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(27) > span > a:first').click();");
                 Thread.Sleep(1000);
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
-                this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[5].click();");
+                this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[6].click();");
                 Thread.Sleep(1000);
                 this.uploaderClient.SwitchTo().Frame(this.uploaderClient.FindElementById("main"));
                 this.uploaderClient.SwitchTo().Frame(this.uploaderClient.FindElementById("workspace"));
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("VIRTTOUR"), cancellationToken);
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("VIRTTOUR"), cancellationToken);
                 var virtualTourResponse = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.SanAntonio, cancellationToken);
                 var virtualTour = virtualTourResponse.FirstOrDefault();
                 if (virtualTour != null)
                 {
-                    this.uploaderClient.WriteTextbox(By.Id("VIRTTOUR"), virtualTour.GetUnbrandedUrl());
+                    this.uploaderClient.WriteTextbox(By.Name("VIRTTOUR"), virtualTour.GetUnbrandedUrl());
                 }
 
                 return UploadResult.Success;
