@@ -599,8 +599,8 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElement(By.LinkText(tabName));
             Thread.Sleep(800);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
-            var hasPrimaryBedroomInMain = listing.Rooms.Exists(room => room.RoomType == "MSTRBED" && room.Level == "MAIN");
-            if (hasPrimaryBedroomInMain)
+            var hasPrimaryBedroomOnMain = listing.Rooms.Exists(room => room.RoomType == "MSTRBED" && room.Level == "MAIN");
+            if (hasPrimaryBedroomOnMain)
             {
                 listing.InteriorDesc = "MSTDW," + listing.InteriorDesc;
             }
