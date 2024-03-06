@@ -596,10 +596,12 @@ namespace Husa.Uploader.Core.Services
         private void FillAdditionalInformation(AborListingRequest listing)
         {
             var tabName = "Additional";
+            const string masterBedroom = "MSTRBED";
+            const string mainLevelRoom = "MAIN";
             this.uploaderClient.ClickOnElement(By.LinkText(tabName));
             Thread.Sleep(800);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
-            var hasPrimaryBedroomOnMain = listing.Rooms.Exists(room => room.RoomType == "MSTRBED" && room.Level == "MAIN");
+            var hasPrimaryBedroomOnMain = listing.Rooms.Exists(room => room.RoomType == masterBedroom && room.Level == mainLevelRoom);
             if (hasPrimaryBedroomOnMain)
             {
                 listing.InteriorDesc = "MSTDW," + listing.InteriorDesc;
