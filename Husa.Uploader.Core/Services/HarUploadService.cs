@@ -159,7 +159,6 @@ namespace Husa.Uploader.Core.Services
                         this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
                     }
 
-                    this.NavigateToNewPropertyInput(housingType);
                     listing.Longitude = newLongitude;
                     listing.Latitude = newLatitude;
                     this.FillListingInformation(listing);
@@ -859,6 +858,7 @@ namespace Husa.Uploader.Core.Services
             if (listing.IsNewListing)
             {
                 this.GoToTab("Map Information");
+                this.uploaderClient.ScrollDown(250);
                 this.SetLongitudeAndLatitudeValues(listing);
             }
         }
