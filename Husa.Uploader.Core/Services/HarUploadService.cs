@@ -1193,7 +1193,8 @@ namespace Husa.Uploader.Core.Services
         {
             var index = 0;
             Thread.Sleep(1000);
-            foreach (var openHouse in listing.OpenHouse)
+            var sortedOpenHouses = listing.OpenHouse.OrderBy(openHouse => openHouse.Date).ToList();
+            foreach (var openHouse in sortedOpenHouses)
             {
                 if (index != 0)
                 {
