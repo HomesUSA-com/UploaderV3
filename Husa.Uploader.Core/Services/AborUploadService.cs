@@ -596,11 +596,13 @@ namespace Husa.Uploader.Core.Services
         private void FillAdditionalInformation(AborListingRequest listing)
         {
             var tabName = "Additional";
+            const string masterBedroom = "MSTRBED";
+            const string mainLevelRoom = "MAIN";
             this.uploaderClient.ClickOnElement(By.LinkText(tabName));
             Thread.Sleep(800);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
-
-            if (listing.Bed1Level == "MAIN" && !listing.InteriorDesc.Contains("MSTDW"))
+            var hasPrimaryBedroomOnMain = listing.Rooms.Exists(room => room.RoomType == masterBedroom && room.Level == mainLevelRoom);
+            if (hasPrimaryBedroomOnMain)
             {
                 listing.InteriorDesc = "MSTDW," + listing.InteriorDesc;
             }
@@ -928,7 +930,8 @@ namespace Husa.Uploader.Core.Services
         {
             var index = 0;
             Thread.Sleep(1000);
-            foreach (var openHouse in listing.OpenHouse)
+            var sortedOpenHouses = listing.OpenHouse.OrderBy(openHouse => openHouse.Date).ToList();
+            foreach (var openHouse in sortedOpenHouses)
             {
                 if (index != 0)
                 {
