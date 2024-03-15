@@ -713,7 +713,7 @@ namespace Husa.Uploader.Core.Services
 
             if (!string.IsNullOrEmpty(listing.City))
             {
-                this.uploaderClient.FillFieldSingleOption("Input_161", listing.CityCode);
+                this.uploaderClient.FillFieldSingleOption("Input_161", listing.City);
             }
 
             this.uploaderClient.SetSelect(By.Id("Input_162"), listing.StateCode); // State
