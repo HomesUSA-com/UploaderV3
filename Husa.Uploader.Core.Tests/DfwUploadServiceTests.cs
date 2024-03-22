@@ -137,102 +137,15 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Fact]
-        public async Task UpdateStatus_TerminatedSuccess()
+        public async Task UpdateStatus_ActiveContingentSuccess()
         {
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
             var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
-            dfwListing.ListStatus = "TERM";
-            dfwListing.BackOnMarketDate = DateTime.Now;
-            dfwListing.OffMarketDate = DateTime.Now;
-            var sut = this.GetSut();
-
-            // Act
-            var result = await sut.UpdateStatus(dfwListing);
-
-            // Assert
-            Assert.Equal(UploadResult.Success, result);
-        }
-
-        [Fact]
-        public async Task UpdateStatus_WithdrawnSuccess()
-        {
-            // Arrange
-            this.SetUpCredentials();
-            this.SetUpCompany();
-            var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
-            dfwListing.ListStatus = "PEND";
-            dfwListing.PendingDate = DateTime.Now;
-            dfwListing.EstClosedDate = DateTime.Now;
-            dfwListing.ExpiredDate = DateTime.Now;
-            dfwListing.HasContingencyInfo = false;
-            dfwListing.ListStatus = "WITH";
-            dfwListing.OffMarketDate = DateTime.Now;
-            var sut = this.GetSut();
-
-            // Act
-            var result = await sut.UpdateStatus(dfwListing);
-
-            // Assert
-            Assert.Equal(UploadResult.Success, result);
-        }
-
-        [Fact]
-        public async Task UpdateStatus_OptionPendingSuccess()
-        {
-            // Arrange
-            this.SetUpCredentials();
-            this.SetUpCompany();
-            var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
-            dfwListing.ListStatus = "CLOSD";
-            dfwListing.PendingDate = DateTime.Now;
-            dfwListing.ClosedDate = DateTime.Now;
-            dfwListing.ListStatus = "OP";
+            dfwListing.ListStatus = "AC";
             dfwListing.ContractDate = DateTime.Now;
-            dfwListing.EstClosedDate = DateTime.Now;
-            dfwListing.ExpiredDate = DateTime.Now;
-            dfwListing.HasContingencyInfo = true;
-            dfwListing.AgentMarketUniqueId = "123456789";
-            var sut = this.GetSut();
-
-            // Act
-            var result = await sut.UpdateStatus(dfwListing);
-
-            // Assert
-            Assert.Equal(UploadResult.Success, result);
-        }
-
-        [Fact]
-        public async Task UpdateStatus_PendingContinueToShowSuccess()
-        {
-            // Arrange
-            this.SetUpCredentials();
-            this.SetUpCompany();
-            var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
-            dfwListing.ListStatus = "PSHO";
-            dfwListing.PendingDate = DateTime.Now;
-            dfwListing.ClosedDate = DateTime.Now;
-            dfwListing.EstClosedDate = DateTime.Now;
-            dfwListing.HasContingencyInfo = false;
-            var sut = this.GetSut();
-
-            // Act
-            var result = await sut.UpdateStatus(dfwListing);
-
-            // Assert
-            Assert.Equal(UploadResult.Success, result);
-        }
-
-        [Fact]
-        public async Task UpdateStatus_ExpiredSuccess()
-        {
-            // Arrange
-            this.SetUpCredentials();
-            this.SetUpCompany();
-            var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
-            dfwListing.ListStatus = "EXP";
-            dfwListing.ExpiredDate = DateTime.Now;
+            dfwListing.ContingencyInfo = "ContingencyInfo test";
             var sut = this.GetSut();
 
             // Act

@@ -23,7 +23,8 @@ namespace Husa.Uploader.Core.Services
 
     public class DfwUploadService : IDfwUploadService
     {
-        private const string LandingPageURL = "https://ntreis.clareityiam.net/idp/login";
+        private const string LandingPageURL = "https://ntrdd.mlsmatrix.com/Matrix/Default.aspx?c=AAEAAAD*****AQAAAAAAAAARAQAAAEQAAAAGAgAAAAQzNDIyDUAGAwAAAAbCqHEEwrMNAgs)&f=";
+        private const string EditPageURL = "https://ntrdd.mlsmatrix.com/Matrix/Input";
         private readonly IUploaderClient uploaderClient;
         private readonly IMediaRepository mediaRepository;
         private readonly IServiceSubscriptionClient serviceSubscriptionClient;
@@ -66,25 +67,15 @@ namespace Husa.Uploader.Core.Services
             var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
 
             // Connect to the login page
-            var loginButtonId = "login_btn";
+            var loginButtonId = "loginbtn";
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id(loginButtonId));
-
-            this.uploaderClient.WriteTextbox(By.Id("username"), credentials[LoginCredentials.Username]);
-            this.uploaderClient.WriteTextbox(By.Id("password"), credentials[LoginCredentials.Password]);
+            this.uploaderClient.WriteTextbox(By.Name("username"), credentials[LoginCredentials.Username]);
+            this.uploaderClient.WriteTextbox(By.Name("password"), credentials[LoginCredentials.Password]);
             Thread.Sleep(1000);
             this.uploaderClient.ClickOnElementById(loginButtonId);
 
             Thread.Sleep(1000);
-            try
-            {
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("RedirectingPopup"));
-                Thread.Sleep(4000);
-            }
-            catch
-            {
-                this.logger.LogInformation("The redirect popup was not displayed in the login screen.");
-            }
 
             this.uploaderClient.NavigateToUrl(LandingPageURL);
             Thread.Sleep(1000);
@@ -398,91 +389,18 @@ namespace Husa.Uploader.Core.Services
                         }
 
                         break;
-                    case "TERM":
-                        buttonText = "Change to Terminated";
-                        string currentDate = DateTime.Today.ToString("MM/dd/yyyy");
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
-                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                        Thread.Sleep(500);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_522"), currentDate); // terminated date
-                        break;
-                    case "WITH":
-                        buttonText = "Change to Withdrawn";
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
-                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                        Thread.Sleep(500);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_113"), listing.OffMarketDate.Value.ToShortDateString()); // Withdrawn Date
-                        break;
-                    case "OP":
-                        buttonText = "Change to Option Pending";
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
-                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                        Thread.Sleep(500);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
-                        this.uploaderClient.WriteTextbox(By.Id("Input_128"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
-                        this.uploaderClient.WriteTextbox(By.Id("Input_129"), listing.ExpiredDate.Value.ToShortDateString()); // Option End Date
-                        this.uploaderClient.SetSelect(By.Id($"Input_132"), value: listing.HasContingencyInfo.BoolToNumericBool()); // Contingent on Sale of Other Property
-                        if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
-                        {
-                            this.uploaderClient.SetSelect(By.Id($"Input_310"), value: "Y"); // Did Selling Agent Represent Buyer
-                            this.uploaderClient.WriteTextbox(By.Id($"Input_342"), value: listing.AgentMarketUniqueId); // Selling Associate MLSID
-                        }
-                        else
-                        {
-                            this.uploaderClient.SetSelect(By.Id($"Input_310"), value: "N"); // Did Selling Agent Represent Buyer
-                        }
-
-                        break;
-                    case "PSHO":
-                        buttonText = "Change to Pending Continue to Show";
+                    case "AC":
+                        buttonText = "Change to Active Contingent";
                         this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
                         Thread.Sleep(500);
 
                         if (listing.ContractDate != null)
                         {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
+                            this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.ContractDate.Value.ToShortDateString()); // Purchase Contract Date
                         }
 
-                        if (listing.EstClosedDate != null)
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_128"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
-                        }
+                        this.uploaderClient.WriteTextbox(By.Id("Input_451"), listing.ContingencyInfo); // Contingency Info
 
-                        if (listing.HasBuyerAgent)
-                        {
-                            this.uploaderClient.SetSelect(By.Id("Input_310"), "Y");  // Did Selling Agent Represent Buyer
-                        }
-                        else
-                        {
-                            this.uploaderClient.SetSelect(By.Id("Input_310"), "N");  // Did Selling Agent Represent Buyer
-                        }
-
-                        this.uploaderClient.SetSelect(By.Id($"Input_132"), value: listing.HasContingencyInfo.BoolToNumericBool()); // Contingent on Sale of Other Property
-
-                        this.uploaderClient.ScrollDown();
-
-                        if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
-
-                            string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
-                            this.uploaderClient.ExecuteScript(@js);
-                        }
-
-                        this.uploaderClient.ScrollDown();
-                        if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
-                        {
-                            this.uploaderClient.SetSelect(By.Id("Input_130"), "0"); // Buyer Represented by NONMLS Licensed Agent
-                            this.uploaderClient.WriteTextbox(By.Id("Input_131"), listing.SellingAgentLicenseNum); // TREC License Number
-                        }
-
-                        break;
-                    case "EXP":
-                        buttonText = "Change Expiration Date";
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
-                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                        Thread.Sleep(500);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_8"), listing.ExpiredDate.Value.ToShortDateString()); // Expiration Date
                         break;
                     default:
                         throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for Houston Listing with Id '{listing.ResidentialListingID}'");
@@ -614,7 +532,7 @@ namespace Husa.Uploader.Core.Services
 
         private void NavigateToQuickEdit(string mlsNumber)
         {
-            this.uploaderClient.NavigateToUrl("https://matrix.harmls.com/Matrix/AddEdit");
+            this.uploaderClient.NavigateToUrl(EditPageURL);
             Thread.Sleep(1000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Edit existing"));
             this.uploaderClient.ClickOnElement(By.Id("m_lvInputUISections_ctrl0_lvInputUISubsections_ctrl0_lbEditItem"));

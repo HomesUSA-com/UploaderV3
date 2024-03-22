@@ -259,8 +259,9 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 }
 
                 residentialListingRequest.SoldPrice = statusInfo.ClosePrice.HasValue ? Math.Floor(statusInfo.ClosePrice.Value) : 0;
-                residentialListingRequest.ClosedDate = statusInfo.ClosedDate;
                 residentialListingRequest.ContractDate = statusInfo.ContractDate;
+                residentialListingRequest.ContingencyInfo = statusInfo.ContingencyInfo;
+                residentialListingRequest.ClosedDate = statusInfo.ClosedDate;
                 residentialListingRequest.SellConcess = statusInfo.SellConcess;
                 residentialListingRequest.OffMarketDate = statusInfo.OffMarketDate;
                 residentialListingRequest.BackOnMarketDate = statusInfo.BackOnMarketDate;
