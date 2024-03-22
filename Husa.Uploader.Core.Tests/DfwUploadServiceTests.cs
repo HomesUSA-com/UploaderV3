@@ -156,6 +156,25 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Fact]
+        public async Task UpdateStatus_ActiveOptionContractSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
+            dfwListing.ListStatus = "AOC";
+            dfwListing.ContractDate = DateTime.Now;
+            dfwListing.EstClosedDate = DateTime.Now;
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdateStatus(dfwListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
         public async Task FillCompletionDate_Fail()
         {
             // Arrange

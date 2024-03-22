@@ -261,12 +261,12 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.SoldPrice = statusInfo.ClosePrice.HasValue ? Math.Floor(statusInfo.ClosePrice.Value) : 0;
                 residentialListingRequest.ContractDate = statusInfo.ContractDate;
                 residentialListingRequest.ContingencyInfo = statusInfo.ContingencyInfo;
+                residentialListingRequest.EstClosedDate = statusInfo.EstimatedClosedDate;
                 residentialListingRequest.ClosedDate = statusInfo.ClosedDate;
                 residentialListingRequest.SellConcess = statusInfo.SellConcess;
                 residentialListingRequest.OffMarketDate = statusInfo.OffMarketDate;
                 residentialListingRequest.BackOnMarketDate = statusInfo.BackOnMarketDate;
                 residentialListingRequest.SoldTerms = statusInfo.SoldTerms?.ToStringFromEnumMember();
-                residentialListingRequest.EstClosedDate = statusInfo.EstimatedClosedDate;
                 residentialListingRequest.AgentMarketUniqueId = statusInfo.AgentMarketUniqueId;
                 residentialListingRequest.SecondAgentMarketUniqueId = statusInfo.SecondAgentMarketUniqueId;
                 residentialListingRequest.HasBuyerAgent = statusInfo.HasBuyerAgent;
