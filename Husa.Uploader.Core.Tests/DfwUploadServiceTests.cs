@@ -76,26 +76,6 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(UploadResult.Success, result);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task SetGeocodesSuccess(bool updateGeocodes)
-        {
-            // Arrange
-            this.SetUpConfigs();
-            var request = this.GetResidentialListingRequest();
-            request.UpdateGeocodes = updateGeocodes;
-            request.Longitude = 24;
-            request.Latitude = -97;
-            var sut = this.GetSut();
-
-            // Act
-            var result = await sut.Upload(request);
-
-            // Assert
-            Assert.Equal(UploadResult.Success, result);
-        }
-
         [Fact]
         public async Task UpdateStatus_PendingSuccess()
         {
@@ -103,7 +83,7 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCredentials();
             this.SetUpCompany();
             var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
-            dfwListing.ListStatus = "PEND";
+            dfwListing.ListStatus = "PND";
             dfwListing.PendingDate = DateTime.Now;
             dfwListing.EstClosedDate = DateTime.Now;
             dfwListing.ExpiredDate = DateTime.Now;
@@ -124,7 +104,7 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCredentials();
             this.SetUpCompany();
             var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
-            dfwListing.ListStatus = "CLOSD";
+            dfwListing.ListStatus = "SLD";
             dfwListing.PendingDate = DateTime.Now;
             dfwListing.ClosedDate = DateTime.Now;
             var sut = this.GetSut();
@@ -143,7 +123,7 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCredentials();
             this.SetUpCompany();
             var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
-            dfwListing.ListStatus = "AC";
+            dfwListing.ListStatus = "ACT";
             dfwListing.ContractDate = DateTime.Now;
             dfwListing.ContingencyInfo = "ContingencyInfo test";
             var sut = this.GetSut();

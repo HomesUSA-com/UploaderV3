@@ -169,7 +169,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillShowingInformation(listing);
                     this.FillRemarksInformation(listing as DfwListingRequest);
 
-                    if (this.uploaderClient.UploadInformation.IsNewListing)
+                    if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
                     {
                         this.FillStatusInformation(listing);
                     }
@@ -553,7 +553,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_226", listing.HousingStyleDesc); // Architectural Style
             this.uploaderClient.WriteTextbox(By.Id("Input_77"), listing.ListPrice); // List Price
 
-            if (this.uploaderClient.UploadInformation.IsNewListing)
+            if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
             {
                 DateTime listDate = DateTime.Now;
                 switch (listing.ListStatus)
@@ -606,7 +606,7 @@ namespace Husa.Uploader.Core.Services
 
             Thread.Sleep(1000);
 
-            if (this.uploaderClient.UploadInformation.IsNewListing)
+            if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
             {
                 this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.StreetNum); // Street/Box Number
                 this.uploaderClient.SetSelect(By.Id("Input_285"), value: listing.County); // County
@@ -682,7 +682,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_401"), listing.NumLivingAreas); // # Living Areas
             this.uploaderClient.WriteTextbox(By.Id("Input_402"), listing.NumDiningAreas); // # Dining Areas
 
-            if (!this.uploaderClient.UploadInformation.IsNewListing)
+            if (this.uploaderClient.UploadInformation?.IsNewListing != null && !this.uploaderClient.UploadInformation.IsNewListing)
             {
                 int index = 0;
 
@@ -891,7 +891,7 @@ namespace Husa.Uploader.Core.Services
 
             var agentID = listing.BrokerName + " (" + listing.SellingAgentLicenseNum + ")"; //// .BrokerLicenseNum
 
-            if (this.uploaderClient.UploadInformation.IsNewListing)
+            if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
             {
                 if (listing.SysCompletedBy == 1295) //// .SysOwnedBy
                 {
@@ -1041,12 +1041,12 @@ namespace Husa.Uploader.Core.Services
             // Intra Office
             var compSaleText = string.Empty;
 
-            if ((listing.ListStatus == "PND" || listing.ListStatus == "SLD") && this.uploaderClient.UploadInformation.IsNewListing)
+            if ((listing.ListStatus == "PND" || listing.ListStatus == "SLD") && this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
             {
                 compSaleText = "M-";
             }
 
-            if (this.uploaderClient.UploadInformation.IsNewListing)
+            if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
             {
                 this.uploaderClient.WriteTextbox(By.Id("Input_82"), (!string.IsNullOrWhiteSpace(listing.PlanProfileName) ? (compSaleText + listing.PlanProfileName) : (compSaleText + " ")).RemoveSlash());
             }
