@@ -418,6 +418,19 @@ namespace Husa.Uploader.Core.Services
                         }
 
                         break;
+                    case "AKO":
+                        buttonText = "Change to Active Kick Out";
+                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                        Thread.Sleep(500);
+
+                        if (listing.ContractDate != null)
+                        {
+                            this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.ContractDate.Value.ToShortDateString()); // Contract Date
+                        }
+
+                        this.uploaderClient.WriteTextbox(By.Id("Input_451"), listing.ContingencyInfo); // Kick Out Information
+
+                        break;
                     default:
                         throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for Houston Listing with Id '{listing.ResidentialListingID}'");
                 }
