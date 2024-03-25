@@ -161,10 +161,13 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.YearBuilt = propertyInfo.ConstructionStartYear;
                 residentialListingRequest.TaxID = propertyInfo.TaxId;
                 residentialListingRequest.UpdateGeocodes = propertyInfo.UpdateGeocodes;
+                residentialListingRequest.PropSubType = propertyInfo.PropertySubType?.ToStringFromEnumMember();
                 residentialListingRequest.LotDim = propertyInfo.LotDimension;
                 residentialListingRequest.LotDesc = propertyInfo.LotDescription.ToStringFromEnumMembers();
                 residentialListingRequest.LotSize = propertyInfo.LotSize?.ToStringFromEnumMember();
+                residentialListingRequest.LotSizeSrc = "OTHER";
                 residentialListingRequest.IsNewConstruction = propertyInfo.IsNewConstruction;
+                residentialListingRequest.HousingTypeDesc = propertyInfo.HousingType?.ToStringFromEnumMembers();
             }
 
             void FillSpacesDimensionsInfo(SpacesDimensionsResponse spacesDimensionsInfo)
@@ -175,6 +178,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 }
 
                 residentialListingRequest.Beds = spacesDimensionsInfo.NumBedrooms;
+                residentialListingRequest.BathsFull = spacesDimensionsInfo.NumBathsFull;
+                residentialListingRequest.BathsHalf = spacesDimensionsInfo.NumBathsHalf;
                 residentialListingRequest.NumStories = spacesDimensionsInfo.Stories?.ToString();
                 residentialListingRequest.SqFtTotal = spacesDimensionsInfo.SqftTotal;
             }
@@ -191,6 +196,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.RoofDesc = featuresInfo.RoofDescription.ToStringFromEnumMembers();
                 residentialListingRequest.ConstructionDesc = featuresInfo.ConstructionMaterials.ToStringFromEnumMembers();
                 residentialListingRequest.FireplaceDesc = featuresInfo.FireplaceDescription.ToStringFromEnumMembers();
+                residentialListingRequest.NumberFireplaces = featuresInfo.NumFireplaces?.ToString();
                 residentialListingRequest.FloorsDesc = featuresInfo.Floors.ToStringFromEnumMembers();
                 residentialListingRequest.GarageDesc = featuresInfo.GarageDescription.ToStringFromEnumMembers();
                 residentialListingRequest.HeatSystemDesc = featuresInfo.HeatSystem.ToStringFromEnumMembers();
@@ -234,6 +240,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.AgentListApptPhone = showingInfo.ContactPhone;
                 residentialListingRequest.OtherPhone = showingInfo.OccupantPhone;
                 residentialListingRequest.AgentPrivateRemarks = showingInfo.AgentPrivateRemarks;
+                residentialListingRequest.ShowingInstructions = showingInfo.ShowingInstructions;
                 residentialListingRequest.RealtorContactEmail = showingInfo.RealtorContactEmail.ToStringFromCollection(";");
                 residentialListingRequest.Directions = showingInfo.Directions;
                 residentialListingRequest.EnableOpenHouse = showingInfo.EnableOpenHouses;
@@ -259,16 +266,16 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 }
 
                 residentialListingRequest.SoldPrice = statusInfo.ClosePrice.HasValue ? Math.Floor(statusInfo.ClosePrice.Value) : 0;
-                residentialListingRequest.ContractDate = statusInfo.ContractDate;
-                residentialListingRequest.ContingencyInfo = statusInfo.ContingencyInfo;
-                residentialListingRequest.EstClosedDate = statusInfo.EstimatedClosedDate;
                 residentialListingRequest.ClosedDate = statusInfo.ClosedDate;
+                residentialListingRequest.ContractDate = statusInfo.ContractDate;
                 residentialListingRequest.SellConcess = statusInfo.SellConcess;
                 residentialListingRequest.OffMarketDate = statusInfo.OffMarketDate;
                 residentialListingRequest.BackOnMarketDate = statusInfo.BackOnMarketDate;
                 residentialListingRequest.SoldTerms = statusInfo.SoldTerms?.ToStringFromEnumMember();
+                residentialListingRequest.EstClosedDate = statusInfo.EstimatedClosedDate;
                 residentialListingRequest.AgentMarketUniqueId = statusInfo.AgentMarketUniqueId;
                 residentialListingRequest.SecondAgentMarketUniqueId = statusInfo.SecondAgentMarketUniqueId;
+                residentialListingRequest.ContingencyInfo = statusInfo.ContingencyInfo;
                 residentialListingRequest.HasBuyerAgent = statusInfo.HasBuyerAgent;
             }
 

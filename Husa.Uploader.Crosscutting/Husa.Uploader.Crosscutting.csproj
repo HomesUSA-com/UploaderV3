@@ -2,6 +2,7 @@
 
 	<ItemGroup>
         <PackageReference Include="Husa.Extensions.Common" Version="4.1.0" />
+        <PackageReference Include="Husa.Quicklister.Abor.Api.Client" Version="2.0.2" />
         <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="2.0.1" />
 	</ItemGroup>
 
