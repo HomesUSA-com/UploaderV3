@@ -422,7 +422,7 @@ namespace Husa.Uploader.Core.Services
 
         private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
-            var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.Houston, cancellationToken);
+            var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.DFW, cancellationToken);
             if (!virtualTours.Any())
             {
                 return;
@@ -1062,55 +1062,14 @@ namespace Husa.Uploader.Core.Services
 
         private void UpdatePrivateRemarksInRemarksTab(ResidentialListingRequest listing)
         {
-            // 1. BonusCheckBox
-            // 2. BonusWAmountCheckBox
-            // 3. BuyerCheckBox
-            var bonusMessage = string.Empty;
-            if (listing.HasBonusWithAmount.Equals(true) && listing.BuyerCheckBox.Equals(true)) //// BonusWAmountCheckBox
-            {
-                bonusMessage = bonusMessage + listing.ApplicationFeePay + "Agent Bonus. Possible Buyer Incentive; ";
-            }
-            else if (listing.BuyerCheckBox.Equals(true))
-            {
-                bonusMessage = "Possible Buyer Incentives; ";
-            }
-
-            if (listing.HasBonusWithAmount.Equals(true)) ////BonusWAmountCheckBox
-            {
-                bonusMessage = bonusMessage + listing.ApplicationFeePay + " Agent Bonus; ";
-            }
-
-            if (listing.BuyerCheckBox.Equals(true) || listing.HasBonusWithAmount.Equals(true)) ////BonusWAmountCheckBox
-            {
-                bonusMessage += "ask Builder for details. ";
-            }
-
-            // BEGIN UP-73
-            var realtorContactEmail = string.Empty;
-            if (!string.IsNullOrEmpty(listing.AgentListEmail)) //// EmailRealtorsContact
-            {
-                realtorContactEmail = listing.AgentListEmail; //// EmailRealtorsContact
-            }
-            else if (!string.IsNullOrEmpty(listing.RealtorContactEmail))
-            {
-                realtorContactEmail = listing.RealtorContactEmail;
-            }
-            //// END UP-73
-
-            // UP-78
-            realtorContactEmail =
-                (!string.IsNullOrWhiteSpace(realtorContactEmail) &&
-                !(bonusMessage + listing.PrivateRemarks).ToLower().Contains("email contact") && //// .GetPrivateRemarks(false)
-                !(bonusMessage + listing.PrivateRemarks).ToLower().Contains(realtorContactEmail)) ? "Email contact: " + realtorContactEmail + ". " : string.Empty; //// .GetPrivateRemarks(false)
-
             this.uploaderClient.WriteTextbox(By.Id("Input_265"), string.Empty);
-            this.uploaderClient.WriteTextbox(By.Id("Input_265"), bonusMessage + listing.PrivateRemarks + realtorContactEmail); //// .GetPrivateRemarks(false)
+            this.uploaderClient.WriteTextbox(By.Id("Input_265"), listing.GetAgentRemarksMessage());
         }
 
         private void UpdatePublicRemarksInRemarksTab(ResidentialListingRequest listing)
         {
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_263"));
-            this.uploaderClient.WriteTextbox(By.Id("Input_263"), listing.GetPublicRemarks()); // Property Description ////.GetPublicRemarks(status)
+            this.uploaderClient.WriteTextbox(By.Id("Input_263"), listing.GetPublicRemarks());
         }
 
         private void DeleteAllImages()
