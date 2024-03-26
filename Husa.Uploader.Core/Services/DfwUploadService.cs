@@ -9,7 +9,6 @@ namespace Husa.Uploader.Core.Services
     using Husa.Quicklister.Dfw.Domain.Enums.Domain;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
-    using Husa.Uploader.Core.Models;
     using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
@@ -327,7 +326,6 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_94"));
                         this.uploaderClient.WriteTextbox(By.Id("Input_94"), pendingDate); // Contract Date
                         break;
-                    case "A":
                     case "ACT":
                         var expirationDate = (listing.ListDate.HasValue ? listing.ListDate.Value : DateTime.Now.Date).AddYears(1).ToShortDateString();
                         this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_5"));
@@ -347,14 +345,6 @@ namespace Husa.Uploader.Core.Services
                     case "CAN":
                         this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_472"));
                         this.uploaderClient.WriteTextbox(By.Id("Input_472"), DateTime.Now.ToShortDateString());
-                        break;
-                    case "W":
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_476"));
-                        this.uploaderClient.WriteTextbox(By.Id("Input_476"), listing.WithdrawnDate); // Withdrawn Date
-                        break;
-                    case "TOM":
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_474"));
-                        this.uploaderClient.WriteTextbox(By.Id("Input_474"), listing.OffMarketDate);
                         break;
                 }
 

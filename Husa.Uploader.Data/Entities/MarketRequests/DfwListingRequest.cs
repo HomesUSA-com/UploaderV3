@@ -266,9 +266,11 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 }
 
                 residentialListingRequest.SoldPrice = statusInfo.ClosePrice.HasValue ? Math.Floor(statusInfo.ClosePrice.Value) : 0;
+                residentialListingRequest.PendingDate = statusInfo.PendingDate;
                 residentialListingRequest.ClosedDate = statusInfo.ClosedDate;
                 residentialListingRequest.ContractDate = statusInfo.ContractDate;
                 residentialListingRequest.SellConcess = statusInfo.SellConcess;
+                residentialListingRequest.MortgageCoSold = statusInfo.MortgageCompany;
                 residentialListingRequest.OffMarketDate = statusInfo.OffMarketDate;
                 residentialListingRequest.BackOnMarketDate = statusInfo.BackOnMarketDate;
                 residentialListingRequest.SoldTerms = statusInfo.SoldTerms?.ToStringFromEnumMember();
