@@ -865,21 +865,9 @@ namespace Husa.Uploader.Core.Services
 
             Thread.Sleep(1000);
 
-            var agentID = listing.BrokerName + " (" + listing.SellingAgentLicenseNum + ")"; //// .BrokerLicenseNum
-
             if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
             {
-                if (listing.SysCompletedBy == 1295) //// .SysOwnedBy
-                {
-                    agentID = "Dennis Ciani (0306362)";
-                }
-
-                if (listing.SysCompletedBy == 1356) //// .SysOwnedBy
-                {
-                    agentID = "Ben Caballero (0096651)";
-                }
-
-                var aganetName = agentID.ToArray();
+                var aganetName = listing.BrokerName.ToArray();
 
                 foreach (var charact in aganetName)
                 {
@@ -891,12 +879,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ExecuteScript("javascript:$('#Input_146_Refresh').val('changed');RefreshToSamePage();");
                 Thread.Sleep(1000);
 
-                var supervisorName = "Ben Caballero (0096651)".ToArray();
-
-                if (listing.SysCompletedBy == 1295) //// .SysOwnedBy
-                {
-                    supervisorName = "Dennis Ciani (0306362)".ToArray();
-                }
+                var supervisorName = listing.SellingAgentSupervisor;
 
                 foreach (var charact in supervisorName)
                 {
