@@ -274,70 +274,49 @@ namespace Husa.Uploader.Core.Services
                 var buttonText = string.Empty;
                 switch (listing.ListStatus)
                 {
-                    case "CLOSD":
-                        buttonText = "Change to Sold";
+                    case "SLD":
+                        buttonText = "Change to Closed";
                         this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
                         Thread.Sleep(500);
 
-                        this.uploaderClient.WriteTextbox(By.Id("Input_74"), listing.SoldPrice); // Sale Price
-
-                        if (listing.ContractDate != null)
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
-                        }
+                        this.uploaderClient.WriteTextbox(By.Id("Input_84"), listing.SoldPrice); // Close Price
+                        this.uploaderClient.WriteTextbox(By.Id("Input_457"), listing.SellConcess); // Seller Contribution
 
                         if (listing.ClosedDate != null)
                         {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_120"), listing.ClosedDate.Value.ToShortDateString()); // Closed Date
+                            this.uploaderClient.WriteTextbox(By.Id("Input_85"), listing.ClosedDate.Value.ToShortDateString()); // Closed Date
                         }
 
-                        this.uploaderClient.SetSelect(By.Id("Input_119"), "0"); // Coop Sale
-
-                        this.uploaderClient.WriteTextbox(By.Id("Input_121"), listing.SellerBuyerCost); // Seller Pd Buyer Clsg Costs
-                        this.uploaderClient.WriteTextbox(By.Id("Input_123"), listing.RepairsPaidBySeller); // Repair Paid Seller
-
-                        this.uploaderClient.SetSelect(By.Id("Input_122"), listing.TitlePaidBy); // Title Paid By
-                        if (listing.HasBuyerAgent)
+                        if (listing.PendingDate != null)
                         {
-                            this.uploaderClient.SetSelect(By.Id("Input_310"), "Y");  // Did Selling Agent Represent Buyer
-                        }
-                        else
-                        {
-                            this.uploaderClient.SetSelect(By.Id("Input_310"), "N");  // Did Selling Agent Represent Buyer
+                            this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // Purchase Contract Date
                         }
 
-                        this.uploaderClient.SetSelect(By.Id("Input_525"), listing.SoldTerms); // Sold Terms
+                        this.uploaderClient.SetSelect(By.Id("Input_460"), "0"); // Third Party Assistance Program
+                        this.uploaderClient.SetSelect(By.Id("Input_496"), listing.SoldTerms); // Buyer Financing
+                        this.uploaderClient.ScrollDownPosition(100);
+                        this.uploaderClient.WriteTextbox(By.Id("Input_467"), listing.MortgageCoSold); // Mortgage Company
+                        this.uploaderClient.WriteTextbox(By.Id("Input_468"), listing.TitleCo); // Closing Title Company
+                        this.uploaderClient.SetSelect(By.Id("Input_624"), listing.HasBuyerAgent.BoolToNumericBool());  // Buyers/SubAgent
+                        this.uploaderClient.SetSelect(By.Id("Input_625"), listing.HasSecondBuyerAgent.BoolToNumericBool());  // Buyers/SubAgent2
 
                         if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
                         {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
+                            this.uploaderClient.WriteTextbox(By.Id("Input_141_displayValue"), listing.AgentMarketUniqueId); // Buyer/SubAgent ID
 
-                            string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
+                            string js = " document.getElementById('Input_141_Refresh').value='1';RefreshToSamePage(); ";
                             this.uploaderClient.ExecuteScript(@js);
                         }
 
-                        if (!string.IsNullOrEmpty(listing.SellTeamID) && this.uploaderClient.IsElementPresent(By.Id("Input_614")))
+                        if (!string.IsNullOrEmpty(listing.SecondAgentMarketUniqueId))
                         {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_614"), listing.SellTeamID); // Selling Team ID
+                            this.uploaderClient.WriteTextbox(By.Id("Input_145_displayValue"), listing.SecondAgentMarketUniqueId); // Buyer/SubAgent 2 ID
 
-                            string js = " document.getElementById('Input_614_Refresh').value='1';RefreshToSamePage(); ";
-                            this.uploaderClient.ExecuteScript(@js);
-                        }
-
-                        if (!string.IsNullOrEmpty(listing.SellingAgent2ID))
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_344"), listing.SellingAgent2ID); // Co Selling Associate MLSID
-
-                            string js = " document.getElementById('Input_344_Refresh').value='1';RefreshToSamePage(); ";
+                            string js = " document.getElementById('Input_145_Refresh').value='1';RefreshToSamePage(); ";
                             this.uploaderClient.ExecuteScript(@js);
                         }
 
                         this.uploaderClient.ScrollDown();
-                        if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
-                        {
-                            this.uploaderClient.SetSelect(By.Id("Input_124"), "0"); // Buyer Represented by NONMLS Licensed Agent
-                            this.uploaderClient.WriteTextbox(By.Id("Input_125"), listing.SellingAgentLicenseNum); // TREC License Number
-                        }
 
                         break;
                     case "PND":

@@ -121,9 +121,12 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCredentials();
             this.SetUpCompany();
             var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
-            dfwListing.ListStatus = "CLOSD";
-            dfwListing.PendingDate = DateTime.Now;
+            dfwListing.ListStatus = "SLD";
+            dfwListing.SoldPrice = 100000;
+            dfwListing.SellConcess = "22";
             dfwListing.ClosedDate = DateTime.Now;
+            dfwListing.PendingDate = DateTime.Now;
+
             var sut = this.GetSut();
 
             // Act

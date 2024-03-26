@@ -265,12 +265,16 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.PendingDate = statusInfo.PendingDate;
                 residentialListingRequest.ClosedDate = statusInfo.ClosedDate;
                 residentialListingRequest.SellConcess = statusInfo.SellConcess;
-                residentialListingRequest.OffMarketDate = statusInfo.OffMarketDate;
-                residentialListingRequest.BackOnMarketDate = statusInfo.BackOnMarketDate;
+                residentialListingRequest.MortgageCoSold = statusInfo.MortgageCompany;
+                residentialListingRequest.TitleCo = statusInfo.TitleCompany;
                 residentialListingRequest.SoldTerms = statusInfo.SoldTerms?.ToStringFromEnumMember();
+                residentialListingRequest.HasBuyerAgent = statusInfo.HasBuyerAgent;
+                residentialListingRequest.HasSecondBuyerAgent = statusInfo.HasSecondBuyerAgent;
                 residentialListingRequest.AgentMarketUniqueId = statusInfo.AgentMarketUniqueId;
                 residentialListingRequest.SecondAgentMarketUniqueId = statusInfo.SecondAgentMarketUniqueId;
-                residentialListingRequest.HasBuyerAgent = statusInfo.HasBuyerAgent;
+
+                residentialListingRequest.OffMarketDate = statusInfo.OffMarketDate;
+                residentialListingRequest.BackOnMarketDate = statusInfo.BackOnMarketDate;
             }
 
             void FillRoomsInfo(IEnumerable<RoomResponse> rooms)
