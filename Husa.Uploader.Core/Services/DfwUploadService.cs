@@ -931,50 +931,20 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.ScrollDown(1000);
 
-            var realtorContactEmail = string.Empty;
-            if (!string.IsNullOrEmpty(listing.AgentListEmail)) //// .ContactEmailFromCompany
-            {
-                realtorContactEmail = listing.AgentListEmail; //// .ContactEmailFromCompany
-            }
-            else if (!string.IsNullOrEmpty(listing.RealtorContactEmail))
-            {
-                realtorContactEmail = listing.RealtorContactEmail;
-            }
-
-            // UP-78
-            realtorContactEmail =
-                (!string.IsNullOrWhiteSpace(realtorContactEmail) &&
-                listing.ShowingInstructions != null &&
-                !listing.ShowingInstructions.RemoveSlash().ToLower().Contains("email contact") &&
-                !listing.ShowingInstructions.RemoveSlash().ToLower().Contains(realtorContactEmail)) ? "Email contact: " + realtorContactEmail + ". " : string.Empty;
-
-            var message = listing.ShowingInstructions.RemoveSlash() + realtorContactEmail;
-
-            var builtNote = string.Empty;
-            if (listing.YearBuiltDesc == "NCI" &&
-                !string.IsNullOrEmpty(message) &&
-                !message.Contains("under construction"))
-            {
-                builtNote = "Home is under construction. For your safety, call appt number for showings. ";
-            }
-
             var apptPhone = listing.AgentListApptPhone;
 
             if (listing.ListStatus != "CS")
             {
                 this.uploaderClient.SetMultiSelect(By.Id("Input_387"), listing.Showing); // Showing
                 this.uploaderClient.WriteTextbox(By.Id("Input_390"), !string.IsNullOrEmpty(apptPhone) ? apptPhone : string.Empty); // Appt Phone
-
-                this.uploaderClient.WriteTextbox(By.Id("Input_258"), builtNote + message); // Showing Instructions
+                this.uploaderClient.WriteTextbox(By.Id("Input_258"), listing.ShowingInstructions); // Showing Instructions
             }
             else
             {
                 this.uploaderClient.SetSelect(By.Id("Input_260"), null, "Keybox Type", tabName); // Keybox Type
                 // call for appoiment
                 this.uploaderClient.WriteTextbox(By.Id("Input_390"), string.Empty); //  Appt Phone
-
                 this.uploaderClient.WriteTextbox(By.Id("Input_258"), string.Empty); // Showing Instructions
-
                 this.uploaderClient.SetMultiSelect(By.Id("Input_387"), null); // Showing
             }
         }
