@@ -124,9 +124,11 @@ namespace Husa.Uploader.Core.Tests
             dfwListing.ListStatus = status;
             dfwListing.PendingDate = DateTime.Now;
             dfwListing.EstClosedDate = DateTime.Now;
+            dfwListing.ContractDate = DateTime.Now;
             dfwListing.ClosedDate = DateTime.Now;
             dfwListing.ExpiredDate = DateTime.Now;
             dfwListing.OffMarketDate = DateTime.Now;
+            dfwListing.ContingencyInfo = "This is a test for the contengency info field";
             dfwListing.HasContingencyInfo = false;
             dfwListing.SqFtTotal = 10;
             var sut = this.GetSut();
