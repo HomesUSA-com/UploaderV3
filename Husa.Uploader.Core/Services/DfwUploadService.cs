@@ -867,29 +867,33 @@ namespace Husa.Uploader.Core.Services
 
             if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
             {
-                var aganetName = listing.BrokerName.ToArray();
-
-                foreach (var charact in aganetName)
+                if (!string.IsNullOrEmpty(listing.BrokerName))
                 {
-                    Thread.Sleep(400);
-                    this.uploaderClient.FindElement(By.Id("Input_146_displayValue")).SendKeys(charact.ToString());
+                    var agentName = listing.BrokerName.ToArray();
+                    foreach (var charact in agentName)
+                    {
+                        Thread.Sleep(400);
+                        this.uploaderClient.FindElement(By.Id("Input_146_displayValue")).SendKeys(charact.ToString());
+                    }
+
+                    this.uploaderClient.FindElement(By.Id("Input_146_displayValue")).SendKeys(Keys.Tab);
+                    this.uploaderClient.ExecuteScript("javascript:$('#Input_146_Refresh').val('changed');RefreshToSamePage();");
+                    Thread.Sleep(1000);
                 }
 
-                this.uploaderClient.FindElement(By.Id("Input_146_displayValue")).SendKeys(Keys.Tab);
-                this.uploaderClient.ExecuteScript("javascript:$('#Input_146_Refresh').val('changed');RefreshToSamePage();");
-                Thread.Sleep(1000);
-
-                var supervisorName = listing.SellingAgentSupervisor;
-
-                foreach (var charact in supervisorName)
+                if (!string.IsNullOrEmpty(listing.SellingAgentSupervisor))
                 {
-                    Thread.Sleep(400);
-                    this.uploaderClient.FindElement(By.Id("Input_761_displayValue")).SendKeys(charact.ToString());
-                }
+                    var supervisorName = listing.SellingAgentSupervisor;
+                    foreach (var charact in supervisorName)
+                    {
+                        Thread.Sleep(400);
+                        this.uploaderClient.FindElement(By.Id("Input_761_displayValue")).SendKeys(charact.ToString());
+                    }
 
-                Thread.Sleep(1000);
-                this.uploaderClient.FindElement(By.Id("Input_761_displayValue")).SendKeys(Keys.Enter);
-                this.uploaderClient.ExecuteScript("javascript:$('#Input_761_Refresh').val('changed');RefreshToSamePage();");
+                    Thread.Sleep(1000);
+                    this.uploaderClient.FindElement(By.Id("Input_761_displayValue")).SendKeys(Keys.Enter);
+                    this.uploaderClient.ExecuteScript("javascript:$('#Input_761_Refresh').val('changed');RefreshToSamePage();");
+                }
             }
 
             this.uploaderClient.ScrollDown();

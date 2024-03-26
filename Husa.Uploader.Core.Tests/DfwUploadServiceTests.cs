@@ -374,7 +374,10 @@ namespace Husa.Uploader.Core.Tests
         protected override ResidentialListingRequest GetResidentialListingRequest(bool isNewListing = true)
         {
             var listingSale = GetListingRequestDetailResponse(isNewListing);
-            return new DfwListingRequest(listingSale).CreateFromApiResponseDetail();
+            var result = new DfwListingRequest(listingSale).CreateFromApiResponseDetail();
+            result.BrokerName = "Ben Caballero";
+            result.SellingAgentSupervisor = "Ben Caballero";
+            return result;
         }
 
         private static DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse GetListingRequestDetailResponse(bool isNewListing)
