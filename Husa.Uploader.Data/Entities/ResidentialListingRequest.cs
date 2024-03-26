@@ -175,6 +175,7 @@ namespace Husa.Uploader.Data.Entities
         public string BodyofWater { get; set; }
         public bool? BuyerCheckBox { get; set; }
         public bool? HasAgentBonus { get; set; }
+
         public bool HasContingencyInfo { get; set; }
         public string UtilityRoomDesc { get; set; }
         public bool IsPlannedDevelopment { get; set; }
@@ -866,6 +867,8 @@ namespace Husa.Uploader.Data.Entities
         public string AtticRoom { get; set; }
 
         public bool HasBuyerAgent { get; set; }
+
+        public bool HasSecondBuyerAgent { get; set; }
 
         public string TitlePaidBy { get; set; }
 
