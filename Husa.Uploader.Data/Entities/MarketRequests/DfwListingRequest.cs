@@ -262,6 +262,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.ContractDate = statusInfo.ContractDate;
                 residentialListingRequest.ContingencyInfo = statusInfo.ContingencyInfo;
                 residentialListingRequest.EstClosedDate = statusInfo.EstimatedClosedDate;
+                residentialListingRequest.PendingDate = statusInfo.PendingDate;
                 residentialListingRequest.ClosedDate = statusInfo.ClosedDate;
                 residentialListingRequest.SellConcess = statusInfo.SellConcess;
                 residentialListingRequest.OffMarketDate = statusInfo.OffMarketDate;

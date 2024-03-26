@@ -103,11 +103,8 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCredentials();
             this.SetUpCompany();
             var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
-            dfwListing.ListStatus = "PEND";
+            dfwListing.ListStatus = "PND";
             dfwListing.PendingDate = DateTime.Now;
-            dfwListing.EstClosedDate = DateTime.Now;
-            dfwListing.ExpiredDate = DateTime.Now;
-            dfwListing.HasContingencyInfo = false;
             var sut = this.GetSut();
 
             // Act
