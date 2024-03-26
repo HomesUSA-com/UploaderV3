@@ -803,7 +803,7 @@ namespace Husa.Uploader.Core.Services
             }
             catch (Exception e)
             {
-                this.logger.LogInformation("An exception was occur in Utilities, {e.message}", e.Message);
+                this.logger.LogInformation("An exception was occur in Utilities, {message}", e.Message);
             }
         }
 
@@ -819,7 +819,7 @@ namespace Husa.Uploader.Core.Services
             }
             catch (Exception e)
             {
-                this.logger.LogInformation("An exception was occur in Environment, {e.message}", e.Message);
+                this.logger.LogInformation("An exception was occur in Environment, {message}", e.Message);
             }
 
             try
@@ -828,7 +828,7 @@ namespace Husa.Uploader.Core.Services
             }
             catch (Exception e)
             {
-                this.logger.LogInformation("An exception was occur in Environment, {e.message}", e.Message);
+                this.logger.LogInformation("An exception was occur in Environment, {message}", e.Message);
             }
         }
 
