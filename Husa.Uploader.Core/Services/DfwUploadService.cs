@@ -592,7 +592,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.StreetNum); // Street/Box Number
                 this.uploaderClient.SetSelect(By.Id("Input_285"), value: listing.County); // County
                 this.uploaderClient.SetSelect(By.Id("Input_280"), value: listing.StreetDir); // Street Direction
-                this.uploaderClient.WriteTextbox(By.Id("Input_170"), listing.StreetName.Replace('\'', ' ')); // Street Name
+                this.uploaderClient.WriteTextbox(By.Id("Input_170"), listing.StreetName?.Replace('\'', ' ')); // Street Name
 
                 if (!string.IsNullOrWhiteSpace(listing.StreetType))
                 {
