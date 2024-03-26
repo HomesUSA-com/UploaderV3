@@ -300,31 +300,34 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_84"));
 
                         this.uploaderClient.WriteTextbox(By.Id("Input_84"), listing.SoldPrice); // Close Price
-                        this.uploaderClient.WriteTextbox(By.Id("Input_457"), listing.SellerBuyerCost); // Seller Contribution
+                        this.uploaderClient.WriteTextbox(By.Id("Input_457"), listing.SellConcess); // Seller Contribution
                         this.uploaderClient.WriteTextbox(By.Id("Input_233"), listing.SqFtTotal); // Living Area
 
                         this.uploaderClient.WriteTextbox(By.Id("Input_85"), listing.ClosedDate.Value.ToShortDateString()); // Close Date
                         this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // Purchase Contract Date
 
                         this.uploaderClient.SetSelect(By.Id("Input_460"), "0"); // Third Party Assistance Program
+                        this.uploaderClient.SetSelect(By.Id("Input_496"), listing.SoldTerms); // Buyer Financing
+                        this.uploaderClient.ScrollDownPosition(100);
+                        this.uploaderClient.WriteTextbox(By.Id("Input_467"), listing.MortgageCoSold); // Mortgage Company
+                        this.uploaderClient.WriteTextbox(By.Id("Input_468"), listing.TitleCo); // Closing Title Company
+
                         this.uploaderClient.SetSelect(By.Id("Input_234"), listing.SqFtSource); // Living Area Source
                         this.uploaderClient.SetSelect(By.Id("Input_496"), listing.MFinancing); // Buyer Financing
                         //// 1st Term in Years
                         //// 1st Loan Amount
                         //// 1st Interest Rate
-                        this.uploaderClient.WriteTextbox(By.Id("Input_467"), listing.MortgageCoSold); // Mortgage Company
-                        this.uploaderClient.WriteTextbox(By.Id("Input_468"), listing.TitleCo); // Closing Title Company
-                        //// Buyers/SubAgent Texting Allowed
-                        //// Buyers/SubAgent2 Texting Allowed
+                        this.uploaderClient.SetSelect(By.Id("Input_624"), listing.HasBuyerAgent.BoolToNumericBool());  // Buyers/SubAgent
+                        this.uploaderClient.SetSelect(By.Id("Input_625"), listing.HasSecondBuyerAgent.BoolToNumericBool());  // Buyers/SubAgent2
                         this.uploaderClient.WriteTextbox(By.Id("Input_141_displayValue"), listing.SellingAgentLicenseNum ?? "99999999"); // Buyers/SubAgent ID
-                        this.uploaderClient.WriteTextbox(By.Id("Input_145_displayValue"), listing.SellingAgent2ID); // Buyers/SubAgent 2 ID
-                        this.uploaderClient.WriteTextbox(By.Id("Input_708"), listing.SellTeamID); // Sell Team ID
-                        this.uploaderClient.WriteTextbox(By.Id("Input_748"), listing.SellingAgentSupervisor); // Buyer Supervisor ID
+                        this.uploaderClient.ExecuteScript(" document.getElementById('Input_141_Refresh').value='1';RefreshToSamePage(); ");
+                        this.uploaderClient.WriteTextbox(By.Id("Input_145_displayValue"), listing.SecondAgentMarketUniqueId); // Buyers/SubAgent 2 ID
+                        this.uploaderClient.ExecuteScript(" document.getElementById('Input_145_Refresh').value='1';RefreshToSamePage(); ");
                         break;
                     case "PND":
-                        var pendingDate = listing.ContractDate == null ? string.Empty : listing.ContractDate.Value.ToShortDateString();
                         this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_94"));
-                        this.uploaderClient.WriteTextbox(By.Id("Input_94"), pendingDate); // Contract Date
+                        this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // Purchase Contract Date
+
                         break;
                     case "ACT":
                         var expirationDate = (listing.ListDate.HasValue ? listing.ListDate.Value : DateTime.Now.Date).AddYears(1).ToShortDateString();
@@ -334,17 +337,21 @@ namespace Husa.Uploader.Core.Services
                     case "AC":
                     case "AKO":
                         this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_94"));
-                        this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.ContractDate); // Contract Date
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_451")); // Kick Out Information
+                        this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.ContractDate.Value.ToShortDateString()); // Contract Date
+                        this.uploaderClient.WriteTextbox(By.Id("Input_451"), listing.ContingencyInfo); // Contingency Info
                         break;
                     case "AOC":
                         this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_94"));
-                        this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.ContractDate); // Contract Date
-                        this.uploaderClient.WriteTextbox(By.Id("Input_453"), listing.ExpiredDateOption); // Option Expire Date
+                        this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.ContractDate.Value.ToShortDateString()); // Purchase Contract Date
+                        this.uploaderClient.WriteTextbox(By.Id("Input_453"), listing.EstClosedDate.Value.ToShortDateString()); // Option Expire Date
                         break;
                     case "CAN":
                         this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_472"));
                         this.uploaderClient.WriteTextbox(By.Id("Input_472"), DateTime.Now.ToShortDateString());
+                        break;
+                    case "TOM":
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_474"));
+                        this.uploaderClient.WriteTextbox(By.Id("Input_474"), listing.OffMarketDate);
                         break;
                 }
 
@@ -1243,10 +1250,9 @@ namespace Husa.Uploader.Core.Services
         {
             switch (status)
             {
-                case "A":
                 case "ACT":
                     linkText = "Change to Active";
-                    return "A";
+                    return "ACT";
                 case "AC":
                     linkText = "Change to Active Contingent";
                     return "AC";
@@ -1256,28 +1262,18 @@ namespace Husa.Uploader.Core.Services
                 case "AOC":
                     linkText = "Change to Active Option Contract";
                     return "AOC";
-                case "C":
                 case "CAN":
                     linkText = "Change to Cancelled";
                     return "CAN";
-                case "X":
-                    return "EXP";
-                case "P":
                 case "PND":
                     linkText = "Change to Pending";
                     return "PND";
-                case "S":
                 case "SLD":
                     linkText = "Change to Closed";
                     return "SLD";
-                case "T":
-                case "WS":
                 case "HOLD":
                     linkText = "Change to Hold";
                     return "TOM";
-                case "W":
-                    linkText = "Change to Withdrawn";
-                    return "W";
                 default:
                     this.logger.LogError(@"The status '" + status + @"' is not configured for DFW");
                     return null;

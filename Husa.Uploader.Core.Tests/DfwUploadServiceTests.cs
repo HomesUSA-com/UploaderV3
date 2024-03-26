@@ -114,7 +114,6 @@ namespace Husa.Uploader.Core.Tests
         [InlineData("AKO")] // UpdateStatus_ActiveKickOut
         [InlineData("AOC")] // UpdateStatus_ActiveOptionContractSuccess
         [InlineData("CAN")] // UpdateStatus_CanSuccess
-        [InlineData("W")] // UpdateStatus_Withdrawn ateSuccess
         [InlineData("HOLD")] // UpdateStatus_OffMarketDateSuccess
         public async Task UpdateStatus_Success(string status)
         {
