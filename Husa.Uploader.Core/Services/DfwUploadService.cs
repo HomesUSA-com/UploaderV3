@@ -286,6 +286,11 @@ namespace Husa.Uploader.Core.Services
                 var linkText = string.Empty;
                 var transformedStatus = this.TransformStatus(listing.ListStatus, ref linkText);
 
+                if (transformedStatus == null)
+                {
+                    return UploadResult.Failure;
+                }
+
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.PartialLinkText(linkText));
                 this.uploaderClient.ClickOnElement(By.PartialLinkText(linkText));
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("stickypush"));
@@ -297,21 +302,10 @@ namespace Husa.Uploader.Core.Services
 
                         this.uploaderClient.WriteTextbox(By.Id("Input_84"), listing.SoldPrice); // Close Price
                         this.uploaderClient.WriteTextbox(By.Id("Input_457"), listing.SellerBuyerCost); // Seller Contribution
-                        // Appraiser's Name
-                        if (listing.SqFtTotal != null)
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_233"), listing.SqFtTotal); // Living Area
-                        }
+                        this.uploaderClient.WriteTextbox(By.Id("Input_233"), listing.SqFtTotal); // Living Area
 
-                        if (listing.ClosedDate != null)
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_85"), listing.ClosedDate.Value.ToShortDateString()); // Close Date
-                        }
-
-                        if (listing.PendingDate != null)
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // Purchase Contract Date
-                        }
+                        this.uploaderClient.WriteTextbox(By.Id("Input_85"), listing.ClosedDate.Value.ToShortDateString()); // Close Date
+                        this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // Purchase Contract Date
 
                         this.uploaderClient.SetSelect(By.Id("Input_460"), "0"); // Third Party Assistance Program
                         this.uploaderClient.SetSelect(By.Id("Input_234"), listing.SqFtSource); // Living Area Source
@@ -340,10 +334,6 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.WriteTextbox(By.Id("Input_5"), expirationDate);
                         break;
                     case "AC":
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_94"));
-                        this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.ContractDate); // Contract Date
-                        this.uploaderClient.WriteTextbox(By.Id("Input_451"), listing.ContingencyInfo); // Contingency Info
-                        break;
                     case "AKO":
                         this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_94"));
                         this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.ContractDate); // Contract Date
@@ -363,15 +353,9 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.WriteTextbox(By.Id("Input_476"), listing.WithdrawnDate); // Withdrawn Date
                         break;
                     case "TOM":
-                        if (listing.OffMarketDate != null)
-                        {
-                            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_474"));
-                            this.uploaderClient.WriteTextbox(By.Id("Input_474"), listing.OffMarketDate);
-                        }
-
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_474"));
+                        this.uploaderClient.WriteTextbox(By.Id("Input_474"), listing.OffMarketDate);
                         break;
-                    default:
-                        throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for DFW Listing with Id '{listing.ResidentialListingID}'");
                 }
 
                 return UploadResult.Success;
@@ -587,10 +571,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_228", listing.ConstructionDesc); // Construction Material
 
             this.uploaderClient.SetSelect(By.Id("Input_403"), value: listing.YearBuiltDesc); // Year Built Details/Construc. Status
-            if (listing.SqFtTotal != null)
-            {
-                this.uploaderClient.WriteTextbox(By.Id("Input_233"), listing.SqFtTotal); // SqFt/Living Area
-            }
+            this.uploaderClient.WriteTextbox(By.Id("Input_233"), listing.SqFtTotal); // SqFt/Living Area
 
             this.uploaderClient.SetSelect(By.Id("Input_234"), value: listing.SqFtSource); // SqFt Source
             this.uploaderClient.WriteTextbox(By.Id("Input_235"), string.IsNullOrWhiteSpace(listing.TaxID) ? "NA" : listing.TaxID); // Parcel ID
@@ -1339,7 +1320,8 @@ namespace Husa.Uploader.Core.Services
                     linkText = "Change to Withdrawn";
                     return "W";
                 default:
-                    throw new ArgumentOutOfRangeException("status", status, @"The status '" + status + @"' is not configured for DFW");
+                    this.logger.LogError(@"The status '" + status + @"' is not configured for DFW");
+                    return null;
             }
         }
     }
