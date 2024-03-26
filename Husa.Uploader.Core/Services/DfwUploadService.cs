@@ -524,7 +524,7 @@ namespace Husa.Uploader.Core.Services
 
         private void FillPropertyInformation(DfwListingRequest listing)
         {
-            this.GoToTab("Property Info");
+            this.GoToPropertyInformationTab();
 
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
 
@@ -684,14 +684,12 @@ namespace Husa.Uploader.Core.Services
                 }
             }
 
-            var roomTypes = this.ReadRoomAndFeatures(listing);
-
             this.uploaderClient.ClickOnElement(By.Id("m_rpPageList_ctl04_lbPageLink"));
             Thread.Sleep(400);
 
             var i = 0;
 
-            foreach (var roomType in roomTypes.Where(c => c.IsValid()))
+            foreach (var room in listing.Rooms)
             {
                 if (i > 0)
                 {
@@ -701,19 +699,19 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(400);
                 }
 
-                this.uploaderClient.SetSelect(By.Id("_Input_442__REPEAT" + i + "_440"), roomType.Value, "Name", tabName, true); // FieldName
+                this.uploaderClient.SetSelect(By.Id("_Input_442__REPEAT" + i + "_440"), room.RoomType, "Name", tabName, true); // FieldName
                 Thread.Sleep(400);
                 this.uploaderClient.ScrollDown();
-                this.uploaderClient.SetSelect(By.Id("_Input_442__REPEAT" + i + "_443"), roomType.Level, "Level", tabName, true);
+                this.uploaderClient.SetSelect(By.Id("_Input_442__REPEAT" + i + "_443"), room.Level, "Level", tabName, true);
                 Thread.Sleep(400);
                 this.uploaderClient.ScrollDown();
-                this.uploaderClient.WriteTextbox(By.Id("_Input_442__REPEAT" + i + "_444"), roomType.Length, true);
+                this.uploaderClient.WriteTextbox(By.Id("_Input_442__REPEAT" + i + "_444"), room.Length, true);
                 Thread.Sleep(400);
                 this.uploaderClient.ScrollDown();
-                this.uploaderClient.WriteTextbox(By.Id("_Input_442__REPEAT" + i + "_445"), roomType.Width, true);
+                this.uploaderClient.WriteTextbox(By.Id("_Input_442__REPEAT" + i + "_445"), room.Width, true);
                 Thread.Sleep(400);
                 this.uploaderClient.ScrollDown();
-                this.uploaderClient.SetMultipleCheckboxById("_Input_442__REPEAT" + i + "_441", roomType.Features, "Features", tabName);
+                this.uploaderClient.SetMultipleCheckboxById("_Input_442__REPEAT" + i + "_441", room.Features, "Features", tabName);
                 Thread.Sleep(400);
                 this.uploaderClient.ScrollDown();
 
@@ -1116,35 +1114,6 @@ namespace Husa.Uploader.Core.Services
         {
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_263"));
             this.uploaderClient.WriteTextbox(By.Id("Input_263"), listing.GetPublicRemarks()); // Property Description ////.GetPublicRemarks(status)
-        }
-
-        private IEnumerable<RoomType> ReadRoomAndFeatures(ResidentialListingRequest listing)
-        {
-            return new List<RoomType>()
-            {
-                new RoomType("LIVING", listing.LivingRoom1Level, listing.LivingRoom1Length, listing.LivingRoom1Width, null),
-                new RoomType("LIVING", listing.LivingRoom2Level, listing.LivingRoom2Length, listing.LivingRoom2Width, null),
-                new RoomType("GAME", listing.LivingRoom3Level, listing.LivingRoom3Length, listing.LivingRoom3Width, null),
-
-                new RoomType("DINING", listing.DiningRoomLevel, listing.DiningRoomLength, listing.DiningRoomWidth, null),
-
-                new RoomType("BRKFT", listing.BreakfastLevel, listing.BreakfastLength, listing.BreakfastWidth, listing.OtherRoomDesc),
-
-                new RoomType("KITCHEN", listing.KitchenLevel, listing.KitchenLength, listing.KitchenWidth, listing.KitchenDesc),
-
-                new RoomType("MSTRBED", listing.Bed1Level, listing.Bed1Length, listing.Bed1Width, listing.BedBathDesc),
-
-                new RoomType("BDR", listing.Bed2Level, listing.Bed2Length, listing.Bed2Width, null),
-                new RoomType("BDR", listing.Bed3Level, listing.Bed3Length, listing.Bed3Width, null),
-                new RoomType("BDR", listing.Bed4Level, listing.Bed4Length, listing.Bed4Width, null),
-                new RoomType("BDR", listing.Bed5Level, listing.Bed5Length, listing.Bed5Width, null),
-
-                new RoomType("OFFICE", listing.StudyLevel, listing.StudyLength, listing.StudyWidth, null),
-
-                new RoomType("UTILITY", listing.UtilityRoomLevel, listing.UtilityRoomLength, listing.UtilityRoomWidth, listing.UtilityRoomDesc),
-
-                new RoomType("MEDIA", listing.OtherRoom1Level, listing.OtherRoom1Length, listing.OtherRoom1Width, null),
-            };
         }
 
         private void DeleteAllImages()
