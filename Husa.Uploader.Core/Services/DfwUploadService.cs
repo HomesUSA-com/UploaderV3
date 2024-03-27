@@ -71,7 +71,6 @@ namespace Husa.Uploader.Core.Services
             var loginButtonId = "loginbtn";
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id(loginButtonId));
-
             this.uploaderClient.WriteTextbox(By.Name("username"), credentials[LoginCredentials.Username]);
             this.uploaderClient.WriteTextbox(By.Name("password"), credentials[LoginCredentials.Password]);
             Thread.Sleep(1000);
@@ -347,7 +346,7 @@ namespace Husa.Uploader.Core.Services
                         break;
                     case "CAN":
                         this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_472"));
-                        this.uploaderClient.WriteTextbox(By.Id("Input_472"), DateTime.Now.ToShortDateString());
+                        this.uploaderClient.WriteTextbox(By.Id("Input_472"), DateTime.Now.ToShortDateString()); // Cancelled Date
                         break;
                     case "TOM":
                         this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_474"));

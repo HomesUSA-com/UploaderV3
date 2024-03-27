@@ -182,6 +182,23 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Fact]
+        public async Task UpdateStatus_CancelledSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
+            dfwListing.ListStatus = "CAN";
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdateStatus(dfwListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
         public async Task AddOpenHouseNoOpenHousesSuccess()
         {
             // Arrange
