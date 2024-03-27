@@ -4,7 +4,9 @@ namespace Husa.Uploader.Data.Tests
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Abor.Api.Client;
     using Husa.Quicklister.CTX.Api.Client;
+    using Husa.Quicklister.Dfw.Api.Client;
     using Husa.Quicklister.Extensions.Api.Contracts.Request.SaleRequest;
+    using Husa.Quicklister.Extensions.Api.Contracts.Response;
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.Har.Api.Client;
     using Husa.Quicklister.Sabor.Api.Client;
@@ -14,6 +16,7 @@ namespace Husa.Uploader.Data.Tests
     using Xunit;
     using AborResponseContracts = Husa.Quicklister.Abor.Api.Contracts.Response;
     using CtxResponseContracts = Husa.Quicklister.CTX.Api.Contracts.Response;
+    using DfwResponseContracts = Husa.Quicklister.Dfw.Api.Contracts.Response;
     using HarResponseContracts = Husa.Quicklister.Har.Api.Contracts.Response;
     using SaborEnums = Husa.Quicklister.Sabor.Domain.Enums;
     using SaborResponseContracts = Husa.Quicklister.Sabor.Api.Contracts.Response;
@@ -25,6 +28,7 @@ namespace Husa.Uploader.Data.Tests
         private readonly Mock<IQuicklisterCtxClient> mockCtxClient = new();
         private readonly Mock<IQuicklisterAborClient> mockAborClient = new();
         private readonly Mock<IQuicklisterHarClient> mockHarClient = new();
+        private readonly Mock<IQuicklisterDfwClient> mockDfwClient = new();
         private readonly Mock<ILogger<ListingRequestRepository>> mockLogger = new();
         private readonly ApplicationServicesFixture fixture;
 
@@ -65,6 +69,13 @@ namespace Husa.Uploader.Data.Tests
                 .Setup(x => x.ListingSaleRequest.GetListRequestAsync(It.IsAny<SaleListingRequestFilter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(harResult);
 
+            var dfwResponse = new DfwResponseContracts.ListingRequest.SaleRequest.SaleListingRequestQueryResponse();
+            var dfwResult = GetListingRequestGridResponse(new[] { dfwResponse });
+
+            this.mockDfwClient
+                .Setup(x => x.ListingSaleRequest.GetListRequestAsync(It.IsAny<SaleListingRequestFilter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dfwResult);
+
             var sut = this.GetSut();
 
             // Act
@@ -72,7 +83,7 @@ namespace Husa.Uploader.Data.Tests
 
             // Assert
             Assert.NotEmpty(result);
-            Assert.Equal(4, result.Count());
+            Assert.Equal(5, result.Count());
         }
 
         [Theory]
@@ -80,6 +91,7 @@ namespace Husa.Uploader.Data.Tests
         [InlineData(MarketCode.Houston)]
         [InlineData(MarketCode.Austin)]
         [InlineData(MarketCode.CTX)]
+        [InlineData(MarketCode.DFW)]
         public async Task GetListingRequest_ReturnsResidentialListingRequest(MarketCode marketCode)
         {
             // Arrange
@@ -100,6 +112,7 @@ namespace Husa.Uploader.Data.Tests
         [InlineData(MarketCode.Houston)]
         [InlineData(MarketCode.Austin)]
         [InlineData(MarketCode.CTX)]
+        [InlineData(MarketCode.DFW)]
         public async Task GetListingMlsNumber_Succeess(MarketCode marketCode)
         {
             // Arrange
@@ -126,9 +139,9 @@ namespace Husa.Uploader.Data.Tests
             await Assert.ThrowsAsync<ArgumentException>(() => sut.GetListingMlsNumber(Guid.Empty, marketCode: MarketCode.SanAntonio));
         }
 
-        private static ListingRequestGridResponse<TSaleListingRequestResponse> GetListingRequestGridResponse<TSaleListingRequestResponse>(IEnumerable<TSaleListingRequestResponse> data)
+        private static DocumentGridResponse<TSaleListingRequestResponse> GetListingRequestGridResponse<TSaleListingRequestResponse>(IEnumerable<TSaleListingRequestResponse> data)
             where TSaleListingRequestResponse : class, ISaleListingRequestResponse
-            => new ListingRequestGridResponse<TSaleListingRequestResponse>(
+            => new DocumentGridResponse<TSaleListingRequestResponse>(
                 data: data,
                 total: 1,
                 continuationToken: string.Empty,
@@ -141,6 +154,7 @@ namespace Husa.Uploader.Data.Tests
             this.mockCtxClient.Object,
             this.mockAborClient.Object,
             this.mockHarClient.Object,
+            this.mockDfwClient.Object,
             this.mockLogger.Object);
 
         private void SetUpGetListingById(MarketCode market, Guid listingId, string mlsNumber)
@@ -188,6 +202,18 @@ namespace Husa.Uploader.Data.Tests
                         this.mockCtxClient
                             .Setup(x => x.SaleListing.GetByIdAsync(listingId, It.IsAny<CancellationToken>()))
                             .ReturnsAsync(new CtxResponseContracts.ListingSaleDetailResponse()
+                            {
+                                Id = listingId,
+                                MlsNumber = mlsNumber,
+                            });
+                        break;
+                    }
+
+                case MarketCode.DFW:
+                    {
+                        this.mockDfwClient
+                            .Setup(x => x.SaleListing.GetByIdAsync(listingId, It.IsAny<CancellationToken>()))
+                            .ReturnsAsync(new DfwResponseContracts.SaleListingDetailResponse()
                             {
                                 Id = listingId,
                                 MlsNumber = mlsNumber,
@@ -337,6 +363,39 @@ namespace Husa.Uploader.Data.Tests
                             StatusFieldsInfo = new(),
                         };
                         this.mockCtxClient
+                            .Setup(x => x.ListingSaleRequest.GetListRequestSaleByIdAsync(requestId, It.IsAny<CancellationToken>()))
+                            .ReturnsAsync(response);
+                        break;
+                    }
+
+                case MarketCode.DFW:
+                    {
+                        var response = new DfwResponseContracts.ListingRequest.SaleRequest.SaleListingRequestDetailResponse
+                        {
+                            Id = requestId,
+                            ListingSaleId = listingId,
+                            ListPrice = 1234567,
+                            MlsNumber = "fake-mls-num",
+                            SysCreatedOn = requestDate,
+                            SysCreatedBy = userId,
+                            SysModifiedOn = requestDate.AddMonths(1),
+                            SysModifiedBy = userId,
+                            SaleProperty = new()
+                            {
+                                AddressInfo = new(),
+                                FeaturesInfo = new(),
+                                FinancialInfo = new(),
+                                SalePropertyInfo = new(),
+                                PropertyInfo = new(),
+                                SchoolsInfo = new(),
+                                ShowingInfo = new(),
+                                SpacesDimensionsInfo = new(),
+                                OpenHouses = new List<DfwResponseContracts.OpenHouseResponse>(),
+                                Rooms = new List<DfwResponseContracts.RoomResponse>(),
+                            },
+                            StatusFieldsInfo = new(),
+                        };
+                        this.mockDfwClient
                             .Setup(x => x.ListingSaleRequest.GetListRequestSaleByIdAsync(requestId, It.IsAny<CancellationToken>()))
                             .ReturnsAsync(response);
                         break;

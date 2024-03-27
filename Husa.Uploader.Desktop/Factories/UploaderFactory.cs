@@ -30,6 +30,7 @@ namespace Husa.Uploader.Desktop.Factories
                 MarketCode.CTX => IsAssignableFrom<ICtxUploadService, T>(),
                 MarketCode.Austin => IsAssignableFrom<IAborUploadService, T>(),
                 MarketCode.Houston => IsAssignableFrom<IHarUploadService, T>(),
+                MarketCode.DFW => IsAssignableFrom<IDfwUploadService, T>(),
                 _ => false,
             };
         }
@@ -59,6 +60,9 @@ namespace Husa.Uploader.Desktop.Factories
                     return (T)this.Uploader;
                 case MarketCode.Houston:
                     this.Uploader = this.serviceProvider.GetRequiredService<IHarUploadService>();
+                    return (T)this.Uploader;
+                case MarketCode.DFW:
+                    this.Uploader = this.serviceProvider.GetRequiredService<IDfwUploadService>();
                     return (T)this.Uploader;
                 default:
                     throw new NotSupportedException($"The market {marketCode} is not supported");

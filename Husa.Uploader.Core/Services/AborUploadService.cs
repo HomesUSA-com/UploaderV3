@@ -329,7 +329,12 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
                         Thread.Sleep(500);
                         this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // pending date
-                        this.uploaderClient.WriteTextbox(By.Id("Input_512"), listing.ClosedDate.Value.ToShortDateString()); // option end date
+
+                        if (listing.ClosedDate.HasValue)
+                        {
+                            this.uploaderClient.WriteTextbox(By.Id("Input_512"), listing.ClosedDate.Value.ToShortDateString()); // option end date
+                        }
+
                         this.uploaderClient.SetSelect(By.Id($"Input_655"), value: listing.HasContingencyInfo.BoolToNumericBool()); // property sale contingency
                         this.uploaderClient.SetMultipleCheckboxById("Input_656", listing.ContingencyInfo, "Other Contingency Type", " ");
                         this.uploaderClient.WriteTextbox(By.Id("Input_515"), listing.EstClosedDate.Value.ToShortDateString()); // Tentative Close Date
