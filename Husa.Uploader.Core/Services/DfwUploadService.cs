@@ -372,6 +372,12 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.WriteTextbox(By.Id("Input_451"), listing.ContingencyInfo); // Kick Out Information
 
                         break;
+                    case "CAN":
+                        buttonText = "Change to Cancelled";
+                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                        Thread.Sleep(500);
+                        this.uploaderClient.WriteTextbox(By.Id("Input_472"), DateTime.Now.ToShortDateString()); // Cancelled Date
+                        break;
                     default:
                         throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for Houston Listing with Id '{listing.ResidentialListingID}'");
                 }
