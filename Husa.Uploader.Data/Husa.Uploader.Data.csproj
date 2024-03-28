@@ -9,7 +9,6 @@
         <PackageReference Include="Husa.MediaService.Client" Version="2.0.0" />
         <PackageReference Include="Husa.Quicklister.Abor.Api.Client" Version="2.0.2" />
         <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="2.0.1" />
-        <PackageReference Include="Husa.Quicklister.Extensions.Api.Contracts" Version="1.1.2" />
         <PackageReference Include="Husa.Quicklister.Har.Api.Client" Version="2.0.3" />
         <PackageReference Include="Husa.Quicklister.Dfw.Api.Client" Version="0.2.5" />
         <PackageReference Include="Husa.Quicklister.Sabor.Api.Client" Version="2.3.2" />
