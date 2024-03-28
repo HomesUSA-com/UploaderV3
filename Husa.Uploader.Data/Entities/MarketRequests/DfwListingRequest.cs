@@ -161,10 +161,13 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.YearBuilt = propertyInfo.ConstructionStartYear;
                 residentialListingRequest.TaxID = propertyInfo.TaxId;
                 residentialListingRequest.UpdateGeocodes = propertyInfo.UpdateGeocodes;
+                residentialListingRequest.PropSubType = propertyInfo.PropertySubType?.ToStringFromEnumMember();
                 residentialListingRequest.LotDim = propertyInfo.LotDimension;
                 residentialListingRequest.LotDesc = propertyInfo.LotDescription.ToStringFromEnumMembers();
                 residentialListingRequest.LotSize = propertyInfo.LotSize?.ToStringFromEnumMember();
+                residentialListingRequest.LotSizeSrc = "OTHER";
                 residentialListingRequest.IsNewConstruction = propertyInfo.IsNewConstruction;
+                residentialListingRequest.HousingTypeDesc = propertyInfo.HousingType?.ToStringFromEnumMembers();
             }
 
             void FillSpacesDimensionsInfo(SpacesDimensionsResponse spacesDimensionsInfo)
@@ -175,6 +178,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 }
 
                 residentialListingRequest.Beds = spacesDimensionsInfo.NumBedrooms;
+                residentialListingRequest.BathsFull = spacesDimensionsInfo.NumBathsFull;
+                residentialListingRequest.BathsHalf = spacesDimensionsInfo.NumBathsHalf;
                 residentialListingRequest.NumStories = spacesDimensionsInfo.Stories?.ToString();
                 residentialListingRequest.SqFtTotal = spacesDimensionsInfo.SqftTotal;
             }
@@ -191,6 +196,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.RoofDesc = featuresInfo.RoofDescription.ToStringFromEnumMembers();
                 residentialListingRequest.ConstructionDesc = featuresInfo.ConstructionMaterials.ToStringFromEnumMembers();
                 residentialListingRequest.FireplaceDesc = featuresInfo.FireplaceDescription.ToStringFromEnumMembers();
+                residentialListingRequest.NumberFireplaces = featuresInfo.NumFireplaces?.ToString();
                 residentialListingRequest.FloorsDesc = featuresInfo.Floors.ToStringFromEnumMembers();
                 residentialListingRequest.GarageDesc = featuresInfo.GarageDescription.ToStringFromEnumMembers();
                 residentialListingRequest.HeatSystemDesc = featuresInfo.HeatSystem.ToStringFromEnumMembers();
@@ -234,6 +240,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.AgentListApptPhone = showingInfo.ContactPhone;
                 residentialListingRequest.OtherPhone = showingInfo.OccupantPhone;
                 residentialListingRequest.AgentPrivateRemarks = showingInfo.AgentPrivateRemarks;
+                residentialListingRequest.ShowingInstructions = showingInfo.ShowingInstructions;
                 residentialListingRequest.RealtorContactEmail = showingInfo.RealtorContactEmail.ToStringFromCollection(";");
                 residentialListingRequest.Directions = showingInfo.Directions;
                 residentialListingRequest.EnableOpenHouse = showingInfo.EnableOpenHouses;
@@ -265,16 +272,14 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.PendingDate = statusInfo.PendingDate;
                 residentialListingRequest.ClosedDate = statusInfo.ClosedDate;
                 residentialListingRequest.SellConcess = statusInfo.SellConcess;
-                residentialListingRequest.MortgageCoSold = statusInfo.MortgageCompany;
-                residentialListingRequest.TitleCo = statusInfo.TitleCompany;
-                residentialListingRequest.SoldTerms = statusInfo.SoldTerms?.ToStringFromEnumMember();
-                residentialListingRequest.HasBuyerAgent = statusInfo.HasBuyerAgent;
-                residentialListingRequest.HasSecondBuyerAgent = statusInfo.HasSecondBuyerAgent;
-                residentialListingRequest.AgentMarketUniqueId = statusInfo.AgentMarketUniqueId;
-                residentialListingRequest.SecondAgentMarketUniqueId = statusInfo.SecondAgentMarketUniqueId;
-
                 residentialListingRequest.OffMarketDate = statusInfo.OffMarketDate;
                 residentialListingRequest.BackOnMarketDate = statusInfo.BackOnMarketDate;
+                residentialListingRequest.MortgageCoSold = statusInfo.MortgageCompany;
+                residentialListingRequest.SoldTerms = statusInfo.SoldTerms?.ToStringFromEnumMember();
+                residentialListingRequest.AgentMarketUniqueId = statusInfo.AgentMarketUniqueId;
+                residentialListingRequest.SecondAgentMarketUniqueId = statusInfo.SecondAgentMarketUniqueId;
+                residentialListingRequest.HasBuyerAgent = statusInfo.HasBuyerAgent;
+                residentialListingRequest.TitleCo = statusInfo.TitleCompany;
             }
 
             void FillRoomsInfo(IEnumerable<RoomResponse> rooms)
