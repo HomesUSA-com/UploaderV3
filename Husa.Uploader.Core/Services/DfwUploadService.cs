@@ -117,10 +117,8 @@ namespace Husa.Uploader.Core.Services
                 await this.Login(listing.CompanyId);
 
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
-                if (!listing.IsNewListing)
-                {
-                    this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
-                }
+
+                this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
 
                 return UploadResult.Success;
             }
@@ -144,11 +142,9 @@ namespace Husa.Uploader.Core.Services
 
                 try
                 {
-                    var housingType = listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>();
-
                     if (listing.IsNewListing)
                     {
-                        this.NavigateToNewPropertyInput(housingType);
+                        this.NavigateToNewPropertyInput();
                     }
                     else
                     {
@@ -443,33 +439,22 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        private void NavigateToNewPropertyInput(HousingType? housingType)
+        private void NavigateToNewPropertyInput()
         {
             this.uploaderClient.NavigateToUrl(NavigateToUrlNewListing);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Add new"));
             this.uploaderClient.ClickOnElement(By.Id("m_lvInputUISections_ctrl0_lvInputUISubsections_ctrl0_lbAddNewItem"));
 
-            switch (housingType)
-            {
-                case HousingType.SingleDetached: //// .SingleFamily: REMOVE
-                    WaitAndClick("Single-Family Add/Edit");
-                    break;
-                case HousingType.GardenZeroLotLine: ////.CountryHomesAcreage: REMOVE
-                    WaitAndClick("Country Homes/Acreage Add/Edit");
-                    break;
-                case HousingType.CondoTownhome:
-                    WaitAndClick("Townhouse/Condo Add/Edit");
-                    break;
-                case HousingType.AttachedDuplex: ////.MultiFamily: REMOVE
-                    WaitAndClick("Multi-Family Add/Edit");
-                    break;
-            }
+            Thread.Sleep(1000);
 
-            WaitAndClick("Start with a blank Listing");
+            this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl00_m_btnSelect"));
+
+            Thread.Sleep(1000);
+            WaitAndClick("Start with a blank Property");
 
             void WaitAndClick(string text)
             {
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(text));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.PartialLinkText(text));
                 this.uploaderClient.ClickOnElement(By.LinkText(text));
             }
 
@@ -535,22 +520,19 @@ namespace Husa.Uploader.Core.Services
 
             if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
             {
-                DateTime listDate = DateTime.Now;
+                var listDate = DateTime.Now;
                 switch (listing.ListStatus)
                 {
-                    case "A":
                     case "ACT":
                     case "AC":
                     case "AKO":
                     case "AOC":
-                    case "CS":
+                    case "CSN":
                         listDate = DateTime.Now;
                         break;
-                    case "P":
                     case "PND":
                         listDate = DateTime.Now.AddDays(-2);
                         break;
-                    case "S":
                     case "SLD":
                         listDate = DateTime.Now.AddDays(ListDateSold);
                         break;
@@ -1117,7 +1099,8 @@ namespace Husa.Uploader.Core.Services
         {
             var index = 0;
             Thread.Sleep(1000);
-            foreach (var openHouse in listing.OpenHouse)
+            var sortedOpenHouses = listing.OpenHouse.OrderBy(openHouse => openHouse.Date).ToList();
+            foreach (var openHouse in sortedOpenHouses)
             {
                 if (index != 0)
                 {
