@@ -6,6 +6,7 @@ namespace Husa.Uploader.Core.Tests
     using System.Threading.Tasks;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Dfw.Domain.Enums;
     using Husa.Quicklister.Dfw.Domain.Enums.Domain;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
@@ -208,6 +209,7 @@ namespace Husa.Uploader.Core.Tests
 
             var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
             dfwListing.OpenHouse = openHouses;
+            dfwListing.ListStatus = MarketStatuses.Active.ToStringFromEnumMember<MarketStatuses>();
             var sut = this.GetSut();
 
             // Act
@@ -218,7 +220,7 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Fact]
-        public async Task AddOpenHouseSuccess()
+        public async Task AddOpenActiveHouseSuccess()
         {
             // Arrange
             this.SetUpCredentials();
@@ -255,6 +257,59 @@ namespace Husa.Uploader.Core.Tests
 
             var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
             dfwListing.OpenHouse = openHouses;
+            dfwListing.ListStatus = MarketStatuses.Active.ToStringFromEnumMember<MarketStatuses>();
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdateOpenHouse(dfwListing);
+            this.uploaderClient.Verify(client => client.ScrollDown(It.IsAny<int>()), Times.AtLeastOnce);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task AddOpenPendingShowingHouseSuccess(bool allowPendingList)
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var openHouses = new List<OpenHouseRequest>()
+            {
+                new OpenHouseRequest()
+                {
+                    Type = Crosscutting.Enums.OpenHouseType.Public,
+                    StartTime = new TimeSpan(14, 0, 0),
+                    EndTime = new TimeSpan(16, 0, 0),
+                    Date = OpenHouseExtensions.GetNextWeekday(DateTime.Today, DayOfWeek.Monday),
+                    Active = true,
+                    Comments = "Test",
+                    Refreshments = new List<Refreshments>()
+                     {
+                         Refreshments.Drinks,
+                     }.ToStringFromEnumMembers(),
+                },
+                new OpenHouseRequest()
+                {
+                    Type = Crosscutting.Enums.OpenHouseType.Public,
+                    StartTime = new TimeSpan(10, 0, 0),
+                    EndTime = new TimeSpan(15, 0, 0),
+                    Date = OpenHouseExtensions.GetNextWeekday(DateTime.Today, DayOfWeek.Thursday),
+                    Active = true,
+                    Comments = "Test",
+                    Refreshments = new List<Refreshments>()
+                     {
+                         Refreshments.Lunch,
+                     }.ToStringFromEnumMembers(),
+                },
+            };
+
+            var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
+            dfwListing.OpenHouse = openHouses;
+            dfwListing.ListStatus = MarketStatuses.Pending.ToStringFromEnumMember<MarketStatuses>();
+            dfwListing.AllowPendingList = allowPendingList;
             var sut = this.GetSut();
 
             // Act
