@@ -43,6 +43,8 @@ namespace Husa.Uploader.Core.Tests
             this.uploaderClient.Setup(x => x.WaitUntilElementIsDisplayed(
                 It.Is<By>(x => x == By.ClassName("stickypush")),
                 It.IsAny<CancellationToken>())).Returns(true);
+            var deletedElements = new ReadOnlyCollection<IWebElement>(new List<IWebElement>() { new Mock<IWebElement>().Object });
+            this.uploaderClient.Setup(x => x.FindElements(By.LinkText("Delete"), false)).Returns(deletedElements);
         }
 
         [Fact]
@@ -210,6 +212,7 @@ namespace Husa.Uploader.Core.Tests
             var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
             dfwListing.OpenHouse = openHouses;
             dfwListing.ListStatus = MarketStatuses.Active.ToStringFromEnumMember<MarketStatuses>();
+            dfwListing.EnableOpenHouse = true;
             var sut = this.GetSut();
 
             // Act
@@ -225,6 +228,7 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
+
             var openHouses = new List<OpenHouseRequest>()
             {
                 new OpenHouseRequest()
@@ -258,6 +262,7 @@ namespace Husa.Uploader.Core.Tests
             var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
             dfwListing.OpenHouse = openHouses;
             dfwListing.ListStatus = MarketStatuses.Active.ToStringFromEnumMember<MarketStatuses>();
+            dfwListing.EnableOpenHouse = true;
             var sut = this.GetSut();
 
             // Act
@@ -310,6 +315,7 @@ namespace Husa.Uploader.Core.Tests
             dfwListing.OpenHouse = openHouses;
             dfwListing.ListStatus = MarketStatuses.Pending.ToStringFromEnumMember<MarketStatuses>();
             dfwListing.AllowPendingList = allowPendingList;
+            dfwListing.EnableOpenHouse = true;
             var sut = this.GetSut();
 
             // Act
