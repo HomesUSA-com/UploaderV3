@@ -973,7 +973,7 @@ namespace Husa.Uploader.Core.Services
 
             if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
             {
-                this.uploaderClient.WriteTextbox(By.Id("Input_82"), (!string.IsNullOrWhiteSpace(listing.PlanProfileName) ? (compSaleText + listing.PlanProfileName) : (compSaleText + " ")).RemoveSlash());
+                this.uploaderClient.WriteTextbox(By.Id("Input_266"), (!string.IsNullOrWhiteSpace(listing.PlanProfileName) ? (compSaleText + listing.PlanProfileName) : (compSaleText + " ")).RemoveSlash());
             }
 
             // Excludes
