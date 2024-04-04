@@ -62,6 +62,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
         public bool HasMudDistrict { get; set; }
         public bool IsSpecialTaxingAuthority { get; set; }
         public string HoaTerm { get; set; }
+        public bool HasPropertyAttached { get; set; }
 
         public override MarketCode MarketCode => MarketCode.DFW;
         public override BuiltStatus BuiltStatus => this.YearBuiltDesc switch
@@ -179,6 +180,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.IsNewConstruction = propertyInfo.IsNewConstruction;
                 residentialListingRequest.HousingTypeDesc = propertyInfo.HousingType?.ToStringFromEnumMembers();
                 residentialListingRequest.LotSizeAcres = propertyInfo.Acres.ToString();
+                residentialListingRequest.HasPropertyAttached = propertyInfo.HasPropertyAttached;
             }
 
             void FillSpacesDimensionsInfo(SpacesDimensionsResponse spacesDimensionsInfo)
