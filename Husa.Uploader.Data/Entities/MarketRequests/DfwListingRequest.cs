@@ -158,6 +158,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.UnitNum = addressInfo.UnitNumber;
                 residentialListingRequest.Subdivision = addressInfo.Subdivision;
                 residentialListingRequest.StateCode = addressInfo.State.ToStringFromEnumMember();
+                residentialListingRequest.StreetDir = addressInfo.StreetDirection?.ToStringFromEnumMember();
             }
 
             void FillPropertyInfo(PropertyInfoResponse propertyInfo)
