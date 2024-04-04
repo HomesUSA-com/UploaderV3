@@ -84,9 +84,9 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("RedirectingPopup"));
                 Thread.Sleep(4000);
             }
-            catch
+            catch (Exception e)
             {
-                this.logger.LogInformation("The redirect popup was not displayed in the login screen.");
+                this.logger.LogInformation(e, "The redirect popup was not displayed in the login screen., {Message}", e.Message);
             }
 
             this.uploaderClient.NavigateToUrl(LandingPageURL);
@@ -112,7 +112,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> EditListing()
             {
-                this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Editing the information for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
 
@@ -135,7 +135,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UploadListing()
             {
-                this.logger.LogInformation("Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Uploading the information for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
                 Thread.Sleep(2000);
@@ -170,7 +170,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
                     return UploadResult.Failure;
                 }
 
@@ -189,7 +189,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UpdateListingCompletionDate()
             {
-                this.logger.LogInformation("Updating CompletionDate for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Updating CompletionDate for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
                 this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
@@ -217,7 +217,7 @@ namespace Husa.Uploader.Core.Services
             return UpdateListingImages();
             async Task<UploadResult> UpdateListingImages()
             {
-                this.logger.LogInformation("Updating media for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Updating media for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
                 await this.Login(listing.CompanyId);
@@ -243,7 +243,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UpdateListingPrice()
             {
-                this.logger.LogInformation("Updating the price of the listing {requestId} to {listPrice}.", listing.ResidentialListingRequestID, listing.ListPrice);
+                this.logger.LogInformation("Updating the price of the listing {RequestId} to {ListPrice}.", listing.ResidentialListingRequestID, listing.ListPrice);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
                 Thread.Sleep(1000);
@@ -268,7 +268,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UpdateListingStatus()
             {
-                this.logger.LogInformation("Editing the status information for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Editing the status information for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
 
                 await this.Login(listing.CompanyId);
@@ -365,7 +365,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UploadListingVirtualTour()
             {
-                this.logger.LogInformation("Updating VirtualTour for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Updating VirtualTour for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
                 await this.Login(listing.CompanyId);
                 Thread.Sleep(1000);
@@ -391,7 +391,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UploadOpenHouse()
             {
-                this.logger.LogInformation("Editing the information of Open House for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Editing the information of Open House for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
                 Thread.Sleep(5000);
@@ -554,8 +554,10 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.WriteTextbox(By.Id("Input_81"), DateTime.Today.AddYears(1).ToShortDateString()); // Expire Date
 
+            this.uploaderClient.SetSelect(By.Id("Input_222"), listing.HasPropertyAttached.BoolToNumericBool()); // Property Attached YN
+
             this.uploaderClient.WriteTextbox(By.Id("Input_231"), listing.YearBuilt); // Year Built
-            this.uploaderClient.SetSelect(By.Id("Input_230"), value: listing.AdultCommunity ? "1" : "0"); // Adult Community YN
+            this.uploaderClient.SetSelect(By.Id("Input_230"), value: listing.AdultCommunity.BoolToNumericBool()); // Adult Community YN
 
             this.uploaderClient.SetSelect(By.Id("Input_381"), value: "NO"); // Will Subdivide
             this.uploaderClient.SetMultipleCheckboxById("Input_228", listing.ConstructionDesc); // Construction Material
@@ -581,7 +583,7 @@ namespace Husa.Uploader.Core.Services
             {
                 this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.StreetNum); // Street/Box Number
                 this.uploaderClient.SetSelect(By.Id("Input_285"), value: listing.County); // County
-                this.uploaderClient.SetSelect(By.Id("Input_284"), value: listing.City); // City
+                this.uploaderClient.SetSelect(By.Id("Input_284"), value: listing.CityCode); // City Code
                 this.uploaderClient.SetSelect(By.Id("Input_280"), value: listing.StreetDir); // Street Direction
                 this.uploaderClient.WriteTextbox(By.Id("Input_170"), listing.StreetName?.Replace('\'', ' ')); // Street Name
 
@@ -607,6 +609,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ScrollDown(1000);
 
             this.SetLongitudeAndLatitudeValues(listing);
+
             try
             {
                 Thread.Sleep(500);
@@ -635,7 +638,7 @@ namespace Husa.Uploader.Core.Services
             }
             catch (Exception e)
             {
-                this.logger.LogInformation("An exception was occur in School, {message}", e.Message);
+                this.logger.LogInformation(e, "An exception was occur in School, {Message}", e.Message);
             }
         }
 
@@ -728,20 +731,20 @@ namespace Husa.Uploader.Core.Services
 
             Thread.Sleep(1000);
 
-            this.uploaderClient.SetSelect(By.Id("Input_309"), listing.HasAccessibility ? "1" : "0", "Accessibility Features YN", tabName); // Accessibility Features YN
-            this.uploaderClient.SetSelect(By.Id("Input_342"), listing.IsSmartHome ? "1" : "0", "Smart Home Features YN", tabName); // Smart Home Features YN
+            this.uploaderClient.SetSelect(By.Id("Input_309"), listing.HasAccessibility.BoolToNumericBool(), "Accessibility Features YN", tabName); // Accessibility Features YN
+            this.uploaderClient.SetSelect(By.Id("Input_342"), listing.IsSmartHome.BoolToNumericBool(), "Smart Home Features YN", tabName); // Smart Home Features YN
             this.uploaderClient.WriteTextbox(By.Id("Input_308"), listing.NumberFireplaces); // # Fireplaces
             this.uploaderClient.WriteTextbox(By.Id("Input_301"), listing.CarportCapacity); // # Carport Spaces
 
             this.uploaderClient.SetMultipleCheckboxById("Input_298", listing.HandicapDesc, "Accessibility Features", tabName); // Accessibility Features
-            this.uploaderClient.SetSelect(By.Id("Input_300"), listing.HasPool ? "1" : "0", "Pool on Property", tabName); // Pool on Property
+            this.uploaderClient.SetSelect(By.Id("Input_300"), listing.HasPool.BoolToNumericBool(), "Pool on Property", tabName); // Pool on Property
             this.uploaderClient.SetMultipleCheckboxById("Input_297", listing.PoolDesc, "Pool Features", tabName); // Pool Features
             this.uploaderClient.SetMultipleCheckboxById("Input_299", listing.FireplaceDesc, "Fireplaces Features", tabName); // Fireplaces Features
             this.uploaderClient.WriteTextbox(By.Id("Input_302"), listing.GarageCapacity); // Garage Spaces
             this.uploaderClient.WriteTextbox(By.Id("Input_303"), listing.GarageCapacity); // # Covered Spaces (Total)
 
-            this.uploaderClient.SetSelect(By.Id("Input_304"), listing.HasGarage ? "1" : "0", "Garage YN", tabName);  // Garage YN
-            this.uploaderClient.SetSelect(By.Id("Input_305"), listing.HasAttachedGarage ? "1" : "0", "Garage YN", tabName);  // Attached Garage YN
+            this.uploaderClient.SetSelect(By.Id("Input_304"), listing.HasGarage.BoolToNumericBool(), "Garage YN", tabName);  // Garage YN
+            this.uploaderClient.SetSelect(By.Id("Input_305"), listing.HasAttachedGarage.BoolToNumericBool(), "Garage YN", tabName);  // Attached Garage YN
             this.uploaderClient.SetMultipleCheckboxById("Input_244", listing.InteriorDesc, "Interior Features", tabName); // Interior Features
             this.uploaderClient.SetSelect(By.Id("Input_310"), "0", "Basement YN", tabName); // Basement YN
             this.uploaderClient.SetMultipleCheckboxById("Input_315", listing.AppliancesDesc, "Appliances", tabName); // Appliances
@@ -799,12 +802,12 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetMultipleCheckboxById("Input_252", listing.UtilitiesDesc, "Street/Utilities", tabName); // Street/Utilities
                 this.uploaderClient.SetMultipleCheckboxById("Input_362", listing.HeatSystemDesc, "Heating", tabName); // Heating
                 this.uploaderClient.SetMultipleCheckboxById("Input_363", listing.CoolSystemDesc, "Cooling", tabName); // Cooling
-                this.uploaderClient.SetSelect(By.Id("Input_364"), listing.HasMudDistrict ? "1" : "0", "MUD District", tabName); // MUD District
-                this.uploaderClient.SetSelect(By.Id("Input_436"), listing.IsSpecialTaxingAuthority ? "1" : "0", "Special Taxing Authority YN", tabName); // Special Taxing Authority YN
+                this.uploaderClient.SetSelect(By.Id("Input_364"), listing.HasMudDistrict.BoolToNumericBool(), "MUD District", tabName); // MUD District
+                this.uploaderClient.SetSelect(By.Id("Input_436"), listing.IsSpecialTaxingAuthority.BoolToNumericBool(), "Special Taxing Authority YN", tabName); // Special Taxing Authority YN
             }
             catch (Exception e)
             {
-                this.logger.LogInformation("An exception was occur in Utilities, {message}", e.Message);
+                this.logger.LogInformation(e, "An exception was occur in Utilities, {Message}", e.Message);
             }
         }
 
@@ -820,7 +823,7 @@ namespace Husa.Uploader.Core.Services
             }
             catch (Exception e)
             {
-                this.logger.LogInformation("An exception was occur in Environment, {message}", e.Message);
+                this.logger.LogInformation(e, "An exception was occur in Environment, {Message}", e.Message);
             }
 
             try
@@ -829,7 +832,7 @@ namespace Husa.Uploader.Core.Services
             }
             catch (Exception e)
             {
-                this.logger.LogInformation("An exception was occur in Environment, {message}", e.Message);
+                this.logger.LogInformation(e, "An exception was occur in Environment, {Message}", e.Message);
             }
         }
 
@@ -1126,14 +1129,14 @@ namespace Husa.Uploader.Core.Services
                     {
                         this.uploaderClient.ExecuteScript("Subforms['s_168'].deleteRow('_Input_168__del_REPEAT" + i + "_');");
                     }
-                    catch
+                    catch (Exception e)
                     {
-                        this.logger.LogInformation("The delete open house object was not displayed in the login screen.");
+                        this.logger.LogInformation(e, "The delete open house object was not displayed in the login screen., {Message}", e.Message);
                     }
                 }
-                catch
+                catch (Exception e)
                 {
-                    this.logger.LogInformation("The delete open house link was not displayed in the login screen.");
+                    this.logger.LogInformation(e, "The delete open house link was not displayed in the login screen., {Message}", e.Message);
                 }
             }
 
@@ -1229,7 +1232,7 @@ namespace Husa.Uploader.Core.Services
                     linkText = "Change to Hold";
                     return "TOM";
                 default:
-                    this.logger.LogError(@"The status '" + status + @"' is not configured for DFW");
+                    this.logger.LogInformation("The status '{Status} ' is not configured for DFW", status);
                     return null;
             }
         }
