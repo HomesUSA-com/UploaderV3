@@ -554,10 +554,10 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.WriteTextbox(By.Id("Input_81"), DateTime.Today.AddYears(1).ToShortDateString()); // Expire Date
 
-            this.uploaderClient.SetSelect(By.Id("Input_222"), listing.HasPropertyAttached ? "1" : "0"); // Property Attached YN
+            this.uploaderClient.SetSelect(By.Id("Input_222"), listing.HasPropertyAttached.BoolToNumericBool()); // Property Attached YN
 
             this.uploaderClient.WriteTextbox(By.Id("Input_231"), listing.YearBuilt); // Year Built
-            this.uploaderClient.SetSelect(By.Id("Input_230"), value: listing.AdultCommunity ? "1" : "0"); // Adult Community YN
+            this.uploaderClient.SetSelect(By.Id("Input_230"), value: listing.AdultCommunity.BoolToNumericBool()); // Adult Community YN
 
             this.uploaderClient.SetSelect(By.Id("Input_381"), value: "NO"); // Will Subdivide
             this.uploaderClient.SetMultipleCheckboxById("Input_228", listing.ConstructionDesc); // Construction Material
@@ -731,20 +731,20 @@ namespace Husa.Uploader.Core.Services
 
             Thread.Sleep(1000);
 
-            this.uploaderClient.SetSelect(By.Id("Input_309"), listing.HasAccessibility ? "1" : "0", "Accessibility Features YN", tabName); // Accessibility Features YN
-            this.uploaderClient.SetSelect(By.Id("Input_342"), listing.IsSmartHome ? "1" : "0", "Smart Home Features YN", tabName); // Smart Home Features YN
+            this.uploaderClient.SetSelect(By.Id("Input_309"), listing.HasAccessibility.BoolToNumericBool(), "Accessibility Features YN", tabName); // Accessibility Features YN
+            this.uploaderClient.SetSelect(By.Id("Input_342"), listing.IsSmartHome.BoolToNumericBool(), "Smart Home Features YN", tabName); // Smart Home Features YN
             this.uploaderClient.WriteTextbox(By.Id("Input_308"), listing.NumberFireplaces); // # Fireplaces
             this.uploaderClient.WriteTextbox(By.Id("Input_301"), listing.CarportCapacity); // # Carport Spaces
 
             this.uploaderClient.SetMultipleCheckboxById("Input_298", listing.HandicapDesc, "Accessibility Features", tabName); // Accessibility Features
-            this.uploaderClient.SetSelect(By.Id("Input_300"), listing.HasPool ? "1" : "0", "Pool on Property", tabName); // Pool on Property
+            this.uploaderClient.SetSelect(By.Id("Input_300"), listing.HasPool.BoolToNumericBool(), "Pool on Property", tabName); // Pool on Property
             this.uploaderClient.SetMultipleCheckboxById("Input_297", listing.PoolDesc, "Pool Features", tabName); // Pool Features
             this.uploaderClient.SetMultipleCheckboxById("Input_299", listing.FireplaceDesc, "Fireplaces Features", tabName); // Fireplaces Features
             this.uploaderClient.WriteTextbox(By.Id("Input_302"), listing.GarageCapacity); // Garage Spaces
             this.uploaderClient.WriteTextbox(By.Id("Input_303"), listing.GarageCapacity); // # Covered Spaces (Total)
 
-            this.uploaderClient.SetSelect(By.Id("Input_304"), listing.HasGarage ? "1" : "0", "Garage YN", tabName);  // Garage YN
-            this.uploaderClient.SetSelect(By.Id("Input_305"), listing.HasAttachedGarage ? "1" : "0", "Garage YN", tabName);  // Attached Garage YN
+            this.uploaderClient.SetSelect(By.Id("Input_304"), listing.HasGarage.BoolToNumericBool(), "Garage YN", tabName);  // Garage YN
+            this.uploaderClient.SetSelect(By.Id("Input_305"), listing.HasAttachedGarage.BoolToNumericBool(), "Garage YN", tabName);  // Attached Garage YN
             this.uploaderClient.SetMultipleCheckboxById("Input_244", listing.InteriorDesc, "Interior Features", tabName); // Interior Features
             this.uploaderClient.SetSelect(By.Id("Input_310"), "0", "Basement YN", tabName); // Basement YN
             this.uploaderClient.SetMultipleCheckboxById("Input_315", listing.AppliancesDesc, "Appliances", tabName); // Appliances
@@ -802,8 +802,8 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetMultipleCheckboxById("Input_252", listing.UtilitiesDesc, "Street/Utilities", tabName); // Street/Utilities
                 this.uploaderClient.SetMultipleCheckboxById("Input_362", listing.HeatSystemDesc, "Heating", tabName); // Heating
                 this.uploaderClient.SetMultipleCheckboxById("Input_363", listing.CoolSystemDesc, "Cooling", tabName); // Cooling
-                this.uploaderClient.SetSelect(By.Id("Input_364"), listing.HasMudDistrict ? "1" : "0", "MUD District", tabName); // MUD District
-                this.uploaderClient.SetSelect(By.Id("Input_436"), listing.IsSpecialTaxingAuthority ? "1" : "0", "Special Taxing Authority YN", tabName); // Special Taxing Authority YN
+                this.uploaderClient.SetSelect(By.Id("Input_364"), listing.HasMudDistrict.BoolToNumericBool(), "MUD District", tabName); // MUD District
+                this.uploaderClient.SetSelect(By.Id("Input_436"), listing.IsSpecialTaxingAuthority.BoolToNumericBool(), "Special Taxing Authority YN", tabName); // Special Taxing Authority YN
             }
             catch (Exception e)
             {
