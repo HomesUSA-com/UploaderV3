@@ -1131,7 +1131,7 @@ namespace Husa.Uploader.Core.Services
                     }
                     catch (Exception e)
                     {
-                        this.logger.LogInformation(e, "The delete open house link was not displayed in the login screen., {Message}", e.Message);
+                        this.logger.LogInformation(e, "The delete open house object was not displayed in the login screen., {Message}", e.Message);
                     }
                 }
                 catch (Exception e)
