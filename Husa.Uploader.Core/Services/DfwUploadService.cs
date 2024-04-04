@@ -736,7 +736,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_308"), listing.NumberFireplaces); // # Fireplaces
             this.uploaderClient.WriteTextbox(By.Id("Input_301"), listing.CarportCapacity); // # Carport Spaces
 
-            this.uploaderClient.SetMultipleCheckboxById("Input_298", listing.HandicapDesc, "Accessibility Features", tabName); // Accessibility Features
+            this.uploaderClient.SetMultipleCheckboxById("Input_298", listing.AccessibilityDesc, "Accessibility Features", tabName); // Accessibility Features
             this.uploaderClient.SetSelect(By.Id("Input_300"), listing.HasPool.BoolToNumericBool(), "Pool on Property", tabName); // Pool on Property
             this.uploaderClient.SetMultipleCheckboxById("Input_297", listing.PoolDesc, "Pool Features", tabName); // Pool Features
             this.uploaderClient.SetMultipleCheckboxById("Input_299", listing.FireplaceDesc, "Fireplaces Features", tabName); // Fireplaces Features
