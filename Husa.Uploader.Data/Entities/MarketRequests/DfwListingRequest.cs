@@ -182,6 +182,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.HousingTypeDesc = propertyInfo.HousingType?.ToStringFromEnumMembers();
                 residentialListingRequest.LotSizeAcres = propertyInfo.Acres.ToString();
                 residentialListingRequest.HasPropertyAttached = propertyInfo.HasPropertyAttached;
+                residentialListingRequest.PlannedDevelopment = propertyInfo.PlannedCommunity;
             }
 
             void FillSpacesDimensionsInfo(SpacesDimensionsResponse spacesDimensionsInfo)
