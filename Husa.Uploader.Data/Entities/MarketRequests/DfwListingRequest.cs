@@ -348,6 +348,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                         Length = room.Length,
                         Level = room.Level.ToStringFromEnumMember(),
                         RoomType = room.RoomType.ToStringFromEnumMember(),
+                        Features = room.Features.ToStringFromEnumMembers(),
                     });
                 }
 
