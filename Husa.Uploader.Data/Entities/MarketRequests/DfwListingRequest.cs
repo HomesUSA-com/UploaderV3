@@ -174,6 +174,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.TaxID = propertyInfo.TaxId;
                 residentialListingRequest.UpdateGeocodes = propertyInfo.UpdateGeocodes;
                 residentialListingRequest.PropSubType = propertyInfo.PropertySubType?.ToStringFromEnumMember();
+                residentialListingRequest.LotNum = propertyInfo.Lot;
+                residentialListingRequest.Block = propertyInfo.Block;
                 residentialListingRequest.LotDim = propertyInfo.LotDimension;
                 residentialListingRequest.LotDesc = propertyInfo.LotDescription.ToStringFromEnumMembers();
                 residentialListingRequest.LotSize = propertyInfo.LotSize?.ToStringFromEnumMember();
