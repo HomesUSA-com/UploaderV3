@@ -203,6 +203,8 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_263"));
                 this.uploaderClient.WriteTextbox(By.Id("Input_263"), listing.GetPublicRemarks()); // Property Description
 
+                this.UpdatePrivateRemarksInRemarksTab(listing as DfwListingRequest);
+
                 return UploadResult.Success;
             }
         }
@@ -405,8 +407,8 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(400);
 
                 // Enter OpenHouse
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_dlInputList_ctl11_m_btnSelect"), cancellationToken);
-                this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl11_m_btnSelect"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_dlInputList_ctl03_m_btnSelect"), cancellationToken);
+                this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl03_m_btnSelect"));
                 Thread.Sleep(3000);
 
                 this.CleanOpenHouse(cancellationToken);
