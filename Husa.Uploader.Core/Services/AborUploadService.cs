@@ -114,7 +114,6 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
                 if (listing.IsNewListing)
                 {
                     this.NavigateToNewPropertyInput();
