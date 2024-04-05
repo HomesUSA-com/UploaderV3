@@ -67,8 +67,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
         public override MarketCode MarketCode => MarketCode.DFW;
         public override BuiltStatus BuiltStatus => this.YearBuiltDesc switch
         {
-            "BEBLT" => BuiltStatus.ToBeBuilt,
-            "NVLIV" => BuiltStatus.ReadyNow,
+            "PROPOS" => BuiltStatus.ToBeBuilt,
+            "NCC" => BuiltStatus.ReadyNow,
             _ => BuiltStatus.WithCompletion,
         };
 
