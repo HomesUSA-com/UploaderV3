@@ -158,6 +158,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.UnitNum = addressInfo.UnitNumber;
                 residentialListingRequest.Subdivision = addressInfo.Subdivision;
                 residentialListingRequest.StateCode = addressInfo.State.ToStringFromEnumMember();
+                residentialListingRequest.StreetDir = addressInfo.StreetDirection?.ToStringFromEnumMember();
             }
 
             void FillPropertyInfo(PropertyInfoResponse propertyInfo)
@@ -181,6 +182,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.HousingTypeDesc = propertyInfo.HousingType?.ToStringFromEnumMembers();
                 residentialListingRequest.LotSizeAcres = propertyInfo.Acres.ToString();
                 residentialListingRequest.HasPropertyAttached = propertyInfo.HasPropertyAttached;
+                residentialListingRequest.PlannedDevelopment = propertyInfo.PlannedCommunity;
             }
 
             void FillSpacesDimensionsInfo(SpacesDimensionsResponse spacesDimensionsInfo)
