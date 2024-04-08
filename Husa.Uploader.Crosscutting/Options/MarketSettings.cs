@@ -17,5 +17,7 @@ namespace Husa.Uploader.Crosscutting.Options
 
         [Required(AllowEmptyStrings = false)]
         public string LogoutUrl { get; set; }
+        public string AgentId { get; set; }
+        public string SupervisorId { get; set; }
     }
 }

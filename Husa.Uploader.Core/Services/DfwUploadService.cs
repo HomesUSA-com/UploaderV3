@@ -876,9 +876,9 @@ namespace Husa.Uploader.Core.Services
 
             if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
             {
-                if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
+                var agentName = this.options.MarketInfo.Dfw.AgentId;
+                if (!string.IsNullOrEmpty(agentName))
                 {
-                    var agentName = listing.AgentMarketUniqueId.ToArray();
                     foreach (var charact in agentName)
                     {
                         Thread.Sleep(400);
@@ -888,8 +888,12 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.FindElement(By.Id("Input_146_displayValue")).SendKeys(Keys.Tab);
                     this.uploaderClient.ExecuteScript("javascript:$('#Input_146_Refresh').val('changed');RefreshToSamePage();");
                     Thread.Sleep(1000);
+                }
 
-                    foreach (var charact in agentName)
+                var supervisorName = this.options.MarketInfo.Dfw.SupervisorId;
+                if (!string.IsNullOrEmpty(supervisorName))
+                {
+                    foreach (var charact in supervisorName)
                     {
                         Thread.Sleep(400);
                         this.uploaderClient.FindElement(By.Id("Input_761_displayValue")).SendKeys(charact.ToString());
