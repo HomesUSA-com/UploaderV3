@@ -246,6 +246,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.UtilitiesDesc = featuresInfo.UtilitiesDescription.ToStringFromEnumMembers();
                 residentialListingRequest.HasMudDistrict = featuresInfo.HasMudDistrict;
                 residentialListingRequest.IsSpecialTaxingAuthority = featuresInfo.IsSpecialTaxingAuthority;
+                residentialListingRequest.CommonFeatures = featuresInfo.NeighborhoodAmenities.ToStringFromEnumMembers();
             }
 
             void FillFinancialInfo(FinancialResponse financialInfo)
