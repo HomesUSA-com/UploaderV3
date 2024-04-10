@@ -353,6 +353,29 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             }
         }
 
+        public override string GetAgentRemarksMessage()
+        {
+            var privateRemarks = string.Empty;
+            const string limitedServiceMessage = "LIMITED SERVICE LISTING: Buyer verifies dimensions & ISD info. Use Bldr contract.";
+            const string homeUnderConstruction = "Home is under construction. For your safety, call appt number for showings.";
+            var saleOfficeInfo = this.GetSalesAssociateRemarksMessage();
+
+            var bonusMessage = string.IsNullOrWhiteSpace(this.MLSNum) ? this.GetAgentBonusRemarksMessage() : string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(bonusMessage))
+            {
+                privateRemarks = $"{bonusMessage} {privateRemarks}";
+            }
+
+            privateRemarks += this.BuiltStatus != BuiltStatus.ReadyNow ? $"{homeUnderConstruction} {privateRemarks}" : string.Empty;
+            privateRemarks += !string.IsNullOrWhiteSpace(saleOfficeInfo) ? $" {saleOfficeInfo}" : string.Empty;
+            privateRemarks += $" {limitedServiceMessage}";
+            privateRemarks += !string.IsNullOrWhiteSpace(this.PlanProfileName) ? $" Plan: {this.PlanProfileName}." : string.Empty;
+            privateRemarks += !string.IsNullOrWhiteSpace(this.RealtorContactEmail) ? $" Email contact: {this.RealtorContactEmail}." : string.Empty;
+
+            return privateRemarks;
+        }
+
         public override string GetAgentBonusRemarksMessage()
         {
             var agentBonusAmount = this.GetAgentBonusAmount();
