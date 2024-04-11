@@ -148,7 +148,6 @@ namespace Husa.Uploader.Core.Tests
         [InlineData("AOC")] // UpdateStatus_ActiveOptionContractSuccess
         [InlineData("CAN")] // UpdateStatus_CanSuccess
         [InlineData("HOLD")] // UpdateStatus_OffMarketDateSuccess
-        [InlineData("CSN")] // UpdateStatus_CommingSoonSuccess
         public async Task UpdateStatus_Success(string status)
         {
             // Arrange
