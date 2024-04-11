@@ -791,43 +791,79 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.FindElement(By.Name("rightADDEDIT_BATHS")).SendKeys(Keys.Tab);
             Thread.Sleep(500);
 
-            this.uploaderClient.WriteTextbox(By.Name("MASTERBATH"), listing.BedBathDesc); // Master Bath
-            this.uploaderClient.ExecuteScript(" MASTERBATHActions(); closeDiv(); ");
-            // selectVals('MASTERBATH'); ; MASTERBATHActions(); closeDiv();
-            if (listing.LivingRoom3Length != null && listing.LivingRoom3Width != null) //// Entry Room Size
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftENTRM_SIZE"), listing.LivingRoom3Length, isElementOptional: true);  // Length
-                this.uploaderClient.WriteTextbox(By.Name("rightENTRM_SIZE"), listing.LivingRoom3Width, isElementOptional: true); // Width
-                this.uploaderClient.FindElement(By.Name("rightENTRM_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("ENTRM_LEVEL"), listing.LivingRoom3Level, isElementOptional: true); // Entry Room level
+                this.uploaderClient.WriteTextbox(By.Name("MASTERBATH"), listing.BedBathDesc); // Master Bath
+                this.uploaderClient.ExecuteScript(" MASTERBATHActions(); closeDiv(); ");
+                // selectVals('MASTERBATH'); ; MASTERBATHActions(); closeDiv();
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
-            if (listing.LivingRoom1Length != null && listing.LivingRoom1Width != null) //// Living Room Size
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftLVRM_SIZE"), listing.LivingRoom1Length, isElementOptional: true); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightLVRM_SIZE"), listing.LivingRoom1Width, isElementOptional: true); // Width
-                this.uploaderClient.FindElement(By.Name("rightLVRM_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("LVRM_LEVEL"), listing.LivingRoom1Level, isElementOptional: true); // Living Room level
+                if (listing.LivingRoom3Length != null && listing.LivingRoom3Width != null) //// Entry Room Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftENTRM_SIZE"), listing.LivingRoom3Length, isElementOptional: true);  // Length
+                    this.uploaderClient.WriteTextbox(By.Name("rightENTRM_SIZE"), listing.LivingRoom3Width, isElementOptional: true); // Width
+                    this.uploaderClient.FindElement(By.Name("rightENTRM_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("ENTRM_LEVEL"), listing.LivingRoom3Level, isElementOptional: true); // Entry Room level
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
-            if (listing.LivingRoom2Length != null && listing.LivingRoom2Width != null) //// Family Room Size
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftFAMRM_SIZE"), listing.LivingRoom2Length, isElementOptional: true); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightFAMRM_SIZE"), listing.LivingRoom2Width, isElementOptional: true); // Width
-                this.uploaderClient.FindElement(By.Name("rightFAMRM_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("FAMRM_LEVEL"), listing.LivingRoom2Level, true); // Family Room level
+                if (listing.LivingRoom1Length != null && listing.LivingRoom1Width != null) //// Living Room Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftLVRM_SIZE"), listing.LivingRoom1Length, isElementOptional: true); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightLVRM_SIZE"), listing.LivingRoom1Width, isElementOptional: true); // Width
+                    this.uploaderClient.FindElement(By.Name("rightLVRM_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("LVRM_LEVEL"), listing.LivingRoom1Level, isElementOptional: true); // Living Room level
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
-            if (listing.StudyLength != null && listing.StudyWidth != null) //// Study/Office Size
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftSTYOROF_SIZE"), listing.StudyLength, isElementOptional: true); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightSTYOROF_SIZE"), listing.StudyWidth, isElementOptional: true); // Width
-                this.uploaderClient.FindElement(By.Name("rightSTYOROF_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("STYOROF_LEVEL"), listing.StudyLevel, isElementOptional: true); // Study/Office level
+                if (listing.LivingRoom2Length != null && listing.LivingRoom2Width != null) //// Family Room Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftFAMRM_SIZE"), listing.LivingRoom2Length, isElementOptional: true); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightFAMRM_SIZE"), listing.LivingRoom2Width, isElementOptional: true); // Width
+                    this.uploaderClient.FindElement(By.Name("rightFAMRM_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("FAMRM_LEVEL"), listing.LivingRoom2Level, true); // Family Room level
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
+            }
+
+            try
+            {
+                if (listing.StudyLength != null && listing.StudyWidth != null) //// Study/Office Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftSTYOROF_SIZE"), listing.StudyLength, isElementOptional: true); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightSTYOROF_SIZE"), listing.StudyWidth, isElementOptional: true); // Width
+                    this.uploaderClient.FindElement(By.Name("rightSTYOROF_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("STYOROF_LEVEL"), listing.StudyLevel, isElementOptional: true); // Study/Office level
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
             if (listing.KitchenLength != null && listing.KitchenWidth != null) //// Kitchen Size
@@ -839,50 +875,85 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WriteTextbox(By.Name("KIT_LEVEL"), listing.KitchenLevel, isElementOptional: true); // Kitchen Room level
             }
 
-            if (listing.BreakfastLength != null && listing.BreakfastWidth != null) //// Breakfast Room Size
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftBFSTRM_SIZE"), listing.BreakfastLength, isElementOptional: true); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightBFSTRM_SIZE"), listing.BreakfastWidth, isElementOptional: true); // Width
-                this.uploaderClient.FindElement(By.Name("rightBFSTRM_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("BFSTRM_LEVEL"), listing.BreakfastLevel, isElementOptional: true); // Breakfast Room level
+                if (listing.BreakfastLength != null && listing.BreakfastWidth != null) //// Breakfast Room Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftBFSTRM_SIZE"), listing.BreakfastLength, isElementOptional: true); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightBFSTRM_SIZE"), listing.BreakfastWidth, isElementOptional: true); // Width
+                    this.uploaderClient.FindElement(By.Name("rightBFSTRM_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("BFSTRM_LEVEL"), listing.BreakfastLevel, isElementOptional: true); // Breakfast Room level
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
-            if (listing.DiningRoomLength != null && listing.DiningRoomWidth != null) //// Dining Room Size
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftDINR_SIZE"), listing.DiningRoomLength, isElementOptional: true); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightDINR_SIZE"), listing.DiningRoomWidth, isElementOptional: true); // Width
-                this.uploaderClient.FindElement(By.Name("rightDINR_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("DINR_LEVEL"), listing.DiningRoomLevel, isElementOptional: true); // Dining Room level
+                if (listing.DiningRoomLength != null && listing.DiningRoomWidth != null) //// Dining Room Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftDINR_SIZE"), listing.DiningRoomLength, isElementOptional: true); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightDINR_SIZE"), listing.DiningRoomWidth, isElementOptional: true); // Width
+                    this.uploaderClient.FindElement(By.Name("rightDINR_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("DINR_LEVEL"), listing.DiningRoomLevel, isElementOptional: true); // Dining Room level
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
-            if (listing.UtilityRoomLength != null && listing.UtilityRoomWidth != null) //// Utility Room Size
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftUTLRM_SIZE"), listing.UtilityRoomLength, isElementOptional: true); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightUTLRM_SIZE"), listing.UtilityRoomWidth, isElementOptional: true); // Width
-                this.uploaderClient.FindElement(By.Name("rightUTLRM_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("UTLRM_LEVEL"), listing.UtilityRoomLevel, isElementOptional: true); // Utility Room level
+                if (listing.UtilityRoomLength != null && listing.UtilityRoomWidth != null) //// Utility Room Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftUTLRM_SIZE"), listing.UtilityRoomLength, isElementOptional: true); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightUTLRM_SIZE"), listing.UtilityRoomWidth, isElementOptional: true); // Width
+                    this.uploaderClient.FindElement(By.Name("rightUTLRM_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("UTLRM_LEVEL"), listing.UtilityRoomLevel, isElementOptional: true); // Utility Room level
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
-            if (listing.Bed1Length != null && listing.Bed1Width != null) //// Master Bedroom Size
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftMBR_SIZE"), listing.Bed1Length); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightMBR_SIZE"), listing.Bed1Width); // Width
-                this.uploaderClient.FindElement(By.Name("rightMBR_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("MBR_LEVEL"), listing.Bed1Level, isElementOptional: true); // Master Bedroom level
+                if (listing.Bed1Length != null && listing.Bed1Width != null) //// Master Bedroom Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftMBR_SIZE"), listing.Bed1Length); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightMBR_SIZE"), listing.Bed1Width); // Width
+                    this.uploaderClient.FindElement(By.Name("rightMBR_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("MBR_LEVEL"), listing.Bed1Level, isElementOptional: true); // Master Bedroom level
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
-            if (!string.IsNullOrEmpty(listing.Bed1Desc) && listing.Bed1Desc.Contains("DUAL")
+            try
+            {
+                if (!string.IsNullOrEmpty(listing.Bed1Desc) && listing.Bed1Desc.Contains("DUAL")
                 && listing.Mbr2Len != null && listing.Mbr2Wid != null) //// Master Bedroom 2 Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftMBR2_SIZE"), listing.Mbr2Len); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightMBR2_SIZE"), listing.Mbr2Wid); // Width
+                    this.uploaderClient.FindElement(By.Name("rightMBR2_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("MBR2_LEVEL"), listing.MBR2LEVEL, isElementOptional: true); // Master Bedroom level
+                }
+            }
+            catch
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftMBR2_SIZE"), listing.Mbr2Len); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightMBR2_SIZE"), listing.Mbr2Wid); // Width
-                this.uploaderClient.FindElement(By.Name("rightMBR2_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("MBR2_LEVEL"), listing.MBR2LEVEL, isElementOptional: true); // Master Bedroom level
+                // Ignoring exception because the fields are optional
             }
 
             try
@@ -895,7 +966,14 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(500);
                     this.uploaderClient.WriteTextbox(By.Name("MBTH_LEVEL"), listing.Bath1Level, isElementOptional: true); // Master Bedroom level
                 }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
+            }
 
+            try
+            {
                 if (listing.Bed2Length != null && listing.Bed2Width != null) //// Bedroom 2 Size
                 {
                     this.uploaderClient.WriteTextbox(By.Name("leftBDRM2_SIZE"), listing.Bed2Length); // Lenght
@@ -904,7 +982,14 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(500);
                     this.uploaderClient.WriteTextbox(By.Name("BDRM2_LEVEL"), listing.Bed2Level, isElementOptional: true); // Bedroom 2 level
                 }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
+            }
 
+            try
+            {
                 if (listing.Bed3Length != null && listing.Bed3Width != null) //// Bedroom 3 Size
                 {
                     this.uploaderClient.WriteTextbox(By.Name("leftBDRM3_SIZE"), listing.Bed3Length); // Lenght
@@ -913,7 +998,14 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(500);
                     this.uploaderClient.WriteTextbox(By.Name("BDRM3_LEVEL"), listing.Bed3Level, isElementOptional: true); // Bedroom 3 level
                 }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
+            }
 
+            try
+            {
                 if (listing.Bed4Length != null && listing.Bed4Width != null) //// Bedroom 4 Size
                 {
                     this.uploaderClient.WriteTextbox(By.Name("leftBDRM4_SIZE"), listing.Bed4Length); // Lenght
@@ -922,7 +1014,14 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(500);
                     this.uploaderClient.WriteTextbox(By.Name("BDRM4_LEVEL"), listing.Bed4Level, isElementOptional: true); // Bedroom 4 level
                 }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
+            }
 
+            try
+            {
                 if (listing.Bed5Length != null && listing.Bed5Width != null) //// Bedroom 5 Size
                 {
                     this.uploaderClient.WriteTextbox(By.Name("leftBDRM5_SIZE"), listing.Bed5Length, isElementOptional: true); // Lenght
@@ -934,40 +1033,54 @@ namespace Husa.Uploader.Core.Services
             }
             catch
             {
-                // This fields are optionals
+                // Ignoring exception because the fields are optional
             }
 
-            // 25.
-            if (listing.OtherRoom1Length != null && listing.OtherRoom1Width != null)
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("OTHER_ROOMS"), "OTHR"); // Other Rooms
-                this.uploaderClient.FindElement(By.Name("OTHER_ROOMS")).SendKeys(Keys.Tab);
+                // 25.
+                if (listing.OtherRoom1Length != null && listing.OtherRoom1Width != null)
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("OTHER_ROOMS"), "OTHR"); // Other Rooms
+                    this.uploaderClient.FindElement(By.Name("OTHER_ROOMS")).SendKeys(Keys.Tab);
 
-                this.uploaderClient.WriteTextbox(By.Name("A1N"), "GAME");
-                this.uploaderClient.FindElement(By.Name("A1N")).SendKeys(Keys.Tab);
+                    this.uploaderClient.WriteTextbox(By.Name("A1N"), "GAME");
+                    this.uploaderClient.FindElement(By.Name("A1N")).SendKeys(Keys.Tab);
 
-                this.uploaderClient.WriteTextbox(By.Name("leftA1S"), listing.OtherRoom1Length); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightA1S"), listing.OtherRoom1Width); // Width
-                this.uploaderClient.FindElement(By.Name("rightA1S")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("leftA1S"), listing.OtherRoom1Length); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightA1S"), listing.OtherRoom1Width); // Width
+                    this.uploaderClient.FindElement(By.Name("rightA1S")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
 
-                this.uploaderClient.WriteTextbox(By.Name("A1L"), listing.OtherRoom1Level); // Other Room 1 Level
-                this.uploaderClient.FindElement(By.Name("A1L")).SendKeys(Keys.Tab);
+                    this.uploaderClient.WriteTextbox(By.Name("A1L"), listing.OtherRoom1Level); // Other Room 1 Level
+                    this.uploaderClient.FindElement(By.Name("A1L")).SendKeys(Keys.Tab);
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
-            // 26.
-            if (listing.OtherRoom2Length != null && listing.OtherRoom2Width != null)
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("A2N"), "MDIA");
-                this.uploaderClient.FindElement(By.Name("A2N")).SendKeys(Keys.Tab);
+                // 26.
+                if (listing.OtherRoom2Length != null && listing.OtherRoom2Width != null)
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("A2N"), "MDIA");
+                    this.uploaderClient.FindElement(By.Name("A2N")).SendKeys(Keys.Tab);
 
-                this.uploaderClient.WriteTextbox(By.Name("leftA2S"), listing.OtherRoom2Length); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightA2S"), listing.OtherRoom2Width); // Width
-                this.uploaderClient.FindElement(By.Name("rightA2S")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("leftA2S"), listing.OtherRoom2Length); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightA2S"), listing.OtherRoom2Width); // Width
+                    this.uploaderClient.FindElement(By.Name("rightA2S")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
 
-                this.uploaderClient.WriteTextbox(By.Name("A2L"), listing.OtherRoom2Level); // Other Room 1 Level
-                this.uploaderClient.FindElement(By.Name("A2L")).SendKeys(Keys.Tab);
+                    this.uploaderClient.WriteTextbox(By.Name("A2L"), listing.OtherRoom2Level); // Other Room 1 Level
+                    this.uploaderClient.FindElement(By.Name("A2L")).SendKeys(Keys.Tab);
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
         }
 
