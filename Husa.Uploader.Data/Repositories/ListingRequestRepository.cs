@@ -205,7 +205,7 @@ namespace Husa.Uploader.Data.Repositories
         {
             if (marketSettings.IsEnabled)
             {
-                this.logger.LogInformation("Getting all pending requests for {marketCode}", marketSettings.MarketCode);
+                this.logger.LogInformation("Getting all pending requests for {MarketCode}", marketSettings.MarketCode);
 
                 var requests = await requestClient.GetListRequestAsync(
                     new()
