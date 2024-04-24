@@ -7,6 +7,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Dfw.Domain.Enums;
+    using Husa.Quicklister.Dfw.Domain.Enums.Domain;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services.Common;
@@ -47,6 +48,7 @@ namespace Husa.Uploader.Core.Services
         }
 
         public MarketCode CurrentMarket => MarketCode.DFW;
+        public string MultiFamilyPropType => ListPropertyType.ResidencialIncome.ToStringFromEnumMember();
 
         public bool IsFlashRequired => false;
 
@@ -144,7 +146,7 @@ namespace Husa.Uploader.Core.Services
                 {
                     if (listing.IsNewListing)
                     {
-                        this.NavigateToNewPropertyInput();
+                        this.NavigateToNewPropertyInput(listing.PropType);
                     }
                     else
                     {
@@ -153,7 +155,15 @@ namespace Husa.Uploader.Core.Services
 
                     this.FillPropertyInformation(listing as DfwListingRequest);
                     this.FillLocationSchools(listing as DfwListingRequest);
-                    this.FillRoomsInformation(listing as DfwListingRequest);
+                    if (listing.PropType == this.MultiFamilyPropType)
+                    {
+                        this.FillUnitsInformation(listing as DfwListingRequest); // Multi Family
+                    }
+                    else
+                    {
+                        this.FillRoomsInformation(listing as DfwListingRequest); // Single Family
+                    }
+
                     this.FillFeaturesInformation(listing as DfwListingRequest);
                     this.FillLotInformation(listing as DfwListingRequest);
                     this.FillUtilitiesInformation(listing as DfwListingRequest);
@@ -423,8 +433,9 @@ namespace Husa.Uploader.Core.Services
 
                 if (listing.EnableOpenHouse)
                 {
-                    if (listing.ListStatus != MarketStatuses.Pending.ToStringFromEnumMember<MarketStatuses>()
-                        || (listing.ListStatus == MarketStatuses.Pending.ToStringFromEnumMember<MarketStatuses>() && listing.AllowPendingList))
+                    if (listing.ListStatus != MarketStatuses.Pending.ToStringFromEnumMember()
+                        || (listing.ListStatus == MarketStatuses.Pending.ToStringFromEnumMember()
+                        && listing.AllowPendingList))
                     {
                         this.AddOpenHouses(listing);
                         Thread.Sleep(2000);
@@ -459,15 +470,21 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        private void NavigateToNewPropertyInput()
+        private void NavigateToNewPropertyInput(string propType)
         {
             this.uploaderClient.NavigateToUrl(NavigateToUrlNewListing);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Add new"));
             this.uploaderClient.ClickOnElement(By.Id("m_lvInputUISections_ctrl0_lvInputUISubsections_ctrl0_lbAddNewItem"));
-
             Thread.Sleep(1000);
 
-            this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl00_m_btnSelect"));
+            if (propType == this.MultiFamilyPropType)
+            {
+                this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl01_m_btnSelect")); // Multi Family
+            }
+            else
+            {
+                this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl00_m_btnSelect")); // Single Family
+            }
 
             Thread.Sleep(1000);
             WaitAndClick("Start with a blank Property");
@@ -526,16 +543,14 @@ namespace Husa.Uploader.Core.Services
         private void FillPropertyInformation(DfwListingRequest listing)
         {
             this.GoToPropertyInformationTab();
-
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
 
-            this.uploaderClient.SetSelect(By.Id("Input_219"), value: listing.PropSubType);
+            // Common Single/Multi Family Fields
             this.uploaderClient.SetSelect(By.Id("Input_223"), value: "EXCAG"); // Listing Agreement Type
-            this.uploaderClient.SetSelect(By.Id("Input_224"), value: "FS"); // Transaction Type
-            this.uploaderClient.WriteTextbox(By.Name("Input_225"), string.Empty); // Lease MLS#
-
-            this.uploaderClient.SetMultipleCheckboxById("Input_220", listing.HousingTypeDesc); // Housing Type
-            this.uploaderClient.SetMultipleCheckboxById("Input_226", listing.HousingStyleDesc); // Architectural Style
+            this.uploaderClient.SetSelect(By.Id("Input_230"), value: listing.AdultCommunity.BoolToNumericBool()); // Adult Community YN
+            this.uploaderClient.SetSelect(By.Id("Input_381"), value: "NO"); // Will Subdivide
+            this.uploaderClient.SetMultipleCheckboxById("Input_228", listing.ConstructionDesc); // Construction Material
+            this.uploaderClient.SetSelect(By.Id("Input_403"), value: listing.YearBuiltDesc); // Year Built Details/Construc. Status
             this.uploaderClient.WriteTextbox(By.Id("Input_77"), listing.ListPrice); // List Price
 
             if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
@@ -562,21 +577,32 @@ namespace Husa.Uploader.Core.Services
             }
 
             this.uploaderClient.WriteTextbox(By.Id("Input_81"), DateTime.Today.AddYears(1).ToShortDateString()); // Expire Date
-
-            this.uploaderClient.SetSelect(By.Id("Input_222"), listing.HasPropertyAttached.BoolToNumericBool()); // Property Attached YN
-
             this.uploaderClient.WriteTextbox(By.Id("Input_231"), listing.YearBuilt); // Year Built
-            this.uploaderClient.SetSelect(By.Id("Input_230"), value: listing.AdultCommunity.BoolToNumericBool()); // Adult Community YN
-
-            this.uploaderClient.SetSelect(By.Id("Input_381"), value: "NO"); // Will Subdivide
-            this.uploaderClient.SetMultipleCheckboxById("Input_228", listing.ConstructionDesc); // Construction Material
-
-            this.uploaderClient.SetSelect(By.Id("Input_403"), value: listing.YearBuiltDesc); // Year Built Details/Construc. Status
-            this.uploaderClient.WriteTextbox(By.Id("Input_233"), listing.SqFtTotal); // SqFt/Living Area
-
-            this.uploaderClient.SetSelect(By.Id("Input_234"), value: listing.SqFtSource); // SqFt Source
             this.uploaderClient.WriteTextbox(By.Id("Input_235"), string.IsNullOrWhiteSpace(listing.TaxID) ? "NA" : listing.TaxID); // Parcel ID
             this.uploaderClient.SetSelect(By.Id("Input_237"), value: "0"); // Multi Parcel ID YN
+
+            if (listing.PropType == this.MultiFamilyPropType)
+            {
+                // Exclusive Multi family Fields
+                this.uploaderClient.SetSelect(By.Id("Input_503"), value: listing.PropSubType);
+                this.uploaderClient.WriteTextbox(By.Id("Input_533"), listing.SqFtTotal); // Building Area
+                this.uploaderClient.SetSelect(By.Id("Input_534"), value: listing.SqFtSource); // Building Area Source
+                this.uploaderClient.SetSelect(By.Id("Input_539"), listing.NumStories); // Levels
+                this.uploaderClient.WriteTextbox(By.Id("Input_523"), listing.GarageCapacity); // Garage Spaces
+            }
+            else
+            {
+                // Exclusive Single family Fields
+                this.uploaderClient.SetSelect(By.Id("Input_219"), value: listing.PropSubType);
+                this.uploaderClient.SetSelect(By.Id("Input_222"), listing.HasPropertyAttached.BoolToNumericBool()); // Property Attached YN
+                this.uploaderClient.SetSelect(By.Id("Input_224"), value: "FS"); // Transaction Type
+                this.uploaderClient.WriteTextbox(By.Name("Input_225"), string.Empty); // Lease MLS#
+                this.uploaderClient.SetMultipleCheckboxById("Input_220", listing.HousingTypeDesc); // Housing Type
+                this.uploaderClient.SetMultipleCheckboxById("Input_226", listing.HousingStyleDesc); // Architectural Style
+                this.uploaderClient.WriteTextbox(By.Id("Input_233"), listing.SqFtTotal); // SqFt/Living Area
+                this.uploaderClient.SetSelect(By.Id("Input_234"), value: listing.SqFtSource); // SqFt Source
+            }
+
             Thread.Sleep(500);
         }
 
@@ -591,25 +617,24 @@ namespace Husa.Uploader.Core.Services
             if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
             {
                 this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.StreetNum); // Street/Box Number
-                this.uploaderClient.SetSelect(By.Id("Input_285"), value: listing.County); // County
-                this.uploaderClient.SetSelect(By.Id("Input_284"), value: listing.CityCode); // City Code
                 this.uploaderClient.SetSelect(By.Id("Input_280"), value: listing.StreetDir); // Street Direction
                 this.uploaderClient.WriteTextbox(By.Id("Input_170"), listing.StreetName?.Replace('\'', ' ')); // Street Name
-
                 if (!string.IsNullOrWhiteSpace(listing.StreetType))
                 {
                     this.uploaderClient.SetSelect(By.Id("Input_281"), value: listing.StreetType); // Street Type
                 }
+
+                this.uploaderClient.SetSelect(By.Id("Input_285"), value: listing.County); // County
+                this.uploaderClient.SetSelect(By.Id("Input_284"), value: listing.CityCode); // City Code
             }
 
             this.uploaderClient.SetSelect(By.Id("Input_282"), value: listing.StreetSuffixFQ); // Street Directional Suffix
-
-            this.uploaderClient.WriteTextbox(By.Id("Input_288"), !string.IsNullOrEmpty(listing.LotNum) ? listing.LotNum : string.Empty); // Lot
-            this.uploaderClient.WriteTextbox(By.Id("Input_289"), !string.IsNullOrEmpty(listing.Block) ? listing.Block : string.Empty); // Block
-
             this.uploaderClient.WriteTextbox(By.Id("Input_283"), listing.UnitNum); // Unit #
+
             this.uploaderClient.WriteTextbox(By.Id("Input_294"), listing.Zip); // Zip
             this.uploaderClient.WriteTextbox(By.Id("Input_295"), string.Empty); // Zip + 4
+            this.uploaderClient.WriteTextbox(By.Id("Input_288"), !string.IsNullOrEmpty(listing.LotNum) ? listing.LotNum : string.Empty); // Lot
+            this.uploaderClient.WriteTextbox(By.Id("Input_289"), !string.IsNullOrEmpty(listing.Block) ? listing.Block : string.Empty); // Block
 
             this.uploaderClient.WriteTextbox(By.Id("Input_290"), listing.Subdivision); // Subdivision
             this.uploaderClient.WriteTextbox(By.Id("Input_292"), listing.PlannedDevelopment); // Planned Development
@@ -628,15 +653,6 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetSelect(By.Id("Input_335"), value: listing.SchoolName1); // Elementary School
 
                 Thread.Sleep(500);
-                this.uploaderClient.SetSelect(By.Id("Input_339"), value: listing.SchoolName2); // Middle School
-
-                Thread.Sleep(500);
-                this.uploaderClient.SetSelect(By.Id("Input_340"), value: listing.HighSchool); // High School
-
-                Thread.Sleep(500);
-                this.uploaderClient.SetSelect(By.Id("Input_341"), value: listing.SchoolName7); // Intermediate School
-
-                Thread.Sleep(500);
                 this.uploaderClient.SetSelect(By.Id("Input_336"), value: listing.SchoolName5); // Junior School
 
                 Thread.Sleep(500);
@@ -644,6 +660,15 @@ namespace Husa.Uploader.Core.Services
 
                 Thread.Sleep(500);
                 this.uploaderClient.SetSelect(By.Id("Input_338"), value: listing.SchoolName4); // Primary School
+
+                Thread.Sleep(500);
+                this.uploaderClient.SetSelect(By.Id("Input_339"), value: listing.SchoolName2); // Middle School
+
+                Thread.Sleep(500);
+                this.uploaderClient.SetSelect(By.Id("Input_340"), value: listing.HighSchool); // High School
+
+                Thread.Sleep(500);
+                this.uploaderClient.SetSelect(By.Id("Input_341"), value: listing.SchoolName7); // Intermediate School
             }
             catch (Exception e)
             {
@@ -732,6 +757,61 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
+        private void FillUnitsInformation(DfwListingRequest listing)
+        {
+            var tabName = "Units";
+            this.GoToTab(tabName);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
+
+            Thread.Sleep(2000);
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_243"), listing.Beds); // Bedrooms
+            this.uploaderClient.WriteTextbox(By.Id("Input_398"), listing.BathsFull); // Full Baths
+            this.uploaderClient.WriteTextbox(By.Id("Input_399"), listing.BathsHalf); // Half Baths
+
+            if (this.uploaderClient.UploadInformation?.IsNewListing != null && !this.uploaderClient.UploadInformation.IsNewListing)
+            {
+                int index = 0;
+
+                while (this.uploaderClient.FindElements(By.LinkText("Delete")) != null &&
+                    this.uploaderClient.FindElements(By.LinkText("Delete")).Count > 1)
+                {
+                    try
+                    {
+                        this.uploaderClient.ScrollToTop();
+                        this.uploaderClient.ClickOnElement(By.LinkText("Delete"));
+                    }
+                    catch
+                    {
+                        this.uploaderClient.ClickOnElement(By.Id("m_rpPageList_ctl04_lbPageLink"));
+                        this.uploaderClient.ExecuteScript("Subforms['s_518'].deleteRow('_Input_518__del_REPEAT" + index + "_');");
+                        Thread.Sleep(400);
+                    }
+                }
+            }
+
+            this.uploaderClient.ClickOnElement(By.Id("m_rpPageList_ctl04_lbPageLink"));
+            Thread.Sleep(400);
+
+            var i = 0;
+
+            foreach (var room in listing.Rooms)
+            {
+                if (i > 0)
+                {
+                    this.uploaderClient.ScrollDown(10000);
+                    Thread.Sleep(400);
+                    this.uploaderClient.ClickOnElement(By.Id("_Input_518_more"));
+                    Thread.Sleep(400);
+                }
+
+                this.uploaderClient.SetSelect(By.Id("_Input_518__REPEAT" + i + "_566"), room.RoomType, "Type", tabName, false); // FieldName
+                Thread.Sleep(400);
+
+                i++;
+            }
+        }
+
         private void FillFeaturesInformation(DfwListingRequest listing)
         {
             var tabName = "Features";
@@ -765,7 +845,11 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ScrollDown(1000);
 
             this.uploaderClient.SetMultipleCheckboxById("Input_245", listing.SecurityDesc, "Security Features", tabName); // Security Features
-            this.uploaderClient.SetMultipleCheckboxById("Input_317", listing.LaundryFacilityDesc, "Laundry Features", tabName); // Laundry Features
+            if (listing.PropType != this.MultiFamilyPropType)
+            {
+                this.uploaderClient.SetMultipleCheckboxById("Input_317", listing.LaundryFacilityDesc, "Laundry Features", tabName); // Laundry Features
+            }
+
             this.uploaderClient.SetMultipleCheckboxById("Input_312", listing.RoofDesc, "Roof", tabName); // Roof
 
             this.uploaderClient.SetMultipleCheckboxById("Input_320", string.Empty, "Special Notes", tabName); // Special Notes
@@ -788,13 +872,16 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_325", listing.LotDesc, "Lot Features", tabName); // Lot Features
             this.uploaderClient.SetMultipleCheckboxById("Input_326", listing.ExteriorDesc, "Exterior Features", tabName); // Exterior Features
             this.uploaderClient.SetMultipleCheckboxById("Input_327", listing.Restrictions, "Restrictions", tabName); // Restrictions
+            this.uploaderClient.SetMultipleCheckboxById("Input_354", listing.FenceDesc, "Type of Fence", tabName); // Type of Fence
 
             this.uploaderClient.WriteTextbox(By.Id("Input_249"), listing.LotDim); // Lot Dimensions
             this.uploaderClient.SetSelect(By.Id("Input_323"), listing.LotSize, "Lot Size/Acreage", tabName); // Lot Size/Acreage
 
-            this.uploaderClient.SetMultipleCheckboxById("Input_353", listing.Easements, "Easements", tabName); // Easements
-            this.uploaderClient.SetMultipleCheckboxById("Input_354", listing.FenceDesc, "Type of Fence", tabName); // Type of Fence
-            this.uploaderClient.SetMultipleCheckboxById("Input_355", listing.SoilType, "Soil", tabName); // Soil
+            if (listing.PropType != this.MultiFamilyPropType)
+            {
+                this.uploaderClient.SetMultipleCheckboxById("Input_353", listing.Easements, "Easements", tabName); // Easements
+                this.uploaderClient.SetMultipleCheckboxById("Input_355", listing.SoilType, "Soil", tabName); // Soil
+            }
         }
 
         private void FillUtilitiesInformation(DfwListingRequest listing)
@@ -954,7 +1041,7 @@ namespace Husa.Uploader.Core.Services
 
             var apptPhone = listing.AgentListApptPhone;
 
-            if (listing.ListStatus != "CSN")
+            if (listing.ListStatus != MarketStatuses.ComingSoon.ToStringFromEnumMember())
             {
                 this.uploaderClient.SetMultiSelect(By.Id("Input_387"), listing.ShowingContactType); // Showing Contact Type
                 this.uploaderClient.WriteTextbox(By.Id("Input_390"), !string.IsNullOrEmpty(apptPhone) ? apptPhone : string.Empty); // Appt Phone
@@ -1008,7 +1095,10 @@ namespace Husa.Uploader.Core.Services
             // Intra Office
             var compSaleText = string.Empty;
 
-            if ((listing.ListStatus == "PND" || listing.ListStatus == "SLD") && this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
+            if ((listing.ListStatus == MarketStatuses.Pending.ToStringFromEnumMember()
+                || listing.ListStatus == MarketStatuses.Sold.ToStringFromEnumMember())
+                && this.uploaderClient.UploadInformation?.IsNewListing != null
+                && this.uploaderClient.UploadInformation.IsNewListing)
             {
                 compSaleText = "M-";
             }

@@ -91,6 +91,7 @@ namespace Husa.Uploader.Core.Tests
         [InlineData("SLD")] // UpdateStatus_ClosedSuccess
         [InlineData("PND")] // UpdateStatus_PendingSuccess
         [InlineData("ACT")] // UpdateStatus_ActiveOptionContractSuccess
+        [InlineData("CSN")] // UpdateStatus_CommingSoonSuccess
         public async Task UploadListStatus_ReturnSuccess(string listStatus)
         {
             // Arrange
@@ -101,6 +102,35 @@ namespace Husa.Uploader.Core.Tests
             request.ExpiredDate = DateTime.UtcNow;
             request.LegalSubdivision = "LegalSubdivision";
             request.TaxID = "200";
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.Upload(request);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Theory]
+        [InlineData("RESI", true)] // Residential. Single Family. New Listing
+        [InlineData("RESI", false)] // Residential. Single Family
+        [InlineData("RINC", true)] // Residential Income (Multi-Family). New Listing
+        [InlineData("RINC", false)] // Residential Income (Multi-Family)
+        public async Task UploadNewListingSingleAndMultiFamily_ReturnSuccess(string propType, bool isNewListing)
+        {
+            // Arrange
+            this.SetUpConfigs();
+
+            var request = this.GetResidentialListingRequest(isNewListing);
+            request.ListStatus = MarketStatuses.Sold.ToStringFromEnumMember();
+            request.ExpiredDate = DateTime.UtcNow;
+            request.LegalSubdivision = "LegalSubdivision";
+            request.TaxID = "200";
+            request.PropType = propType;
+            request.StreetType = "ALY";
+            request.Directions = "Test Direction";
+            request.BuyerIncentive = "Test BuyerIncentive";
+            request.IsForLease = "Yes";
 
             // Act
             var sut = this.GetSut();
@@ -191,7 +221,7 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCredentials();
             this.SetUpCompany();
             var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
-            dfwListing.ListStatus = "CAN";
+            dfwListing.ListStatus = MarketStatuses.Cancelled.ToStringFromEnumMember();
             var sut = this.GetSut();
 
             // Act
@@ -211,7 +241,7 @@ namespace Husa.Uploader.Core.Tests
 
             var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
             dfwListing.OpenHouse = openHouses;
-            dfwListing.ListStatus = MarketStatuses.Active.ToStringFromEnumMember<MarketStatuses>();
+            dfwListing.ListStatus = MarketStatuses.Active.ToStringFromEnumMember();
             dfwListing.EnableOpenHouse = true;
             var sut = this.GetSut();
 
@@ -261,7 +291,7 @@ namespace Husa.Uploader.Core.Tests
 
             var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
             dfwListing.OpenHouse = openHouses;
-            dfwListing.ListStatus = MarketStatuses.Active.ToStringFromEnumMember<MarketStatuses>();
+            dfwListing.ListStatus = MarketStatuses.Active.ToStringFromEnumMember();
             dfwListing.EnableOpenHouse = true;
             var sut = this.GetSut();
 
@@ -313,7 +343,7 @@ namespace Husa.Uploader.Core.Tests
 
             var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
             dfwListing.OpenHouse = openHouses;
-            dfwListing.ListStatus = MarketStatuses.Pending.ToStringFromEnumMember<MarketStatuses>();
+            dfwListing.ListStatus = MarketStatuses.Pending.ToStringFromEnumMember();
             dfwListing.AllowPendingList = allowPendingList;
             dfwListing.EnableOpenHouse = true;
             var sut = this.GetSut();
@@ -411,7 +441,7 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse())
             {
-                ListStatus = "CSLD",
+                ListStatus = MarketStatuses.Sold.ToStringFromEnumMember(),
                 BackOnMarketDate = DateTime.Now,
                 OffMarketDate = DateTime.Now,
             };
@@ -455,6 +485,7 @@ namespace Husa.Uploader.Core.Tests
             var result = new DfwListingRequest(listingSale).CreateFromApiResponseDetail();
             result.BrokerName = "Ben Caballero";
             result.SellingAgentSupervisor = "Ben Caballero";
+            result.PropType = ListPropertyType.Residencial.ToStringFromEnumMember();
             return result;
         }
 
@@ -491,10 +522,15 @@ namespace Husa.Uploader.Core.Tests
                 PlanName = "PlanName",
                 CompanyId = Guid.NewGuid(),
             };
-            var roomInfo = new DfwResponse.RoomResponse()
+            var roomInfo1 = new DfwResponse.RoomResponse()
             {
                 Level = RoomLevel.One,
                 RoomType = Husa.Quicklister.Dfw.Domain.Enums.RoomType.OfficeRoom,
+            };
+            var roomInfo2 = new DfwResponse.RoomResponse()
+            {
+                Level = RoomLevel.Two,
+                RoomType = Husa.Quicklister.Dfw.Domain.Enums.RoomType.KitchenRoom,
             };
             var saleProperty = new DfwResponse.SalePropertyDetail.SalePropertyDetailResponse()
             {
@@ -508,7 +544,8 @@ namespace Husa.Uploader.Core.Tests
                 SalePropertyInfo = salePropertyInfo,
                 Rooms = new List<DfwResponse.RoomResponse>()
                 {
-                    roomInfo,
+                    roomInfo1,
+                    roomInfo2,
                 },
             };
 

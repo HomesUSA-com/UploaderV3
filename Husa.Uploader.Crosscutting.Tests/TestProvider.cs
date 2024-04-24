@@ -56,6 +56,8 @@ namespace Husa.Uploader.Crosscutting.Tests
                     MarketCode = MarketCode.DFW,
                     LoginUrl = "https://localhost/dfw-login",
                     LogoutUrl = "https://localhost/dfw-logout",
+                    AgentId = "Ben Caballero (0096651)",
+                    SupervisorId = "Ben Caballero (0096651)",
                 },
             },
             Services = new()
