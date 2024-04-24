@@ -805,7 +805,7 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(400);
                 }
 
-                this.uploaderClient.SetSelect(By.Id("_Input_518__REPEAT" + i + "_566"), room.RoomType, "Name", tabName, true); // FieldName
+                this.uploaderClient.SetSelect(By.Id("_Input_518__REPEAT" + i + "_566"), room.RoomType, "Type", tabName, false); // FieldName
                 Thread.Sleep(400);
 
                 i++;
@@ -845,7 +845,11 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ScrollDown(1000);
 
             this.uploaderClient.SetMultipleCheckboxById("Input_245", listing.SecurityDesc, "Security Features", tabName); // Security Features
-            this.uploaderClient.SetMultipleCheckboxById("Input_317", listing.LaundryFacilityDesc, "Laundry Features", tabName); // Laundry Features
+            if (listing.PropType != this.MultiFamilyPropType)
+            {
+                this.uploaderClient.SetMultipleCheckboxById("Input_317", listing.LaundryFacilityDesc, "Laundry Features", tabName); // Laundry Features
+            }
+
             this.uploaderClient.SetMultipleCheckboxById("Input_312", listing.RoofDesc, "Roof", tabName); // Roof
 
             this.uploaderClient.SetMultipleCheckboxById("Input_320", string.Empty, "Special Notes", tabName); // Special Notes

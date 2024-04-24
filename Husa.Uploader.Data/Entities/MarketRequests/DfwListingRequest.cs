@@ -173,6 +173,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.YearBuilt = propertyInfo.ConstructionStartYear;
                 residentialListingRequest.TaxID = propertyInfo.TaxId;
                 residentialListingRequest.UpdateGeocodes = propertyInfo.UpdateGeocodes;
+                residentialListingRequest.PropType = propertyInfo.PropertyType?.ToStringFromEnumMember();
                 residentialListingRequest.PropSubType = propertyInfo.PropertySubType?.ToStringFromEnumMember();
                 residentialListingRequest.LotNum = propertyInfo.Lot;
                 residentialListingRequest.Block = propertyInfo.Block;
