@@ -10,13 +10,13 @@ namespace Husa.Uploader.Core.Tests
     using Moq;
     using Xunit;
 
-    public class CtxBulkUploadServiceTests
+    public class DfwBulkUploadServiceTests
     {
         private readonly Mock<IUploaderClient> uploaderClient = new();
-        private readonly Mock<ICtxUploadService> uploadService = new();
-        private readonly Mock<ILogger<CtxBulkUploadService>> logger = new();
+        private readonly Mock<IDfwUploadService> uploadService = new();
+        private readonly Mock<ILogger<DfwBulkUploadService>> logger = new();
 
-        public CtxBulkUploadServiceTests()
+        public DfwBulkUploadServiceTests()
         {
             this.uploaderClient.SetupAllProperties();
         }
@@ -88,7 +88,7 @@ namespace Husa.Uploader.Core.Tests
             await Assert.ThrowsAsync<NotImplementedException>(() => sut.Upload());
         }
 
-        private CtxBulkUploadService GetSut()
+        private DfwBulkUploadService GetSut()
             => new(
                 this.uploaderClient.Object,
                 this.uploadService.Object,
@@ -104,7 +104,7 @@ namespace Husa.Uploader.Core.Tests
                     MlsNumber = "New Listing 1",
                     Address = string.Empty,
                     Status = string.Empty,
-                    Market = MarketCode.CTX.ToStringFromEnumMember(),
+                    Market = MarketCode.DFW.ToStringFromEnumMember(),
                     CompanyName = "Company 1",
                 },
                 new UploadListingItem()
@@ -113,7 +113,7 @@ namespace Husa.Uploader.Core.Tests
                     MlsNumber = "New Listing 2",
                     Address = string.Empty,
                     Status = string.Empty,
-                    Market = MarketCode.CTX.ToStringFromEnumMember(),
+                    Market = MarketCode.DFW.ToStringFromEnumMember(),
                     CompanyName = "Company 1",
                 },
             };

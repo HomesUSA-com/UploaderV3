@@ -30,6 +30,7 @@ namespace Husa.Uploader.Desktop.Factories
             return marketCode switch
             {
                 MarketCode.SanAntonio => IsAssignableFrom<ISaborUploadService, T>(),
+                MarketCode.DFW => IsAssignableFrom<IDfwUploadService, T>(),
                 MarketCode.CTX => IsAssignableFrom<ICtxUploadService, T>(),
                 MarketCode.Austin => IsAssignableFrom<IAborUploadService, T>(),
                 _ => false,
@@ -52,6 +53,9 @@ namespace Husa.Uploader.Desktop.Factories
             {
                 case MarketCode.SanAntonio:
                     this.Uploader = this.serviceProvider.GetRequiredService<ISaborBulkUploadService>();
+                    break;
+                case MarketCode.DFW:
+                    this.Uploader = this.serviceProvider.GetRequiredService<IDfwBulkUploadService>();
                     break;
                 case MarketCode.CTX:
                     this.Uploader = this.serviceProvider.GetRequiredService<ICtxBulkUploadService>();
