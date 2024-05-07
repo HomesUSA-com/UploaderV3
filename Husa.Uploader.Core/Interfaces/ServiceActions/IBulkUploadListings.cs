@@ -2,6 +2,7 @@ namespace Husa.Uploader.Core.Interfaces.ServiceActions
 {
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
+    using Husa.Uploader.Data.Entities;
 
     public interface IBulkUploadListings
     {
@@ -16,5 +17,7 @@ namespace Husa.Uploader.Core.Interfaces.ServiceActions
         UploadResult Logout();
 
         void SetRequestFieldChange(RequestFieldChange requestFieldChange);
+
+        void SetBulkListings(List<UploadListingItem> bulkListings);
     }
 }
