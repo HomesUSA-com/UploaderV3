@@ -61,6 +61,7 @@ namespace Husa.Uploader.Core.Tests
 
         [Theory]
         [InlineData(RequestFieldChange.CompletionDate)]
+        [InlineData(RequestFieldChange.ConstructionStage)]
         public async Task Upload_Success(RequestFieldChange requestFieldChange)
         {
             // Arrange
