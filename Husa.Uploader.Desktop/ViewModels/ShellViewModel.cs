@@ -1209,7 +1209,10 @@ namespace Husa.Uploader.Desktop.ViewModels
         {
             this.SourceAction = Crosscutting.Enums.SourceAction.UpdateStatus.GetEnumDescription();
             var uploader = this.uploadFactory.Create<IUpdateStatus>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.Start(opType: UploadType.Status, action: uploader.UpdateStatus, sourceAction: this.SourceAction);
+            await this.Start(
+                opType: UploadType.Status,
+                action: (listing, cancellationToken) => uploader.UpdateStatus(listing, cancellationToken, logIn: true),
+                sourceAction: this.SourceAction);
         }
 
         private async Task StartPriceUpdate()
