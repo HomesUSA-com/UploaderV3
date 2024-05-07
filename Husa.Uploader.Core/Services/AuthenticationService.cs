@@ -30,7 +30,7 @@ namespace Husa.Uploader.Core.Services
         {
             if (this.appOptions.FeatureFlags.SkipAuthentication)
             {
-                this.logger.LogInformation("Skipping authentication of user {Username}", username);
+                this.logger.LogInformation("Skipping authentication of user {username}", username);
                 return DefaultUser();
             }
 
@@ -41,7 +41,7 @@ namespace Husa.Uploader.Core.Services
             }
             catch (HttpRequestException httpRequestException)
             {
-                this.logger.LogError(httpRequestException, "Authentication failed for user {Username} with response status {Status}", username, httpRequestException.StatusCode);
+                this.logger.LogError(httpRequestException, "Authentication failed for user {username} with response status {status}", username, httpRequestException.StatusCode);
                 return null;
             }
         }

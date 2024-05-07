@@ -50,7 +50,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private readonly IAbstractFactory<LatLonInputView> locationViewFactory;
         private readonly IAbstractFactory<MlsnumInputView> mlsNumberInputFactory;
         private readonly IUploadFactory uploadFactory;
-        private readonly ILogger<ShellViewModel> logger;
+        private readonly ILogger<ShellView> logger;
 
         private CancellationTokenSource cancellationTokenSource;
 
@@ -106,7 +106,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             IAbstractFactory<MlsnumInputView> mlsNumberInputFactory,
             IUploadFactory uploadFactory,
             IBulkUploadFactory bulkUploadFactory,
-            ILogger<ShellViewModel> logger)
+            ILogger<ShellView> logger)
             : this()
         {
             this.options = options ?? throw new ArgumentNullException(nameof(options));
@@ -636,13 +636,13 @@ namespace Husa.Uploader.Desktop.ViewModels
 
                 if (!this.HasPermission)
                 {
-                    this.logger.LogWarning("Username {Username} or password incorrect. Please, try again.", this.UserName);
+                    this.logger.LogWarning("Username {username} or password incorrect. Please, try again.", this.UserName);
                     this.ShowError(friendlyMessage: "Username or password incorrect. Please, try again.");
                 }
             }
             catch (Exception ex)
             {
-                this.logger.LogError(ex, "Error connecting to the authentication service {ServiceUrl}", this.options.Value.Services.MigrationService);
+                this.logger.LogError(ex, "Error connecting to the authentication service {serviceUrl}", this.options.Value.Services.MigrationService);
                 this.ShowError(friendlyMessage: "Error connecting to authentication server.");
             }
         }
@@ -657,7 +657,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         {
             if (!this.options.Value.FeatureFlags.EnableSignalR)
             {
-                this.logger.LogInformation("Skipping SignalR refresh dispatcher registration to {RefreshInterval} seconds because it's disabled", this.options.Value.SignalRRefreshIntervalSeconds);
+                this.logger.LogInformation("Skipping SignalR refresh dispatcher registration to {refreshInterval} seconds because it's disabled", this.options.Value.SignalRRefreshIntervalSeconds);
                 return;
             }
 
@@ -679,7 +679,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         {
             if (!this.options.Value.FeatureFlags.IsVersionCheckEnabled)
             {
-                this.logger.LogInformation("Skipping version check dispatcher registration to {RefreshInterval} seconds because it's disabled", this.options.Value.VersionCheckIntervalInSeconds);
+                this.logger.LogInformation("Skipping version check dispatcher registration to {refreshInterval} seconds because it's disabled", this.options.Value.VersionCheckIntervalInSeconds);
                 return;
             }
 
@@ -711,19 +711,19 @@ namespace Husa.Uploader.Desktop.ViewModels
         {
             if (!string.IsNullOrEmpty(this.CorrelationIdBox))
             {
-                this.logger.LogWarning("No correlation Id has been set for user {UserName}, stopping signalR retry", this.UserName);
+                this.logger.LogWarning("No correlation Id has been set for user {userName}, stopping signalR retry", this.UserName);
                 return;
             }
 
             if (this.State == UploaderState.UploadInProgress)
             {
-                this.logger.LogWarning("Upload in progress for user {UserName}, stopping signalR retry", this.UserName);
+                this.logger.LogWarning("Upload in progress for user {userName}, stopping signalR retry", this.UserName);
                 return;
             }
 
             if (this.signalRConnectionTriesError > MaxSignalRReconnectAttempts)
             {
-                this.logger.LogWarning("Too many retries {RetryCount} to connect with signalr, stopping retry", this.signalRConnectionTriesError);
+                this.logger.LogWarning("Too many retries {retryCount} to connect with signalr, stopping retry", this.signalRConnectionTriesError);
                 return;
             }
 
@@ -812,7 +812,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             if (this.signalRConnectionTriesError > MaxSignalRReconnectAttempts)
             {
                 this.SignalROnline = SignalRStatus.Failed;
-                this.logger.LogWarning("Skipping the retrieval action of the workers. The maximum of attempts {MaxAttempts} to reconnect with SignalR has been reached setting signalR status to {Status}", MaxSignalRReconnectAttempts, this.SignalROnline);
+                this.logger.LogWarning("Skipping the retrieval action of the workers. The maximum of attempts {maxAttempts} to reconnect with SignalR has been reached setting signalR status to {status}", MaxSignalRReconnectAttempts, this.SignalROnline);
                 return;
             }
 
@@ -879,7 +879,7 @@ namespace Husa.Uploader.Desktop.ViewModels
 
                 if (!hasWorkerListChanged || this.ListingRequests == null)
                 {
-                    this.logger.LogWarning("Skipping table refresh because the list of workers hasn't changed {ChangeStatus} or it's not yet available {ListingRequests}.", hasWorkerListChanged, this.ListingRequests);
+                    this.logger.LogWarning("Skipping table refresh because the list of workers hasn't changed {changeStatus} or it's not yet available {listingRequests}.", hasWorkerListChanged, this.ListingRequests);
                     return;
                 }
 
@@ -1002,7 +1002,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             if (this.signalRConnectionTriesError > MaxSignalRReconnectAttempts)
             {
                 this.SignalROnline = SignalRStatus.Failed;
-                this.logger.LogWarning("Skipping the broadcast action of the selected listing. The maximum of attempts {MaxAttempts} to reconnect with SignalR has been reached setting signalR status to {Status}", MaxSignalRReconnectAttempts, this.SignalROnline);
+                this.logger.LogWarning("Skipping the broadcast action of the selected listing. The maximum of attempts {maxAttempts} to reconnect with SignalR has been reached setting signalR status to {status}", MaxSignalRReconnectAttempts, this.SignalROnline);
                 return;
             }
 
@@ -1032,7 +1032,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
             catch (Exception exception)
             {
-                this.logger.LogError(exception, "Error connecting to SignalR service SendSelectedItem {SelectedItemId}", selectedId);
+                this.logger.LogError(exception, "Error connecting to SignalR service SendSelectedItem {selectedItemId}", selectedId);
                 this.SignalROnline = SignalRStatus.Failed;
             }
         }
@@ -1054,7 +1054,7 @@ namespace Husa.Uploader.Desktop.ViewModels
 
             if (selectedListingItem == null)
             {
-                this.logger.LogWarning("Skipping workers update since there isn't a selected listing item with id {SelectedItemId}", responseItem.SelectedItemID);
+                this.logger.LogWarning("Skipping workers update since there isn't a selected listing item with id {selectedItemId}", responseItem.SelectedItemID);
                 return;
             }
 
@@ -1118,10 +1118,10 @@ namespace Husa.Uploader.Desktop.ViewModels
                         break;
                     case UploadResult.SuccessWithErrors:
                         this.State = UploaderState.UploadSucceededWithErrors;
-                        this.logger.LogWarning("[{UploadType}] upload for [{MarketName}] listing with [{ResidentialListingRequestId}] succeeded WITH ERRORS", opType, listing.MarketName, listing.ResidentialListingRequestID);
+                        this.logger.LogWarning("[{uploadType}] upload for [{marketName}] listing with [{ResidentialListingRequestId}] succeeded WITH ERRORS", opType, listing.MarketName, listing.ResidentialListingRequestID);
                         break;
                     case UploadResult.Failure:
-                        this.logger.LogError("[{UploadType}] upload for [{MarketName}] listing with [{ResidentialListingRequestId}] succeeded WITH ERRORS", opType, listing.MarketName, listing.ResidentialListingRequestID);
+                        this.logger.LogError("[{uploadType}] upload for [{marketName}] listing with [{ResidentialListingRequestId}] succeeded WITH ERRORS", opType, listing.MarketName, listing.ResidentialListingRequestID);
                         this.State = UploaderState.UploadFailed;
                         break;
                 }
@@ -1379,7 +1379,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    this.logger.LogWarning(ex, "Failed to logout of listing {ResidentialListingRequestId} with {UploaderType}", this.SelectedListingRequest.FullListing.ResidentialListingRequestID, this.uploadFactory.Uploader.GetType().ToString());
+                    this.logger.LogWarning(ex, "Failed to logout of listing {ResidentialListingRequestId} with {uploaderType}", this.SelectedListingRequest.FullListing.ResidentialListingRequestID, this.uploadFactory.Uploader.GetType().ToString());
                 }
 
                 this.uploadFactory.Uploader.CancelOperation();

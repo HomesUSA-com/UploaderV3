@@ -108,7 +108,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    this.logger.LogWarning(ex, "Failed to logout of listing {ResidentialListingRequestId} with {UploaderType}", this.SelectedListingRequest.FullListing.ResidentialListingRequestID, this.uploadFactory.Uploader.GetType().ToString());
+                    this.logger.LogWarning(ex, "Failed to logout of listing {ResidentialListingRequestId} with {uploaderType}", this.SelectedListingRequest.FullListing.ResidentialListingRequestID, this.uploadFactory.Uploader.GetType().ToString());
                 }
 
                 this.bulkUploadFactory.Uploader.CancelOperation();

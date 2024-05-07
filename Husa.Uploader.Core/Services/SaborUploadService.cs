@@ -127,7 +127,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> EditListing()
             {
-                this.logger.LogInformation("Editing the information for the listing {RequestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
                 if (this.uploaderClient.UploadInformation.IsNewListing)
@@ -163,7 +163,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UploadListing()
             {
-                this.logger.LogInformation("Uploading the information for the listing {RequestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: listing.IsNewListing);
                 await this.Login(listing.CompanyId);
                 if (listing.IsNewListing)
@@ -211,7 +211,7 @@ namespace Husa.Uploader.Core.Services
             async Task<UploadResult> UpdateListingStatus()
             {
                 const string tabName = "General";
-                this.logger.LogInformation("Updating the status of the listing {RequestId} in the {TabName} tab.", listing.ResidentialListingRequestID, tabName);
+                this.logger.LogInformation("Updating the status of the listing {requestId} in the {tabName} tab.", listing.ResidentialListingRequestID, tabName);
                 await this.Login(listing.CompanyId);
                 Thread.Sleep(1000);
 
@@ -266,7 +266,7 @@ namespace Husa.Uploader.Core.Services
             return UpdateListingPrice();
             async Task<UploadResult> UpdateListingPrice()
             {
-                this.logger.LogInformation("Updating the price of the listing {RequestId} to {ListPrice}.", listing.ResidentialListingRequestID, listing.ListPrice);
+                this.logger.LogInformation("Updating the price of the listing {requestId} to {listPrice}.", listing.ResidentialListingRequestID, listing.ListPrice);
                 await this.Login(listing.CompanyId);
                 Thread.Sleep(1000);
 
@@ -308,7 +308,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UpdateListingImages()
             {
-                this.logger.LogInformation("Updating the media of the listing {RequestId}.", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Updating the media of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
                 await this.Login(listing.CompanyId);
                 Thread.Sleep(1000);
@@ -337,7 +337,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UpdateListingCompletionDate(bool logIn)
             {
-                this.logger.LogInformation("Updating the completion date of the listing {RequestId}.", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Updating the completion date of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
 
                 if (logIn)
@@ -371,7 +371,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UpdateListingOpenHouse()
             {
-                this.logger.LogInformation("Updating the open house information of the listing {RequestId}.", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Updating the open house information of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
                 await this.Login(listing.CompanyId);
                 Thread.Sleep(1000);
@@ -411,7 +411,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploadResult> UploadListingVirtualTour()
             {
-                this.logger.LogInformation("Updating the virtual tours of the listing {RequestId}.", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Updating the virtual tours of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
 
                 await this.Login(listing.CompanyId);
@@ -1335,7 +1335,7 @@ namespace Husa.Uploader.Core.Services
                 try
                 {
                     isUploadInProgress = this.uploaderClient.WaitUntilElementDisappears(By.ClassName("fileupload-progress"), token);
-                    this.logger.LogInformation("The images upload for listing request {ListingRequestId} is complete.", residentialListingRequestID);
+                    this.logger.LogInformation("The images upload for listing request {listingRequestId} is complete.", residentialListingRequestID);
                 }
                 catch
                 {
@@ -1444,7 +1444,7 @@ namespace Husa.Uploader.Core.Services
         {
             if (!string.IsNullOrEmpty(listing.MLSNum))
             {
-                this.logger.LogInformation("Skipping configuration of latitude and longitude for listing {Address} because it already has an mls number", $"{listing.StreetNum} {listing.StreetName}");
+                this.logger.LogInformation("Skipping configuration of latitude and longitude for listing {address} because it already has an mls number", $"{listing.StreetNum} {listing.StreetName}");
                 return;
             }
 
