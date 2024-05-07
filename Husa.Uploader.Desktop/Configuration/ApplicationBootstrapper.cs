@@ -183,6 +183,7 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<IDfwUploadService, DfwUploadService>();
             services.AddSingleton<IBulkUploadFactory, BulkUploadFactory>();
             services.AddTransient<ISaborBulkUploadService, SaborBulkUploadService>();
+            services.AddTransient<ICtxBulkUploadService, CtxBulkUploadService>();
             services.AddTransient<IAborBulkUploadService, AborBulkUploadService>();
 
             return services;
