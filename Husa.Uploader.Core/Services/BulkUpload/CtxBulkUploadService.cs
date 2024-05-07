@@ -95,6 +95,9 @@ namespace Husa.Uploader.Core.Services.BulkUpload
                 case RequestFieldChange.CompletionDate:
                     await this.uploadService.UpdateCompletionDate(bulkFullListing, cancellationToken, logInForCompany);
                     break;
+                case RequestFieldChange.ConstructionStage:
+                    await this.uploadService.UpdateStatus(bulkFullListing, cancellationToken, logInForCompany);
+                    break;
                 default:
                     throw new NotImplementedException();
             }
