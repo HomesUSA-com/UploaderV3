@@ -251,15 +251,18 @@ namespace Husa.Uploader.Core.Services
                 throw new ArgumentNullException(nameof(listing));
             }
 
-            return UpdateListingPrice();
+            return UpdateListingPrice(logIn);
 
-            async Task<UploadResult> UpdateListingPrice()
+            async Task<UploadResult> UpdateListingPrice(bool logIn)
             {
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
-                await this.Login(listing.CompanyId);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
+                }
 
                 this.NavigateToQuickEdit(listing.MLSNum);
 
