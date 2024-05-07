@@ -193,13 +193,18 @@ namespace Husa.Uploader.Core.Services
                 throw new ArgumentNullException(nameof(listing));
             }
 
-            return UpdateListingCompletionDate();
+            return UpdateListingCompletionDate(logIn);
 
-            async Task<UploadResult> UpdateListingCompletionDate()
+            async Task<UploadResult> UpdateListingCompletionDate(bool logIn)
             {
                 this.logger.LogInformation("Updating CompletionDate for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-                await this.Login(listing.CompanyId);
+
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                }
+
                 var housingType = listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>();
                 this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
 
