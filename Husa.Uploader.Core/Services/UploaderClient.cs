@@ -448,7 +448,7 @@ namespace Husa.Uploader.Core.Services
                 {
                     case NoSuchElementException noSuchElementException:
                         friendlyErrorMessage = $"Tried to select a non-existing {value} in Select with locator: {findBy}";
-                        this.logger.LogWarning(noSuchElementException, "Tried to select a non-existing {Value} in Select with locator: {by} with optional parameter set to {isOptional} when processing request {requestId}.", value, findBy, isElementOptional, this.UploadInformation.RequestId);
+                        this.logger.LogWarning(noSuchElementException, "Tried to select a non-existing {value} in Select with locator: {by} with optional parameter set to {isOptional} when processing request {requestId}.", value, findBy, isElementOptional, this.UploadInformation.RequestId);
                         break;
                     case UnexpectedTagNameException noSuchElementException:
                         friendlyErrorMessage = $"Tried to transform an element with locator: {findBy} into a Select when processing the value(s) {value}.";
@@ -690,7 +690,7 @@ namespace Husa.Uploader.Core.Services
             {
                 if (string.IsNullOrWhiteSpace(csvValues))
                 {
-                    this.logger.LogWarning("Tried to use a null value in MultiCheckbox with locator: {id} when processing Request with {residentialListingRequestId}.", id, this.UploadInformation.RequestId);
+                    this.logger.LogWarning("Tried to use a null value in MultiCheckbox with locator: {id} when processing Request with {ResidentialListingRequestId}.", id, this.UploadInformation.RequestId);
                     this.ExecuteScript(" jQuery('input[id^=" + id + "]').each( function () { jQuery(this).prop('checked', false) }); ");
                     return;
                 }
