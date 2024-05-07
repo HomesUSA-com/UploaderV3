@@ -60,6 +60,7 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Theory]
+        [InlineData(RequestFieldChange.ListPrice)]
         [InlineData(RequestFieldChange.CompletionDate)]
         [InlineData(RequestFieldChange.ConstructionStage)]
         public async Task Upload_Success(RequestFieldChange requestFieldChange)
