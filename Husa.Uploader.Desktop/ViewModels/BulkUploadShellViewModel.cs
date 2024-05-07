@@ -2,9 +2,11 @@ namespace Husa.Uploader.Desktop.ViewModels
 {
     using System.Windows;
     using System.Windows.Input;
+    using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces.ServiceActions;
     using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Desktop.Commands;
     using Husa.Uploader.Desktop.Factories;
     using Husa.Uploader.Desktop.Models;
@@ -84,8 +86,15 @@ namespace Husa.Uploader.Desktop.ViewModels
                 return;
             }
 
+            var filteredBulkListings = this.FilterBulkUpdater(bulkUploadInfo.Market.Value);
+            if (!filteredBulkListings.Any())
+            {
+                this.FinishBulkUpload();
+                return;
+            }
+
             this.ShowCancelButton = true;
-            var uploader = this.bulkUploadFactory.Create<IBulkUploadListings>(bulkUploadInfo.Market.Value, bulkUploadInfo.RequestFieldChange.Value);
+            var uploader = this.bulkUploadFactory.Create<IBulkUploadListings>(bulkUploadInfo.Market.Value, bulkUploadInfo.RequestFieldChange.Value, filteredBulkListings);
             await this.StartBulk(action: uploader.Upload);
         }
 
@@ -99,7 +108,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    this.logger.LogWarning(ex, "Failed to logout of listing {ResidentialListingRequestId} with {uploaderType}", this.SelectedListingRequest.FullListing.ResidentialListingRequestID, this.uploadFactory.Uploader.GetType().ToString());
+                    this.logger.LogWarning(ex, "Failed to logout of listing {ResidentialListingRequestId} with {UploaderType}", this.SelectedListingRequest.FullListing.ResidentialListingRequestID, this.uploadFactory.Uploader.GetType().ToString());
                 }
 
                 this.bulkUploadFactory.Uploader.CancelOperation();
@@ -117,6 +126,20 @@ namespace Husa.Uploader.Desktop.ViewModels
             {
                 var childViewModel = (BulkUploadViewModel)childWindow.DataContext;
                 return childViewModel.GetBulkUploadInfo();
+            }
+
+            return new();
+        }
+
+        private List<UploadListingItem> FilterBulkUpdater(MarketCode market)
+        {
+            var bulkListingsViewModel = new BulkListingsViewModel(this.listingRequests, market);
+            var childWindow = new BulkListingsView(bulkListingsViewModel);
+            var result = childWindow.ShowDialog();
+            if (result.HasValue && result.Value)
+            {
+                var childViewModel = (BulkListingsViewModel)childWindow.DataContext;
+                return childViewModel.GetBulkUploadResidentialListingFiltered();
             }
 
             return new();

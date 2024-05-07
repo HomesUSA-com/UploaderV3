@@ -6,6 +6,7 @@ namespace Husa.Uploader.Desktop.Factories
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.BulkUpload;
     using Husa.Uploader.Core.Interfaces.ServiceActions;
+    using Husa.Uploader.Data.Entities;
     using Microsoft.Extensions.DependencyInjection;
 
     public class BulkUploadFactory : IBulkUploadFactory
@@ -43,7 +44,7 @@ namespace Husa.Uploader.Desktop.Factories
             this.Uploader.CancelOperation();
         }
 
-        public T Create<T>(MarketCode marketCode, RequestFieldChange requestFieldChange)
+        public T Create<T>(MarketCode marketCode, RequestFieldChange requestFieldChange, List<UploadListingItem> bulkListings)
         {
             switch (marketCode)
             {
@@ -57,6 +58,7 @@ namespace Husa.Uploader.Desktop.Factories
             if (this.uploader is not null)
             {
                 this.uploader.SetRequestFieldChange(requestFieldChange);
+                this.uploader.SetBulkListings(bulkListings);
             }
 
             return (T)this.Uploader;

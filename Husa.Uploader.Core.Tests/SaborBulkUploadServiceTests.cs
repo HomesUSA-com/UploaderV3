@@ -1,8 +1,11 @@
 namespace Husa.Uploader.Core.Tests
 {
+    using Husa.Extensions.Common;
+    using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services.BulkUpload;
+    using Husa.Uploader.Data.Entities;
     using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
@@ -10,6 +13,7 @@ namespace Husa.Uploader.Core.Tests
     public class SaborBulkUploadServiceTests
     {
         private readonly Mock<IUploaderClient> uploaderClient = new();
+        private readonly Mock<ISaborUploadService> uploadService = new();
         private readonly Mock<ILogger<SaborBulkUploadService>> logger = new();
 
         public SaborBulkUploadServiceTests()
@@ -48,6 +52,38 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             var sut = this.GetSut();
 
+            // Act
+            var result = await sut.Upload();
+
+            // Assert
+            Assert.Equal(UploadResult.Failure, result);
+        }
+
+        [Theory]
+        [InlineData(RequestFieldChange.CompletionDate)]
+        public async Task Upload_Success(RequestFieldChange requestFieldChange)
+        {
+            // Arrange
+            var sut = this.GetSut();
+            sut.SetRequestFieldChange(requestFieldChange);
+            var bulkListings = this.GetBulkListings();
+            sut.SetBulkListings(bulkListings);
+
+            // Act
+            var result = await sut.Upload();
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UploadWithoutRequestFieldChange_ThrowException()
+        {
+            // Arrange
+            var sut = this.GetSut();
+            var bulkListings = this.GetBulkListings();
+            sut.SetBulkListings(bulkListings);
+
             // Act and Assert
             await Assert.ThrowsAsync<NotImplementedException>(() => sut.Upload());
         }
@@ -55,6 +91,32 @@ namespace Husa.Uploader.Core.Tests
         private SaborBulkUploadService GetSut()
             => new(
                 this.uploaderClient.Object,
+                this.uploadService.Object,
                 this.logger.Object);
+
+        private List<UploadListingItem> GetBulkListings()
+        {
+            return new List<UploadListingItem>()
+            {
+                new UploadListingItem()
+                {
+                    RequestId = Guid.NewGuid(),
+                    MlsNumber = "New Listing 1",
+                    Address = string.Empty,
+                    Status = string.Empty,
+                    Market = MarketCode.SanAntonio.ToStringFromEnumMember(),
+                    CompanyName = "Company 1",
+                },
+                new UploadListingItem()
+                {
+                    RequestId = Guid.NewGuid(),
+                    MlsNumber = "New Listing 2",
+                    Address = string.Empty,
+                    Status = string.Empty,
+                    Market = MarketCode.SanAntonio.ToStringFromEnumMember(),
+                    CompanyName = "Company 1",
+                },
+            };
+        }
     }
 }
