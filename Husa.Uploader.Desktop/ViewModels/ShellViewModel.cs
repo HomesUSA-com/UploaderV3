@@ -1216,7 +1216,10 @@ namespace Husa.Uploader.Desktop.ViewModels
         {
             this.SourceAction = Crosscutting.Enums.SourceAction.UpdatePrice.GetEnumDescription();
             var uploader = this.uploadFactory.Create<IUpdatePrice>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.Start(opType: UploadType.Price, action: uploader.UpdatePrice, sourceAction: this.SourceAction);
+            await this.Start(
+                opType: UploadType.Price,
+                action: (listing, cancellationToken) => uploader.UpdatePrice(listing, cancellationToken, logIn: true),
+                sourceAction: this.SourceAction);
         }
 
         private async Task StartCompletionDateUpdate()
