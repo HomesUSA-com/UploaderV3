@@ -10,23 +10,23 @@ namespace Husa.Uploader.Core.Services.BulkUpload
     using Microsoft.Extensions.Logging;
     using OpenQA.Selenium;
 
-    public class SaborBulkUploadService : ISaborBulkUploadService
+    public class AborBulkUploadService : IAborBulkUploadService
     {
         private readonly IUploaderClient uploaderClient;
-        private readonly ISaborUploadService uploadService;
-        private readonly ILogger<SaborBulkUploadService> logger;
+        private readonly IAborUploadService uploadService;
+        private readonly ILogger<AborBulkUploadService> logger;
 
-        public SaborBulkUploadService(
+        public AborBulkUploadService(
             IUploaderClient uploaderClient,
-            ISaborUploadService uploadService,
-            ILogger<SaborBulkUploadService> logger)
+            IAborUploadService uploadService,
+            ILogger<AborBulkUploadService> logger)
         {
             this.uploaderClient = uploaderClient ?? throw new ArgumentNullException(nameof(uploaderClient));
             this.uploadService = uploadService ?? throw new ArgumentNullException(nameof(uploadService));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public MarketCode CurrentMarket => MarketCode.SanAntonio;
+        public MarketCode CurrentMarket => MarketCode.Austin;
 
         public RequestFieldChange RequestFieldChange { get; set; }
 
@@ -89,11 +89,11 @@ namespace Husa.Uploader.Core.Services.BulkUpload
         {
             switch (this.RequestFieldChange)
             {
-                case RequestFieldChange.ListPrice:
-                    await this.uploadService.UpdatePrice(bulkFullListing, cancellationToken, logInForCompany);
-                    break;
                 case RequestFieldChange.ConstructionStage:
                     await this.uploadService.UpdateStatus(bulkFullListing, cancellationToken, logInForCompany);
+                    break;
+                case RequestFieldChange.ListPrice:
+                    await this.uploadService.UpdatePrice(bulkFullListing, cancellationToken, logInForCompany);
                     break;
                 case RequestFieldChange.CompletionDate:
                     await this.uploadService.UpdateCompletionDate(bulkFullListing, cancellationToken, logInForCompany);
