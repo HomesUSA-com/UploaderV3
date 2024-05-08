@@ -78,18 +78,6 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(UploadResult.Success, result);
         }
 
-        [Fact]
-        public async Task UploadWithoutRequestFieldChange_ThrowException()
-        {
-            // Arrange
-            var sut = this.GetSut();
-            var bulkListings = this.GetBulkListings();
-            sut.SetBulkListings(bulkListings);
-
-            // Act and Assert
-            await Assert.ThrowsAsync<NotImplementedException>(() => sut.Upload());
-        }
-
         private SaborBulkUploadService GetSut()
             => new(
                 this.uploaderClient.Object,
