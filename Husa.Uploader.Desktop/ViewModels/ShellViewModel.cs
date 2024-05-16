@@ -815,7 +815,7 @@ namespace Husa.Uploader.Desktop.ViewModels
 
             try
             {
-                var connection = new Microsoft.AspNet.SignalR.Client.HubConnection(this.options.Value.SignalRURLServer);
+                var connection = new HubConnection(this.options.Value.SignalRURLServer);
                 var echo = connection.CreateHubProxy("uploaderHub");
 
                 // receiving data from other users
@@ -894,7 +894,11 @@ namespace Husa.Uploader.Desktop.ViewModels
                 });
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 
-                await connection.Start();
+                if (this.SignalROnline != SignalRStatus.Online)
+                {
+                    await connection.Start();
+                }
+
                 this.SignalROnline = SignalRStatus.Online;
 
                 await echo.Invoke("GetWorkerItems");
