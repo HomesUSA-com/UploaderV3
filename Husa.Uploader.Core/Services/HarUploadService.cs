@@ -748,7 +748,14 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WriteTextbox(By.Id("Input_320"), legalsubdivision);
             }
 
-            this.uploaderClient.WriteTextbox(By.Id("Input_174"), "NA"); // Tax ID #
+            if (!string.IsNullOrEmpty(listing.TaxID) && listing.TaxID != "0" && !listing.TaxID.Contains("-0000"))
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_174"), listing.TaxID); // Tax ID #
+            }
+            else
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_174"), "N/A"); // Tax ID #
+            }
 
             this.uploaderClient.WriteTextbox(By.Id("Input_175"), listing.MapscoMapCoord); // Key Map
         }
