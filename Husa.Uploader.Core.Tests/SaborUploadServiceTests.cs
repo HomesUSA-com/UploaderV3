@@ -182,6 +182,7 @@ namespace Husa.Uploader.Core.Tests
             var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse())
             {
                 MLSNum = "MLSNum",
+                BuildCompletionDate = DateTime.UtcNow,
             };
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
             this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
