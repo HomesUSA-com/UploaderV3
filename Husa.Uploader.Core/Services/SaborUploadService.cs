@@ -357,13 +357,16 @@ namespace Husa.Uploader.Core.Services
                 }
 
                 this.EditProperty(listing.MLSNum);
-
                 Thread.Sleep(1000);
+
                 this.uploaderClient.ExecuteScript("jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
                 Thread.Sleep(1000);
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
                 Thread.Sleep(1000);
                 this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[2].click();");
+                Thread.Sleep(1000);
+                this.FillGeneralCompletionDateInformation(listing.BuildCompletionDate);
+                Thread.Sleep(1000);
                 this.FillRemarksInformation(listing as SaborListingRequest, isCompletionUpdate: true);
 
                 return UploadResult.Success;
@@ -559,6 +562,11 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(3000);
                 }
             }
+        }
+
+        private void FillGeneralCompletionDateInformation(DateTime? listingBuildCompletionDate)
+        {
+            this.uploaderClient.WriteTextbox(By.Name("NEW_CONST_EST_COMPLETION"), listingBuildCompletionDate.Value.ToString("MM/yy"), isElementOptional: true); // Construction
         }
 
         private void FillGeneralListingInformation(ResidentialListingRequest listing)
