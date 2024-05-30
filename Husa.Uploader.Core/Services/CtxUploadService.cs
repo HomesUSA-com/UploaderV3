@@ -61,8 +61,12 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.DeleteAllCookies();
             var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
 
+            this.uploaderClient.NavigateToUrl(marketInfo.LogoutUrl);
+            Thread.Sleep(1000);
+
             // Connect to the login page
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
+            Thread.Sleep(1000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("loginbtn"));
 
             this.uploaderClient.WriteTextbox(By.Name("username"), credentials[LoginCredentials.Username]);
@@ -129,22 +133,26 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             if (listing is null)
             {
                 throw new ArgumentNullException(nameof(listing));
             }
 
-            return UploadListing();
+            return UploadListing(logIn);
 
-            async Task<UploadResult> UploadListing()
+            async Task<UploadResult> UploadListing(bool logIn)
             {
                 var newLatitude = listing.Latitude;
                 var newLongitude = listing.Longitude;
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-                await this.Login(listing.CompanyId);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                }
+
                 Thread.Sleep(5000);
 
                 try
@@ -202,16 +210,24 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(5000);
                 }
 
-                this.NavigateToQuickEdit(listing.MLSNum);
+                try
+                {
+                    this.NavigateToQuickEdit(listing.MLSNum);
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
-                this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
+                    this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
 
-                this.UpdateYearBuiltDescriptionInGeneralTab(listing);
+                    this.UpdateYearBuiltDescriptionInGeneralTab(listing);
 
-                this.uploaderClient.ClickOnElement(By.LinkText("Remarks"));
+                    this.uploaderClient.ClickOnElement(By.LinkText("Remarks"));
 
-                this.UpdatePublicRemarksInRemarksTab(listing);
+                    this.UpdatePublicRemarksInRemarksTab(listing);
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
+                }
 
                 return UploadResult.Success;
             }
@@ -264,12 +280,20 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
                 }
 
-                this.NavigateToQuickEdit(listing.MLSNum);
+                try
+                {
+                    this.NavigateToQuickEdit(listing.MLSNum);
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
-                this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
-                this.uploaderClient.ScrollDown();
-                this.uploaderClient.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
+                    this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
+                    this.uploaderClient.ScrollDown();
+                    this.uploaderClient.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
+                }
 
                 return UploadResult.Success;
             }
@@ -295,30 +319,38 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
                 }
 
-                this.NavigateToQuickEdit(listing.MLSNum);
-
-                Thread.Sleep(1500);
-                switch (listing.ListStatus)
+                try
                 {
-                    case "CSLD":
+                    this.NavigateToQuickEdit(listing.MLSNum);
 
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Sold"), cancellationToken);
-                        this.uploaderClient.ClickOnElement(By.LinkText("Change to Sold"));
-                        Thread.Sleep(500);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_74"), listing.SoldPrice);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_73"), listing.ClosedDate.HasValue ? listing.ClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
-                        this.uploaderClient.SetSelect(By.Id($"Input_324"), value: listing.Financing);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_325"), listing.SellConcess);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
-                        // this.uploaderClient.WriteTextbox(By.Id("Input_527"), listing.SoldComments);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.AgentMarketUniqueId);
-                        this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_321_Refresh').value='1';RefreshToSamePage();");
-                        this.uploaderClient.WriteTextbox(By.Id("Input_323"), listing.SecondAgentMarketUniqueId);
-                        this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_323_Refresh').value='1';RefreshToSamePage();");
-                        break;
+                    Thread.Sleep(1500);
+                    switch (listing.ListStatus)
+                    {
+                        case "CSLD":
 
-                    default:
-                        throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for CTX Listing with Id '{listing.ResidentialListingID}'");
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Sold"), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText("Change to Sold"));
+                            Thread.Sleep(500);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_74"), listing.SoldPrice);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_73"), listing.ClosedDate.HasValue ? listing.ClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                            this.uploaderClient.SetSelect(By.Id($"Input_324"), value: listing.Financing);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_325"), listing.SellConcess);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                            // this.uploaderClient.WriteTextbox(By.Id("Input_527"), listing.SoldComments);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.AgentMarketUniqueId);
+                            this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_321_Refresh').value='1';RefreshToSamePage();");
+                            this.uploaderClient.WriteTextbox(By.Id("Input_323"), listing.SecondAgentMarketUniqueId);
+                            this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_323_Refresh').value='1';RefreshToSamePage();");
+                            break;
+
+                        default:
+                            throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for CTX Listing with Id '{listing.ResidentialListingID}'");
+                    }
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
                 }
 
                 return UploadResult.Success;
