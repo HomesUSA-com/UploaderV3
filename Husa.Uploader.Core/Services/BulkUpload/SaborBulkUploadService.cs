@@ -89,6 +89,9 @@ namespace Husa.Uploader.Core.Services.BulkUpload
         {
             switch (this.RequestFieldChange)
             {
+                case RequestFieldChange.FullUpload:
+                    await this.uploadService.Upload(bulkFullListing, cancellationToken, logInForCompany);
+                    break;
                 case RequestFieldChange.ListPrice:
                     await this.uploadService.UpdatePrice(bulkFullListing, cancellationToken, logInForCompany);
                     break;

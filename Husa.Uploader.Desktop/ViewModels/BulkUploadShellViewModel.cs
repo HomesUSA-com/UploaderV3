@@ -3,6 +3,7 @@ namespace Husa.Uploader.Desktop.ViewModels
     using System.Windows;
     using System.Windows.Input;
     using Husa.Extensions.Common.Enums;
+    using Husa.Extensions.Common.Exceptions;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces.ServiceActions;
     using Husa.Uploader.Crosscutting.Enums;
@@ -63,6 +64,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             try
             {
                 this.logger.LogInformation("Starting the requested upload operation");
+                await this.SetBulkFullRequestsInformation();
                 var token = this.cancellationTokenSource.Token;
                 return await Task.Run(() => action(token));
             }
@@ -74,6 +76,9 @@ namespace Husa.Uploader.Desktop.ViewModels
             {
                 this.cancellationTokenSource.Dispose();
                 this.cancellationTokenSource = null;
+
+                this.ShowCancelButton = false;
+                this.State = UploaderState.Ready;
             }
         }
 
@@ -143,6 +148,24 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
 
             return new();
+        }
+
+        private async Task SetBulkFullRequestsInformation()
+        {
+            if (this.ListingRequests != null && this.ListingRequests.Any() && this.ListingRequests[0].FullListingConfigured)
+            {
+                return;
+            }
+
+            foreach (var bulkListing in this.ListingRequests)
+            {
+                var requestData = await this.sqlDataLoader.GetListingRequest(
+                    bulkListing.RequestId,
+                    bulkListing.FullListing.MarketCode,
+                    this.cancellationTokenSource.Token)
+                    ?? throw new NotFoundException<ResidentialListingRequest>(bulkListing.RequestId);
+                bulkListing.SetFullListing(requestData);
+            }
         }
     }
 }
