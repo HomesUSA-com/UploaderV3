@@ -32,6 +32,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         public static ObservableCollection<dynamic> RequestFieldChanges => new ObservableCollection<dynamic>()
         {
             new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.FullUpload, Text = "Upload (Full)" },
+            new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.PartialUpload, Text = "Upload (Common fields)" },
             new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.CompletionDate, Text = "Completion Date" },
             new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.ListPrice, Text = "List Price" },
             new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.ConstructionStage, Text = "Construction stage" },
