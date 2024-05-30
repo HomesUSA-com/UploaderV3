@@ -62,8 +62,12 @@ namespace Husa.Uploader.Core.Services
 
             var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
 
+            this.uploaderClient.NavigateToUrl(marketInfo.LogoutUrl);
+            Thread.Sleep(1000);
+
             // Connect to the login page
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
+            Thread.Sleep(1000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("loginbtn"));
 
             this.uploaderClient.WriteTextbox(By.Name("username"), credentials[LoginCredentials.Username]);
@@ -127,22 +131,26 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             if (listing is null)
             {
                 throw new ArgumentNullException(nameof(listing));
             }
 
-            return UploadListing();
+            return UploadListing(logIn);
 
-            async Task<UploadResult> UploadListing()
+            async Task<UploadResult> UploadListing(bool logIn)
             {
                 var newLatitude = listing.Latitude;
                 var newLongitude = listing.Longitude;
                 this.logger.LogInformation("Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-                await this.Login(listing.CompanyId);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                }
+
                 Thread.Sleep(5000);
 
                 try
@@ -205,15 +213,23 @@ namespace Husa.Uploader.Core.Services
                     await this.Login(listing.CompanyId);
                 }
 
-                this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
+                try
+                {
+                    this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
 
-                this.uploaderClient.ScrollToTop();
-                this.uploaderClient.ClickOnElement(By.LinkText("General"));
-                this.UpdateYearBuiltDescriptionInGeneralTab(listing);
+                    this.uploaderClient.ScrollToTop();
+                    this.uploaderClient.ClickOnElement(By.LinkText("General"));
+                    this.UpdateYearBuiltDescriptionInGeneralTab(listing);
 
-                this.uploaderClient.ScrollToTop();
-                this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
-                this.UpdatePublicRemarksInRemarksTab(listing);
+                    this.uploaderClient.ScrollToTop();
+                    this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
+                    this.UpdatePublicRemarksInRemarksTab(listing);
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
+                }
 
                 return UploadResult.Success;
             }
@@ -266,11 +282,20 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(1000);
                 }
 
-                this.NavigateToQuickEdit(listing.MLSNum);
+                try
+                {
+                    this.NavigateToQuickEdit(listing.MLSNum);
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Price Change"), cancellationToken);
-                this.uploaderClient.ClickOnElement(By.LinkText("Price Change"));
-                this.uploaderClient.WriteTextbox(By.Id("Input_77"), listing.ListPrice); // List Price
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Price Change"), cancellationToken);
+                    this.uploaderClient.ClickOnElement(By.LinkText("Price Change"));
+                    this.uploaderClient.WriteTextbox(By.Id("Input_77"), listing.ListPrice); // List Price
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
+                }
+
                 return UploadResult.Success;
             }
         }
@@ -295,65 +320,73 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(1000);
                 }
 
-                this.NavigateToQuickEdit(listing.MLSNum);
-
-                Thread.Sleep(1000);
-                var buttonText = string.Empty;
-                switch (listing.ListStatus)
+                try
                 {
-                    case "Hold":
-                        buttonText = "Change to Hold";
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
-                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_528"));
-                        this.uploaderClient.WriteTextbox(By.Id("Input_528"), listing.OffMarketDate.Value.ToShortDateString()); // Hold Date
-                        this.uploaderClient.WriteTextbox(By.Id("Input_81"), listing.BackOnMarketDate.Value.ToShortDateString()); // Expiration Date
-                        break;
-                    case "Closed":
-                        buttonText = "Change to Closed";
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
-                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                        Thread.Sleep(500);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // pending date
-                        this.uploaderClient.WriteTextbox(By.Id("Input_85"), listing.ClosedDate.Value.ToShortDateString()); // close date
-                        this.uploaderClient.SetSelect(By.Id($"Input_524"), value: "EXCL"); // Property Condition at Closing
-                        this.uploaderClient.WriteTextbox(By.Id("Input_84"), listing.SoldPrice); // close price
-                        this.uploaderClient.WriteTextbox(By.Id("Input_526"), "None"); // closed Comments
-                        this.uploaderClient.SetSelect(By.Id($"Input_655"), value: listing.HasContingencyInfo.BoolToNumericBool()); // Property Sale Contingency
-                        this.uploaderClient.WriteTextbox(By.Id("Input_517"), listing.SellConcess); // Buyer Clsg Cost Pd By Sell($)
-                        this.uploaderClient.SetMultipleCheckboxById("Input_525", listing.SoldTerms, "Buyer Financing", " "); // Buyer Financing
-                        this.uploaderClient.WriteTextbox(By.Id("Input_519"), "0"); // Repairs Amount
-                        break;
-                    case "Pending":
-                        buttonText = "Change to Pending";
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
-                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_512"));
-                        this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // Pending Date
-                        this.uploaderClient.WriteTextbox(By.Id("Input_515"), listing.EstClosedDate.Value.ToShortDateString()); // Tentative Close Date
-                        this.uploaderClient.WriteTextbox(By.Id("Input_81"), listing.ExpiredDate.Value.ToShortDateString()); // Expiration Date
-                        this.uploaderClient.SetSelect(By.Id("Input_655"), listing.HasContingencyInfo.BoolToNumericBool()); // Property Sale Contingency YN
-                        break;
-                    case "ActiveUnderContract":
-                        buttonText = "Change to Active Under Contract";
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
-                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                        Thread.Sleep(500);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // pending date
+                    this.NavigateToQuickEdit(listing.MLSNum);
 
-                        if (listing.ClosedDate.HasValue)
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_512"), listing.ClosedDate.Value.ToShortDateString()); // option end date
-                        }
+                    Thread.Sleep(1000);
+                    var buttonText = string.Empty;
+                    switch (listing.ListStatus)
+                    {
+                        case "Hold":
+                            buttonText = "Change to Hold";
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_528"));
+                            this.uploaderClient.WriteTextbox(By.Id("Input_528"), listing.OffMarketDate.Value.ToShortDateString()); // Hold Date
+                            this.uploaderClient.WriteTextbox(By.Id("Input_81"), listing.BackOnMarketDate.Value.ToShortDateString()); // Expiration Date
+                            break;
+                        case "Closed":
+                            buttonText = "Change to Closed";
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                            Thread.Sleep(500);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // pending date
+                            this.uploaderClient.WriteTextbox(By.Id("Input_85"), listing.ClosedDate.Value.ToShortDateString()); // close date
+                            this.uploaderClient.SetSelect(By.Id($"Input_524"), value: "EXCL"); // Property Condition at Closing
+                            this.uploaderClient.WriteTextbox(By.Id("Input_84"), listing.SoldPrice); // close price
+                            this.uploaderClient.WriteTextbox(By.Id("Input_526"), "None"); // closed Comments
+                            this.uploaderClient.SetSelect(By.Id($"Input_655"), value: listing.HasContingencyInfo.BoolToNumericBool()); // Property Sale Contingency
+                            this.uploaderClient.WriteTextbox(By.Id("Input_517"), listing.SellConcess); // Buyer Clsg Cost Pd By Sell($)
+                            this.uploaderClient.SetMultipleCheckboxById("Input_525", listing.SoldTerms, "Buyer Financing", " "); // Buyer Financing
+                            this.uploaderClient.WriteTextbox(By.Id("Input_519"), "0"); // Repairs Amount
+                            break;
+                        case "Pending":
+                            buttonText = "Change to Pending";
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_512"));
+                            this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // Pending Date
+                            this.uploaderClient.WriteTextbox(By.Id("Input_515"), listing.EstClosedDate.Value.ToShortDateString()); // Tentative Close Date
+                            this.uploaderClient.WriteTextbox(By.Id("Input_81"), listing.ExpiredDate.Value.ToShortDateString()); // Expiration Date
+                            this.uploaderClient.SetSelect(By.Id("Input_655"), listing.HasContingencyInfo.BoolToNumericBool()); // Property Sale Contingency YN
+                            break;
+                        case "ActiveUnderContract":
+                            buttonText = "Change to Active Under Contract";
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                            Thread.Sleep(500);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString()); // pending date
 
-                        this.uploaderClient.SetSelect(By.Id($"Input_655"), value: listing.HasContingencyInfo.BoolToNumericBool()); // property sale contingency
-                        this.uploaderClient.SetMultipleCheckboxById("Input_656", listing.ContingencyInfo, "Other Contingency Type", " ");
-                        this.uploaderClient.WriteTextbox(By.Id("Input_515"), listing.EstClosedDate.Value.ToShortDateString()); // Tentative Close Date
+                            if (listing.ClosedDate.HasValue)
+                            {
+                                this.uploaderClient.WriteTextbox(By.Id("Input_512"), listing.ClosedDate.Value.ToShortDateString()); // option end date
+                            }
 
-                        break;
+                            this.uploaderClient.SetSelect(By.Id($"Input_655"), value: listing.HasContingencyInfo.BoolToNumericBool()); // property sale contingency
+                            this.uploaderClient.SetMultipleCheckboxById("Input_656", listing.ContingencyInfo, "Other Contingency Type", " ");
+                            this.uploaderClient.WriteTextbox(By.Id("Input_515"), listing.EstClosedDate.Value.ToShortDateString()); // Tentative Close Date
 
-                    default:
-                        throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for Austin Listing with Id '{listing.ResidentialListingID}'");
+                            break;
+
+                        default:
+                            throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for Austin Listing with Id '{listing.ResidentialListingID}'");
+                    }
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
                 }
 
                 return UploadResult.Success;

@@ -1251,7 +1251,10 @@ namespace Husa.Uploader.Desktop.ViewModels
 
             this.ShowCancelButton = true;
             var uploader = this.uploadFactory.Create<IUploadListing>(this.SelectedListingRequest.FullListing.MarketCode);
-            await this.Start(opType: UploadType.InserOrUpdate, action: uploader.Upload, sourceAction: this.SourceAction);
+            await this.Start(
+                opType: UploadType.InserOrUpdate,
+                action: (listing, cancellationToken) => uploader.Upload(listing, cancellationToken, logIn: true),
+                sourceAction: this.SourceAction);
         }
 
         private async Task StartStatusUpdate()
