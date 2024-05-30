@@ -71,7 +71,10 @@ namespace Husa.Uploader.Core.Services
             var company = await this.serviceSubscriptionClient.Company.GetCompany(companyId);
             var credentialsTask = this.serviceSubscriptionClient.Corporation.GetMarketReverseProspectInformation(this.CurrentMarket);
             var marketInfo = this.options.MarketInfo.Sabor;
+            this.uploaderClient.NavigateToUrl(marketInfo.LogoutUrl);
+            Thread.Sleep(1000);
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
+            Thread.Sleep(1000);
             try
             {
                 var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
@@ -152,47 +155,59 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             if (listing is null)
             {
                 throw new ArgumentNullException(nameof(listing));
             }
 
-            return UploadListing();
+            return UploadListing(logIn);
 
-            async Task<UploadResult> UploadListing()
+            async Task<UploadResult> UploadListing(bool logIn)
             {
                 this.logger.LogInformation("Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: listing.IsNewListing);
-                await this.Login(listing.CompanyId);
-                if (listing.IsNewListing)
+                if (logIn)
                 {
-                    this.uploaderClient.ClickOnElementById("newlistingLink");
-                    this.NewProperty(listing);
-                }
-                else
-                {
-                    Thread.Sleep(1000);
-                    this.EditProperty(listing.MLSNum);
-                    this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
-                    Thread.Sleep(1000);
-                    this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[2].click();");
-                    Thread.Sleep(1000);
-                    this.uploaderClient.ExecuteScript(script: "jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
+                    await this.Login(listing.CompanyId);
                 }
 
-                this.FillGeneralListingInformation(listing);
-                this.FillExteriorInformation(listing);
-                this.FillInteriorInformation(listing);
-                this.FillUtilitiesInformation(listing);
-                this.FillTaxHoaInformation(listing);
-                this.FillOfficeInformation(listing as SaborListingRequest);
-                this.FillRemarksInformation(listing as SaborListingRequest);
-
-                if (listing.IsNewListing)
+                try
                 {
-                    await this.FillMedia(listing.ResidentialListingRequestID, cancellationToken);
+                    if (listing.IsNewListing)
+                    {
+                        this.uploaderClient.ClickOnElementById("newlistingLink");
+                        this.NewProperty(listing);
+                    }
+                    else
+                    {
+                        Thread.Sleep(1000);
+                        this.EditProperty(listing.MLSNum);
+                        this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
+                        Thread.Sleep(1000);
+                        this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[2].click();");
+                        Thread.Sleep(1000);
+                        this.uploaderClient.ExecuteScript(script: "jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
+                    }
+
+                    this.FillGeneralListingInformation(listing);
+                    this.FillExteriorInformation(listing);
+                    this.FillInteriorInformation(listing);
+                    this.FillUtilitiesInformation(listing);
+                    this.FillTaxHoaInformation(listing);
+                    this.FillOfficeInformation(listing as SaborListingRequest);
+                    this.FillRemarksInformation(listing as SaborListingRequest);
+
+                    if (listing.IsNewListing)
+                    {
+                        await this.FillMedia(listing.ResidentialListingRequestID, cancellationToken);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
                 }
 
                 return UploadResult.Success;
@@ -219,41 +234,49 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(1000);
                 }
 
-                this.EditProperty(listing.MLSNum);
-
-                Thread.Sleep(2000);
-                this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
-                Thread.Sleep(1000);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
-                this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[0].click();");
-                Thread.Sleep(1000);
-
-                this.uploaderClient.ExecuteScript(
-                    script: "jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();",
-                    isScriptOptional: true);
-
-                this.uploaderClient.SwitchTo().Frame(this.uploaderClient.FindElementById("csframe"));
-
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("statuses"), cancellationToken);
-                this.uploaderClient.SetSelect(By.Id("statuses"), listing.ListStatus, "Listing Status", tabName);
-
-                if (listing.ListStatus == "SLD")
+                try
                 {
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("HOWSOLDID"), cancellationToken);
-                    this.uploaderClient.WriteTextbox(By.Id("HOWSOLDID"), listing.HowSold); // How Sold/Sale Terms
-                    this.uploaderClient.WriteTextbox(By.Id("CLOSEDATE"), listing.ClosedDate.Value.ToString("MM/dd/yyyy")); // Closing Date
-                    this.uploaderClient.WriteTextbox(By.Id("SOLDPRICE"), listing.SoldPrice.DecimalToString()); // Sold Price
-                    this.uploaderClient.WriteTextbox(By.Id("CONTINFO"), listing.ContingencyInfo); // Contingent Info
-                    this.uploaderClient.WriteTextbox(By.Id("SELLCONCES"), listing.SellConcess.PriceWithDollarSign()); // Seller Concessions
-                    this.uploaderClient.WriteTextbox(By.Id("SELL_CONC_DESCID"), listing.SellConcessDescription); // Seller Concessions Description
-                    this.uploaderClient.FindElement(By.Name("AGTRMRKS")).Clear(); // Agent Confidential Remarks
+                    this.EditProperty(listing.MLSNum);
+
+                    Thread.Sleep(2000);
+                    this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
+                    Thread.Sleep(1000);
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
+                    this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[0].click();");
+                    Thread.Sleep(1000);
+
+                    this.uploaderClient.ExecuteScript(
+                        script: "jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();",
+                        isScriptOptional: true);
+
+                    this.uploaderClient.SwitchTo().Frame(this.uploaderClient.FindElementById("csframe"));
+
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("statuses"), cancellationToken);
+                    this.uploaderClient.SetSelect(By.Id("statuses"), listing.ListStatus, "Listing Status", tabName);
+
+                    if (listing.ListStatus == "SLD")
+                    {
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("HOWSOLDID"), cancellationToken);
+                        this.uploaderClient.WriteTextbox(By.Id("HOWSOLDID"), listing.HowSold); // How Sold/Sale Terms
+                        this.uploaderClient.WriteTextbox(By.Id("CLOSEDATE"), listing.ClosedDate.Value.ToString("MM/dd/yyyy")); // Closing Date
+                        this.uploaderClient.WriteTextbox(By.Id("SOLDPRICE"), listing.SoldPrice.DecimalToString()); // Sold Price
+                        this.uploaderClient.WriteTextbox(By.Id("CONTINFO"), listing.ContingencyInfo); // Contingent Info
+                        this.uploaderClient.WriteTextbox(By.Id("SELLCONCES"), listing.SellConcess.PriceWithDollarSign()); // Seller Concessions
+                        this.uploaderClient.WriteTextbox(By.Id("SELL_CONC_DESCID"), listing.SellConcessDescription); // Seller Concessions Description
+                        this.uploaderClient.FindElement(By.Name("AGTRMRKS")).Clear(); // Agent Confidential Remarks
+                    }
+
+                    if (listing.ListStatus == "PDB" || listing.ListStatus == "PND" || listing.ListStatus == "SLD")
+                    {
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("CONTDATE"), cancellationToken);
+                        this.uploaderClient.WriteTextbox(By.Id("CONTDATE"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty); // Contract Date
+                        this.uploaderClient.WriteTextbox(By.Id("SELLAGT1"), listing.AgentLoginName);
+                    }
                 }
-
-                if (listing.ListStatus == "PDB" || listing.ListStatus == "PND" || listing.ListStatus == "SLD")
+                catch (Exception exception)
                 {
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("CONTDATE"), cancellationToken);
-                    this.uploaderClient.WriteTextbox(By.Id("CONTDATE"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty); // Contract Date
-                    this.uploaderClient.WriteTextbox(By.Id("SELLAGT1"), listing.AgentLoginName);
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
                 }
 
                 return UploadResult.Success;
@@ -278,29 +301,37 @@ namespace Husa.Uploader.Core.Services
                     await this.Login(listing.CompanyId);
                 }
 
-                Thread.Sleep(1000);
-
-                this.EditProperty(listing.MLSNum);
-
-                Thread.Sleep(1000);
-                this.uploaderClient.ExecuteScript("jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
-                Thread.Sleep(1000);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
-                this.uploaderClient.ExecuteScript("jQuery('.modal-body > .inner-modal-body > div').find('button')[1].click();");
-                Thread.Sleep(1000);
-                this.uploaderClient.ExecuteScript("jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("csframe"), cancellationToken);
-                this.uploaderClient.SwitchTo().Frame(this.uploaderClient.FindElementById("csframe"));
                 try
                 {
                     Thread.Sleep(1000);
-                    this.uploaderClient.ExecuteScript("jQuery('#LISTPRICE').attr('onchange','');");
-                    this.uploaderClient.WriteTextbox(By.Id("LISTPRICE"), value: listing.ListPrice); // List Price
+
+                    this.EditProperty(listing.MLSNum);
+
+                    Thread.Sleep(1000);
+                    this.uploaderClient.ExecuteScript("jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
+                    Thread.Sleep(1000);
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
+                    this.uploaderClient.ExecuteScript("jQuery('.modal-body > .inner-modal-body > div').find('button')[1].click();");
+                    Thread.Sleep(1000);
+                    this.uploaderClient.ExecuteScript("jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("csframe"), cancellationToken);
+                    this.uploaderClient.SwitchTo().Frame(this.uploaderClient.FindElementById("csframe"));
+                    try
+                    {
+                        Thread.Sleep(1000);
+                        this.uploaderClient.ExecuteScript("jQuery('#LISTPRICE').attr('onchange','');");
+                        this.uploaderClient.WriteTextbox(By.Id("LISTPRICE"), value: listing.ListPrice); // List Price
+                    }
+                    catch
+                    {
+                        this.uploaderClient.ExecuteScript("jQuery('#LISTPRICE').attr('onchange','');");
+                        this.uploaderClient.WriteTextbox(By.Id("LISTPRICE"), value: listing.ListPrice);
+                    }
                 }
-                catch
+                catch (Exception exception)
                 {
-                    this.uploaderClient.ExecuteScript("jQuery('#LISTPRICE').attr('onchange','');");
-                    this.uploaderClient.WriteTextbox(By.Id("LISTPRICE"), value: listing.ListPrice);
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
                 }
 
                 return UploadResult.Success;
@@ -356,18 +387,26 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(1000);
                 }
 
-                this.EditProperty(listing.MLSNum);
-                Thread.Sleep(1000);
+                try
+                {
+                    this.EditProperty(listing.MLSNum);
+                    Thread.Sleep(1000);
 
-                this.uploaderClient.ExecuteScript("jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
-                Thread.Sleep(1000);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
-                Thread.Sleep(1000);
-                this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[2].click();");
-                Thread.Sleep(1000);
-                this.FillGeneralCompletionDateInformation(listing.BuildCompletionDate);
-                Thread.Sleep(1000);
-                this.FillRemarksInformation(listing as SaborListingRequest, isCompletionUpdate: true);
+                    this.uploaderClient.ExecuteScript("jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
+                    Thread.Sleep(1000);
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
+                    Thread.Sleep(1000);
+                    this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[2].click();");
+                    Thread.Sleep(1000);
+                    this.FillGeneralCompletionDateInformation(listing.BuildCompletionDate);
+                    Thread.Sleep(1000);
+                    this.FillRemarksInformation(listing as SaborListingRequest, isCompletionUpdate: true);
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
+                }
 
                 return UploadResult.Success;
             }

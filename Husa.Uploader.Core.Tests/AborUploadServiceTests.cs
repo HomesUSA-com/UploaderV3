@@ -328,7 +328,7 @@ namespace Husa.Uploader.Core.Tests
         private static AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse GetListingRequestDetailResponse(bool isNewListing)
         {
             var spacesDimensionsInfo = new Mock<AborResponse.SalePropertyDetail.SpacesDimensionsResponse>();
-            var addressInfo = new Mock<AborResponse.SalePropertyDetail.AddressInfoResponse>();
+            var addressInfo = new Mock<AborResponse.SalePropertyDetail.SaleAddressResponse>();
             var propertyInfo = new AborResponse.SalePropertyDetail.PropertyInfoResponse()
             {
                 ConstructionStage = ConstructionStage.Incomplete,

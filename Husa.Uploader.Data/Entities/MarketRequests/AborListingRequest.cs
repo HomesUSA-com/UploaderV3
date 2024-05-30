@@ -135,7 +135,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.Zip = addressInfo.ZipCode;
                 residentialListingRequest.County = addressInfo.County?.ToStringFromEnumMember();
                 residentialListingRequest.StreetType = addressInfo.StreetType?.ToStringFromEnumMember();
-                residentialListingRequest.UnitNum = addressInfo.UnitNumber;
                 residentialListingRequest.Subdivision = addressInfo.Subdivision;
                 residentialListingRequest.StateCode = addressInfo.State.ToStringFromEnumMember();
             }
