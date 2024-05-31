@@ -15,6 +15,8 @@ namespace Husa.Uploader.Core.Interfaces.ServiceActions
 
         Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true);
 
+        Task<UploadResult> PartialUpload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true);
+
         Task<LoginResult> Login(Guid companyId);
 
         UploadResult Logout();
