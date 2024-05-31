@@ -32,6 +32,19 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Fact]
+        public async Task PartialUploadWithExistingListing()
+        {
+            // Arrange
+            this.SetUpConfigs();
+            var request = this.GetResidentialListingRequest(false);
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.PartialUpload(request);
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
         public async Task UpdateStatus_SoldSuccess()
         {
             // Arrange
