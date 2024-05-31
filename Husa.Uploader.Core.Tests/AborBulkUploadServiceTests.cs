@@ -33,6 +33,7 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Theory]
+        [InlineData(RequestFieldChange.PartialUpload)]
         [InlineData(RequestFieldChange.FullUpload)]
         [InlineData(RequestFieldChange.CompletionDate)]
         [InlineData(RequestFieldChange.ListPrice)]
@@ -61,6 +62,7 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Theory]
+        [InlineData(RequestFieldChange.PartialUpload)]
         [InlineData(RequestFieldChange.FullUpload)]
         [InlineData(RequestFieldChange.ListPrice)]
         [InlineData(RequestFieldChange.CompletionDate)]
