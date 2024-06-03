@@ -216,7 +216,52 @@ namespace Husa.Uploader.Core.Services
 
         public Task<UploadResult> PartialUpload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
-            throw new NotImplementedException();
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            return UploadListing(logIn);
+
+            async Task<UploadResult> UploadListing(bool logIn)
+            {
+                this.logger.LogInformation("Partial Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: listing.IsNewListing);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                }
+
+                try
+                {
+                    Thread.Sleep(1000);
+                    this.EditProperty(listing.MLSNum);
+                    this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
+                    Thread.Sleep(1000);
+                    this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[2].click();");
+                    Thread.Sleep(1000);
+                    try
+                    {
+                        this.uploaderClient.ExecuteScript(script: "jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
+                    }
+                    catch
+                    {
+                        // Ignoring exception because the field is optional
+                    }
+
+                    this.FillGeneralListingInformation(listing, isNotPartialFill: false);
+                    this.FillTaxHoaInformation(listing);
+                    this.FillOfficeInformation(listing as SaborListingRequest);
+                    this.FillRemarksInformation(listing as SaborListingRequest);
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
+                }
+
+                return UploadResult.Success;
+            }
         }
 
         public Task<UploadResult> UpdateStatus(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
@@ -613,17 +658,9 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Name("NEW_CONST_EST_COMPLETION"), listingBuildCompletionDate.Value.ToString("MM/yy"), isElementOptional: true); // Construction
         }
 
-        private void FillGeneralListingInformation(ResidentialListingRequest listing)
+        private void FillGeneralListingInformation(ResidentialListingRequest listing, bool isNotPartialFill = true)
         {
             Thread.Sleep(1000);
-            this.uploaderClient.SetAttribute(By.Name("TYPE"), listing.Category, attributeName: "value"); // Type
-            this.uploaderClient.WriteTextbox(By.Name("BLOCK"), listing.Block); // Block
-            this.uploaderClient.WriteTextbox(By.Name("LGLDSCLOT"), listing.LotNum); // Legal Desc-Lot
-            // this.uploaderClient.WriteTextbox(By.Name("CBORNCB"), listing.CBNCB), newListing);
-            this.uploaderClient.SetAttribute(By.Name("SBDIVISION"), listing.Subdivision, "value"); // Subdivision (Legal Name)
-            this.uploaderClient.SetAttribute(By.Name("SUBDIVISION_CKA"), listing.Subdivision, "value"); // Subdivision (Common Name)
-            this.uploaderClient.WriteTextbox(By.Name("LEGALDESC"), listing.Legal); // Legal Description
-
             string direction = listing.Directions;
             if (!string.IsNullOrEmpty(direction))
             {
@@ -671,39 +708,49 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetAttribute(By.Name("MIDSCHL"), listing.SchoolName2, "value"); // Middle School
             this.uploaderClient.SetAttribute(By.Name("HIGHSCHL"), listing.HighSchool, "value"); // High School
             this.uploaderClient.WriteTextbox(By.Name("CONSTRCTN"), entry: "NEW"); // Construction
-            this.uploaderClient.FindElement(By.Name("CONSTRCTN")).SendKeys(Keys.Tab);
-            this.uploaderClient.WriteTextbox(By.Name("NEW_CONST_EST_COMPLETION"), listing.BuildCompletionDate.Value.ToString("MM/yy"), isElementOptional: true); // Construction
-            this.uploaderClient.WriteTextbox(By.Name("BLDRNAME"), listing.OwnerName); // Builder Name
-            this.uploaderClient.WriteTextbox(By.Name("ACCESS_HOME"), listing.HasHandicapAmenities); // Accessible/Adaptive Home
 
-            try
+            if (isNotPartialFill)
             {
-                this.uploaderClient.WriteTextbox(By.Name("NGHBRHDMNT"), listing.CommonFeatures); // Neighborhood Amenities
-                if (listing.HasHandicapAmenities == "YES")
+                this.uploaderClient.SetAttribute(By.Name("TYPE"), listing.Category, attributeName: "value"); // Type
+                this.uploaderClient.WriteTextbox(By.Name("BLOCK"), listing.Block); // Block
+                this.uploaderClient.WriteTextbox(By.Name("LGLDSCLOT"), listing.LotNum); // Legal Desc-Lot
+                this.uploaderClient.SetAttribute(By.Name("SBDIVISION"), listing.Subdivision, "value"); // Subdivision (Legal Name)
+                this.uploaderClient.SetAttribute(By.Name("SUBDIVISION_CKA"), listing.Subdivision, "value"); // Subdivision (Common Name)
+                this.uploaderClient.WriteTextbox(By.Name("LEGALDESC"), listing.Legal); // Legal Description
+                this.uploaderClient.FindElement(By.Name("CONSTRCTN")).SendKeys(Keys.Tab);
+                this.uploaderClient.WriteTextbox(By.Name("NEW_CONST_EST_COMPLETION"), listing.BuildCompletionDate.Value.ToString("MM/yy"), isElementOptional: true); // Construction
+                this.uploaderClient.WriteTextbox(By.Name("BLDRNAME"), listing.OwnerName); // Builder Name
+                this.uploaderClient.WriteTextbox(By.Name("ACCESS_HOME"), listing.HasHandicapAmenities); // Accessible/Adaptive Home
+
+                try
                 {
-                    if (!string.IsNullOrEmpty(listing.AccessibilityDesc))
+                    this.uploaderClient.WriteTextbox(By.Name("NGHBRHDMNT"), listing.CommonFeatures); // Neighborhood Amenities
+                    if (listing.HasHandicapAmenities == "YES")
                     {
-                        this.uploaderClient.WriteTextbox(By.Name("ACESIBILTY"), listing.AccessibilityDesc, isElementOptional: false); // Accessible/Adaptive Details
+                        if (!string.IsNullOrEmpty(listing.AccessibilityDesc))
+                        {
+                            this.uploaderClient.WriteTextbox(By.Name("ACESIBILTY"), listing.AccessibilityDesc, isElementOptional: false); // Accessible/Adaptive Details
+                        }
                     }
                 }
-            }
-            catch
-            {
-                // Ignoring exception because the fields are optional
-            }
+                catch
+                {
+                    // Ignoring exception because the fields are optional
+                }
 
-            if (listing.BuiltStatus != BuiltStatus.ReadyNow)
-            {
-                this.uploaderClient.WriteTextbox(By.Name("MISCELANES"), entry: "UNDCN", isElementOptional: true); // Miscellaneous
-            }
-            else
-            {
-                this.uploaderClient.ExecuteScript("clearPicklist('MISCELANEStable');selectVals('MISCELANES');closeDiv();");
-            }
+                if (listing.BuiltStatus != BuiltStatus.ReadyNow)
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("MISCELANES"), entry: "UNDCN", isElementOptional: true); // Miscellaneous
+                }
+                else
+                {
+                    this.uploaderClient.ExecuteScript("clearPicklist('MISCELANEStable');selectVals('MISCELANES');closeDiv();");
+                }
 
-            this.uploaderClient.WriteTextbox(By.Name("GREEN_CERT"), listing.GreenCerts, isElementOptional: true); // Green Certification
-            this.uploaderClient.WriteTextbox(By.Name("GREEN_FEAT"), listing.GreenFeatures, isElementOptional: true); // Green Features
-            this.uploaderClient.WriteTextbox(By.Name("ENERGY_EFF"), listing.EnergyDesc, isElementOptional: true); // Energy Efficiency
+                this.uploaderClient.WriteTextbox(By.Name("GREEN_CERT"), listing.GreenCerts, isElementOptional: true); // Green Certification
+                this.uploaderClient.WriteTextbox(By.Name("GREEN_FEAT"), listing.GreenFeatures, isElementOptional: true); // Green Features
+                this.uploaderClient.WriteTextbox(By.Name("ENERGY_EFF"), listing.EnergyDesc, isElementOptional: true); // Energy Efficiency
+            }
         }
 
         private void FillExteriorInformation(ResidentialListingRequest listing)
