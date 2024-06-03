@@ -221,9 +221,9 @@ namespace Husa.Uploader.Core.Services
                 throw new ArgumentNullException(nameof(listing));
             }
 
-            return UploadListing(logIn);
+            return PartialUploadListing(logIn);
 
-            async Task<UploadResult> UploadListing(bool logIn)
+            async Task<UploadResult> PartialUploadListing(bool logIn)
             {
                 this.logger.LogInformation("Partial Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: listing.IsNewListing);
