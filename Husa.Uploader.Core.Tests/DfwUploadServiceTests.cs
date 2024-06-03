@@ -63,6 +63,22 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(UploadResult.Success, result);
         }
 
+        [Fact]
+        public async Task PartialUploadWithExistingListing()
+        {
+            // Arrange
+            this.SetUpConfigs();
+
+            var request = this.GetResidentialListingRequest(false);
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.PartialUpload(request);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
         [Theory]
         [InlineData(HousingType.CondoTownhome)]
         [InlineData(HousingType.AttachedDuplex)]
