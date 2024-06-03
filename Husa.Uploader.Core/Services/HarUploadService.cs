@@ -196,7 +196,50 @@ namespace Husa.Uploader.Core.Services
 
         public Task<UploadResult> PartialUpload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
-            throw new NotImplementedException();
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            return UploadListing(logIn);
+
+            async Task<UploadResult> UploadListing(bool logIn)
+            {
+                var newLatitude = listing.Latitude;
+                var newLongitude = listing.Longitude;
+
+                this.logger.LogInformation("Partial Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                }
+
+                Thread.Sleep(2000);
+
+                try
+                {
+                    var housingType = listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>();
+
+                    this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
+
+                    listing.Longitude = newLongitude;
+                    listing.Latitude = newLatitude;
+                    this.FillListingInformation(listing, isNotPartialFill: false);
+                    this.FillMapInformation(listing as HarListingRequest);
+                    this.FillPropertyInformation(listing as HarListingRequest, housingType, isNotPartialFill: false);
+                    this.FillFinancialInformation(listing as HarListingRequest, housingType);
+                    this.FillShowingInformation(listing);
+                    this.FillRemarks(listing as HarListingRequest, housingType);
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
+                }
+
+                return UploadResult.Success;
+            }
         }
 
         public Task<UploadResult> UpdateCompletionDate(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
@@ -708,84 +751,11 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(1000);
         }
 
-        private void FillListingInformation(ResidentialListingRequest listing)
+        private void FillListingInformation(ResidentialListingRequest listing, bool isNotPartialFill = true)
         {
             this.GoToTab("Listing Information");
 
-            this.uploaderClient.SetSelect(By.Id("Input_181"), "EXAGY"); // List Type
             this.uploaderClient.WriteTextbox(By.Id("Input_182"), listing.ListPrice); // List Price
-            if (listing.IsNewListing)
-            {
-                DateTime? listDate = null;
-                switch (listing.ListStatus.ToEnumFromEnumMember<MarketStatuses>())
-                {
-                    case MarketStatuses.Active:
-                        listDate = DateTime.Now;
-                        break;
-                    case MarketStatuses.Pending:
-                    case MarketStatuses.OptionPending:
-                    case MarketStatuses.PendingContinueToShow:
-                        listDate = DateTime.Now.AddDays(-2);
-                        break;
-                    case MarketStatuses.Terminated:
-                    case MarketStatuses.Expired:
-                    case MarketStatuses.Sold:
-                        listDate = DateTime.Now.AddDays(-4);
-                        break;
-                }
-
-                if (listDate.HasValue)
-                {
-                    this.uploaderClient.WriteTextbox(By.Id("Input_183"), listDate.Value.ToShortDateString());  // List Date
-                }
-
-                var expirationDate = listing.ExpiredDate.HasValue ? listing.ExpiredDate.Value : (listing.SysCreatedOn ?? DateTime.Today).AddYears(1);
-                this.uploaderClient.WriteTextbox(By.Id("Input_184"), expirationDate.ToShortDateString()); // Expiration Date
-            }
-            else if (listing.ListDate.HasValue)
-            {
-                this.uploaderClient.WriteTextbox(By.Id("Input_183"), listing.ListDate.Value.ToShortDateString()); // List Date
-            }
-
-            this.uploaderClient.SetSelect(By.Id("Input_185"), "0"); // Also For Lease
-            if (this.uploaderClient.FindElements(By.Id("Input_350")).Any())
-            {
-                this.uploaderClient.SetSelect(By.Id("Input_350"), "TOWN"); // Townhouse or Condo
-            }
-            else
-            {
-                this.uploaderClient.SetSelect(By.Id("Input_186"), "0"); // Priced at Lot Value Only
-            }
-
-            this.uploaderClient.WriteTextbox(By.Id("Input_156"), listing.StreetNum); // Street Number
-            this.uploaderClient.WriteTextbox(By.Id("Input_158"), listing.StreetName); // Street Name
-            this.uploaderClient.WriteTextbox(By.Id("Input_160"), listing.UnitNum); // Unit #
-            this.uploaderClient.SetSelect(By.Id("Input_159"), listing.StreetType, isElementOptional: true); // Street Type
-
-            if (!string.IsNullOrEmpty(listing.City))
-            {
-                this.uploaderClient.FillFieldSingleOption("Input_161", listing.City);
-            }
-
-            this.uploaderClient.SetSelect(By.Id("Input_162"), listing.StateCode); // State
-            this.uploaderClient.WriteTextbox(By.Id("Input_163"), listing.Zip); // Zip Code
-            this.uploaderClient.SetSelect(By.Id("Input_164"), listing.County); // County
-            this.uploaderClient.WriteTextbox(By.Id("Input_165"), listing.Subdivision); // Subdivision
-            this.uploaderClient.WriteTextbox(By.Id("Input_171"), listing.SectionNum); // Section #
-            this.uploaderClient.WriteTextbox(By.Id("Input_302"), listing.Legal); // Legal Description
-
-            if (this.uploaderClient.FindElements(By.Id("Input_172")).Any())
-            {
-                this.uploaderClient.SetSelect(By.Id("Input_172"), listing.IsPlannedDevelopment.BoolToNumericBool()); // Master Planned Community Y/N
-                this.uploaderClient.FillFieldSingleOption("Input_173", listing.PlannedDevelopment); // Master Planned Community
-            }
-
-            if (!string.IsNullOrWhiteSpace(listing.LegalSubdivision))
-            {
-                var legalsubdivision = listing.LegalSubdivision.Contains("OTHER") ? "OTHER - " + listing.Zip : listing.LegalSubdivision;
-                this.uploaderClient.WriteTextbox(By.Id("Input_320"), legalsubdivision);
-            }
-
             if (!string.IsNullOrEmpty(listing.TaxID) && listing.TaxID != "0" && !listing.TaxID.Contains("-0000"))
             {
                 this.uploaderClient.WriteTextbox(By.Id("Input_174"), listing.TaxID); // Tax ID #
@@ -795,104 +765,190 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WriteTextbox(By.Id("Input_174"), "N/A"); // Tax ID #
             }
 
-            this.uploaderClient.WriteTextbox(By.Id("Input_175"), listing.MapscoMapCoord); // Key Map
+            if (isNotPartialFill)
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_181"), "EXAGY"); // List Type
+                if (listing.IsNewListing)
+                {
+                    DateTime? listDate = null;
+                    switch (listing.ListStatus.ToEnumFromEnumMember<MarketStatuses>())
+                    {
+                        case MarketStatuses.Active:
+                            listDate = DateTime.Now;
+                            break;
+                        case MarketStatuses.Pending:
+                        case MarketStatuses.OptionPending:
+                        case MarketStatuses.PendingContinueToShow:
+                            listDate = DateTime.Now.AddDays(-2);
+                            break;
+                        case MarketStatuses.Terminated:
+                        case MarketStatuses.Expired:
+                        case MarketStatuses.Sold:
+                            listDate = DateTime.Now.AddDays(-4);
+                            break;
+                    }
+
+                    if (listDate.HasValue)
+                    {
+                        this.uploaderClient.WriteTextbox(By.Id("Input_183"), listDate.Value.ToShortDateString());  // List Date
+                    }
+
+                    var expirationDate = listing.ExpiredDate.HasValue ? listing.ExpiredDate.Value : (listing.SysCreatedOn ?? DateTime.Today).AddYears(1);
+                    this.uploaderClient.WriteTextbox(By.Id("Input_184"), expirationDate.ToShortDateString()); // Expiration Date
+                }
+                else if (listing.ListDate.HasValue)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_183"), listing.ListDate.Value.ToShortDateString()); // List Date
+                }
+
+                this.uploaderClient.SetSelect(By.Id("Input_185"), "0"); // Also For Lease
+                if (this.uploaderClient.FindElements(By.Id("Input_350")).Any())
+                {
+                    this.uploaderClient.SetSelect(By.Id("Input_350"), "TOWN"); // Townhouse or Condo
+                }
+                else
+                {
+                    this.uploaderClient.SetSelect(By.Id("Input_186"), "0"); // Priced at Lot Value Only
+                }
+
+                this.uploaderClient.WriteTextbox(By.Id("Input_156"), listing.StreetNum); // Street Number
+                this.uploaderClient.WriteTextbox(By.Id("Input_158"), listing.StreetName); // Street Name
+                this.uploaderClient.WriteTextbox(By.Id("Input_160"), listing.UnitNum); // Unit #
+                this.uploaderClient.SetSelect(By.Id("Input_159"), listing.StreetType, isElementOptional: true); // Street Type
+
+                if (!string.IsNullOrEmpty(listing.City))
+                {
+                    this.uploaderClient.FillFieldSingleOption("Input_161", listing.City);
+                }
+
+                this.uploaderClient.SetSelect(By.Id("Input_162"), listing.StateCode); // State
+                this.uploaderClient.WriteTextbox(By.Id("Input_163"), listing.Zip); // Zip Code
+                this.uploaderClient.SetSelect(By.Id("Input_164"), listing.County); // County
+                this.uploaderClient.WriteTextbox(By.Id("Input_165"), listing.Subdivision); // Subdivision
+                this.uploaderClient.WriteTextbox(By.Id("Input_171"), listing.SectionNum); // Section #
+                this.uploaderClient.WriteTextbox(By.Id("Input_302"), listing.Legal); // Legal Description
+
+                if (this.uploaderClient.FindElements(By.Id("Input_172")).Any())
+                {
+                    this.uploaderClient.SetSelect(By.Id("Input_172"), listing.IsPlannedDevelopment.BoolToNumericBool()); // Master Planned Community Y/N
+                    this.uploaderClient.FillFieldSingleOption("Input_173", listing.PlannedDevelopment); // Master Planned Community
+                }
+
+                if (!string.IsNullOrWhiteSpace(listing.LegalSubdivision))
+                {
+                    var legalsubdivision = listing.LegalSubdivision.Contains("OTHER") ? "OTHER - " + listing.Zip : listing.LegalSubdivision;
+                    this.uploaderClient.WriteTextbox(By.Id("Input_320"), legalsubdivision);
+                }
+
+                this.uploaderClient.WriteTextbox(By.Id("Input_175"), listing.MapscoMapCoord); // Key Map
+            }
         }
 
-        private void FillPropertyInformation(HarListingRequest listing, HousingType housingType)
+        private void FillPropertyInformation(HarListingRequest listing, HousingType housingType, bool isNotPartialFill = true)
         {
             this.GoToPropertyInformationTab();
 
             this.uploaderClient.WriteTextbox(By.Id("Input_245"), listing.SqFtTotal); // Building SqFt
             if (housingType == HousingType.TownhouseCondo)
             {
-                var hasWasherDryerConnection = listing.WasherConnections?.Length > 0;
-                this.uploaderClient.SetSelect(By.Id("Input_700"), "BUILD"); // SqFt Source
-                this.uploaderClient.WriteTextbox(By.Id("Input_485"), listing.NumStories); // Number of Building Stories
-                this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.NumStories); // Number of Unit Stories
-                this.uploaderClient.SetMultipleCheckboxById("Input_702", listing.HousingStyleDesc);  // Style
-                this.uploaderClient.SetMultipleCheckboxById("Input_475", listing.WaterDesc); // Water/Sewer Description
-                this.uploaderClient.SetSelect(By.Id("Input_496"), hasWasherDryerConnection.BoolToNumericBool()); // washer Dryer Connection
-                this.uploaderClient.SetMultipleCheckboxById("Input_369", listing.WasherConnections.ReplaceStringValues("ELDRY", "ELCDR")); // Appliances
-                this.uploaderClient.SetSelect(By.Id("Input_265"), "0"); // Pool - Area (1, 0)
+                if (isNotPartialFill)
+                {
+                    var hasWasherDryerConnection = listing.WasherConnections?.Length > 0;
+                    this.uploaderClient.SetSelect(By.Id("Input_700"), "BUILD"); // SqFt Source
+                    this.uploaderClient.WriteTextbox(By.Id("Input_485"), listing.NumStories); // Number of Building Stories
+                    this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.NumStories); // Number of Unit Stories
+                    this.uploaderClient.SetMultipleCheckboxById("Input_702", listing.HousingStyleDesc);  // Style
+                    this.uploaderClient.SetMultipleCheckboxById("Input_475", listing.WaterDesc); // Water/Sewer Description
+                    this.uploaderClient.SetSelect(By.Id("Input_496"), hasWasherDryerConnection.BoolToNumericBool()); // washer Dryer Connection
+                    this.uploaderClient.SetMultipleCheckboxById("Input_369", listing.WasherConnections.ReplaceStringValues("ELDRY", "ELCDR")); // Appliances
+                    this.uploaderClient.SetSelect(By.Id("Input_265"), "0"); // Pool - Area (1, 0)
+                }
             }
             else
             {
                 this.uploaderClient.SetSelect(By.Id("Input_246"), "BUILD"); // SqFt Source
-                this.uploaderClient.SetMultipleCheckboxById("Input_241", listing.HousingStyleDesc);  // Style
-                this.uploaderClient.SetMultipleCheckboxById("Input_141", listing.WaterDesc); // Water/Sewer Description
-                this.uploaderClient.SetMultipleCheckboxById("Input_328", listing.WasherConnections); // Washer Dryer Connection
-                this.uploaderClient.SetSelect(By.Id("Input_265"), listing.HasCommunityPool.BoolToNumericBool()); // Pool - Area (1, 0)
+                if (isNotPartialFill)
+                {
+                    this.uploaderClient.SetMultipleCheckboxById("Input_241", listing.HousingStyleDesc);  // Style
+                    this.uploaderClient.SetMultipleCheckboxById("Input_141", listing.WaterDesc); // Water/Sewer Description
+                    this.uploaderClient.SetMultipleCheckboxById("Input_328", listing.WasherConnections); // Washer Dryer Connection
+                    this.uploaderClient.SetSelect(By.Id("Input_265"), listing.HasCommunityPool.BoolToNumericBool()); // Pool - Area (1, 0)
+                }
             }
 
-            this.uploaderClient.SetSelect(By.Id("Input_244"), "BUILD"); // Year Built Source
-            this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.NumStories); // Stories
-            this.uploaderClient.SetSelect(By.Id("Input_247"), "1"); // New Construction (1 , 0)
-            this.uploaderClient.WriteTextbox(By.Id("Input_251"), listing.BuilderName);  // Builder Name
             this.UpdateYearBuiltDescription(listing);
+            this.uploaderClient.SetSelect(By.Id("Input_244"), "BUILD"); // Year Built Source
+            this.uploaderClient.SetSelect(By.Id("Input_247"), "1"); // New Construction (1 , 0)
 
-            this.FillCompletionDate(listing);
-
-            if (this.uploaderClient.FindElements(By.Id("Input_374")).Any())
+            if (isNotPartialFill)
             {
-                this.uploaderClient.SetSelect(By.Id("Input_374"), "1"); // House on Property (1 , 0)
+                this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.NumStories); // Stories
+                this.uploaderClient.WriteTextbox(By.Id("Input_251"), listing.BuilderName);  // Builder Name
+
+                this.FillCompletionDate(listing);
+
+                if (this.uploaderClient.FindElements(By.Id("Input_374")).Any())
+                {
+                    this.uploaderClient.SetSelect(By.Id("Input_374"), "1"); // House on Property (1 , 0)
+                }
+
+                this.uploaderClient.SetSelect(By.Id("Input_142"), listing.HasUtilitiesDescription.BoolToNumericBool()); // Utility District  (1 , 0)
+                this.uploaderClient.SetSelect(By.Id("Input_145"), listing.LotSizeSrc, isElementOptional: true); // Lot Size Source
+                this.uploaderClient.WriteTextbox(By.Id("Input_143"), listing.LotSizeAcres); // Acres
+                this.uploaderClient.SetSelect(By.Id("Input_148"), listing.LotSize); // Acreage
+                this.uploaderClient.WriteTextbox(By.Id("Input_144"), listing.LotDim); // Lot Dimensions
+                this.uploaderClient.WriteTextbox(By.Id("Input_202"), listing.GarageCapacity); // Garage - Number of Spaces
+                this.uploaderClient.SetMultipleCheckboxById("Input_207", listing.AccessInstructionsDesc); // Access -- MLS-51 AccessibilityDesc -> AccessInstructionsDesc
+                this.uploaderClient.SetMultipleCheckboxById("Input_203", listing.GarageDesc); // Garage Description
+
+                if (this.uploaderClient.FindElements(By.Id("Input_206"))?.Any() == true)
+                {
+                    this.uploaderClient.SetMultipleCheckboxById("Input_206", listing.GarageCarpotDesc); // Garage Carpot Description
+                }
+
+                if (this.uploaderClient.FindElements(By.Id("Input_152")).Any())
+                {
+                    this.uploaderClient.SetMultipleCheckboxById("Input_152", listing.RestrictionsDesc); // Restrictions
+                }
+
+                if (this.uploaderClient.FindElements(By.Id("Input_356")).Any())
+                {
+                    this.uploaderClient.SetSelect(By.Id("Input_356"), "ALVLS"); // Unit Level
+                }
+
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_329" }, listing.PropSubType); // Property Type
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_146", "Input_492" }, listing.LotDesc); // Lot Description
+                this.uploaderClient.SetMultipleCheckboxById("Input_150", listing.WaterfrontFeatures); // Waterfront Features
+                this.uploaderClient.SetSelect(By.Id("Input_208"), listing.HasMicrowave.BoolToNumericBool()); // Microwave (0, 1)
+                this.uploaderClient.SetSelect(By.Id("Input_209"), listing.HasDishwasher.BoolToNumericBool()); // Dishwasher
+                this.uploaderClient.SetSelect(By.Id("Input_210"), listing.HasDisposal.BoolToNumericBool()); // Disposal
+                this.uploaderClient.WriteTextbox(By.Id("Input_253"), listing.CountertopsDesc); // Countertops
+                this.uploaderClient.SetSelect(By.Id("Input_211"), listing.HasCompactor.BoolToNumericBool()); // Compactor (1, 0)
+                this.uploaderClient.SetSelect(By.Id("Input_212"), listing.HasIcemaker.BoolToNumericBool()); // Separate Ice Maker
+                this.uploaderClient.WriteTextbox(By.Id("Input_255"), listing.NumberFireplaces); // Fireplace - Number
+                this.uploaderClient.SetMultipleCheckboxById("Input_256", listing.FireplaceDesc); // Fireplace Description
+                this.uploaderClient.SetMultipleCheckboxById("Input_254", listing.FacesDesc); // Front Door Faces
+                this.uploaderClient.SetMultipleCheckboxById("Input_269", listing.OvenDesc); // Oven Type
+                this.uploaderClient.SetMultipleCheckboxById("Input_270", listing.RangeDesc);  // Stove Type
+
+                if (!string.IsNullOrEmpty(listing.GolfCourseName) && this.uploaderClient.FindElements(By.Id("Input_151")).Any())
+                {
+                    this.uploaderClient.FillFieldSingleOption("Input_151", listing.GolfCourseName);
+                }
+
+                this.uploaderClient.SetSelect(By.Id("Input_263"), listing.HasPool.BoolToNumericBool()); // Pool - Private (1, 0)
+                this.uploaderClient.SetMultipleCheckboxById("Input_264", listing.PoolDesc); // Private Pool Description
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_252", "Input_493", "Input_495" }, listing.InteriorDesc); // Interior Features
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_266" }, listing.FloorsDesc); // Flooring
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_259", "Input_472" }, listing.ExteriorDesc); // Exterior Description
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_260", "Input_473" }, listing.ConstructionDesc); // Exterior Construction
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_261" }, listing.RoofDesc); // Roof Description
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_262", "Input_500" }, listing.FoundationDesc); // Foundation Description
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_258", "Input_474" }, listing.EnergyDesc); // Energy Features
+                this.uploaderClient.SetMultipleCheckboxById("Input_257", listing.GreenCerts); // Green/Energy Certifications
+                this.uploaderClient.SetMultipleCheckboxById("Input_139", listing.HeatSystemDesc); // Heating System Description
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_140", "Input_506" }, listing.CoolSystemDesc); // Cooling System Description
             }
-
-            this.uploaderClient.SetSelect(By.Id("Input_142"), listing.HasUtilitiesDescription.BoolToNumericBool()); // Utility District  (1 , 0)
-            this.uploaderClient.SetSelect(By.Id("Input_145"), listing.LotSizeSrc, isElementOptional: true); // Lot Size Source
-            this.uploaderClient.WriteTextbox(By.Id("Input_143"), listing.LotSizeAcres); // Acres
-            this.uploaderClient.SetSelect(By.Id("Input_148"), listing.LotSize); // Acreage
-            this.uploaderClient.WriteTextbox(By.Id("Input_144"), listing.LotDim); // Lot Dimensions
-            this.uploaderClient.WriteTextbox(By.Id("Input_202"), listing.GarageCapacity); // Garage - Number of Spaces
-            this.uploaderClient.SetMultipleCheckboxById("Input_207", listing.AccessInstructionsDesc); // Access -- MLS-51 AccessibilityDesc -> AccessInstructionsDesc
-            this.uploaderClient.SetMultipleCheckboxById("Input_203", listing.GarageDesc); // Garage Description
-
-            if (this.uploaderClient.FindElements(By.Id("Input_206"))?.Any() == true)
-            {
-                this.uploaderClient.SetMultipleCheckboxById("Input_206", listing.GarageCarpotDesc); // Garage Carpot Description
-            }
-
-            if (this.uploaderClient.FindElements(By.Id("Input_152")).Any())
-            {
-                this.uploaderClient.SetMultipleCheckboxById("Input_152", listing.RestrictionsDesc); // Restrictions
-            }
-
-            if (this.uploaderClient.FindElements(By.Id("Input_356")).Any())
-            {
-                this.uploaderClient.SetSelect(By.Id("Input_356"), "ALVLS"); // Unit Level
-            }
-
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_329" }, listing.PropSubType); // Property Type
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_146", "Input_492" }, listing.LotDesc); // Lot Description
-            this.uploaderClient.SetMultipleCheckboxById("Input_150", listing.WaterfrontFeatures); // Waterfront Features
-            this.uploaderClient.SetSelect(By.Id("Input_208"), listing.HasMicrowave.BoolToNumericBool()); // Microwave (0, 1)
-            this.uploaderClient.SetSelect(By.Id("Input_209"), listing.HasDishwasher.BoolToNumericBool()); // Dishwasher
-            this.uploaderClient.SetSelect(By.Id("Input_210"), listing.HasDisposal.BoolToNumericBool()); // Disposal
-            this.uploaderClient.WriteTextbox(By.Id("Input_253"), listing.CountertopsDesc); // Countertops
-            this.uploaderClient.SetSelect(By.Id("Input_211"), listing.HasCompactor.BoolToNumericBool()); // Compactor (1, 0)
-            this.uploaderClient.SetSelect(By.Id("Input_212"), listing.HasIcemaker.BoolToNumericBool()); // Separate Ice Maker
-            this.uploaderClient.WriteTextbox(By.Id("Input_255"), listing.NumberFireplaces); // Fireplace - Number
-            this.uploaderClient.SetMultipleCheckboxById("Input_256", listing.FireplaceDesc); // Fireplace Description
-            this.uploaderClient.SetMultipleCheckboxById("Input_254", listing.FacesDesc); // Front Door Faces
-            this.uploaderClient.SetMultipleCheckboxById("Input_269", listing.OvenDesc); // Oven Type
-            this.uploaderClient.SetMultipleCheckboxById("Input_270", listing.RangeDesc);  // Stove Type
-
-            if (!string.IsNullOrEmpty(listing.GolfCourseName) && this.uploaderClient.FindElements(By.Id("Input_151")).Any())
-            {
-                this.uploaderClient.FillFieldSingleOption("Input_151", listing.GolfCourseName);
-            }
-
-            this.uploaderClient.SetSelect(By.Id("Input_263"), listing.HasPool.BoolToNumericBool()); // Pool - Private (1, 0)
-            this.uploaderClient.SetMultipleCheckboxById("Input_264", listing.PoolDesc); // Private Pool Description
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_252", "Input_493", "Input_495" }, listing.InteriorDesc); // Interior Features
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_266" }, listing.FloorsDesc); // Flooring
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_259", "Input_472" }, listing.ExteriorDesc); // Exterior Description
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_260", "Input_473" }, listing.ConstructionDesc); // Exterior Construction
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_261" }, listing.RoofDesc); // Roof Description
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_262", "Input_500" }, listing.FoundationDesc); // Foundation Description
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_258", "Input_474" }, listing.EnergyDesc); // Energy Features
-            this.uploaderClient.SetMultipleCheckboxById("Input_257", listing.GreenCerts); // Green/Energy Certifications
-            this.uploaderClient.SetMultipleCheckboxById("Input_139", listing.HeatSystemDesc); // Heating System Description
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_140", "Input_506" }, listing.CoolSystemDesc); // Cooling System Description
         }
 
         private void FindAndSetMultipleCheckboxById(IEnumerable<string> inputIds, string value)
