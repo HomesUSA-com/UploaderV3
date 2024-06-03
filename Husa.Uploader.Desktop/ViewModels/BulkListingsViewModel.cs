@@ -23,7 +23,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         {
             this.ListingRequestsBulkFiltered = new List<BulkUploadResidentialListingFiltered>();
             this.SelectedListingRequests = new List<UploadListingItem>();
-            var marketRequests = requests.Where(rq => GetMarketCodeFromString(rq.Market) == market);
+            var marketRequests = requests.Where(rq => (GetMarketCodeFromString(rq.Market) == market) && (!rq.IsNewListing));
 
             foreach (var rl in marketRequests)
             {
