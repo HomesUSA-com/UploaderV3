@@ -227,6 +227,7 @@ namespace Husa.Uploader.Data.Entities
         public string KitchenLevel { get; set; }
         public int? KitchenLength { get; set; }
         public string KitchenEquipmentDesc { get; set; }
+        public string ParcelId { get; set; }
         public string IsMultiParcel { get; set; }
         public string HousingTypeDesc { get; set; }
         public string HasSecuritySys { get; set; }
