@@ -159,8 +159,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.Subdivision = addressInfo.Subdivision;
                 residentialListingRequest.StateCode = addressInfo.State.ToStringFromEnumMember();
                 residentialListingRequest.StreetDir = addressInfo.StreetDirection?.ToStringFromEnumMember();
-                residentialListingRequest.ParcelId = (string.IsNullOrEmpty(addressInfo.StreetNumber.Trim()) ||
-                    string.IsNullOrEmpty(addressInfo.StreetName.Trim())) ?
+                residentialListingRequest.ParcelId = (string.IsNullOrEmpty(addressInfo.StreetNumber?.Trim()) ||
+                    string.IsNullOrEmpty(addressInfo.StreetName?.Trim())) ?
                     string.Empty : (addressInfo.StreetNumber.Trim() + " " + addressInfo.StreetName.Trim());
             }
 
