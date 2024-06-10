@@ -390,8 +390,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             var agentAmount = agentBonusAmount + " Bonus. ";
             var hasBuyerIncentive = this.BuyerCheckBox.HasValue && this.BuyerCheckBox.Value;
             return hasBuyerIncentive
-                ? agentAmount + "Contact Builder for Buyer Incentive Information. "
-                : agentAmount;
+                ? agentAmount + "Contact Builder for Bonus & Buyer Incentive Information. "
+                : agentAmount + "Contact Builder for Bonus Information. ";
         }
     }
 }
