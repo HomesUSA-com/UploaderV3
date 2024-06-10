@@ -917,7 +917,7 @@ namespace Husa.Uploader.Data.Entities
         {
             var privateRemarks = "LIMITED SERVICE LISTING: Buyer verifies dimensions & ISD info. Use Bldr contract.";
 
-            var bonusMessage = string.IsNullOrWhiteSpace(this.MLSNum) ? this.GetAgentBonusRemarksMessage() : string.Empty;
+            var bonusMessage = this.GetAgentBonusRemarksMessage();
             if (!string.IsNullOrWhiteSpace(bonusMessage))
             {
                 privateRemarks = $"{bonusMessage} {privateRemarks}";
