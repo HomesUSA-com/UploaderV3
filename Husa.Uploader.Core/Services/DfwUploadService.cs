@@ -663,7 +663,7 @@ namespace Husa.Uploader.Core.Services
                 }
 
                 this.uploaderClient.WriteTextbox(By.Id("Input_81"), DateTime.Today.AddYears(1).ToShortDateString()); // Expire Date
-                this.uploaderClient.WriteTextbox(By.Id("Input_235"), string.IsNullOrWhiteSpace(listing.TaxID) ? "NA" : listing.TaxID); // Parcel ID
+                this.uploaderClient.WriteTextbox(By.Id("Input_235"), string.IsNullOrWhiteSpace(listing.ParcelId) ? "NA" : listing.ParcelId); // Parcel Id: StreetNum + StreetName
                 this.uploaderClient.SetSelect(By.Id("Input_237"), value: "0"); // Multi Parcel ID YN
             }
 
@@ -675,7 +675,6 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.SetSelect(By.Id("Input_503"), value: listing.PropSubType);
                     this.uploaderClient.WriteTextbox(By.Id("Input_533"), listing.SqFtTotal); // Building Area
                     this.uploaderClient.SetSelect(By.Id("Input_534"), value: listing.SqFtSource); // Building Area Source
-                    this.uploaderClient.SetSelect(By.Id("Input_235"), value: listing.ParcelId); // Parcel Id: StreetNum + StreetName
                     this.uploaderClient.SetSelect(By.Id("Input_539"), listing.NumStories); // Levels
                     this.uploaderClient.WriteTextbox(By.Id("Input_523"), listing.GarageCapacity); // Garage Spaces
                 }
@@ -688,7 +687,6 @@ namespace Husa.Uploader.Core.Services
 
                 if (isNotPartialFill)
                 {
-                    this.uploaderClient.SetSelect(By.Id("Input_235"), value: listing.ParcelId); // Parcel Id: StreetNum + StreetName
                     this.uploaderClient.SetSelect(By.Id("Input_219"), value: listing.PropSubType);
                     this.uploaderClient.SetSelect(By.Id("Input_222"), listing.HasPropertyAttached.BoolToNumericBool()); // Property Attached YN
                     this.uploaderClient.SetSelect(By.Id("Input_224"), value: "FS"); // Transaction Type
