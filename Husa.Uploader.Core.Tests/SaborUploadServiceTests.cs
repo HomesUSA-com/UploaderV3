@@ -64,6 +64,31 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Fact]
+        public async Task PartialUploadWithExistingListing()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var listingSale = GetListingRequestDetailResponse();
+            var saborListing = new SaborListingRequest(listingSale).CreateFromApiResponseDetail();
+            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
+            this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
+            this.uploaderClient.Setup(x => x.SwitchTo().Frame(It.IsAny<int>())).Returns(new Mock<IWebDriver>().Object);
+            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).SendKeys(It.IsAny<string>()));
+            this.uploaderClient.SetupGet(x => x.UploadInformation).Returns(this.uploadCommandInfo.Object);
+            this.uploaderClient.Setup(x => x.WaitUntilElementDisappears(
+                It.Is<By>(x => x == By.ClassName("fileupload-progress")),
+                It.IsAny<CancellationToken>())).Returns(true);
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.PartialUpload(saborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
         public async Task UploadFails()
         {
             // Arrange
@@ -182,6 +207,7 @@ namespace Husa.Uploader.Core.Tests
             var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse())
             {
                 MLSNum = "MLSNum",
+                BuildCompletionDate = DateTime.UtcNow,
             };
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
             this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());

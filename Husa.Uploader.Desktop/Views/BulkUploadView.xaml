@@ -27,7 +27,9 @@
             </Style>
         </StackPanel.Resources>
         <StackPanel Visibility="{Binding ShowIssue, Converter={StaticResource BooleanToVisibilityConverter }}">
+            <Label>Market:</Label>
             <ComboBox Name="Market" ItemsSource="{Binding Markets}" DisplayMemberPath="Text" SelectedValuePath="Value" SelectedValue="{Binding Market, UpdateSourceTrigger=PropertyChanged}" />
+            <Label>Action:</Label>
             <ComboBox Name="RequestFieldChange" ItemsSource="{Binding RequestFieldChanges}" DisplayMemberPath="Text" SelectedValuePath="Value" SelectedValue="{Binding RequestFieldChange, UpdateSourceTrigger=PropertyChanged}" />
             <Button Name="SearchBtn" Padding="7" Margin="0,15,0,0" Command="{Binding SearchCommand}">Search</Button>
         </StackPanel>

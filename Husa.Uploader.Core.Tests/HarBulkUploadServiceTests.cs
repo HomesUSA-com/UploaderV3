@@ -10,13 +10,13 @@ namespace Husa.Uploader.Core.Tests
     using Moq;
     using Xunit;
 
-    public class SaborBulkUploadServiceTests
+    public class HarBulkUploadServiceTests
     {
         private readonly Mock<IUploaderClient> uploaderClient = new();
-        private readonly Mock<ISaborUploadService> uploadService = new();
-        private readonly Mock<ILogger<SaborBulkUploadService>> logger = new();
+        private readonly Mock<IHarUploadService> uploadService = new();
+        private readonly Mock<ILogger<HarBulkUploadService>> logger = new();
 
-        public SaborBulkUploadServiceTests()
+        public HarBulkUploadServiceTests()
         {
             this.uploaderClient.SetupAllProperties();
         }
@@ -65,8 +65,8 @@ namespace Husa.Uploader.Core.Tests
         [InlineData(RequestFieldChange.PartialUpload)]
         [InlineData(RequestFieldChange.FullUpload)]
         [InlineData(RequestFieldChange.ListPrice)]
-        [InlineData(RequestFieldChange.ConstructionStage)]
         [InlineData(RequestFieldChange.CompletionDate)]
+        [InlineData(RequestFieldChange.ConstructionStage)]
         public async Task Upload_Success(RequestFieldChange requestFieldChange)
         {
             // Arrange
@@ -82,7 +82,7 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(UploadResult.Success, result);
         }
 
-        private SaborBulkUploadService GetSut()
+        private HarBulkUploadService GetSut()
             => new(
                 this.uploaderClient.Object,
                 this.uploadService.Object,
@@ -98,7 +98,7 @@ namespace Husa.Uploader.Core.Tests
                     MlsNumber = "New Listing 1",
                     Address = string.Empty,
                     Status = string.Empty,
-                    Market = MarketCode.SanAntonio.ToStringFromEnumMember(),
+                    Market = MarketCode.Houston.ToStringFromEnumMember(),
                     CompanyName = "Company 1",
                 },
                 new UploadListingItem()
@@ -107,7 +107,7 @@ namespace Husa.Uploader.Core.Tests
                     MlsNumber = "New Listing 2",
                     Address = string.Empty,
                     Status = string.Empty,
-                    Market = MarketCode.SanAntonio.ToStringFromEnumMember(),
+                    Market = MarketCode.Houston.ToStringFromEnumMember(),
                     CompanyName = "Company 1",
                 },
             };

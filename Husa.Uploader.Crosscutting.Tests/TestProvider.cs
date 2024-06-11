@@ -50,6 +50,15 @@ namespace Husa.Uploader.Crosscutting.Tests
                     LoginUrl = "https://localhost/har-login",
                     LogoutUrl = "https://localhost/har-logout",
                 },
+                Dfw = new()
+                {
+                    IsEnabled = true,
+                    MarketCode = MarketCode.DFW,
+                    LoginUrl = "https://localhost/dfw-login",
+                    LogoutUrl = "https://localhost/dfw-logout",
+                    AgentId = "Ben Caballero (0096651)",
+                    SupervisorId = "Ben Caballero (0096651)",
+                },
             },
             Services = new()
             {
@@ -58,6 +67,7 @@ namespace Husa.Uploader.Crosscutting.Tests
                 QuicklisterSabor = "https://localhost/quicklister-sabor",
                 QuicklisterAbor = "https://localhost/quicklister-abor",
                 QuicklisterHar = "https://localhost/quicklister-har",
+                QuicklisterDfw = "https://localhost/quicklister-dfw",
                 MigrationService = "https://localhost/migration",
             },
             Uploader = new()

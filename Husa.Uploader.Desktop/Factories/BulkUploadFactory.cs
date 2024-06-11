@@ -6,6 +6,7 @@ namespace Husa.Uploader.Desktop.Factories
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.BulkUpload;
     using Husa.Uploader.Core.Interfaces.ServiceActions;
+    using Husa.Uploader.Data.Entities;
     using Microsoft.Extensions.DependencyInjection;
 
     public class BulkUploadFactory : IBulkUploadFactory
@@ -29,6 +30,10 @@ namespace Husa.Uploader.Desktop.Factories
             return marketCode switch
             {
                 MarketCode.SanAntonio => IsAssignableFrom<ISaborUploadService, T>(),
+                MarketCode.DFW => IsAssignableFrom<IDfwUploadService, T>(),
+                MarketCode.Houston => IsAssignableFrom<IHarUploadService, T>(),
+                MarketCode.CTX => IsAssignableFrom<ICtxUploadService, T>(),
+                MarketCode.Austin => IsAssignableFrom<IAborUploadService, T>(),
                 _ => false,
             };
         }
@@ -43,12 +48,24 @@ namespace Husa.Uploader.Desktop.Factories
             this.Uploader.CancelOperation();
         }
 
-        public T Create<T>(MarketCode marketCode, RequestFieldChange requestFieldChange)
+        public T Create<T>(MarketCode marketCode, RequestFieldChange requestFieldChange, List<UploadListingItem> bulkListings)
         {
             switch (marketCode)
             {
                 case MarketCode.SanAntonio:
                     this.Uploader = this.serviceProvider.GetRequiredService<ISaborBulkUploadService>();
+                    break;
+                case MarketCode.DFW:
+                    this.Uploader = this.serviceProvider.GetRequiredService<IDfwBulkUploadService>();
+                    break;
+                case MarketCode.Houston:
+                    this.Uploader = this.serviceProvider.GetRequiredService<IHarBulkUploadService>();
+                    break;
+                case MarketCode.CTX:
+                    this.Uploader = this.serviceProvider.GetRequiredService<ICtxBulkUploadService>();
+                    break;
+                case MarketCode.Austin:
+                    this.Uploader = this.serviceProvider.GetRequiredService<IAborBulkUploadService>();
                     break;
                 default:
                     throw new NotSupportedException($"The market {marketCode} is not supported");
@@ -57,6 +74,7 @@ namespace Husa.Uploader.Desktop.Factories
             if (this.uploader is not null)
             {
                 this.uploader.SetRequestFieldChange(requestFieldChange);
+                this.uploader.SetBulkListings(bulkListings);
             }
 
             return (T)this.Uploader;

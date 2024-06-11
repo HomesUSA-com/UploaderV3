@@ -175,6 +175,7 @@ namespace Husa.Uploader.Data.Entities
         public string BodyofWater { get; set; }
         public bool? BuyerCheckBox { get; set; }
         public bool? HasAgentBonus { get; set; }
+
         public bool HasContingencyInfo { get; set; }
         public string UtilityRoomDesc { get; set; }
         public bool IsPlannedDevelopment { get; set; }
@@ -226,6 +227,7 @@ namespace Husa.Uploader.Data.Entities
         public string KitchenLevel { get; set; }
         public int? KitchenLength { get; set; }
         public string KitchenEquipmentDesc { get; set; }
+        public string ParcelId { get; set; }
         public string IsMultiParcel { get; set; }
         public string HousingTypeDesc { get; set; }
         public string HasSecuritySys { get; set; }
@@ -867,6 +869,8 @@ namespace Husa.Uploader.Data.Entities
 
         public bool HasBuyerAgent { get; set; }
 
+        public bool HasSecondBuyerAgent { get; set; }
+
         public string TitlePaidBy { get; set; }
 
         public string RepairsPaidBySeller { get; set; }
@@ -913,7 +917,7 @@ namespace Husa.Uploader.Data.Entities
         {
             var privateRemarks = "LIMITED SERVICE LISTING: Buyer verifies dimensions & ISD info. Use Bldr contract.";
 
-            var bonusMessage = string.IsNullOrWhiteSpace(this.MLSNum) ? this.GetAgentBonusRemarksMessage() : string.Empty;
+            var bonusMessage = this.GetAgentBonusRemarksMessage();
             if (!string.IsNullOrWhiteSpace(bonusMessage))
             {
                 privateRemarks = $"{bonusMessage} {privateRemarks}";

@@ -10,23 +10,23 @@ namespace Husa.Uploader.Core.Services.BulkUpload
     using Microsoft.Extensions.Logging;
     using OpenQA.Selenium;
 
-    public class SaborBulkUploadService : ISaborBulkUploadService
+    public class CtxBulkUploadService : ICtxBulkUploadService
     {
         private readonly IUploaderClient uploaderClient;
-        private readonly ISaborUploadService uploadService;
-        private readonly ILogger<SaborBulkUploadService> logger;
+        private readonly ICtxUploadService uploadService;
+        private readonly ILogger<CtxBulkUploadService> logger;
 
-        public SaborBulkUploadService(
+        public CtxBulkUploadService(
             IUploaderClient uploaderClient,
-            ISaborUploadService uploadService,
-            ILogger<SaborBulkUploadService> logger)
+            ICtxUploadService uploadService,
+            ILogger<CtxBulkUploadService> logger)
         {
             this.uploaderClient = uploaderClient ?? throw new ArgumentNullException(nameof(uploaderClient));
             this.uploadService = uploadService ?? throw new ArgumentNullException(nameof(uploadService));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public MarketCode CurrentMarket => MarketCode.SanAntonio;
+        public MarketCode CurrentMarket => MarketCode.CTX;
 
         public RequestFieldChange RequestFieldChange { get; set; }
 
@@ -98,11 +98,11 @@ namespace Husa.Uploader.Core.Services.BulkUpload
                 case RequestFieldChange.ListPrice:
                     await this.uploadService.UpdatePrice(bulkFullListing, cancellationToken, logInForCompany);
                     break;
-                case RequestFieldChange.ConstructionStage:
-                    await this.uploadService.UpdateStatus(bulkFullListing, cancellationToken, logInForCompany);
-                    break;
                 case RequestFieldChange.CompletionDate:
                     await this.uploadService.UpdateCompletionDate(bulkFullListing, cancellationToken, logInForCompany);
+                    break;
+                case RequestFieldChange.ConstructionStage:
+                    await this.uploadService.UpdateStatus(bulkFullListing, cancellationToken, logInForCompany);
                     break;
                 default:
                     throw new NotImplementedException();

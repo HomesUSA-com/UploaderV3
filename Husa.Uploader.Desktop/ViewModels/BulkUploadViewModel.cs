@@ -23,12 +23,16 @@ namespace Husa.Uploader.Desktop.ViewModels
         public static ObservableCollection<dynamic> Markets => new ObservableCollection<dynamic>()
         {
             new { Value = MarketCode.SanAntonio, Text = "San Antonio" },
+            new { Value = MarketCode.CTX, Text = "Ctx" },
             new { Value = MarketCode.Austin, Text = "Austin" },
             new { Value = MarketCode.Houston, Text = "Houston" },
+            new { Value = MarketCode.DFW, Text = "Dfw" },
         };
 
         public static ObservableCollection<dynamic> RequestFieldChanges => new ObservableCollection<dynamic>()
         {
+            new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.FullUpload, Text = "Upload (Full)" },
+            new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.PartialUpload, Text = "Upload (Common fields)" },
             new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.CompletionDate, Text = "Completion Date" },
             new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.ListPrice, Text = "List Price" },
             new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.ConstructionStage, Text = "Construction stage" },

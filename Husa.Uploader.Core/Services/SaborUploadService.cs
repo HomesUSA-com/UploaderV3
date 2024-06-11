@@ -71,7 +71,10 @@ namespace Husa.Uploader.Core.Services
             var company = await this.serviceSubscriptionClient.Company.GetCompany(companyId);
             var credentialsTask = this.serviceSubscriptionClient.Corporation.GetMarketReverseProspectInformation(this.CurrentMarket);
             var marketInfo = this.options.MarketInfo.Sabor;
+            this.uploaderClient.NavigateToUrl(marketInfo.LogoutUrl);
+            Thread.Sleep(1000);
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
+            Thread.Sleep(1000);
             try
             {
                 var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
@@ -141,7 +144,7 @@ namespace Husa.Uploader.Core.Services
                     this.EditProperty(listing.MLSNum);
 
                     Thread.Sleep(2000);
-                    this.uploaderClient.ExecuteScript(script: $"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(26) > a:first').click();");
+                    this.uploaderClient.ExecuteScript(script: $"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(27) > span > a:first').click();");
                     Thread.Sleep(1000);
                     this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[2].click();");
                     Thread.Sleep(1000);
@@ -152,26 +155,84 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             if (listing is null)
             {
                 throw new ArgumentNullException(nameof(listing));
             }
 
-            return UploadListing();
+            return UploadListing(logIn);
 
-            async Task<UploadResult> UploadListing()
+            async Task<UploadResult> UploadListing(bool logIn)
             {
                 this.logger.LogInformation("Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: listing.IsNewListing);
-                await this.Login(listing.CompanyId);
-                if (listing.IsNewListing)
+                if (logIn)
                 {
-                    this.uploaderClient.ClickOnElementById("newlistingLink");
-                    this.NewProperty(listing);
+                    await this.Login(listing.CompanyId);
                 }
-                else
+
+                try
+                {
+                    if (listing.IsNewListing)
+                    {
+                        this.uploaderClient.ClickOnElementById("newlistingLink");
+                        this.NewProperty(listing);
+                    }
+                    else
+                    {
+                        Thread.Sleep(1000);
+                        this.EditProperty(listing.MLSNum);
+                        this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
+                        Thread.Sleep(1000);
+                        this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[2].click();");
+                        Thread.Sleep(1000);
+                        this.uploaderClient.ExecuteScript(script: "jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
+                    }
+
+                    this.FillGeneralListingInformation(listing);
+                    this.FillExteriorInformation(listing);
+                    this.FillInteriorInformation(listing);
+                    this.FillUtilitiesInformation(listing);
+                    this.FillTaxHoaInformation(listing);
+                    this.FillOfficeInformation(listing as SaborListingRequest);
+                    this.FillRemarksInformation(listing as SaborListingRequest);
+
+                    if (listing.IsNewListing)
+                    {
+                        await this.FillMedia(listing.ResidentialListingRequestID, cancellationToken);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
+                }
+
+                return UploadResult.Success;
+            }
+        }
+
+        public Task<UploadResult> PartialUpload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        {
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            return PartialUploadListing(logIn);
+
+            async Task<UploadResult> PartialUploadListing(bool logIn)
+            {
+                this.logger.LogInformation("Partial Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: listing.IsNewListing);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                }
+
+                try
                 {
                     Thread.Sleep(1000);
                     this.EditProperty(listing.MLSNum);
@@ -179,118 +240,148 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(1000);
                     this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[2].click();");
                     Thread.Sleep(1000);
-                    this.uploaderClient.ExecuteScript(script: "jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
+                    try
+                    {
+                        this.uploaderClient.ExecuteScript(script: "jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
+                    }
+                    catch
+                    {
+                        // Ignoring exception because the field is optional
+                    }
+
+                    this.FillGeneralListingInformation(listing, isNotPartialFill: false);
+                    this.FillTaxHoaInformation(listing);
+                    this.FillOfficeInformation(listing as SaborListingRequest);
+                    this.FillRemarksInformation(listing as SaborListingRequest);
                 }
-
-                this.FillGeneralListingInformation(listing);
-                this.FillExteriorInformation(listing);
-                this.FillInteriorInformation(listing);
-                this.FillUtilitiesInformation(listing);
-                this.FillTaxHoaInformation(listing);
-                this.FillOfficeInformation(listing as SaborListingRequest);
-                this.FillRemarksInformation(listing as SaborListingRequest);
-
-                if (listing.IsNewListing)
+                catch (Exception exception)
                 {
-                    await this.FillMedia(listing.ResidentialListingRequestID, cancellationToken);
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
                 }
 
                 return UploadResult.Success;
             }
         }
 
-        public Task<UploadResult> UpdateStatus(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploadResult> UpdateStatus(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             if (listing is null)
             {
                 throw new ArgumentNullException(nameof(listing));
             }
 
-            return UpdateListingStatus();
+            return UpdateListingStatus(logIn);
 
-            async Task<UploadResult> UpdateListingStatus()
+            async Task<UploadResult> UpdateListingStatus(bool logIn)
             {
                 const string tabName = "General";
                 this.logger.LogInformation("Updating the status of the listing {requestId} in the {tabName} tab.", listing.ResidentialListingRequestID, tabName);
-                await this.Login(listing.CompanyId);
-                Thread.Sleep(1000);
 
-                this.EditProperty(listing.MLSNum);
-
-                Thread.Sleep(2000);
-                this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
-                Thread.Sleep(1000);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
-                this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[0].click();");
-                Thread.Sleep(1000);
-
-                this.uploaderClient.ExecuteScript(
-                    script: "jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();",
-                    isScriptOptional: true);
-
-                this.uploaderClient.SwitchTo().Frame(this.uploaderClient.FindElementById("csframe"));
-
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("statuses"), cancellationToken);
-                this.uploaderClient.SetSelect(By.Id("statuses"), listing.ListStatus, "Listing Status", tabName);
-
-                if (listing.ListStatus == "SLD")
+                if (logIn)
                 {
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("HOWSOLDID"), cancellationToken);
-                    this.uploaderClient.WriteTextbox(By.Id("HOWSOLDID"), listing.HowSold); // How Sold/Sale Terms
-                    this.uploaderClient.WriteTextbox(By.Id("CLOSEDATE"), listing.ClosedDate.Value.ToString("MM/dd/yyyy")); // Closing Date
-                    this.uploaderClient.WriteTextbox(By.Id("SOLDPRICE"), listing.SoldPrice.DecimalToString()); // Sold Price
-                    this.uploaderClient.WriteTextbox(By.Id("CONTINFO"), listing.ContingencyInfo); // Contingent Info
-                    this.uploaderClient.WriteTextbox(By.Id("SELLCONCES"), listing.SellConcess.PriceWithDollarSign()); // Seller Concessions
-                    this.uploaderClient.WriteTextbox(By.Id("SELL_CONC_DESCID"), listing.SellConcessDescription); // Seller Concessions Description
-                    this.uploaderClient.FindElement(By.Name("AGTRMRKS")).Clear(); // Agent Confidential Remarks
+                    await this.Login(listing.CompanyId);
+                    Thread.Sleep(1000);
                 }
 
-                if (listing.ListStatus == "PDB" || listing.ListStatus == "PND" || listing.ListStatus == "SLD")
+                try
                 {
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("CONTDATE"), cancellationToken);
-                    this.uploaderClient.WriteTextbox(By.Id("CONTDATE"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty); // Contract Date
-                    this.uploaderClient.WriteTextbox(By.Id("SELLAGT1"), listing.AgentLoginName);
+                    this.EditProperty(listing.MLSNum);
+
+                    Thread.Sleep(2000);
+                    this.uploaderClient.ExecuteScript(script: "jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
+                    Thread.Sleep(1000);
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
+                    this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[0].click();");
+                    Thread.Sleep(1000);
+
+                    this.uploaderClient.ExecuteScript(
+                        script: "jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();",
+                        isScriptOptional: true);
+
+                    this.uploaderClient.SwitchTo().Frame(this.uploaderClient.FindElementById("csframe"));
+
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("statuses"), cancellationToken);
+                    this.uploaderClient.SetSelect(By.Id("statuses"), listing.ListStatus, "Listing Status", tabName);
+
+                    if (listing.ListStatus == "SLD")
+                    {
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("HOWSOLDID"), cancellationToken);
+                        this.uploaderClient.WriteTextbox(By.Id("HOWSOLDID"), listing.HowSold); // How Sold/Sale Terms
+                        this.uploaderClient.WriteTextbox(By.Id("CLOSEDATE"), listing.ClosedDate.Value.ToString("MM/dd/yyyy")); // Closing Date
+                        this.uploaderClient.WriteTextbox(By.Id("SOLDPRICE"), listing.SoldPrice.DecimalToString()); // Sold Price
+                        this.uploaderClient.WriteTextbox(By.Id("CONTINFO"), listing.ContingencyInfo); // Contingent Info
+                        this.uploaderClient.WriteTextbox(By.Id("SELLCONCES"), listing.SellConcess.PriceWithDollarSign()); // Seller Concessions
+                        this.uploaderClient.WriteTextbox(By.Id("SELL_CONC_DESCID"), listing.SellConcessDescription); // Seller Concessions Description
+                        this.uploaderClient.FindElement(By.Name("AGTRMRKS")).Clear(); // Agent Confidential Remarks
+                    }
+
+                    if (listing.ListStatus == "PDB" || listing.ListStatus == "PND" || listing.ListStatus == "SLD")
+                    {
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("CONTDATE"), cancellationToken);
+                        this.uploaderClient.WriteTextbox(By.Id("CONTDATE"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty); // Contract Date
+                        this.uploaderClient.WriteTextbox(By.Id("SELLAGT1"), listing.AgentLoginName);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
                 }
 
                 return UploadResult.Success;
             }
         }
 
-        public Task<UploadResult> UpdatePrice(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploadResult> UpdatePrice(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             if (listing is null)
             {
                 throw new ArgumentNullException(nameof(listing));
             }
 
-            return UpdateListingPrice();
-            async Task<UploadResult> UpdateListingPrice()
+            return UpdateListingPrice(logIn);
+
+            async Task<UploadResult> UpdateListingPrice(bool logIn)
             {
                 this.logger.LogInformation("Updating the price of the listing {requestId} to {listPrice}.", listing.ResidentialListingRequestID, listing.ListPrice);
-                await this.Login(listing.CompanyId);
-                Thread.Sleep(1000);
 
-                this.EditProperty(listing.MLSNum);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                }
 
-                Thread.Sleep(1000);
-                this.uploaderClient.ExecuteScript("jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
-                Thread.Sleep(1000);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
-                this.uploaderClient.ExecuteScript("jQuery('.modal-body > .inner-modal-body > div').find('button')[1].click();");
-                Thread.Sleep(1000);
-                this.uploaderClient.ExecuteScript("jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("csframe"), cancellationToken);
-                this.uploaderClient.SwitchTo().Frame(this.uploaderClient.FindElementById("csframe"));
                 try
                 {
                     Thread.Sleep(1000);
-                    this.uploaderClient.ExecuteScript("jQuery('#LISTPRICE').attr('onchange','');");
-                    this.uploaderClient.WriteTextbox(By.Id("LISTPRICE"), value: listing.ListPrice); // List Price
+
+                    this.EditProperty(listing.MLSNum);
+
+                    Thread.Sleep(1000);
+                    this.uploaderClient.ExecuteScript("jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
+                    Thread.Sleep(1000);
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
+                    this.uploaderClient.ExecuteScript("jQuery('.modal-body > .inner-modal-body > div').find('button')[1].click();");
+                    Thread.Sleep(1000);
+                    this.uploaderClient.ExecuteScript("jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("csframe"), cancellationToken);
+                    this.uploaderClient.SwitchTo().Frame(this.uploaderClient.FindElementById("csframe"));
+                    try
+                    {
+                        Thread.Sleep(1000);
+                        this.uploaderClient.ExecuteScript("jQuery('#LISTPRICE').attr('onchange','');");
+                        this.uploaderClient.WriteTextbox(By.Id("LISTPRICE"), value: listing.ListPrice); // List Price
+                    }
+                    catch
+                    {
+                        this.uploaderClient.ExecuteScript("jQuery('#LISTPRICE').attr('onchange','');");
+                        this.uploaderClient.WriteTextbox(By.Id("LISTPRICE"), value: listing.ListPrice);
+                    }
                 }
-                catch
+                catch (Exception exception)
                 {
-                    this.uploaderClient.ExecuteScript("jQuery('#LISTPRICE').attr('onchange','');");
-                    this.uploaderClient.WriteTextbox(By.Id("LISTPRICE"), value: listing.ListPrice);
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
                 }
 
                 return UploadResult.Success;
@@ -316,7 +407,7 @@ namespace Husa.Uploader.Core.Services
                 this.EditProperty(listing.MLSNum);
 
                 Thread.Sleep(1000);
-                this.uploaderClient.ExecuteScript($"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(26) > a:first').click();");
+                this.uploaderClient.ExecuteScript($"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(27) > span > a:first').click();");
                 Thread.Sleep(1000);
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
                 this.uploaderClient.ExecuteScript("jQuery('.modal-body > .inner-modal-body > div').find('button')[5].click();");
@@ -326,32 +417,46 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> UpdateCompletionDate(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploadResult> UpdateCompletionDate(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             if (listing is null)
             {
                 throw new ArgumentNullException(nameof(listing));
             }
 
-            return UpdateListingCompletionDate();
+            return UpdateListingCompletionDate(logIn);
 
-            async Task<UploadResult> UpdateListingCompletionDate()
+            async Task<UploadResult> UpdateListingCompletionDate(bool logIn)
             {
                 this.logger.LogInformation("Updating the completion date of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
 
-                await this.Login(listing.CompanyId);
-                Thread.Sleep(1000);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                    Thread.Sleep(1000);
+                }
 
-                this.EditProperty(listing.MLSNum);
+                try
+                {
+                    this.EditProperty(listing.MLSNum);
+                    Thread.Sleep(1000);
 
-                Thread.Sleep(1000);
-                this.uploaderClient.ExecuteScript("jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
-                Thread.Sleep(1000);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
-                Thread.Sleep(1000);
-                this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[2].click();");
-                this.FillRemarksInformation(listing as SaborListingRequest, isCompletionUpdate: true);
+                    this.uploaderClient.ExecuteScript("jQuery('.dctable-cell > a:contains(\"" + listing.MLSNum + "\")').parent().parent().find('div:eq(27) > span > a:first').click();");
+                    Thread.Sleep(1000);
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
+                    Thread.Sleep(1000);
+                    this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[2].click();");
+                    Thread.Sleep(1000);
+                    this.FillGeneralCompletionDateInformation(listing.BuildCompletionDate);
+                    Thread.Sleep(1000);
+                    this.FillRemarksInformation(listing as SaborListingRequest, isCompletionUpdate: true);
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
+                }
 
                 return UploadResult.Success;
             }
@@ -416,19 +521,19 @@ namespace Husa.Uploader.Core.Services
                 this.EditProperty(listing.MLSNum);
 
                 Thread.Sleep(1000);
-                this.uploaderClient.ExecuteScript(script: $"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(26) > a:first').click();");
+                this.uploaderClient.ExecuteScript(script: $"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(27) > span > a:first').click();");
                 Thread.Sleep(1000);
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
-                this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[5].click();");
+                this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[6].click();");
                 Thread.Sleep(1000);
                 this.uploaderClient.SwitchTo().Frame(this.uploaderClient.FindElementById("main"));
                 this.uploaderClient.SwitchTo().Frame(this.uploaderClient.FindElementById("workspace"));
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("VIRTTOUR"), cancellationToken);
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("VIRTTOUR"), cancellationToken);
                 var virtualTourResponse = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.SanAntonio, cancellationToken);
                 var virtualTour = virtualTourResponse.FirstOrDefault();
                 if (virtualTour != null)
                 {
-                    this.uploaderClient.WriteTextbox(By.Id("VIRTTOUR"), virtualTour.GetUnbrandedUrl());
+                    this.uploaderClient.WriteTextbox(By.Name("VIRTTOUR"), virtualTour.GetUnbrandedUrl());
                 }
 
                 return UploadResult.Success;
@@ -548,17 +653,14 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        private void FillGeneralListingInformation(ResidentialListingRequest listing)
+        private void FillGeneralCompletionDateInformation(DateTime? listingBuildCompletionDate)
+        {
+            this.uploaderClient.WriteTextbox(By.Name("NEW_CONST_EST_COMPLETION"), listingBuildCompletionDate.Value.ToString("MM/yy"), isElementOptional: true); // Construction
+        }
+
+        private void FillGeneralListingInformation(ResidentialListingRequest listing, bool isNotPartialFill = true)
         {
             Thread.Sleep(1000);
-            this.uploaderClient.SetAttribute(By.Name("TYPE"), listing.Category, attributeName: "value"); // Type
-            this.uploaderClient.WriteTextbox(By.Name("BLOCK"), listing.Block); // Block
-            this.uploaderClient.WriteTextbox(By.Name("LGLDSCLOT"), listing.LotNum); // Legal Desc-Lot
-            // this.uploaderClient.WriteTextbox(By.Name("CBORNCB"), listing.CBNCB), newListing);
-            this.uploaderClient.SetAttribute(By.Name("SBDIVISION"), listing.Subdivision, "value"); // Subdivision (Legal Name)
-            this.uploaderClient.SetAttribute(By.Name("SUBDIVISION_CKA"), listing.Subdivision, "value"); // Subdivision (Common Name)
-            this.uploaderClient.WriteTextbox(By.Name("LEGALDESC"), listing.Legal); // Legal Description
-
             string direction = listing.Directions;
             if (!string.IsNullOrEmpty(direction))
             {
@@ -606,39 +708,49 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetAttribute(By.Name("MIDSCHL"), listing.SchoolName2, "value"); // Middle School
             this.uploaderClient.SetAttribute(By.Name("HIGHSCHL"), listing.HighSchool, "value"); // High School
             this.uploaderClient.WriteTextbox(By.Name("CONSTRCTN"), entry: "NEW"); // Construction
-            this.uploaderClient.FindElement(By.Name("CONSTRCTN")).SendKeys(Keys.Tab);
-            this.uploaderClient.WriteTextbox(By.Name("NEW_CONST_EST_COMPLETION"), listing.BuildCompletionDate.Value.ToString("MM/yy"), isElementOptional: true); // Construction
-            this.uploaderClient.WriteTextbox(By.Name("BLDRNAME"), listing.OwnerName); // Builder Name
-            this.uploaderClient.WriteTextbox(By.Name("ACCESS_HOME"), listing.HasHandicapAmenities); // Accessible/Adaptive Home
 
-            try
+            if (isNotPartialFill)
             {
-                this.uploaderClient.WriteTextbox(By.Name("NGHBRHDMNT"), listing.CommonFeatures); // Neighborhood Amenities
-                if (listing.HasHandicapAmenities == "YES")
+                this.uploaderClient.SetAttribute(By.Name("TYPE"), listing.Category, attributeName: "value"); // Type
+                this.uploaderClient.WriteTextbox(By.Name("BLOCK"), listing.Block); // Block
+                this.uploaderClient.WriteTextbox(By.Name("LGLDSCLOT"), listing.LotNum); // Legal Desc-Lot
+                this.uploaderClient.SetAttribute(By.Name("SBDIVISION"), listing.Subdivision, "value"); // Subdivision (Legal Name)
+                this.uploaderClient.SetAttribute(By.Name("SUBDIVISION_CKA"), listing.Subdivision, "value"); // Subdivision (Common Name)
+                this.uploaderClient.WriteTextbox(By.Name("LEGALDESC"), listing.Legal); // Legal Description
+                this.uploaderClient.FindElement(By.Name("CONSTRCTN")).SendKeys(Keys.Tab);
+                this.uploaderClient.WriteTextbox(By.Name("NEW_CONST_EST_COMPLETION"), listing.BuildCompletionDate.Value.ToString("MM/yy"), isElementOptional: true); // Construction
+                this.uploaderClient.WriteTextbox(By.Name("BLDRNAME"), listing.OwnerName); // Builder Name
+                this.uploaderClient.WriteTextbox(By.Name("ACCESS_HOME"), listing.HasHandicapAmenities); // Accessible/Adaptive Home
+
+                try
                 {
-                    if (!string.IsNullOrEmpty(listing.AccessibilityDesc))
+                    this.uploaderClient.WriteTextbox(By.Name("NGHBRHDMNT"), listing.CommonFeatures); // Neighborhood Amenities
+                    if (listing.HasHandicapAmenities == "YES")
                     {
-                        this.uploaderClient.WriteTextbox(By.Name("ACESIBILTY"), listing.AccessibilityDesc, isElementOptional: false); // Accessible/Adaptive Details
+                        if (!string.IsNullOrEmpty(listing.AccessibilityDesc))
+                        {
+                            this.uploaderClient.WriteTextbox(By.Name("ACESIBILTY"), listing.AccessibilityDesc, isElementOptional: false); // Accessible/Adaptive Details
+                        }
                     }
                 }
-            }
-            catch
-            {
-                // Ignoring exception because the fields are optional
-            }
+                catch
+                {
+                    // Ignoring exception because the fields are optional
+                }
 
-            if (listing.BuiltStatus != BuiltStatus.ReadyNow)
-            {
-                this.uploaderClient.WriteTextbox(By.Name("MISCELANES"), entry: "UNDCN", isElementOptional: true); // Miscellaneous
-            }
-            else
-            {
-                this.uploaderClient.ExecuteScript("clearPicklist('MISCELANEStable');selectVals('MISCELANES');closeDiv();");
-            }
+                if (listing.BuiltStatus != BuiltStatus.ReadyNow)
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("MISCELANES"), entry: "UNDCN", isElementOptional: true); // Miscellaneous
+                }
+                else
+                {
+                    this.uploaderClient.ExecuteScript("clearPicklist('MISCELANEStable');selectVals('MISCELANES');closeDiv();");
+                }
 
-            this.uploaderClient.WriteTextbox(By.Name("GREEN_CERT"), listing.GreenCerts, isElementOptional: true); // Green Certification
-            this.uploaderClient.WriteTextbox(By.Name("GREEN_FEAT"), listing.GreenFeatures, isElementOptional: true); // Green Features
-            this.uploaderClient.WriteTextbox(By.Name("ENERGY_EFF"), listing.EnergyDesc, isElementOptional: true); // Energy Efficiency
+                this.uploaderClient.WriteTextbox(By.Name("GREEN_CERT"), listing.GreenCerts, isElementOptional: true); // Green Certification
+                this.uploaderClient.WriteTextbox(By.Name("GREEN_FEAT"), listing.GreenFeatures, isElementOptional: true); // Green Features
+                this.uploaderClient.WriteTextbox(By.Name("ENERGY_EFF"), listing.EnergyDesc, isElementOptional: true); // Energy Efficiency
+            }
         }
 
         private void FillExteriorInformation(ResidentialListingRequest listing)
@@ -791,43 +903,79 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.FindElement(By.Name("rightADDEDIT_BATHS")).SendKeys(Keys.Tab);
             Thread.Sleep(500);
 
-            this.uploaderClient.WriteTextbox(By.Name("MASTERBATH"), listing.BedBathDesc); // Master Bath
-            this.uploaderClient.ExecuteScript(" MASTERBATHActions(); closeDiv(); ");
-            // selectVals('MASTERBATH'); ; MASTERBATHActions(); closeDiv();
-            if (listing.LivingRoom3Length != null && listing.LivingRoom3Width != null) //// Entry Room Size
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftENTRM_SIZE"), listing.LivingRoom3Length, isElementOptional: true);  // Length
-                this.uploaderClient.WriteTextbox(By.Name("rightENTRM_SIZE"), listing.LivingRoom3Width, isElementOptional: true); // Width
-                this.uploaderClient.FindElement(By.Name("rightENTRM_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("ENTRM_LEVEL"), listing.LivingRoom3Level, isElementOptional: true); // Entry Room level
+                this.uploaderClient.WriteTextbox(By.Name("MASTERBATH"), listing.BedBathDesc); // Master Bath
+                this.uploaderClient.ExecuteScript(" MASTERBATHActions(); closeDiv(); ");
+                // selectVals('MASTERBATH'); ; MASTERBATHActions(); closeDiv();
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
-            if (listing.LivingRoom1Length != null && listing.LivingRoom1Width != null) //// Living Room Size
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftLVRM_SIZE"), listing.LivingRoom1Length, isElementOptional: true); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightLVRM_SIZE"), listing.LivingRoom1Width, isElementOptional: true); // Width
-                this.uploaderClient.FindElement(By.Name("rightLVRM_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("LVRM_LEVEL"), listing.LivingRoom1Level, isElementOptional: true); // Living Room level
+                if (listing.LivingRoom3Length != null && listing.LivingRoom3Width != null) //// Entry Room Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftENTRM_SIZE"), listing.LivingRoom3Length, isElementOptional: true);  // Length
+                    this.uploaderClient.WriteTextbox(By.Name("rightENTRM_SIZE"), listing.LivingRoom3Width, isElementOptional: true); // Width
+                    this.uploaderClient.FindElement(By.Name("rightENTRM_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("ENTRM_LEVEL"), listing.LivingRoom3Level, isElementOptional: true); // Entry Room level
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
-            if (listing.LivingRoom2Length != null && listing.LivingRoom2Width != null) //// Family Room Size
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftFAMRM_SIZE"), listing.LivingRoom2Length, isElementOptional: true); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightFAMRM_SIZE"), listing.LivingRoom2Width, isElementOptional: true); // Width
-                this.uploaderClient.FindElement(By.Name("rightFAMRM_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("FAMRM_LEVEL"), listing.LivingRoom2Level, true); // Family Room level
+                if (listing.LivingRoom1Length != null && listing.LivingRoom1Width != null) //// Living Room Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftLVRM_SIZE"), listing.LivingRoom1Length, isElementOptional: true); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightLVRM_SIZE"), listing.LivingRoom1Width, isElementOptional: true); // Width
+                    this.uploaderClient.FindElement(By.Name("rightLVRM_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("LVRM_LEVEL"), listing.LivingRoom1Level, isElementOptional: true); // Living Room level
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
-            if (listing.StudyLength != null && listing.StudyWidth != null) //// Study/Office Size
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftSTYOROF_SIZE"), listing.StudyLength, isElementOptional: true); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightSTYOROF_SIZE"), listing.StudyWidth, isElementOptional: true); // Width
-                this.uploaderClient.FindElement(By.Name("rightSTYOROF_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("STYOROF_LEVEL"), listing.StudyLevel, isElementOptional: true); // Study/Office level
+                if (listing.LivingRoom2Length != null && listing.LivingRoom2Width != null) //// Family Room Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftFAMRM_SIZE"), listing.LivingRoom2Length, isElementOptional: true); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightFAMRM_SIZE"), listing.LivingRoom2Width, isElementOptional: true); // Width
+                    this.uploaderClient.FindElement(By.Name("rightFAMRM_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("FAMRM_LEVEL"), listing.LivingRoom2Level, true); // Family Room level
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
+            }
+
+            try
+            {
+                if (listing.StudyLength != null && listing.StudyWidth != null) //// Study/Office Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftSTYOROF_SIZE"), listing.StudyLength, isElementOptional: true); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightSTYOROF_SIZE"), listing.StudyWidth, isElementOptional: true); // Width
+                    this.uploaderClient.FindElement(By.Name("rightSTYOROF_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("STYOROF_LEVEL"), listing.StudyLevel, isElementOptional: true); // Study/Office level
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
             if (listing.KitchenLength != null && listing.KitchenWidth != null) //// Kitchen Size
@@ -839,50 +987,85 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WriteTextbox(By.Name("KIT_LEVEL"), listing.KitchenLevel, isElementOptional: true); // Kitchen Room level
             }
 
-            if (listing.BreakfastLength != null && listing.BreakfastWidth != null) //// Breakfast Room Size
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftBFSTRM_SIZE"), listing.BreakfastLength, isElementOptional: true); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightBFSTRM_SIZE"), listing.BreakfastWidth, isElementOptional: true); // Width
-                this.uploaderClient.FindElement(By.Name("rightBFSTRM_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("BFSTRM_LEVEL"), listing.BreakfastLevel, isElementOptional: true); // Breakfast Room level
+                if (listing.BreakfastLength != null && listing.BreakfastWidth != null) //// Breakfast Room Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftBFSTRM_SIZE"), listing.BreakfastLength, isElementOptional: true); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightBFSTRM_SIZE"), listing.BreakfastWidth, isElementOptional: true); // Width
+                    this.uploaderClient.FindElement(By.Name("rightBFSTRM_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("BFSTRM_LEVEL"), listing.BreakfastLevel, isElementOptional: true); // Breakfast Room level
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
-            if (listing.DiningRoomLength != null && listing.DiningRoomWidth != null) //// Dining Room Size
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftDINR_SIZE"), listing.DiningRoomLength, isElementOptional: true); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightDINR_SIZE"), listing.DiningRoomWidth, isElementOptional: true); // Width
-                this.uploaderClient.FindElement(By.Name("rightDINR_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("DINR_LEVEL"), listing.DiningRoomLevel, isElementOptional: true); // Dining Room level
+                if (listing.DiningRoomLength != null && listing.DiningRoomWidth != null) //// Dining Room Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftDINR_SIZE"), listing.DiningRoomLength, isElementOptional: true); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightDINR_SIZE"), listing.DiningRoomWidth, isElementOptional: true); // Width
+                    this.uploaderClient.FindElement(By.Name("rightDINR_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("DINR_LEVEL"), listing.DiningRoomLevel, isElementOptional: true); // Dining Room level
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
-            if (listing.UtilityRoomLength != null && listing.UtilityRoomWidth != null) //// Utility Room Size
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftUTLRM_SIZE"), listing.UtilityRoomLength, isElementOptional: true); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightUTLRM_SIZE"), listing.UtilityRoomWidth, isElementOptional: true); // Width
-                this.uploaderClient.FindElement(By.Name("rightUTLRM_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("UTLRM_LEVEL"), listing.UtilityRoomLevel, isElementOptional: true); // Utility Room level
+                if (listing.UtilityRoomLength != null && listing.UtilityRoomWidth != null) //// Utility Room Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftUTLRM_SIZE"), listing.UtilityRoomLength, isElementOptional: true); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightUTLRM_SIZE"), listing.UtilityRoomWidth, isElementOptional: true); // Width
+                    this.uploaderClient.FindElement(By.Name("rightUTLRM_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("UTLRM_LEVEL"), listing.UtilityRoomLevel, isElementOptional: true); // Utility Room level
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
-            if (listing.Bed1Length != null && listing.Bed1Width != null) //// Master Bedroom Size
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftMBR_SIZE"), listing.Bed1Length); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightMBR_SIZE"), listing.Bed1Width); // Width
-                this.uploaderClient.FindElement(By.Name("rightMBR_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("MBR_LEVEL"), listing.Bed1Level, isElementOptional: true); // Master Bedroom level
+                if (listing.Bed1Length != null && listing.Bed1Width != null) //// Master Bedroom Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftMBR_SIZE"), listing.Bed1Length); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightMBR_SIZE"), listing.Bed1Width); // Width
+                    this.uploaderClient.FindElement(By.Name("rightMBR_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("MBR_LEVEL"), listing.Bed1Level, isElementOptional: true); // Master Bedroom level
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
-            if (!string.IsNullOrEmpty(listing.Bed1Desc) && listing.Bed1Desc.Contains("DUAL")
+            try
+            {
+                if (!string.IsNullOrEmpty(listing.Bed1Desc) && listing.Bed1Desc.Contains("DUAL")
                 && listing.Mbr2Len != null && listing.Mbr2Wid != null) //// Master Bedroom 2 Size
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("leftMBR2_SIZE"), listing.Mbr2Len); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightMBR2_SIZE"), listing.Mbr2Wid); // Width
+                    this.uploaderClient.FindElement(By.Name("rightMBR2_SIZE")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("MBR2_LEVEL"), listing.MBR2LEVEL, isElementOptional: true); // Master Bedroom level
+                }
+            }
+            catch
             {
-                this.uploaderClient.WriteTextbox(By.Name("leftMBR2_SIZE"), listing.Mbr2Len); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightMBR2_SIZE"), listing.Mbr2Wid); // Width
-                this.uploaderClient.FindElement(By.Name("rightMBR2_SIZE")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
-                this.uploaderClient.WriteTextbox(By.Name("MBR2_LEVEL"), listing.MBR2LEVEL, isElementOptional: true); // Master Bedroom level
+                // Ignoring exception because the fields are optional
             }
 
             try
@@ -895,7 +1078,14 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(500);
                     this.uploaderClient.WriteTextbox(By.Name("MBTH_LEVEL"), listing.Bath1Level, isElementOptional: true); // Master Bedroom level
                 }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
+            }
 
+            try
+            {
                 if (listing.Bed2Length != null && listing.Bed2Width != null) //// Bedroom 2 Size
                 {
                     this.uploaderClient.WriteTextbox(By.Name("leftBDRM2_SIZE"), listing.Bed2Length); // Lenght
@@ -904,7 +1094,14 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(500);
                     this.uploaderClient.WriteTextbox(By.Name("BDRM2_LEVEL"), listing.Bed2Level, isElementOptional: true); // Bedroom 2 level
                 }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
+            }
 
+            try
+            {
                 if (listing.Bed3Length != null && listing.Bed3Width != null) //// Bedroom 3 Size
                 {
                     this.uploaderClient.WriteTextbox(By.Name("leftBDRM3_SIZE"), listing.Bed3Length); // Lenght
@@ -913,7 +1110,14 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(500);
                     this.uploaderClient.WriteTextbox(By.Name("BDRM3_LEVEL"), listing.Bed3Level, isElementOptional: true); // Bedroom 3 level
                 }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
+            }
 
+            try
+            {
                 if (listing.Bed4Length != null && listing.Bed4Width != null) //// Bedroom 4 Size
                 {
                     this.uploaderClient.WriteTextbox(By.Name("leftBDRM4_SIZE"), listing.Bed4Length); // Lenght
@@ -922,7 +1126,14 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(500);
                     this.uploaderClient.WriteTextbox(By.Name("BDRM4_LEVEL"), listing.Bed4Level, isElementOptional: true); // Bedroom 4 level
                 }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
+            }
 
+            try
+            {
                 if (listing.Bed5Length != null && listing.Bed5Width != null) //// Bedroom 5 Size
                 {
                     this.uploaderClient.WriteTextbox(By.Name("leftBDRM5_SIZE"), listing.Bed5Length, isElementOptional: true); // Lenght
@@ -934,40 +1145,54 @@ namespace Husa.Uploader.Core.Services
             }
             catch
             {
-                // This fields are optionals
+                // Ignoring exception because the fields are optional
             }
 
-            // 25.
-            if (listing.OtherRoom1Length != null && listing.OtherRoom1Width != null)
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("OTHER_ROOMS"), "OTHR"); // Other Rooms
-                this.uploaderClient.FindElement(By.Name("OTHER_ROOMS")).SendKeys(Keys.Tab);
+                // 25.
+                if (listing.OtherRoom1Length != null && listing.OtherRoom1Width != null)
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("OTHER_ROOMS"), "OTHR"); // Other Rooms
+                    this.uploaderClient.FindElement(By.Name("OTHER_ROOMS")).SendKeys(Keys.Tab);
 
-                this.uploaderClient.WriteTextbox(By.Name("A1N"), "GAME");
-                this.uploaderClient.FindElement(By.Name("A1N")).SendKeys(Keys.Tab);
+                    this.uploaderClient.WriteTextbox(By.Name("A1N"), "GAME");
+                    this.uploaderClient.FindElement(By.Name("A1N")).SendKeys(Keys.Tab);
 
-                this.uploaderClient.WriteTextbox(By.Name("leftA1S"), listing.OtherRoom1Length); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightA1S"), listing.OtherRoom1Width); // Width
-                this.uploaderClient.FindElement(By.Name("rightA1S")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("leftA1S"), listing.OtherRoom1Length); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightA1S"), listing.OtherRoom1Width); // Width
+                    this.uploaderClient.FindElement(By.Name("rightA1S")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
 
-                this.uploaderClient.WriteTextbox(By.Name("A1L"), listing.OtherRoom1Level); // Other Room 1 Level
-                this.uploaderClient.FindElement(By.Name("A1L")).SendKeys(Keys.Tab);
+                    this.uploaderClient.WriteTextbox(By.Name("A1L"), listing.OtherRoom1Level); // Other Room 1 Level
+                    this.uploaderClient.FindElement(By.Name("A1L")).SendKeys(Keys.Tab);
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
 
-            // 26.
-            if (listing.OtherRoom2Length != null && listing.OtherRoom2Width != null)
+            try
             {
-                this.uploaderClient.WriteTextbox(By.Name("A2N"), "MDIA");
-                this.uploaderClient.FindElement(By.Name("A2N")).SendKeys(Keys.Tab);
+                // 26.
+                if (listing.OtherRoom2Length != null && listing.OtherRoom2Width != null)
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("A2N"), "MDIA");
+                    this.uploaderClient.FindElement(By.Name("A2N")).SendKeys(Keys.Tab);
 
-                this.uploaderClient.WriteTextbox(By.Name("leftA2S"), listing.OtherRoom2Length); // Lenght
-                this.uploaderClient.WriteTextbox(By.Name("rightA2S"), listing.OtherRoom2Width); // Width
-                this.uploaderClient.FindElement(By.Name("rightA2S")).SendKeys(Keys.Tab);
-                Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Name("leftA2S"), listing.OtherRoom2Length); // Lenght
+                    this.uploaderClient.WriteTextbox(By.Name("rightA2S"), listing.OtherRoom2Width); // Width
+                    this.uploaderClient.FindElement(By.Name("rightA2S")).SendKeys(Keys.Tab);
+                    Thread.Sleep(500);
 
-                this.uploaderClient.WriteTextbox(By.Name("A2L"), listing.OtherRoom2Level); // Other Room 1 Level
-                this.uploaderClient.FindElement(By.Name("A2L")).SendKeys(Keys.Tab);
+                    this.uploaderClient.WriteTextbox(By.Name("A2L"), listing.OtherRoom2Level); // Other Room 1 Level
+                    this.uploaderClient.FindElement(By.Name("A2L")).SendKeys(Keys.Tab);
+                }
+            }
+            catch
+            {
+                // Ignoring exception because the fields are optional
             }
         }
 

@@ -9,5 +9,7 @@ namespace Husa.Uploader.Crosscutting.Options
         public MarketSettings Abor { get; set; }
 
         public MarketSettings Har { get; set; }
+
+        public MarketSettings Dfw { get; set; }
     }
 }

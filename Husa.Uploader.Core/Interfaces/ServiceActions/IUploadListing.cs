@@ -13,7 +13,9 @@ namespace Husa.Uploader.Core.Interfaces.ServiceActions
 
         bool CanUpload(ResidentialListingRequest listing);
 
-        Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default);
+        Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true);
+
+        Task<UploadResult> PartialUpload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true);
 
         Task<LoginResult> Login(Guid companyId);
 

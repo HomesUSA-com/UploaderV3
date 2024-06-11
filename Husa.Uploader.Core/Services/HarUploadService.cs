@@ -65,9 +65,13 @@ namespace Husa.Uploader.Core.Services
 
             var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
 
+            this.uploaderClient.NavigateToUrl(marketInfo.LogoutUrl);
+            Thread.Sleep(1000);
+
             // Connect to the login page
             var loginButtonId = "login_btn";
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
+            Thread.Sleep(1000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id(loginButtonId));
 
             this.uploaderClient.WriteTextbox(By.Id("username"), credentials[LoginCredentials.Username]);
@@ -127,23 +131,27 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             if (listing is null)
             {
                 throw new ArgumentNullException(nameof(listing));
             }
 
-            return UploadListing();
+            return UploadListing(logIn);
 
-            async Task<UploadResult> UploadListing()
+            async Task<UploadResult> UploadListing(bool logIn)
             {
                 var newLatitude = listing.Latitude;
                 var newLongitude = listing.Longitude;
 
                 this.logger.LogInformation("Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-                await this.Login(listing.CompanyId);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                }
+
                 Thread.Sleep(2000);
 
                 try
@@ -186,29 +194,90 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> UpdateCompletionDate(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploadResult> PartialUpload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             if (listing is null)
             {
                 throw new ArgumentNullException(nameof(listing));
             }
 
-            return UpdateListingCompletionDate();
+            return UploadListing(logIn);
 
-            async Task<UploadResult> UpdateListingCompletionDate()
+            async Task<UploadResult> UploadListing(bool logIn)
+            {
+                var newLatitude = listing.Latitude;
+                var newLongitude = listing.Longitude;
+
+                this.logger.LogInformation("Partial Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                }
+
+                Thread.Sleep(2000);
+
+                try
+                {
+                    var housingType = listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>();
+
+                    this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
+
+                    listing.Longitude = newLongitude;
+                    listing.Latitude = newLatitude;
+                    this.FillListingInformation(listing, isNotPartialFill: false);
+                    this.FillMapInformation(listing as HarListingRequest);
+                    this.FillPropertyInformation(listing as HarListingRequest, housingType, isNotPartialFill: false);
+                    this.FillFinancialInformation(listing as HarListingRequest, housingType);
+                    this.FillShowingInformation(listing);
+                    this.FillRemarks(listing as HarListingRequest, housingType);
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
+                }
+
+                return UploadResult.Success;
+            }
+        }
+
+        public Task<UploadResult> UpdateCompletionDate(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        {
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            return UpdateListingCompletionDate(logIn);
+
+            async Task<UploadResult> UpdateListingCompletionDate(bool logIn)
             {
                 this.logger.LogInformation("Updating CompletionDate for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-                await this.Login(listing.CompanyId);
-                var housingType = listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>();
-                this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
 
-                this.GoToPropertyInformationTab();
-                this.UpdateYearBuiltDescription(listing);
-                this.FillCompletionDate(listing);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                }
 
-                this.GoToRemarksTab(housingType);
-                this.UpdatePublicRemarksInRemarksTab(listing);
+                try
+                {
+                    var housingType = listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>();
+                    this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
+
+                    this.GoToPropertyInformationTab();
+                    this.UpdateYearBuiltDescription(listing);
+                    this.FillCompletionDate(listing);
+
+                    this.GoToRemarksTab(housingType);
+                    this.UpdatePublicRemarksInRemarksTab(listing);
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
+                }
 
                 return UploadResult.Success;
             }
@@ -239,256 +308,281 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> UpdatePrice(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploadResult> UpdatePrice(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             if (listing is null)
             {
                 throw new ArgumentNullException(nameof(listing));
             }
 
-            return UpdateListingPrice();
+            return UpdateListingPrice(logIn);
 
-            async Task<UploadResult> UpdateListingPrice()
+            async Task<UploadResult> UpdateListingPrice(bool logIn)
             {
                 this.logger.LogInformation("Updating the price of the listing {requestId} to {listPrice}.", listing.ResidentialListingRequestID, listing.ListPrice);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-                await this.Login(listing.CompanyId);
-                Thread.Sleep(1000);
-                this.NavigateToQuickEdit(listing.MLSNum);
 
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Price Change"), cancellationToken);
-                this.uploaderClient.ClickOnElement(By.LinkText("Price Change"));
-                this.uploaderClient.WriteTextbox(By.Id("Input_9"), listing.ListPrice); // List Price
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                    Thread.Sleep(1000);
+                }
+
+                try
+                {
+                    this.NavigateToQuickEdit(listing.MLSNum);
+
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Price Change"), cancellationToken);
+                    this.uploaderClient.ClickOnElement(By.LinkText("Price Change"));
+                    this.uploaderClient.WriteTextbox(By.Id("Input_9"), listing.ListPrice); // List Price
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
+                }
+
                 return UploadResult.Success;
             }
         }
 
-        public Task<UploadResult> UpdateStatus(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploadResult> UpdateStatus(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             if (listing is null)
             {
                 throw new ArgumentNullException(nameof(listing));
             }
 
-            return UpdateListingStatus();
+            return UpdateListingStatus(logIn);
 
-            async Task<UploadResult> UpdateListingStatus()
+            async Task<UploadResult> UpdateListingStatus(bool logIn)
             {
                 this.logger.LogInformation("Editing the status information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
 
-                await this.Login(listing.CompanyId);
-
-                Thread.Sleep(1000);
-                this.NavigateToQuickEdit(listing.MLSNum);
-
-                Thread.Sleep(1000);
-                var buttonText = string.Empty;
-                switch (listing.ListStatus)
+                if (logIn)
                 {
-                    case "CLOSD":
-                        buttonText = "Change to Sold";
-                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                        Thread.Sleep(500);
+                    await this.Login(listing.CompanyId);
+                    Thread.Sleep(1000);
+                }
 
-                        this.uploaderClient.WriteTextbox(By.Id("Input_74"), listing.SoldPrice); // Sale Price
+                try
+                {
+                    this.NavigateToQuickEdit(listing.MLSNum);
 
-                        if (listing.ContractDate != null)
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
-                        }
+                    Thread.Sleep(1000);
+                    var buttonText = string.Empty;
+                    switch (listing.ListStatus)
+                    {
+                        case "CLOSD":
+                            buttonText = "Change to Sold";
+                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                            Thread.Sleep(500);
 
-                        if (listing.ClosedDate != null)
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_120"), listing.ClosedDate.Value.ToShortDateString()); // Closed Date
-                        }
+                            this.uploaderClient.WriteTextbox(By.Id("Input_74"), listing.SoldPrice); // Sale Price
 
-                        this.uploaderClient.SetSelect(By.Id("Input_119"), "0"); // Coop Sale
+                            if (listing.ContractDate != null)
+                            {
+                                this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
+                            }
 
-                        this.uploaderClient.WriteTextbox(By.Id("Input_121"), listing.SellerBuyerCost); // Seller Pd Buyer Clsg Costs
-                        this.uploaderClient.WriteTextbox(By.Id("Input_123"), listing.RepairsPaidBySeller); // Repair Paid Seller
+                            if (listing.ClosedDate != null)
+                            {
+                                this.uploaderClient.WriteTextbox(By.Id("Input_120"), listing.ClosedDate.Value.ToShortDateString()); // Closed Date
+                            }
 
-                        this.uploaderClient.SetSelect(By.Id("Input_122"), listing.TitlePaidBy); // Title Paid By
-                        if (listing.HasBuyerAgent)
-                        {
-                            this.uploaderClient.SetSelect(By.Id("Input_310"), "Y");  // Did Selling Agent Represent Buyer
-                        }
-                        else
-                        {
-                            this.uploaderClient.SetSelect(By.Id("Input_310"), "N");  // Did Selling Agent Represent Buyer
-                        }
+                            this.uploaderClient.SetSelect(By.Id("Input_119"), "0"); // Coop Sale
 
-                        this.uploaderClient.SetSelect(By.Id("Input_525"), listing.SoldTerms); // Sold Terms
+                            this.uploaderClient.WriteTextbox(By.Id("Input_121"), listing.SellerBuyerCost); // Seller Pd Buyer Clsg Costs
+                            this.uploaderClient.WriteTextbox(By.Id("Input_123"), listing.RepairsPaidBySeller); // Repair Paid Seller
 
-                        if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
+                            this.uploaderClient.SetSelect(By.Id("Input_122"), listing.TitlePaidBy); // Title Paid By
+                            if (listing.HasBuyerAgent)
+                            {
+                                this.uploaderClient.SetSelect(By.Id("Input_310"), "Y");  // Did Selling Agent Represent Buyer
+                            }
+                            else
+                            {
+                                this.uploaderClient.SetSelect(By.Id("Input_310"), "N");  // Did Selling Agent Represent Buyer
+                            }
 
-                            string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
-                            this.uploaderClient.ExecuteScript(@js);
-                        }
+                            this.uploaderClient.SetSelect(By.Id("Input_525"), listing.SoldTerms); // Sold Terms
 
-                        if (!string.IsNullOrEmpty(listing.SellTeamID) && this.uploaderClient.IsElementPresent(By.Id("Input_614")))
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_614"), listing.SellTeamID); // Selling Team ID
+                            if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
+                            {
+                                this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
 
-                            string js = " document.getElementById('Input_614_Refresh').value='1';RefreshToSamePage(); ";
-                            this.uploaderClient.ExecuteScript(@js);
-                        }
+                                string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
+                                this.uploaderClient.ExecuteScript(@js);
+                            }
 
-                        if (!string.IsNullOrEmpty(listing.SellingAgent2ID))
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_344"), listing.SellingAgent2ID); // Co Selling Associate MLSID
+                            if (!string.IsNullOrEmpty(listing.SellTeamID) && this.uploaderClient.IsElementPresent(By.Id("Input_614")))
+                            {
+                                this.uploaderClient.WriteTextbox(By.Id("Input_614"), listing.SellTeamID); // Selling Team ID
 
-                            string js = " document.getElementById('Input_344_Refresh').value='1';RefreshToSamePage(); ";
-                            this.uploaderClient.ExecuteScript(@js);
-                        }
+                                string js = " document.getElementById('Input_614_Refresh').value='1';RefreshToSamePage(); ";
+                                this.uploaderClient.ExecuteScript(@js);
+                            }
 
-                        this.uploaderClient.ScrollDown();
-                        if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
-                        {
-                            this.uploaderClient.SetSelect(By.Id("Input_124"), "0"); // Buyer Represented by NONMLS Licensed Agent
-                            this.uploaderClient.WriteTextbox(By.Id("Input_125"), listing.SellingAgentLicenseNum); // TREC License Number
-                        }
+                            if (!string.IsNullOrEmpty(listing.SellingAgent2ID))
+                            {
+                                this.uploaderClient.WriteTextbox(By.Id("Input_344"), listing.SellingAgent2ID); // Co Selling Associate MLSID
 
-                        break;
-                    case "PEND":
-                        buttonText = "Change to Pending";
-                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                        Thread.Sleep(500);
+                                string js = " document.getElementById('Input_344_Refresh').value='1';RefreshToSamePage(); ";
+                                this.uploaderClient.ExecuteScript(@js);
+                            }
 
-                        if (listing.ContractDate != null)
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
-                        }
+                            this.uploaderClient.ScrollDown();
+                            if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
+                            {
+                                this.uploaderClient.SetSelect(By.Id("Input_124"), "0"); // Buyer Represented by NONMLS Licensed Agent
+                                this.uploaderClient.WriteTextbox(By.Id("Input_125"), listing.SellingAgentLicenseNum); // TREC License Number
+                            }
 
-                        if (listing.EstClosedDate != null)
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_311"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
-                        }
+                            break;
+                        case "PEND":
+                            buttonText = "Change to Pending";
+                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                            Thread.Sleep(500);
 
-                        if (listing.HasBuyerAgent)
-                        {
-                            this.uploaderClient.SetSelect(By.Id("Input_310"), "Y");  // Did Selling Agent Represent Buyer
-                        }
-                        else
-                        {
-                            this.uploaderClient.SetSelect(By.Id("Input_310"), "N");  // Did Selling Agent Represent Buyer
-                        }
+                            if (listing.ContractDate != null)
+                            {
+                                this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
+                            }
 
-                        this.uploaderClient.ScrollDown();
+                            if (listing.EstClosedDate != null)
+                            {
+                                this.uploaderClient.WriteTextbox(By.Id("Input_311"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
+                            }
 
-                        if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
+                            if (listing.HasBuyerAgent)
+                            {
+                                this.uploaderClient.SetSelect(By.Id("Input_310"), "Y");  // Did Selling Agent Represent Buyer
+                            }
+                            else
+                            {
+                                this.uploaderClient.SetSelect(By.Id("Input_310"), "N");  // Did Selling Agent Represent Buyer
+                            }
 
-                            string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
-                            this.uploaderClient.ExecuteScript(@js);
-                        }
+                            this.uploaderClient.ScrollDown();
 
-                        if (!string.IsNullOrEmpty(listing.SellTeamID))
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_614"), listing.SellTeamID); // Selling Team MLSID
-                            string js = " document.getElementById('Input_614_Refresh').value='1';RefreshToSamePage(); ";
-                            this.uploaderClient.ExecuteScript(@js);
-                        }
+                            if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
+                            {
+                                this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
 
-                        this.uploaderClient.ScrollDown();
-                        if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
-                        {
-                            this.uploaderClient.SetSelect(By.Id("Input_528"), "0"); // Buyer Represented by NONMLS Licensed Agent
-                            this.uploaderClient.WriteTextbox(By.Id("Input_131"), listing.SellingAgentLicenseNum); // TREC License Number
-                        }
+                                string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
+                                this.uploaderClient.ExecuteScript(@js);
+                            }
 
-                        break;
-                    case "TERM":
-                        buttonText = "Change to Terminated";
-                        string currentDate = DateTime.Today.ToString("MM/dd/yyyy");
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
-                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                        Thread.Sleep(500);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_522"), currentDate); // terminated date
-                        break;
-                    case "WITH":
-                        buttonText = "Change to Withdrawn";
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
-                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                        Thread.Sleep(500);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_113"), listing.OffMarketDate.Value.ToShortDateString()); // Withdrawn Date
-                        break;
-                    case "OP":
-                        buttonText = "Change to Option Pending";
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
-                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                        Thread.Sleep(500);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
-                        this.uploaderClient.WriteTextbox(By.Id("Input_128"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
-                        this.uploaderClient.WriteTextbox(By.Id("Input_129"), listing.ExpiredDate.Value.ToShortDateString()); // Option End Date
-                        this.uploaderClient.SetSelect(By.Id($"Input_132"), value: listing.HasContingencyInfo.BoolToNumericBool()); // Contingent on Sale of Other Property
-                        if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
-                        {
-                            this.uploaderClient.SetSelect(By.Id($"Input_310"), value: "Y"); // Did Selling Agent Represent Buyer
-                            this.uploaderClient.WriteTextbox(By.Id($"Input_342"), value: listing.AgentMarketUniqueId); // Selling Associate MLSID
-                        }
-                        else
-                        {
-                            this.uploaderClient.SetSelect(By.Id($"Input_310"), value: "N"); // Did Selling Agent Represent Buyer
-                        }
+                            if (!string.IsNullOrEmpty(listing.SellTeamID))
+                            {
+                                this.uploaderClient.WriteTextbox(By.Id("Input_614"), listing.SellTeamID); // Selling Team MLSID
+                                string js = " document.getElementById('Input_614_Refresh').value='1';RefreshToSamePage(); ";
+                                this.uploaderClient.ExecuteScript(@js);
+                            }
 
-                        break;
-                    case "PSHO":
-                        buttonText = "Change to Pending Continue to Show";
-                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                        Thread.Sleep(500);
+                            this.uploaderClient.ScrollDown();
+                            if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
+                            {
+                                this.uploaderClient.SetSelect(By.Id("Input_528"), "0"); // Buyer Represented by NONMLS Licensed Agent
+                                this.uploaderClient.WriteTextbox(By.Id("Input_131"), listing.SellingAgentLicenseNum); // TREC License Number
+                            }
 
-                        if (listing.ContractDate != null)
-                        {
+                            break;
+                        case "TERM":
+                            buttonText = "Change to Terminated";
+                            string currentDate = DateTime.Today.ToString("MM/dd/yyyy");
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                            Thread.Sleep(500);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_522"), currentDate); // terminated date
+                            break;
+                        case "WITH":
+                            buttonText = "Change to Withdrawn";
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                            Thread.Sleep(500);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_113"), listing.OffMarketDate.Value.ToShortDateString()); // Withdrawn Date
+                            break;
+                        case "OP":
+                            buttonText = "Change to Option Pending";
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                            Thread.Sleep(500);
                             this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
-                        }
-
-                        if (listing.EstClosedDate != null)
-                        {
                             this.uploaderClient.WriteTextbox(By.Id("Input_128"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
-                        }
+                            this.uploaderClient.WriteTextbox(By.Id("Input_129"), listing.ExpiredDate.Value.ToShortDateString()); // Option End Date
+                            this.uploaderClient.SetSelect(By.Id($"Input_132"), value: listing.HasContingencyInfo.BoolToNumericBool()); // Contingent on Sale of Other Property
+                            if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
+                            {
+                                this.uploaderClient.SetSelect(By.Id($"Input_310"), value: "Y"); // Did Selling Agent Represent Buyer
+                                this.uploaderClient.WriteTextbox(By.Id($"Input_342"), value: listing.AgentMarketUniqueId); // Selling Associate MLSID
+                            }
+                            else
+                            {
+                                this.uploaderClient.SetSelect(By.Id($"Input_310"), value: "N"); // Did Selling Agent Represent Buyer
+                            }
 
-                        if (listing.HasBuyerAgent)
-                        {
-                            this.uploaderClient.SetSelect(By.Id("Input_310"), "Y");  // Did Selling Agent Represent Buyer
-                        }
-                        else
-                        {
-                            this.uploaderClient.SetSelect(By.Id("Input_310"), "N");  // Did Selling Agent Represent Buyer
-                        }
+                            break;
+                        case "PSHO":
+                            buttonText = "Change to Pending Continue to Show";
+                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                            Thread.Sleep(500);
 
-                        this.uploaderClient.SetSelect(By.Id($"Input_132"), value: listing.HasContingencyInfo.BoolToNumericBool()); // Contingent on Sale of Other Property
+                            if (listing.ContractDate != null)
+                            {
+                                this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
+                            }
 
-                        this.uploaderClient.ScrollDown();
+                            if (listing.EstClosedDate != null)
+                            {
+                                this.uploaderClient.WriteTextbox(By.Id("Input_128"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
+                            }
 
-                        if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
-                        {
-                            this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
+                            if (listing.HasBuyerAgent)
+                            {
+                                this.uploaderClient.SetSelect(By.Id("Input_310"), "Y");  // Did Selling Agent Represent Buyer
+                            }
+                            else
+                            {
+                                this.uploaderClient.SetSelect(By.Id("Input_310"), "N");  // Did Selling Agent Represent Buyer
+                            }
 
-                            string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
-                            this.uploaderClient.ExecuteScript(@js);
-                        }
+                            this.uploaderClient.SetSelect(By.Id($"Input_132"), value: listing.HasContingencyInfo.BoolToNumericBool()); // Contingent on Sale of Other Property
 
-                        this.uploaderClient.ScrollDown();
-                        if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
-                        {
-                            this.uploaderClient.SetSelect(By.Id("Input_130"), "0"); // Buyer Represented by NONMLS Licensed Agent
-                            this.uploaderClient.WriteTextbox(By.Id("Input_131"), listing.SellingAgentLicenseNum); // TREC License Number
-                        }
+                            this.uploaderClient.ScrollDown();
 
-                        break;
-                    case "EXP":
-                        buttonText = "Change Expiration Date";
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
-                        this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                        Thread.Sleep(500);
-                        this.uploaderClient.WriteTextbox(By.Id("Input_8"), listing.ExpiredDate.Value.ToShortDateString()); // Expiration Date
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for Houston Listing with Id '{listing.ResidentialListingID}'");
+                            if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
+                            {
+                                this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
+
+                                string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
+                                this.uploaderClient.ExecuteScript(@js);
+                            }
+
+                            this.uploaderClient.ScrollDown();
+                            if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
+                            {
+                                this.uploaderClient.SetSelect(By.Id("Input_130"), "0"); // Buyer Represented by NONMLS Licensed Agent
+                                this.uploaderClient.WriteTextbox(By.Id("Input_131"), listing.SellingAgentLicenseNum); // TREC License Number
+                            }
+
+                            break;
+                        case "EXP":
+                            buttonText = "Change Expiration Date";
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                            Thread.Sleep(500);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_8"), listing.ExpiredDate.Value.ToShortDateString()); // Expiration Date
+                            break;
+                        default:
+                            throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for Houston Listing with Id '{listing.ResidentialListingID}'");
+                    }
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
                 }
 
                 return UploadResult.Success;
@@ -657,191 +751,204 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(1000);
         }
 
-        private void FillListingInformation(ResidentialListingRequest listing)
+        private void FillListingInformation(ResidentialListingRequest listing, bool isNotPartialFill = true)
         {
             this.GoToTab("Listing Information");
 
-            this.uploaderClient.SetSelect(By.Id("Input_181"), "EXAGY"); // List Type
             this.uploaderClient.WriteTextbox(By.Id("Input_182"), listing.ListPrice); // List Price
-            if (listing.IsNewListing)
-            {
-                DateTime? listDate = null;
-                switch (listing.ListStatus.ToEnumFromEnumMember<MarketStatuses>())
-                {
-                    case MarketStatuses.Active:
-                        listDate = DateTime.Now;
-                        break;
-                    case MarketStatuses.Pending:
-                    case MarketStatuses.OptionPending:
-                    case MarketStatuses.PendingContinueToShow:
-                        listDate = DateTime.Now.AddDays(-2);
-                        break;
-                    case MarketStatuses.Terminated:
-                    case MarketStatuses.Expired:
-                    case MarketStatuses.Sold:
-                        listDate = DateTime.Now.AddDays(-4);
-                        break;
-                }
-
-                if (listDate.HasValue)
-                {
-                    this.uploaderClient.WriteTextbox(By.Id("Input_183"), listDate.Value.ToShortDateString());  // List Date
-                }
-
-                var expirationDate = listing.ExpiredDate.HasValue ? listing.ExpiredDate.Value : (listing.SysCreatedOn ?? DateTime.Today).AddYears(1);
-                this.uploaderClient.WriteTextbox(By.Id("Input_184"), expirationDate.ToShortDateString()); // Expiration Date
-            }
-            else if (listing.ListDate.HasValue)
-            {
-                this.uploaderClient.WriteTextbox(By.Id("Input_183"), listing.ListDate.Value.ToShortDateString()); // List Date
-            }
-
-            this.uploaderClient.SetSelect(By.Id("Input_185"), "0"); // Also For Lease
-            if (this.uploaderClient.FindElements(By.Id("Input_350")).Any())
-            {
-                this.uploaderClient.SetSelect(By.Id("Input_350"), "TOWN"); // Townhouse or Condo
-            }
-            else
-            {
-                this.uploaderClient.SetSelect(By.Id("Input_186"), "0"); // Priced at Lot Value Only
-            }
-
-            this.uploaderClient.WriteTextbox(By.Id("Input_156"), listing.StreetNum); // Street Number
-            this.uploaderClient.WriteTextbox(By.Id("Input_158"), listing.StreetName); // Street Name
-            this.uploaderClient.WriteTextbox(By.Id("Input_160"), listing.UnitNum); // Unit #
-            this.uploaderClient.SetSelect(By.Id("Input_159"), listing.StreetType, isElementOptional: true); // Street Type
-
-            if (!string.IsNullOrEmpty(listing.City))
-            {
-                this.uploaderClient.FillFieldSingleOption("Input_161", listing.CityCode);
-            }
-
-            this.uploaderClient.SetSelect(By.Id("Input_162"), listing.StateCode); // State
-            this.uploaderClient.WriteTextbox(By.Id("Input_163"), listing.Zip); // Zip Code
-            this.uploaderClient.SetSelect(By.Id("Input_164"), listing.County); // County
-            this.uploaderClient.WriteTextbox(By.Id("Input_165"), listing.Subdivision); // Subdivision
-            this.uploaderClient.WriteTextbox(By.Id("Input_171"), listing.SectionNum); // Section #
-            this.uploaderClient.WriteTextbox(By.Id("Input_302"), listing.Legal); // Legal Description
-
-            if (this.uploaderClient.FindElements(By.Id("Input_172")).Any())
-            {
-                this.uploaderClient.SetSelect(By.Id("Input_172"), listing.IsPlannedDevelopment.BoolToNumericBool()); // Master Planned Community Y/N
-                this.uploaderClient.FillFieldSingleOption("Input_173", listing.PlannedDevelopment); // Master Planned Community
-            }
-
-            if (!string.IsNullOrWhiteSpace(listing.LegalSubdivision))
-            {
-                var legalsubdivision = listing.LegalSubdivision.Contains("OTHER") ? "OTHER - " + listing.Zip : listing.LegalSubdivision;
-                this.uploaderClient.WriteTextbox(By.Id("Input_320"), legalsubdivision);
-            }
-
             if (!string.IsNullOrEmpty(listing.TaxID) && listing.TaxID != "0" && !listing.TaxID.Contains("-0000"))
             {
                 this.uploaderClient.WriteTextbox(By.Id("Input_174"), listing.TaxID); // Tax ID #
             }
             else
             {
-                this.uploaderClient.WriteTextbox(By.Id("Input_174"), "NA"); // Tax ID #
+                this.uploaderClient.WriteTextbox(By.Id("Input_174"), "N/A"); // Tax ID #
             }
 
-            this.uploaderClient.WriteTextbox(By.Id("Input_175"), listing.MapscoMapCoord); // Key Map
+            if (isNotPartialFill)
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_181"), "EXAGY"); // List Type
+                if (listing.IsNewListing)
+                {
+                    DateTime? listDate = null;
+                    switch (listing.ListStatus.ToEnumFromEnumMember<MarketStatuses>())
+                    {
+                        case MarketStatuses.Active:
+                            listDate = DateTime.Now;
+                            break;
+                        case MarketStatuses.Pending:
+                        case MarketStatuses.OptionPending:
+                        case MarketStatuses.PendingContinueToShow:
+                            listDate = DateTime.Now.AddDays(-2);
+                            break;
+                        case MarketStatuses.Terminated:
+                        case MarketStatuses.Expired:
+                        case MarketStatuses.Sold:
+                            listDate = DateTime.Now.AddDays(-4);
+                            break;
+                    }
+
+                    if (listDate.HasValue)
+                    {
+                        this.uploaderClient.WriteTextbox(By.Id("Input_183"), listDate.Value.ToShortDateString());  // List Date
+                    }
+
+                    var expirationDate = listing.ExpiredDate.HasValue ? listing.ExpiredDate.Value : (listing.SysCreatedOn ?? DateTime.Today).AddYears(1);
+                    this.uploaderClient.WriteTextbox(By.Id("Input_184"), expirationDate.ToShortDateString()); // Expiration Date
+                }
+                else if (listing.ListDate.HasValue)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_183"), listing.ListDate.Value.ToShortDateString()); // List Date
+                }
+
+                this.uploaderClient.SetSelect(By.Id("Input_185"), "0"); // Also For Lease
+                if (this.uploaderClient.FindElements(By.Id("Input_350")).Any())
+                {
+                    this.uploaderClient.SetSelect(By.Id("Input_350"), "TOWN"); // Townhouse or Condo
+                }
+                else
+                {
+                    this.uploaderClient.SetSelect(By.Id("Input_186"), "0"); // Priced at Lot Value Only
+                }
+
+                this.uploaderClient.WriteTextbox(By.Id("Input_156"), listing.StreetNum); // Street Number
+                this.uploaderClient.WriteTextbox(By.Id("Input_158"), listing.StreetName); // Street Name
+                this.uploaderClient.WriteTextbox(By.Id("Input_160"), listing.UnitNum); // Unit #
+                this.uploaderClient.SetSelect(By.Id("Input_159"), listing.StreetType, isElementOptional: true); // Street Type
+
+                if (!string.IsNullOrEmpty(listing.City))
+                {
+                    this.uploaderClient.FillFieldSingleOption("Input_161", listing.City);
+                }
+
+                this.uploaderClient.SetSelect(By.Id("Input_162"), listing.StateCode); // State
+                this.uploaderClient.WriteTextbox(By.Id("Input_163"), listing.Zip); // Zip Code
+                this.uploaderClient.SetSelect(By.Id("Input_164"), listing.County); // County
+                this.uploaderClient.WriteTextbox(By.Id("Input_165"), listing.Subdivision); // Subdivision
+                this.uploaderClient.WriteTextbox(By.Id("Input_171"), listing.SectionNum); // Section #
+                this.uploaderClient.WriteTextbox(By.Id("Input_302"), listing.Legal); // Legal Description
+
+                if (this.uploaderClient.FindElements(By.Id("Input_172")).Any())
+                {
+                    this.uploaderClient.SetSelect(By.Id("Input_172"), listing.IsPlannedDevelopment.BoolToNumericBool()); // Master Planned Community Y/N
+                    this.uploaderClient.FillFieldSingleOption("Input_173", listing.PlannedDevelopment); // Master Planned Community
+                }
+
+                if (!string.IsNullOrWhiteSpace(listing.LegalSubdivision))
+                {
+                    var legalsubdivision = listing.LegalSubdivision.Contains("OTHER") ? "OTHER - " + listing.Zip : listing.LegalSubdivision;
+                    this.uploaderClient.WriteTextbox(By.Id("Input_320"), legalsubdivision);
+                }
+
+                this.uploaderClient.WriteTextbox(By.Id("Input_175"), listing.MapscoMapCoord); // Key Map
+            }
         }
 
-        private void FillPropertyInformation(HarListingRequest listing, HousingType housingType)
+        private void FillPropertyInformation(HarListingRequest listing, HousingType housingType, bool isNotPartialFill = true)
         {
             this.GoToPropertyInformationTab();
 
             this.uploaderClient.WriteTextbox(By.Id("Input_245"), listing.SqFtTotal); // Building SqFt
             if (housingType == HousingType.TownhouseCondo)
             {
-                var hasWasherDryerConnection = listing.WasherConnections?.Length > 0;
-                this.uploaderClient.SetSelect(By.Id("Input_700"), "BUILD"); // SqFt Source
-                this.uploaderClient.WriteTextbox(By.Id("Input_485"), listing.NumStories); // Number of Building Stories
-                this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.NumStories); // Number of Unit Stories
-                this.uploaderClient.SetMultipleCheckboxById("Input_702", listing.HousingStyleDesc);  // Style
-                this.uploaderClient.SetMultipleCheckboxById("Input_475", listing.WaterDesc); // Water/Sewer Description
-                this.uploaderClient.SetSelect(By.Id("Input_496"), hasWasherDryerConnection.BoolToNumericBool()); // washer Dryer Connection
-                this.uploaderClient.SetMultipleCheckboxById("Input_369", listing.WasherConnections.ReplaceStringValues("ELDRY", "ELCDR")); // Appliances
-                this.uploaderClient.SetSelect(By.Id("Input_265"), "0"); // Pool - Area (1, 0)
+                if (isNotPartialFill)
+                {
+                    var hasWasherDryerConnection = listing.WasherConnections?.Length > 0;
+                    this.uploaderClient.SetSelect(By.Id("Input_700"), "BUILD"); // SqFt Source
+                    this.uploaderClient.WriteTextbox(By.Id("Input_485"), listing.NumStories); // Number of Building Stories
+                    this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.NumStories); // Number of Unit Stories
+                    this.uploaderClient.SetMultipleCheckboxById("Input_702", listing.HousingStyleDesc);  // Style
+                    this.uploaderClient.SetMultipleCheckboxById("Input_475", listing.WaterDesc); // Water/Sewer Description
+                    this.uploaderClient.SetSelect(By.Id("Input_496"), hasWasherDryerConnection.BoolToNumericBool()); // washer Dryer Connection
+                    this.uploaderClient.SetMultipleCheckboxById("Input_369", listing.WasherConnections.ReplaceStringValues("ELDRY", "ELCDR")); // Appliances
+                    this.uploaderClient.SetSelect(By.Id("Input_265"), "0"); // Pool - Area (1, 0)
+                }
             }
             else
             {
                 this.uploaderClient.SetSelect(By.Id("Input_246"), "BUILD"); // SqFt Source
-                this.uploaderClient.SetMultipleCheckboxById("Input_241", listing.HousingStyleDesc);  // Style
-                this.uploaderClient.SetMultipleCheckboxById("Input_141", listing.WaterDesc); // Water/Sewer Description
-                this.uploaderClient.SetMultipleCheckboxById("Input_328", listing.WasherConnections); // Washer Dryer Connection
-                this.uploaderClient.SetSelect(By.Id("Input_265"), listing.HasCommunityPool.BoolToNumericBool()); // Pool - Area (1, 0)
+                if (isNotPartialFill)
+                {
+                    this.uploaderClient.SetMultipleCheckboxById("Input_241", listing.HousingStyleDesc);  // Style
+                    this.uploaderClient.SetMultipleCheckboxById("Input_141", listing.WaterDesc); // Water/Sewer Description
+                    this.uploaderClient.SetMultipleCheckboxById("Input_328", listing.WasherConnections); // Washer Dryer Connection
+                    this.uploaderClient.SetSelect(By.Id("Input_265"), listing.HasCommunityPool.BoolToNumericBool()); // Pool - Area (1, 0)
+                }
             }
 
-            this.uploaderClient.SetSelect(By.Id("Input_244"), "BUILD"); // Year Built Source
-            this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.NumStories); // Stories
-            this.uploaderClient.SetSelect(By.Id("Input_247"), "1"); // New Construction (1 , 0)
-            this.uploaderClient.WriteTextbox(By.Id("Input_251"), listing.BuilderName);  // Builder Name
             this.UpdateYearBuiltDescription(listing);
+            this.uploaderClient.SetSelect(By.Id("Input_244"), "BUILD"); // Year Built Source
+            this.uploaderClient.SetSelect(By.Id("Input_247"), "1"); // New Construction (1 , 0)
 
-            this.FillCompletionDate(listing);
-
-            if (this.uploaderClient.FindElements(By.Id("Input_374")).Any())
+            if (isNotPartialFill)
             {
-                this.uploaderClient.SetSelect(By.Id("Input_374"), "1"); // House on Property (1 , 0)
+                this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.NumStories); // Stories
+                this.uploaderClient.WriteTextbox(By.Id("Input_251"), listing.BuilderName);  // Builder Name
+
+                this.FillCompletionDate(listing);
+
+                if (this.uploaderClient.FindElements(By.Id("Input_374")).Any())
+                {
+                    this.uploaderClient.SetSelect(By.Id("Input_374"), "1"); // House on Property (1 , 0)
+                }
+
+                this.uploaderClient.SetSelect(By.Id("Input_142"), listing.HasUtilitiesDescription.BoolToNumericBool()); // Utility District  (1 , 0)
+                this.uploaderClient.SetSelect(By.Id("Input_145"), listing.LotSizeSrc, isElementOptional: true); // Lot Size Source
+                this.uploaderClient.WriteTextbox(By.Id("Input_143"), listing.LotSizeAcres); // Acres
+                this.uploaderClient.SetSelect(By.Id("Input_148"), listing.LotSize); // Acreage
+                this.uploaderClient.WriteTextbox(By.Id("Input_144"), listing.LotDim); // Lot Dimensions
+                this.uploaderClient.WriteTextbox(By.Id("Input_202"), listing.GarageCapacity); // Garage - Number of Spaces
+                this.uploaderClient.SetMultipleCheckboxById("Input_207", listing.AccessInstructionsDesc); // Access -- MLS-51 AccessibilityDesc -> AccessInstructionsDesc
+                this.uploaderClient.SetMultipleCheckboxById("Input_203", listing.GarageDesc); // Garage Description
+
+                if (this.uploaderClient.FindElements(By.Id("Input_206"))?.Any() == true)
+                {
+                    this.uploaderClient.SetMultipleCheckboxById("Input_206", listing.GarageCarpotDesc); // Garage Carpot Description
+                }
+
+                if (this.uploaderClient.FindElements(By.Id("Input_152")).Any())
+                {
+                    this.uploaderClient.SetMultipleCheckboxById("Input_152", listing.RestrictionsDesc); // Restrictions
+                }
+
+                if (this.uploaderClient.FindElements(By.Id("Input_356")).Any())
+                {
+                    this.uploaderClient.SetSelect(By.Id("Input_356"), "ALVLS"); // Unit Level
+                }
+
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_329" }, listing.PropSubType); // Property Type
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_146", "Input_492" }, listing.LotDesc); // Lot Description
+                this.uploaderClient.SetMultipleCheckboxById("Input_150", listing.WaterfrontFeatures); // Waterfront Features
+                this.uploaderClient.SetSelect(By.Id("Input_208"), listing.HasMicrowave.BoolToNumericBool()); // Microwave (0, 1)
+                this.uploaderClient.SetSelect(By.Id("Input_209"), listing.HasDishwasher.BoolToNumericBool()); // Dishwasher
+                this.uploaderClient.SetSelect(By.Id("Input_210"), listing.HasDisposal.BoolToNumericBool()); // Disposal
+                this.uploaderClient.WriteTextbox(By.Id("Input_253"), listing.CountertopsDesc); // Countertops
+                this.uploaderClient.SetSelect(By.Id("Input_211"), listing.HasCompactor.BoolToNumericBool()); // Compactor (1, 0)
+                this.uploaderClient.SetSelect(By.Id("Input_212"), listing.HasIcemaker.BoolToNumericBool()); // Separate Ice Maker
+                this.uploaderClient.WriteTextbox(By.Id("Input_255"), listing.NumberFireplaces); // Fireplace - Number
+                this.uploaderClient.SetMultipleCheckboxById("Input_256", listing.FireplaceDesc); // Fireplace Description
+                this.uploaderClient.SetMultipleCheckboxById("Input_254", listing.FacesDesc); // Front Door Faces
+                this.uploaderClient.SetMultipleCheckboxById("Input_269", listing.OvenDesc); // Oven Type
+                this.uploaderClient.SetMultipleCheckboxById("Input_270", listing.RangeDesc);  // Stove Type
+
+                if (!string.IsNullOrEmpty(listing.GolfCourseName) && this.uploaderClient.FindElements(By.Id("Input_151")).Any())
+                {
+                    this.uploaderClient.FillFieldSingleOption("Input_151", listing.GolfCourseName);
+                }
+
+                this.uploaderClient.SetSelect(By.Id("Input_263"), listing.HasPool.BoolToNumericBool()); // Pool - Private (1, 0)
+                this.uploaderClient.SetMultipleCheckboxById("Input_264", listing.PoolDesc); // Private Pool Description
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_252", "Input_493", "Input_495" }, listing.InteriorDesc); // Interior Features
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_266" }, listing.FloorsDesc); // Flooring
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_259", "Input_472" }, listing.ExteriorDesc); // Exterior Description
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_260", "Input_473" }, listing.ConstructionDesc); // Exterior Construction
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_261" }, listing.RoofDesc); // Roof Description
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_262", "Input_500" }, listing.FoundationDesc); // Foundation Description
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_258", "Input_474" }, listing.EnergyDesc); // Energy Features
+                this.uploaderClient.SetMultipleCheckboxById("Input_257", listing.GreenCerts); // Green/Energy Certifications
+                this.uploaderClient.SetMultipleCheckboxById("Input_139", listing.HeatSystemDesc); // Heating System Description
+                this.FindAndSetMultipleCheckboxById(new[] { "Input_140", "Input_506" }, listing.CoolSystemDesc); // Cooling System Description
             }
-
-            this.uploaderClient.SetSelect(By.Id("Input_142"), listing.HasUtilitiesDescription.BoolToNumericBool()); // Utility District  (1 , 0)
-            this.uploaderClient.SetSelect(By.Id("Input_145"), listing.LotSizeSrc, isElementOptional: true); // Lot Size Source
-            this.uploaderClient.WriteTextbox(By.Id("Input_143"), listing.LotSizeAcres); // Acres
-            this.uploaderClient.SetSelect(By.Id("Input_148"), listing.LotSize); // Acreage
-            this.uploaderClient.WriteTextbox(By.Id("Input_144"), listing.LotDim); // Lot Dimensions
-            this.uploaderClient.WriteTextbox(By.Id("Input_202"), listing.GarageCapacity); // Garage - Number of Spaces
-            this.uploaderClient.SetMultipleCheckboxById("Input_207", listing.AccessInstructionsDesc); // Access -- MLS-51 AccessibilityDesc -> AccessInstructionsDesc
-            this.uploaderClient.SetMultipleCheckboxById("Input_203", listing.GarageDesc); // Garage Description
-
-            if (this.uploaderClient.FindElements(By.Id("Input_206"))?.Any() == true)
-            {
-                this.uploaderClient.SetMultipleCheckboxById("Input_206", listing.GarageCarpotDesc); // Garage Carpot Description
-            }
-
-            if (this.uploaderClient.FindElements(By.Id("Input_152")).Any())
-            {
-                this.uploaderClient.SetMultipleCheckboxById("Input_152", listing.RestrictionsDesc); // Restrictions
-            }
-
-            if (this.uploaderClient.FindElements(By.Id("Input_356")).Any())
-            {
-                this.uploaderClient.SetSelect(By.Id("Input_356"), "ALVLS"); // Unit Level
-            }
-
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_329" }, listing.PropSubType); // Property Type
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_146", "Input_492" }, listing.LotDesc); // Lot Description
-            this.uploaderClient.SetMultipleCheckboxById("Input_150", listing.WaterfrontFeatures); // Waterfront Features
-            this.uploaderClient.SetSelect(By.Id("Input_208"), listing.HasMicrowave.BoolToNumericBool()); // Microwave (0, 1)
-            this.uploaderClient.SetSelect(By.Id("Input_209"), listing.HasDishwasher.BoolToNumericBool()); // Dishwasher
-            this.uploaderClient.SetSelect(By.Id("Input_210"), listing.HasDisposal.BoolToNumericBool()); // Disposal
-            this.uploaderClient.WriteTextbox(By.Id("Input_253"), listing.CountertopsDesc); // Countertops
-            this.uploaderClient.SetSelect(By.Id("Input_211"), listing.HasCompactor.BoolToNumericBool()); // Compactor (1, 0)
-            this.uploaderClient.SetSelect(By.Id("Input_212"), listing.HasIcemaker.BoolToNumericBool()); // Separate Ice Maker
-            this.uploaderClient.WriteTextbox(By.Id("Input_255"), listing.NumberFireplaces); // Fireplace - Number
-            this.uploaderClient.SetMultipleCheckboxById("Input_256", listing.FireplaceDesc); // Fireplace Description
-            this.uploaderClient.SetMultipleCheckboxById("Input_254", listing.FacesDesc); // Front Door Faces
-            this.uploaderClient.SetMultipleCheckboxById("Input_269", listing.OvenDesc); // Oven Type
-            this.uploaderClient.SetMultipleCheckboxById("Input_270", listing.RangeDesc);  // Stove Type
-
-            if (!string.IsNullOrEmpty(listing.GolfCourseName) && this.uploaderClient.FindElements(By.Id("Input_151")).Any())
-            {
-                this.uploaderClient.FillFieldSingleOption("Input_151", listing.GolfCourseName);
-            }
-
-            this.uploaderClient.SetSelect(By.Id("Input_263"), listing.HasPool.BoolToNumericBool()); // Pool - Private (1, 0)
-            this.uploaderClient.SetMultipleCheckboxById("Input_264", listing.PoolDesc); // Private Pool Description
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_252", "Input_493", "Input_495" }, listing.InteriorDesc); // Interior Features
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_266" }, listing.FloorsDesc); // Flooring
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_259", "Input_472" }, listing.ExteriorDesc); // Exterior Description
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_260", "Input_473" }, listing.ConstructionDesc); // Exterior Construction
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_261" }, listing.RoofDesc); // Roof Description
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_262", "Input_500" }, listing.FoundationDesc); // Foundation Description
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_258", "Input_474" }, listing.EnergyDesc); // Energy Features
-            this.uploaderClient.SetMultipleCheckboxById("Input_257", listing.GreenCerts); // Green/Energy Certifications
-            this.uploaderClient.SetMultipleCheckboxById("Input_139", listing.HeatSystemDesc); // Heating System Description
-            this.FindAndSetMultipleCheckboxById(new[] { "Input_140", "Input_506" }, listing.CoolSystemDesc); // Cooling System Description
         }
 
         private void FindAndSetMultipleCheckboxById(IEnumerable<string> inputIds, string value)
@@ -1193,7 +1300,8 @@ namespace Husa.Uploader.Core.Services
         {
             var index = 0;
             Thread.Sleep(1000);
-            foreach (var openHouse in listing.OpenHouse)
+            var sortedOpenHouses = listing.OpenHouse.OrderBy(openHouse => openHouse.Date).ToList();
+            foreach (var openHouse in sortedOpenHouses)
             {
                 if (index != 0)
                 {
