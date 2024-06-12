@@ -221,7 +221,7 @@ namespace Husa.Uploader.Data.Tests
             var result = sut.GetAgentBonusRemarksMessage();
 
             // Assert
-            Assert.Contains("1% Bonus. Contact Builder for Buyer Incentive Information", result);
+            Assert.Contains("1% Bonus. Contact Builder for Bonus & Buyer Incentive Information. ", result);
         }
 
         [Fact]

@@ -394,6 +394,22 @@ namespace Husa.Uploader.Core.Services
                             this.uploaderClient.WriteTextbox(By.Id("Input_517"), listing.SellConcess); // Buyer Clsg Cost Pd By Sell($)
                             this.uploaderClient.SetMultipleCheckboxById("Input_525", listing.SoldTerms, "Buyer Financing", " "); // Buyer Financing
                             this.uploaderClient.WriteTextbox(By.Id("Input_519"), "0"); // Repairs Amount
+                            if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
+                            {
+                                this.uploaderClient.WriteTextbox(By.Id("Input_726"), listing.AgentMarketUniqueId); // Selling Agent MLSID
+
+                                string js = " document.getElementById('Input_726_Refresh').value='1';RefreshToSamePage(); ";
+                                this.uploaderClient.ExecuteScript(@js);
+                            }
+
+                            if (!string.IsNullOrEmpty(listing.SecondAgentMarketUniqueId))
+                            {
+                                this.uploaderClient.WriteTextbox(By.Id("Input_727"), listing.SecondAgentMarketUniqueId); // Selling Second Agent MLSID
+
+                                string js = " document.getElementById('Input_727_Refresh').value='1';RefreshToSamePage(); ";
+                                this.uploaderClient.ExecuteScript(@js);
+                            }
+
                             break;
                         case "Pending":
                             buttonText = "Change to Pending";
