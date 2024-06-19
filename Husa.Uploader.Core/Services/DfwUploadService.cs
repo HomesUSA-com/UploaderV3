@@ -151,39 +151,8 @@ namespace Husa.Uploader.Core.Services
 
                 try
                 {
-                    if (listing.IsNewListing)
-                    {
-                        this.NavigateToNewPropertyInput(listing.PropType);
-                    }
-                    else
-                    {
-                        this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
-                    }
-
-                    this.FillPropertyInformation(listing as DfwListingRequest);
-                    this.FillLocationSchools(listing as DfwListingRequest);
-                    if (listing.PropType == this.MultiFamilyPropType)
-                    {
-                        this.FillUnitsInformation(listing as DfwListingRequest); // Multi Family
-                    }
-                    else
-                    {
-                        this.FillRoomsInformation(listing as DfwListingRequest); // Single Family
-                    }
-
-                    this.FillFeaturesInformation(listing as DfwListingRequest);
-                    this.FillLotInformation(listing as DfwListingRequest);
-                    this.FillUtilitiesInformation(listing as DfwListingRequest);
-                    this.FillEnvironmentInformation(listing as DfwListingRequest);
-                    this.FillFinancialInformation(listing as DfwListingRequest);
-                    this.FillAgentOfficeInformation(listing as DfwListingRequest);
-                    this.FillShowingInformation(listing as DfwListingRequest);
-                    this.FillRemarksInformation(listing as DfwListingRequest);
-
-                    if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
-                    {
-                        this.FillStatusInformation(listing as DfwListingRequest);
-                    }
+                    NavigateToForm(listing);
+                    FillListingDetails(listing);
 
                     if (listing.IsNewListing)
                     {
@@ -194,11 +163,52 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the listing {RequestId}", listing.ResidentialListingRequestID);
                     return UploadResult.Failure;
                 }
 
                 return UploadResult.Success;
+            }
+
+            void NavigateToForm(ResidentialListingRequest listing)
+            {
+                if (listing.IsNewListing)
+                {
+                    this.NavigateToNewPropertyInput(listing.PropType);
+                }
+                else
+                {
+                    this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
+                }
+            }
+
+            void FillListingDetails(ResidentialListingRequest listing)
+            {
+                this.FillPropertyInformation(listing as DfwListingRequest);
+                this.FillLocationSchools(listing as DfwListingRequest);
+
+                if (listing.PropType == this.MultiFamilyPropType)
+                {
+                    this.FillUnitsInformation(listing as DfwListingRequest); // Multi Family
+                }
+                else
+                {
+                    this.FillRoomsInformation(listing as DfwListingRequest); // Single Family
+                }
+
+                this.FillFeaturesInformation(listing as DfwListingRequest);
+                this.FillLotInformation(listing as DfwListingRequest);
+                this.FillUtilitiesInformation(listing as DfwListingRequest);
+                this.FillEnvironmentInformation(listing as DfwListingRequest);
+                this.FillFinancialInformation(listing as DfwListingRequest);
+                this.FillAgentOfficeInformation(listing as DfwListingRequest);
+                this.FillShowingInformation(listing as DfwListingRequest);
+                this.FillRemarksInformation(listing as DfwListingRequest);
+
+                if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
+                {
+                    this.FillStatusInformation(listing as DfwListingRequest);
+                }
             }
         }
 
