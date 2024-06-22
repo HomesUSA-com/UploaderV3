@@ -110,6 +110,8 @@ namespace Husa.Uploader.Core.Tests
             aborListing.ListStatus = "Closed";
             aborListing.PendingDate = DateTime.Now;
             aborListing.ClosedDate = DateTime.Now;
+            aborListing.AgentMarketUniqueId = "123456789";
+            aborListing.SecondAgentMarketUniqueId = "1234567";
             var sut = this.GetSut();
 
             // Act
