@@ -369,211 +369,30 @@ namespace Husa.Uploader.Core.Services
                 try
                 {
                     this.NavigateToQuickEdit(listing.MLSNum);
-
                     Thread.Sleep(1000);
-                    var buttonText = string.Empty;
+
                     switch (listing.ListStatus)
                     {
                         case "CLOSD":
-                            buttonText = "Change to Sold";
-                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                            Thread.Sleep(500);
-
-                            this.uploaderClient.WriteTextbox(By.Id("Input_74"), listing.SoldPrice); // Sale Price
-
-                            if (listing.ContractDate != null)
-                            {
-                                this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
-                            }
-
-                            if (listing.ClosedDate != null)
-                            {
-                                this.uploaderClient.WriteTextbox(By.Id("Input_120"), listing.ClosedDate.Value.ToShortDateString()); // Closed Date
-                            }
-
-                            this.uploaderClient.SetSelect(By.Id("Input_119"), "0"); // Coop Sale
-
-                            this.uploaderClient.WriteTextbox(By.Id("Input_121"), listing.SellerBuyerCost); // Seller Pd Buyer Clsg Costs
-                            this.uploaderClient.WriteTextbox(By.Id("Input_123"), listing.RepairsPaidBySeller); // Repair Paid Seller
-
-                            this.uploaderClient.SetSelect(By.Id("Input_122"), listing.TitlePaidBy); // Title Paid By
-                            if (listing.HasBuyerAgent)
-                            {
-                                this.uploaderClient.SetSelect(By.Id("Input_310"), "Y");  // Did Selling Agent Represent Buyer
-                            }
-                            else
-                            {
-                                this.uploaderClient.SetSelect(By.Id("Input_310"), "N");  // Did Selling Agent Represent Buyer
-                            }
-
-                            this.uploaderClient.SetSelect(By.Id("Input_525"), listing.SoldTerms); // Sold Terms
-
-                            if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
-                            {
-                                this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
-
-                                string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
-                                this.uploaderClient.ExecuteScript(@js);
-                            }
-
-                            if (!string.IsNullOrEmpty(listing.SellTeamID) && this.uploaderClient.IsElementPresent(By.Id("Input_614")))
-                            {
-                                this.uploaderClient.WriteTextbox(By.Id("Input_614"), listing.SellTeamID); // Selling Team ID
-
-                                string js = " document.getElementById('Input_614_Refresh').value='1';RefreshToSamePage(); ";
-                                this.uploaderClient.ExecuteScript(@js);
-                            }
-
-                            if (!string.IsNullOrEmpty(listing.SellingAgent2ID))
-                            {
-                                this.uploaderClient.WriteTextbox(By.Id("Input_344"), listing.SellingAgent2ID); // Co Selling Associate MLSID
-
-                                string js = " document.getElementById('Input_344_Refresh').value='1';RefreshToSamePage(); ";
-                                this.uploaderClient.ExecuteScript(@js);
-                            }
-
-                            this.uploaderClient.ScrollDown();
-                            if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
-                            {
-                                this.uploaderClient.SetSelect(By.Id("Input_124"), "0"); // Buyer Represented by NONMLS Licensed Agent
-                                this.uploaderClient.WriteTextbox(By.Id("Input_125"), listing.SellingAgentLicenseNum); // TREC License Number
-                            }
-
+                            HandleClosedStatus(listing);
                             break;
                         case "PEND":
-                            buttonText = "Change to Pending";
-                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                            Thread.Sleep(500);
-
-                            if (listing.ContractDate != null)
-                            {
-                                this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
-                            }
-
-                            if (listing.EstClosedDate != null)
-                            {
-                                this.uploaderClient.WriteTextbox(By.Id("Input_311"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
-                            }
-
-                            if (listing.HasBuyerAgent)
-                            {
-                                this.uploaderClient.SetSelect(By.Id("Input_310"), "Y");  // Did Selling Agent Represent Buyer
-                            }
-                            else
-                            {
-                                this.uploaderClient.SetSelect(By.Id("Input_310"), "N");  // Did Selling Agent Represent Buyer
-                            }
-
-                            this.uploaderClient.ScrollDown();
-
-                            if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
-                            {
-                                this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
-
-                                string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
-                                this.uploaderClient.ExecuteScript(@js);
-                            }
-
-                            if (!string.IsNullOrEmpty(listing.SellTeamID))
-                            {
-                                this.uploaderClient.WriteTextbox(By.Id("Input_614"), listing.SellTeamID); // Selling Team MLSID
-                                string js = " document.getElementById('Input_614_Refresh').value='1';RefreshToSamePage(); ";
-                                this.uploaderClient.ExecuteScript(@js);
-                            }
-
-                            this.uploaderClient.ScrollDown();
-                            if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
-                            {
-                                this.uploaderClient.SetSelect(By.Id("Input_528"), "0"); // Buyer Represented by NONMLS Licensed Agent
-                                this.uploaderClient.WriteTextbox(By.Id("Input_131"), listing.SellingAgentLicenseNum); // TREC License Number
-                            }
-
+                            HandlePendingStatus(listing);
                             break;
                         case "TERM":
-                            buttonText = "Change to Terminated";
-                            string currentDate = DateTime.Today.ToString("MM/dd/yyyy");
-                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
-                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                            Thread.Sleep(500);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_522"), currentDate); // terminated date
+                            HandleTerminatedStatus(cancellationToken);
                             break;
                         case "WITH":
-                            buttonText = "Change to Withdrawn";
-                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
-                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                            Thread.Sleep(500);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_113"), listing.OffMarketDate.Value.ToShortDateString()); // Withdrawn Date
+                            HandleWithdrawnStatus(listing);
                             break;
                         case "OP":
-                            buttonText = "Change to Option Pending";
-                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
-                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                            Thread.Sleep(500);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
-                            this.uploaderClient.WriteTextbox(By.Id("Input_128"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
-                            this.uploaderClient.WriteTextbox(By.Id("Input_129"), listing.ExpiredDate.Value.ToShortDateString()); // Option End Date
-                            this.uploaderClient.SetSelect(By.Id($"Input_132"), value: listing.HasContingencyInfo.BoolToNumericBool()); // Contingent on Sale of Other Property
-                            if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
-                            {
-                                this.uploaderClient.SetSelect(By.Id($"Input_310"), value: "Y"); // Did Selling Agent Represent Buyer
-                                this.uploaderClient.WriteTextbox(By.Id($"Input_342"), value: listing.AgentMarketUniqueId); // Selling Associate MLSID
-                            }
-                            else
-                            {
-                                this.uploaderClient.SetSelect(By.Id($"Input_310"), value: "N"); // Did Selling Agent Represent Buyer
-                            }
-
+                            HandleOptionPendingStatus(listing, cancellationToken);
                             break;
                         case "PSHO":
-                            buttonText = "Change to Pending Continue to Show";
-                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                            Thread.Sleep(500);
-
-                            if (listing.ContractDate != null)
-                            {
-                                this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
-                            }
-
-                            if (listing.EstClosedDate != null)
-                            {
-                                this.uploaderClient.WriteTextbox(By.Id("Input_128"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
-                            }
-
-                            if (listing.HasBuyerAgent)
-                            {
-                                this.uploaderClient.SetSelect(By.Id("Input_310"), "Y");  // Did Selling Agent Represent Buyer
-                            }
-                            else
-                            {
-                                this.uploaderClient.SetSelect(By.Id("Input_310"), "N");  // Did Selling Agent Represent Buyer
-                            }
-
-                            this.uploaderClient.SetSelect(By.Id($"Input_132"), value: listing.HasContingencyInfo.BoolToNumericBool()); // Contingent on Sale of Other Property
-
-                            this.uploaderClient.ScrollDown();
-
-                            if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
-                            {
-                                this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
-
-                                string js = " document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ";
-                                this.uploaderClient.ExecuteScript(@js);
-                            }
-
-                            this.uploaderClient.ScrollDown();
-                            if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
-                            {
-                                this.uploaderClient.SetSelect(By.Id("Input_130"), "0"); // Buyer Represented by NONMLS Licensed Agent
-                                this.uploaderClient.WriteTextbox(By.Id("Input_131"), listing.SellingAgentLicenseNum); // TREC License Number
-                            }
-
+                            HandlePendingContinueToShowStatus(listing);
                             break;
                         case "EXP":
-                            buttonText = "Change Expiration Date";
-                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
-                            this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
-                            Thread.Sleep(500);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_8"), listing.ExpiredDate.Value.ToShortDateString()); // Expiration Date
+                            HandleExpiredStatus(listing, cancellationToken);
                             break;
                         default:
                             throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for Houston Listing with Id '{listing.ResidentialListingID}'");
@@ -581,11 +400,185 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the listing {requestId}", listing.ResidentialListingRequestID);
                     return UploadResult.Failure;
                 }
 
                 return UploadResult.Success;
+            }
+
+            void HandleClosedStatus(ResidentialListingRequest listing)
+            {
+                var buttonText = "Change to Sold";
+                this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                Thread.Sleep(500);
+
+                this.uploaderClient.WriteTextbox(By.Id("Input_74"), listing.SoldPrice); // Sale Price
+
+                if (listing.ContractDate != null)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
+                }
+
+                if (listing.ClosedDate != null)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_120"), listing.ClosedDate.Value.ToShortDateString()); // Closed Date
+                }
+
+                this.uploaderClient.SetSelect(By.Id("Input_119"), "0"); // Coop Sale
+
+                this.uploaderClient.WriteTextbox(By.Id("Input_121"), listing.SellerBuyerCost); // Seller Pd Buyer Clsg Costs
+                this.uploaderClient.WriteTextbox(By.Id("Input_123"), listing.RepairsPaidBySeller); // Repair Paid Seller
+
+                this.uploaderClient.SetSelect(By.Id("Input_122"), listing.TitlePaidBy); // Title Paid By
+                this.uploaderClient.SetSelect(By.Id("Input_310"), listing.HasBuyerAgent ? "Y" : "N"); // Did Selling Agent Represent Buyer
+                this.uploaderClient.SetSelect(By.Id("Input_525"), listing.SoldTerms); // Sold Terms
+
+                if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
+                    this.uploaderClient.ExecuteScript(" document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ");
+                }
+
+                if (!string.IsNullOrEmpty(listing.SellTeamID) && this.uploaderClient.IsElementPresent(By.Id("Input_614")))
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_614"), listing.SellTeamID); // Selling Team ID
+                    this.uploaderClient.ExecuteScript(" document.getElementById('Input_614_Refresh').value='1';RefreshToSamePage(); ");
+                }
+
+                if (!string.IsNullOrEmpty(listing.SellingAgent2ID))
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_344"), listing.SellingAgent2ID); // Co Selling Associate MLSID
+                    this.uploaderClient.ExecuteScript(" document.getElementById('Input_344_Refresh').value='1';RefreshToSamePage(); ");
+                }
+
+                this.uploaderClient.ScrollDown();
+                if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
+                {
+                    this.uploaderClient.SetSelect(By.Id("Input_124"), "0"); // Buyer Represented by NONMLS Licensed Agent
+                    this.uploaderClient.WriteTextbox(By.Id("Input_125"), listing.SellingAgentLicenseNum); // TREC License Number
+                }
+            }
+
+            void HandlePendingStatus(ResidentialListingRequest listing)
+            {
+                var buttonText = "Change to Pending";
+                this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                Thread.Sleep(500);
+
+                if (listing.ContractDate != null)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
+                }
+
+                if (listing.EstClosedDate != null)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_311"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
+                }
+
+                this.uploaderClient.SetSelect(By.Id("Input_310"), listing.HasBuyerAgent ? "Y" : "N"); // Did Selling Agent Represent Buyer
+
+                this.uploaderClient.ScrollDown();
+
+                if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
+                    this.uploaderClient.ExecuteScript(" document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ");
+                }
+
+                if (!string.IsNullOrEmpty(listing.SellTeamID))
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_614"), listing.SellTeamID); // Selling Team MLSID
+                    this.uploaderClient.ExecuteScript(" document.getElementById('Input_614_Refresh').value='1';RefreshToSamePage(); ");
+                }
+
+                this.uploaderClient.ScrollDown();
+                if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
+                {
+                    this.uploaderClient.SetSelect(By.Id("Input_528"), "0"); // Buyer Represented by NONMLS Licensed Agent
+                    this.uploaderClient.WriteTextbox(By.Id("Input_131"), listing.SellingAgentLicenseNum); // TREC License Number
+                }
+            }
+
+            void HandleTerminatedStatus(CancellationToken cancellationToken)
+            {
+                var buttonText = "Change to Terminated";
+                var currentDate = DateTime.Today.ToString("MM/dd/yyyy");
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                Thread.Sleep(500);
+                this.uploaderClient.WriteTextbox(By.Id("Input_522"), currentDate); // terminated date
+            }
+
+            void HandleWithdrawnStatus(ResidentialListingRequest listing)
+            {
+                var buttonText = "Change to Withdrawn";
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                Thread.Sleep(500);
+                this.uploaderClient.WriteTextbox(By.Id("Input_113"), listing.OffMarketDate.Value.ToShortDateString()); // Withdrawn Date
+            }
+
+            void HandleOptionPendingStatus(ResidentialListingRequest listing, CancellationToken cancellationToken)
+            {
+                var buttonText = "Change to Option Pending";
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                Thread.Sleep(500);
+                this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
+                this.uploaderClient.WriteTextbox(By.Id("Input_128"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
+                this.uploaderClient.WriteTextbox(By.Id("Input_129"), listing.ExpiredDate.Value.ToShortDateString()); // Option End Date
+                this.uploaderClient.SetSelect(By.Id("Input_132"), listing.HasContingencyInfo.BoolToNumericBool()); // Contingent on Sale of Other Property
+                this.uploaderClient.SetSelect(By.Id("Input_310"), string.IsNullOrEmpty(listing.AgentMarketUniqueId) ? "N" : "Y"); // Did Selling Agent Represent Buyer
+
+                if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Associate MLSID
+                }
+            }
+
+            void HandlePendingContinueToShowStatus(ResidentialListingRequest listing)
+            {
+                var buttonText = "Change to Pending Continue to Show";
+                this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                Thread.Sleep(500);
+
+                if (listing.ContractDate != null)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.Value.ToShortDateString()); // Pending Date
+                }
+
+                if (listing.EstClosedDate != null)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_128"), listing.EstClosedDate.Value.ToShortDateString()); // Estimated Closed Date
+                }
+
+                this.uploaderClient.SetSelect(By.Id("Input_310"), listing.HasBuyerAgent ? "Y" : "N"); // Did Selling Agent Represent Buyer
+                this.uploaderClient.SetSelect(By.Id("Input_132"), listing.HasContingencyInfo.BoolToNumericBool()); // Contingent on Sale of Other Property
+
+                this.uploaderClient.ScrollDown();
+
+                if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
+                    this.uploaderClient.ExecuteScript(" document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ");
+                }
+
+                this.uploaderClient.ScrollDown();
+                if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
+                {
+                    this.uploaderClient.SetSelect(By.Id("Input_130"), "0"); // Buyer Represented by NONMLS Licensed Agent
+                    this.uploaderClient.WriteTextbox(By.Id("Input_131"), listing.SellingAgentLicenseNum); // TREC License Number
+                }
+            }
+
+            void HandleExpiredStatus(ResidentialListingRequest listing, CancellationToken cancellationToken)
+            {
+                var buttonText = "Change Expiration Date";
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                Thread.Sleep(500);
+                this.uploaderClient.WriteTextbox(By.Id("Input_8"), listing.ExpiredDate.Value.ToShortDateString()); // Expiration Date
             }
         }
 
@@ -754,40 +747,49 @@ namespace Husa.Uploader.Core.Services
         private void FillListingInformation(ResidentialListingRequest listing, bool isNotPartialFill = true)
         {
             this.GoToTab("Listing Information");
-
-            this.uploaderClient.WriteTextbox(By.Id("Input_182"), listing.ListPrice); // List Price
-            if (!string.IsNullOrEmpty(listing.TaxID) && listing.TaxID != "0" && !listing.TaxID.Contains("-0000"))
-            {
-                this.uploaderClient.WriteTextbox(By.Id("Input_174"), listing.TaxID); // Tax ID #
-            }
-            else
-            {
-                this.uploaderClient.WriteTextbox(By.Id("Input_174"), "N/A"); // Tax ID #
-            }
+            SetListPrice(listing.ListPrice);
+            SetTaxID(listing.TaxID);
 
             if (isNotPartialFill)
             {
-                this.uploaderClient.SetSelect(By.Id("Input_181"), "EXAGY"); // List Type
+                SetListingType("EXAGY");
+                SetListingDates(listing);
+                SetLeaseOption();
+                SetPropertyType();
+                SetAddressDetails(listing);
+                SetLegalDetails(listing);
+                SetMasterPlannedCommunity(listing);
+                SetLegalSubdivision(listing.LegalSubdivision, listing.Zip);
+                SetKeyMap(listing.MapscoMapCoord);
+            }
+
+            void SetListPrice(int listPrice)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_182"), listPrice); // List Price
+            }
+
+            void SetTaxID(string taxID)
+            {
+                if (!string.IsNullOrEmpty(taxID) && taxID != "0" && !taxID.Contains("-0000"))
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_174"), taxID); // Tax ID #
+                }
+                else
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_174"), "N/A"); // Tax ID #
+                }
+            }
+
+            void SetListingType(string listType)
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_181"), listType); // List Type
+            }
+
+            void SetListingDates(ResidentialListingRequest listing)
+            {
                 if (listing.IsNewListing)
                 {
-                    DateTime? listDate = null;
-                    switch (listing.ListStatus.ToEnumFromEnumMember<MarketStatuses>())
-                    {
-                        case MarketStatuses.Active:
-                            listDate = DateTime.Now;
-                            break;
-                        case MarketStatuses.Pending:
-                        case MarketStatuses.OptionPending:
-                        case MarketStatuses.PendingContinueToShow:
-                            listDate = DateTime.Now.AddDays(-2);
-                            break;
-                        case MarketStatuses.Terminated:
-                        case MarketStatuses.Expired:
-                        case MarketStatuses.Sold:
-                            listDate = DateTime.Now.AddDays(-4);
-                            break;
-                    }
-
+                    var listDate = GetNewListingDate(listing.ListStatus);
                     if (listDate.HasValue)
                     {
                         this.uploaderClient.WriteTextbox(By.Id("Input_183"), listDate.Value.ToShortDateString());  // List Date
@@ -800,8 +802,34 @@ namespace Husa.Uploader.Core.Services
                 {
                     this.uploaderClient.WriteTextbox(By.Id("Input_183"), listing.ListDate.Value.ToShortDateString()); // List Date
                 }
+            }
 
+            DateTime? GetNewListingDate(string listStatus)
+            {
+                switch (listStatus.ToEnumFromEnumMember<MarketStatuses>())
+                {
+                    case MarketStatuses.Active:
+                        return DateTime.Now;
+                    case MarketStatuses.Pending:
+                    case MarketStatuses.OptionPending:
+                    case MarketStatuses.PendingContinueToShow:
+                        return DateTime.Now.AddDays(-2);
+                    case MarketStatuses.Terminated:
+                    case MarketStatuses.Expired:
+                    case MarketStatuses.Sold:
+                        return DateTime.Now.AddDays(-4);
+                    default:
+                        return null;
+                }
+            }
+
+            void SetLeaseOption()
+            {
                 this.uploaderClient.SetSelect(By.Id("Input_185"), "0"); // Also For Lease
+            }
+
+            void SetPropertyType()
+            {
                 if (this.uploaderClient.FindElements(By.Id("Input_350")).Any())
                 {
                     this.uploaderClient.SetSelect(By.Id("Input_350"), "TOWN"); // Townhouse or Condo
@@ -810,7 +838,10 @@ namespace Husa.Uploader.Core.Services
                 {
                     this.uploaderClient.SetSelect(By.Id("Input_186"), "0"); // Priced at Lot Value Only
                 }
+            }
 
+            void SetAddressDetails(ResidentialListingRequest listing)
+            {
                 this.uploaderClient.WriteTextbox(By.Id("Input_156"), listing.StreetNum); // Street Number
                 this.uploaderClient.WriteTextbox(By.Id("Input_158"), listing.StreetName); // Street Name
                 this.uploaderClient.WriteTextbox(By.Id("Input_160"), listing.UnitNum); // Unit #
@@ -824,23 +855,36 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetSelect(By.Id("Input_162"), listing.StateCode); // State
                 this.uploaderClient.WriteTextbox(By.Id("Input_163"), listing.Zip); // Zip Code
                 this.uploaderClient.SetSelect(By.Id("Input_164"), listing.County); // County
+            }
+
+            void SetLegalDetails(ResidentialListingRequest listing)
+            {
                 this.uploaderClient.WriteTextbox(By.Id("Input_165"), listing.Subdivision); // Subdivision
                 this.uploaderClient.WriteTextbox(By.Id("Input_171"), listing.SectionNum); // Section #
                 this.uploaderClient.WriteTextbox(By.Id("Input_302"), listing.Legal); // Legal Description
+            }
 
+            void SetMasterPlannedCommunity(ResidentialListingRequest listing)
+            {
                 if (this.uploaderClient.FindElements(By.Id("Input_172")).Any())
                 {
                     this.uploaderClient.SetSelect(By.Id("Input_172"), listing.IsPlannedDevelopment.BoolToNumericBool()); // Master Planned Community Y/N
                     this.uploaderClient.FillFieldSingleOption("Input_173", listing.PlannedDevelopment); // Master Planned Community
                 }
+            }
 
-                if (!string.IsNullOrWhiteSpace(listing.LegalSubdivision))
+            void SetLegalSubdivision(string legalSubdivision, string zip)
+            {
+                if (!string.IsNullOrWhiteSpace(legalSubdivision))
                 {
-                    var legalsubdivision = listing.LegalSubdivision.Contains("OTHER") ? "OTHER - " + listing.Zip : listing.LegalSubdivision;
+                    var legalsubdivision = legalSubdivision.Contains("OTHER") ? "OTHER - " + zip : legalSubdivision;
                     this.uploaderClient.WriteTextbox(By.Id("Input_320"), legalsubdivision);
                 }
+            }
 
-                this.uploaderClient.WriteTextbox(By.Id("Input_175"), listing.MapscoMapCoord); // Key Map
+            void SetKeyMap(string mapscoMapCoord)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_175"), mapscoMapCoord); // Key Map
             }
         }
 
