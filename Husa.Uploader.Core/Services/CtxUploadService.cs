@@ -518,6 +518,20 @@ namespace Husa.Uploader.Core.Services
 
             if (isNotPartialFill)
             {
+                FillAddressInformation(listing, tabName);
+            }
+
+            this.uploaderClient.ScrollDown(250);
+            FillPricingAndSchoolInformation(listing, tabName);
+            FillPropertyInformation(listing, tabName);
+
+            if (isNotPartialFill)
+            {
+                FillOwnerAndListingDetails(listing, tabName);
+            }
+
+            void FillAddressInformation(ResidentialListingRequest listing, string tabName)
+            {
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_107"));
                 this.uploaderClient.WriteTextbox(By.Id("Input_107"), listing.StreetNum); // Street Number
                 this.uploaderClient.SetSelect(By.Id("Input_108"), listing.StreetDir, fieldLabel: "St Direction", tabName); // St Direction
@@ -541,21 +555,27 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetSelect(By.Id("Input_534"), listing.FacesDesc, fieldLabel: "Front Faces", tabName, isElementOptional: true); // Front Faces
             }
 
-            this.uploaderClient.ScrollDown(250);
-            this.uploaderClient.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
-            this.SetLongitudeAndLatitudeValues(listing);
-            this.uploaderClient.SetSelect(By.Id("Input_535_TB"), listing.SchoolDistrict.ToUpper(), fieldLabel: "School District", tabName); // School District
-            this.FillFieldSingleOption("Input_535", listing.SchoolDistrict);
-            this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(3000));
-            this.uploaderClient.SetSelect(By.Id("Input_658"), listing.SchoolName1, fieldLabel: "Elementary", tabName, isElementOptional: true); // Elementary School
-            this.uploaderClient.ResetImplicitWait();
-            this.uploaderClient.SetSelect(By.Id("Input_659"), listing.SchoolName2, fieldLabel: "Middle", tabName, isElementOptional: true); // Middle School
-            this.uploaderClient.SetSelect(By.Id("Input_660"), listing.HighSchool, fieldLabel: "High", tabName, isElementOptional: true); // High School
-            this.uploaderClient.WriteTextbox(By.Id("Input_550"), listing.SqFtTotal); // Total SqFt
-            this.uploaderClient.WriteTextbox(By.Id("Input_553"), listing.YearBuilt); // Year Built
-            this.uploaderClient.SetSelect(By.Id("Input_547"), listing.YearBuiltDesc, "Construction Status", tabName); // Construction Status
+            void FillPricingAndSchoolInformation(ResidentialListingRequest listing, string tabName)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
+                this.SetLongitudeAndLatitudeValues(listing);
+                this.uploaderClient.SetSelect(By.Id("Input_535_TB"), listing.SchoolDistrict.ToUpper(), fieldLabel: "School District", tabName); // School District
+                this.FillFieldSingleOption("Input_535", listing.SchoolDistrict);
+                this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(3000));
+                this.uploaderClient.SetSelect(By.Id("Input_658"), listing.SchoolName1, fieldLabel: "Elementary", tabName, isElementOptional: true); // Elementary School
+                this.uploaderClient.ResetImplicitWait();
+                this.uploaderClient.SetSelect(By.Id("Input_659"), listing.SchoolName2, fieldLabel: "Middle", tabName, isElementOptional: true); // Middle School
+                this.uploaderClient.SetSelect(By.Id("Input_660"), listing.HighSchool, fieldLabel: "High", tabName, isElementOptional: true); // High School
+            }
 
-            if (isNotPartialFill)
+            void FillPropertyInformation(ResidentialListingRequest listing, string tabName)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_550"), listing.SqFtTotal); // Total SqFt
+                this.uploaderClient.WriteTextbox(By.Id("Input_553"), listing.YearBuilt); // Year Built
+                this.uploaderClient.SetSelect(By.Id("Input_547"), listing.YearBuiltDesc, "Construction Status", tabName); // Construction Status
+            }
+
+            void FillOwnerAndListingDetails(ResidentialListingRequest listing, string tabName)
             {
                 this.uploaderClient.WriteTextbox(By.Id("Input_133"), listing.OwnerName); // Owner Legal Name
                 this.uploaderClient.SetSelect(By.Id("Input_137"), "0", "Also For Rent", tabName); // Also For Rent
