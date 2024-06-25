@@ -406,6 +406,10 @@ namespace Husa.Uploader.Core.Services
 
                 select.SelectByValue(value);
             }
+            catch (NoSuchElementException ex)
+            {
+                this.logger.LogWarning(ex, "Tried to select a non-existing {value} in Select with locator: {by}.", value, findBy);
+            }
             catch (Exception exception) when (exception is NoSuchElementException || exception is UnexpectedTagNameException)
             {
                 this.logger.LogWarning(exception, "Failed when trying to select a non-existing value in Select or to transform an element into a Select with locator: {by} when processing the request.", findBy);
