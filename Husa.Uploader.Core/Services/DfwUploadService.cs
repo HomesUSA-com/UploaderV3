@@ -1111,16 +1111,16 @@ namespace Husa.Uploader.Core.Services
 
                 if (!string.IsNullOrWhiteSpace(listing.BuyerIncentive))
                 {
-                    this.uploaderClient.WriteTextbox(By.Id("Input_485"), listing.BuyerIncentive.Replace("$", string.Empty).Replace("%", string.Empty)); // Buyer Agency Commission
+                    this.uploaderClient.WriteTextbox(By.Id("Input_800"), listing.BuyerIncentive.Replace("$", string.Empty).Replace("%", string.Empty)); // Buyer Agency Commission
 
-                    this.uploaderClient.SetSelect(By.Id("Input_486"), "PERCENT", "Buyer Agency Type (% or $)", tabName); // Buyer Agency Type (% or $)
+                    this.uploaderClient.SetSelect(By.Id("Input_801"), "PERCENT", "Buyer Agency Type (% or $)", tabName); // Buyer Agency Type (% or $)
                 }
 
-                this.uploaderClient.WriteTextbox(By.Id("Input_488"), "0"); // SubAgency Commission
+                this.uploaderClient.WriteTextbox(By.Id("Input_803"), "0"); // SubAgency Commission
 
-                this.uploaderClient.SetSelect(By.Id("Input_489"), "PERCENT", "SubAgency Type (% or $)", tabName); // SubAgency Type (% or $)
+                this.uploaderClient.SetSelect(By.Id("Input_804"), "PERCENT", "SubAgency Type (% or $)", tabName); // SubAgency Type (% or $)
 
-                this.uploaderClient.SetSelect(By.Id("Input_487"), "0", "Dual Variable Fee", tabName); // Dual Variable Fee
+                this.uploaderClient.SetSelect(By.Id("Input_802"), "0", "Dual Variable Fee", tabName); // Dual Variable Fee
             }
 
             this.uploaderClient.ScrollDown();
