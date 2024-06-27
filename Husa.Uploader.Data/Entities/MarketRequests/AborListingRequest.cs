@@ -366,7 +366,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 privateRemarks = $"{bonusMessage} {privateRemarks}";
             }
 
-            privateRemarks += this.BuiltStatus != BuiltStatus.ReadyNow ? $"{homeUnderConstruction} {privateRemarks}" : string.Empty;
+            privateRemarks += this.BuiltStatus != BuiltStatus.ReadyNow ? $"{homeUnderConstruction}" : string.Empty;
             privateRemarks += !string.IsNullOrWhiteSpace(saleOfficeInfo) ? $" {saleOfficeInfo}" : string.Empty;
             privateRemarks += $" {limitedServiceMessage}";
             privateRemarks += !string.IsNullOrWhiteSpace(this.PlanProfileName) ? $" Plan: {this.PlanProfileName}." : string.Empty;
