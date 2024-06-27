@@ -56,7 +56,7 @@ namespace Husa.Uploader.Data.Tests
             var result = sut.GetAgentBonusRemarksMessage();
 
             // Assert
-            Assert.Empty(result);
+            Assert.Equal("1% Bonus. Contact Builder for Bonus Information. ", result);
         }
 
         [Fact]
