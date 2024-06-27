@@ -920,7 +920,7 @@ namespace Husa.Uploader.Core.Services
             {
                 this.uploaderClient.SetSelect(By.Id("Input_329"), "1"); // Internet
                 this.uploaderClient.ScrollDown();
-                this.uploaderClient.SetMultipleCheckboxById("Input_333", "AHS,HAR,HSNAP,REALTOR,LISTHUB"); // Listing Will Appear On (4)
+                this.uploaderClient.SetMultipleCheckboxById("Input_333", "APT"); // Listing Will Appear On (4)
 
                 this.uploaderClient.SetSelect(By.Id("Input_330"), "1"); // Internet Automated Valuation Display
                 this.uploaderClient.SetSelect(By.Id("Input_331"), "1"); // Internet Consumer Comment
