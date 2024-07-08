@@ -1,5 +1,7 @@
 namespace Husa.Uploader.Desktop.ViewModels
 {
+    using System.Collections.ObjectModel;
+    using System.Diagnostics.CodeAnalysis;
     using System.Windows;
     using System.Windows.Input;
     using Husa.Extensions.Common.Enums;
@@ -14,6 +16,7 @@ namespace Husa.Uploader.Desktop.ViewModels
     using Husa.Uploader.Desktop.Views;
     using Microsoft.Extensions.Logging;
 
+    [ExcludeFromCodeCoverage]
     public partial class ShellViewModel
     {
         private readonly IAbstractFactory<BulkUploadView> bulkUploadViewFactory;
@@ -91,7 +94,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                 return;
             }
 
-            var filteredBulkListings = this.FilterBulkUpdater(bulkUploadInfo.Market.Value);
+            var filteredBulkListings = await this.FilterBulkUpdater(bulkUploadInfo.Market.Value, bulkUploadInfo.RequestFieldChange.Value);
             if (!filteredBulkListings.Any())
             {
                 this.FinishBulkUpload();
@@ -136,9 +139,12 @@ namespace Husa.Uploader.Desktop.ViewModels
             return new();
         }
 
-        private List<UploadListingItem> FilterBulkUpdater(MarketCode market)
+        private async Task<List<UploadListingItem>> FilterBulkUpdater(MarketCode market, RequestFieldChange requestFieldChange)
         {
-            var bulkListingsViewModel = new BulkListingsViewModel(this.listingRequests, market);
+            var fullListings = await this.sqlDataLoader.GetListingRequestsByMarketAndAction(market, requestFieldChange);
+            var uploadListingItems = GetUploadListingItems(fullListings);
+
+            var bulkListingsViewModel = new BulkListingsViewModel(uploadListingItems, market);
             var childWindow = new BulkListingsView(bulkListingsViewModel);
             var result = childWindow.ShowDialog();
             if (result.HasValue && result.Value)
@@ -147,7 +153,37 @@ namespace Husa.Uploader.Desktop.ViewModels
                 return childViewModel.GetBulkUploadResidentialListingFiltered();
             }
 
-            return new();
+            return new List<UploadListingItem>();
+
+            ObservableCollection<UploadListingItem> GetUploadListingItems(IEnumerable<ResidentialListingRequest> fullListings)
+            {
+                try
+                {
+                    var uploadItems = fullListings.Select(listingRequest =>
+                    {
+                        var worker = string.Empty;
+                        var workingStatus = string.Empty;
+                        var workingSourceAction = string.Empty;
+                        var uploadItem = listingRequest.AsUploadItem(
+                            builderName: "Ben Caballero",
+                            brokerOffice: "HHRE00",
+                            isLeasing: string.Empty,
+                            isLot: "No",
+                            this.CurrentEntity,
+                            worker,
+                            workingStatus,
+                            workingSourceAction);
+
+                        return uploadItem;
+                    }).ToList();
+
+                    return new ObservableCollection<UploadListingItem>(uploadItems);
+                }
+                catch
+                {
+                    return new ObservableCollection<UploadListingItem>();
+                }
+            }
         }
 
         private async Task SetBulkFullRequestsInformation()

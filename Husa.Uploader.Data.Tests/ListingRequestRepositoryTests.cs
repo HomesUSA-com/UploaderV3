@@ -8,6 +8,7 @@ namespace Husa.Uploader.Data.Tests
     using Husa.Quicklister.Extensions.Api.Contracts.Request.SaleRequest;
     using Husa.Quicklister.Extensions.Api.Contracts.Response;
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ListingRequest.SaleRequest;
+    using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Quicklister.Har.Api.Client;
     using Husa.Quicklister.Sabor.Api.Client;
     using Husa.Uploader.Data.Repositories;
@@ -84,6 +85,48 @@ namespace Husa.Uploader.Data.Tests
             // Assert
             Assert.NotEmpty(result);
             Assert.Equal(5, result.Count());
+        }
+
+        [Theory]
+        [InlineData(MarketCode.SanAntonio, RequestFieldChange.ListPrice)]
+        [InlineData(MarketCode.Houston, RequestFieldChange.ListPrice)]
+        [InlineData(MarketCode.Austin, RequestFieldChange.ListPrice)]
+        [InlineData(MarketCode.CTX, RequestFieldChange.ListPrice)]
+        [InlineData(MarketCode.DFW, RequestFieldChange.ListPrice)]
+        public async Task GetListingRequestsByMarketAndAction_ReturnsResidentialListingRequests(MarketCode marketCode, RequestFieldChange requestFieldChange)
+        {
+            // Arrange
+            var saborResponse = new SaborResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestQueryResponse();
+            var saborResult = GetListingRequestGridResponse(new[] { saborResponse });
+            this.mockSaborClient
+                .Setup(x => x.ListingSaleRequest.GetListRequestAsync(It.IsAny<SaleListingRequestFilter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(saborResult);
+            var ctxResponse = new CtxResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestQueryResponse();
+            var ctxResult = GetListingRequestGridResponse(new[] { ctxResponse });
+            this.mockCtxClient
+                .Setup(x => x.ListingSaleRequest.GetListRequestAsync(It.IsAny<SaleListingRequestFilter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(ctxResult);
+            var aborResponse = new AborResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestQueryResponse();
+            var aborResult = GetListingRequestGridResponse(new[] { aborResponse });
+            this.mockAborClient
+                .Setup(x => x.ListingSaleRequest.GetListRequestAsync(It.IsAny<SaleListingRequestFilter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(aborResult);
+            var harResponse = new HarResponseContracts.ListingRequest.SaleRequest.ListingSaleRequestQueryResponse();
+            var harResult = GetListingRequestGridResponse(new[] { harResponse });
+            this.mockHarClient
+                .Setup(x => x.ListingSaleRequest.GetListRequestAsync(It.IsAny<SaleListingRequestFilter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(harResult);
+            var dfwResponse = new DfwResponseContracts.ListingRequest.SaleRequest.SaleListingRequestQueryResponse();
+            var dfwResult = GetListingRequestGridResponse(new[] { dfwResponse });
+            this.mockDfwClient
+                .Setup(x => x.ListingSaleRequest.GetListRequestAsync(It.IsAny<SaleListingRequestFilter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(dfwResult);
+            var sut = this.GetSut();
+            // Act
+            var result = await sut.GetListingRequestsByMarketAndAction(marketCode, requestFieldChange);
+            // Assert
+            Assert.NotEmpty(result);
+            Assert.Single(result);
         }
 
         [Theory]
