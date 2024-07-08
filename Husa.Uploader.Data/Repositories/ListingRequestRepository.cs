@@ -7,8 +7,10 @@ namespace Husa.Uploader.Data.Repositories
     using Husa.Quicklister.CTX.Api.Client;
     using Husa.Quicklister.Dfw.Api.Client;
     using Husa.Quicklister.Extensions.Api.Client.Interfaces;
+    using Husa.Quicklister.Extensions.Api.Contracts.Request.SaleRequest;
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ListingRequest;
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ListingRequest.SaleRequest;
+    using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Quicklister.Har.Api.Client;
     using Husa.Quicklister.Sabor.Api.Client;
     using Husa.Uploader.Crosscutting.Options;
@@ -83,6 +85,58 @@ namespace Husa.Uploader.Data.Repositories
 
             var pendingRequests = requestsByMarket.SelectMany(a => a).OrderBy(x => x.SysCreatedOn).ToList();
             return pendingRequests.Distinct();
+        }
+
+        public async Task<IEnumerable<ResidentialListingRequest>> GetListingRequestsByMarketAndAction(MarketCode marketCode, RequestFieldChange requestFieldChange, CancellationToken token = default)
+        {
+            var requestsByMarket = await GetListingRequestsByMarketAction(marketCode, requestFieldChange, token);
+
+            var pendingRequests = requestsByMarket.Select(a => a).OrderBy(x => x.SysCreatedOn).ToList();
+            return pendingRequests.Distinct();
+
+            async Task<IEnumerable<ResidentialListingRequest>> GetListingRequestsByMarketAction(MarketCode marketCode, RequestFieldChange requestFieldChange, CancellationToken token)
+            {
+                switch (marketCode)
+                {
+                    case MarketCode.SanAntonio:
+                        return await this.GetRequestByMarketAndAction(
+                            this.marketConfiguration.Sabor,
+                            this.quicklisterSaborClient.ListingSaleRequest,
+                            request => new SaborListingRequest(request).CreateFromApiResponse(),
+                            requestFieldChange,
+                            token);
+                    case MarketCode.CTX:
+                        return await this.GetRequestByMarketAndAction(
+                            this.marketConfiguration.Ctx,
+                            this.quicklisterCtxClient.ListingSaleRequest,
+                            request => new CtxListingRequest(request).CreateFromApiResponse(),
+                            requestFieldChange,
+                            token);
+                    case MarketCode.Austin:
+                        return await this.GetRequestByMarketAndAction(
+                        this.marketConfiguration.Abor,
+                        this.quicklisterAborClient.ListingSaleRequest,
+                        request => new AborListingRequest(request).CreateFromApiResponse(),
+                        requestFieldChange,
+                        token);
+                    case MarketCode.Houston:
+                        return await this.GetRequestByMarketAndAction(
+                        this.marketConfiguration.Har,
+                        this.quicklisterHarClient.ListingSaleRequest,
+                        request => new HarListingRequest(request).CreateFromApiResponse(),
+                        requestFieldChange,
+                        token);
+                    case MarketCode.DFW:
+                        return await this.GetRequestByMarketAndAction(
+                        this.marketConfiguration.Dfw,
+                        this.quicklisterDfwClient.ListingSaleRequest,
+                        request => new DfwListingRequest(request).CreateFromApiResponse(),
+                        requestFieldChange,
+                        token);
+                    default:
+                        throw new NotSupportedException($"The market {marketCode} is not yet supported");
+                }
+            }
         }
 
         public Task<ResidentialListingRequest> GetListingRequest(Guid residentialListingRequestId, MarketCode marketCode, CancellationToken token = default)
@@ -207,11 +261,45 @@ namespace Husa.Uploader.Data.Repositories
             {
                 this.logger.LogInformation("Getting all pending requests for {MarketCode}", marketSettings.MarketCode);
 
+                var saleListingRequestFilter = new SaleListingRequestFilter()
+                {
+                    RequestState = QuicklisterStatus.Pending,
+                };
+
                 var requests = await requestClient.GetListRequestAsync(
-                    new()
-                    {
-                        RequestState = QuicklisterStatus.Pending,
-                    },
+                    saleListingRequestFilter,
+                    token);
+
+                if (requests.Data.Any())
+                {
+                    return requests.Data.AsQueryable().Select(projection).ToList();
+                }
+            }
+
+            return new List<ResidentialListingRequest>();
+        }
+
+        private async Task<IEnumerable<ResidentialListingRequest>> GetRequestByMarketAndAction<TSaleListingRequestResponse, TListingRequestDetailResponse>(
+            MarketSettings marketSettings,
+            ISaleListingRequest<TSaleListingRequestResponse, TListingRequestDetailResponse> requestClient,
+            Expression<Func<TSaleListingRequestResponse, ResidentialListingRequest>> projection,
+            RequestFieldChange requestFieldChange,
+            CancellationToken token = default)
+            where TSaleListingRequestResponse : class, ISaleListingRequestResponse
+            where TListingRequestDetailResponse : IListingRequestDetailResponse
+        {
+            if (marketSettings.IsEnabled)
+            {
+                this.logger.LogInformation("Getting all pending requests for {MarketCode} and for action {requestFieldChange}.", marketSettings.MarketCode, requestFieldChange);
+
+                var saleListingRequestFilter = new SaleListingRequestFilter()
+                {
+                    RequestState = QuicklisterStatus.Pending,
+                    RequestFieldChange = requestFieldChange,
+                };
+
+                var requests = await requestClient.GetListRequestAsync(
+                    saleListingRequestFilter,
                     token);
 
                 if (requests.Data.Any())

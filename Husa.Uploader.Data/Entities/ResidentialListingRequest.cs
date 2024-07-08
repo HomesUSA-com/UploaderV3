@@ -1010,7 +1010,7 @@ namespace Husa.Uploader.Data.Entities
 
         public virtual string GetPublicRemarks()
         {
-            var builtNote = !string.IsNullOrWhiteSpace(this.MLSNum) ? $"MLS# {this.MLSNum}" : string.Empty;
+            var builtNote = !string.IsNullOrWhiteSpace(this.MLSNum) ? $"MLS# {this.MLSNum}" : "MLS# ";
 
             if (!string.IsNullOrWhiteSpace(this.CompanyName))
             {

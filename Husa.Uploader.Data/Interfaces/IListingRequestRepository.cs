@@ -1,11 +1,14 @@
 namespace Husa.Uploader.Data.Interfaces
 {
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Data.Entities;
 
     public interface IListingRequestRepository
     {
         Task<IEnumerable<ResidentialListingRequest>> GetListingRequests(CancellationToken token = default);
+
+        Task<IEnumerable<ResidentialListingRequest>> GetListingRequestsByMarketAndAction(MarketCode marketCode, RequestFieldChange requestFieldChange, CancellationToken token = default);
 
         Task<ResidentialListingRequest> GetListingRequest(Guid residentialListingRequestId, MarketCode marketCode, CancellationToken token = default);
 
