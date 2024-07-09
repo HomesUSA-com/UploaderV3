@@ -151,7 +151,7 @@ namespace Husa.Uploader.Core.Services
                     await this.Login(listing.CompanyId);
                 }
 
-                Thread.Sleep(5000);
+                Thread.Sleep(2000);
 
                 try
                 {
@@ -214,7 +214,7 @@ namespace Husa.Uploader.Core.Services
                     await this.Login(listing.CompanyId);
                 }
 
-                Thread.Sleep(5000);
+                Thread.Sleep(2000);
 
                 try
                 {
@@ -513,7 +513,7 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Editing the information of Open House for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
-                Thread.Sleep(5000);
+                Thread.Sleep(2000);
                 this.NavigateToQuickEdit(listing.MLSNum);
 
                 if (!listing.OpenHouse.Any())
@@ -527,7 +527,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Open Houses Input Form"), cancellationToken);
                 this.uploaderClient.ClickOnElement(By.LinkText("Open Houses Input Form"));
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_tdValidate"), cancellationToken);
-                Thread.Sleep(3000);
+                Thread.Sleep(2000);
 
                 this.CleanOpenHouse();
                 this.AddOpenHouses(listing);
