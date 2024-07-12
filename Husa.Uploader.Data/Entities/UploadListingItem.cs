@@ -1,5 +1,7 @@
 namespace Husa.Uploader.Data.Entities
 {
+    using Husa.Uploader.Data.Entities.LotListing;
+
     public class UploadListingItem
     {
         public const string NewListingMlsNumber = "New Listing";
@@ -26,6 +28,7 @@ namespace Husa.Uploader.Data.Entities
         public string UnitNumber { get; set; }
         public bool IsNewListing => this.FullListing.IsNewListing || string.IsNullOrWhiteSpace(this.MlsNumber) || this.MlsNumber == NewListingMlsNumber;
         public ResidentialListingRequest FullListing { get; set; }
+        public LotListingRequest FullLotListing { get; set; }
         public bool FullListingConfigured { get; protected set; }
 
         public void SetMlsNumber(string mlsNumber)

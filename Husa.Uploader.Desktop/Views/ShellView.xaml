@@ -101,6 +101,16 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+        <Style x:Key="LotItem" TargetType="ListViewItem">
+            <Setter Property="Foreground" Value="#FF1B3861"/>
+            <Setter Property="Background" Value="#FFBABBBB"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=CurrentEntity}" Value="1">
+                    <Setter Property="Background" Value="#FF555555"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </mam:MetroWindow.Resources>
    
     <Window.Triggers>
@@ -540,6 +550,12 @@
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Kind="neighbourhood" Margin="15" Width="25" Height="25" VerticalAlignment="Center"/>
                                         <TextBlock Text="Listings" VerticalAlignment="Center" FontSize="18" Margin="10 20" />
+                                    </StackPanel>
+                                </ListViewItem>
+                                <ListViewItem Style="{StaticResource LotItem}"  x:Name="Lots" Height="80" Cursor="Hand" ToolTip="Lot Listings">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="ViewDashboard" Margin="15" Width="25" Height="25" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Lots" VerticalAlignment="Center" FontSize="18" Margin="10 20" />
                                     </StackPanel>
                                 </ListViewItem>
                             </ListView>
