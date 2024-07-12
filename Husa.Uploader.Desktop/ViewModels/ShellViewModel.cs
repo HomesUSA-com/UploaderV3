@@ -20,7 +20,9 @@ namespace Husa.Uploader.Desktop.ViewModels
     using Husa.Uploader.Crosscutting.Models;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Interfaces;
+    using Husa.Uploader.Data.Interfaces.LotListing;
     using Husa.Uploader.Desktop.Commands;
     using Husa.Uploader.Desktop.Factories;
     using Husa.Uploader.Desktop.Models;
@@ -43,6 +45,7 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private readonly IOptions<ApplicationOptions> options;
         private readonly IListingRequestRepository sqlDataLoader;
+        private readonly ILotListingRequestRepository sqlLotDataLoader;
         private readonly IAuthenticationService authenticationClient;
         private readonly IVersionManagerService versionManagerService;
         private readonly IChildViewFactory mlsIssueReportFactory;
@@ -96,6 +99,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         public ShellViewModel(
             IOptions<ApplicationOptions> options,
             IListingRequestRepository sqlDataLoader,
+            ILotListingRequestRepository sqlLotDataLoader,
             IAuthenticationService authenticationClient,
             IVersionManagerService versionManagerService,
             IChildViewFactory mlsIssueReportFactory,
@@ -109,6 +113,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         {
             this.options = options ?? throw new ArgumentNullException(nameof(options));
             this.sqlDataLoader = sqlDataLoader ?? throw new ArgumentNullException(nameof(sqlDataLoader));
+            this.sqlLotDataLoader = sqlLotDataLoader ?? throw new ArgumentNullException(nameof(sqlLotDataLoader));
             this.authenticationClient = authenticationClient ?? throw new ArgumentNullException(nameof(authenticationClient));
             this.versionManagerService = versionManagerService ?? throw new ArgumentNullException(nameof(versionManagerService));
             this.mlsIssueReportFactory = mlsIssueReportFactory ?? throw new ArgumentNullException(nameof(mlsIssueReportFactory));
@@ -568,38 +573,93 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        public bool CanStartEdit => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IEditListing>(this.SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartEdit => this.SelectedListingRequest != null &&
+            this.CurrentEntity switch
+            {
+                Entity.Listing => !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IEditListing>(this.SelectedListingRequest.FullListing.MarketCode),
+                Entity.Lot => !this.SelectedListingRequest.FullLotListing.IsNewListing && UploaderFactory.IsActionSupported<IEditListing>(this.SelectedListingRequest.FullLotListing.MarketCode),
+                _ => false,
+            };
 
-        public bool CanStartUpload => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IUploadListing>(this.SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartUpload => this.SelectedListingRequest != null &&
+            this.CurrentEntity switch
+            {
+                Entity.Listing => UploaderFactory.IsActionSupported<IUploadListing>(this.SelectedListingRequest.FullListing.MarketCode),
+                Entity.Lot => UploaderFactory.IsActionSupported<IUploadListing>(this.SelectedListingRequest.FullLotListing.MarketCode),
+                _ => false,
+            };
 
-        public bool CanStartImageUpdate => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IUpdateImages>(this.SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartImageUpdate => this.SelectedListingRequest != null &&
+                this.CurrentEntity switch
+                {
+                    Entity.Listing => UploaderFactory.IsActionSupported<IUpdateImages>(this.SelectedListingRequest.FullListing.MarketCode),
+                    Entity.Lot => UploaderFactory.IsActionSupported<IUpdateImages>(this.SelectedListingRequest.FullLotListing.MarketCode),
+                    _ => false,
+                };
 
-        public bool CanStartStatusUpdate => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdateStatus>(this.SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartStatusUpdate => this.SelectedListingRequest != null &&
+                this.CurrentEntity switch
+                {
+                    Entity.Listing => !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdateStatus>(this.SelectedListingRequest.FullListing.MarketCode),
+                    Entity.Lot => !this.SelectedListingRequest.FullLotListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdateStatus>(this.SelectedListingRequest.FullLotListing.MarketCode),
+                    _ => false,
+                };
 
-        public bool CanStartPriceUpdate => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdatePrice>(this.SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartPriceUpdate => this.SelectedListingRequest != null &&
+                    this.CurrentEntity switch
+                    {
+                        Entity.Listing => !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdatePrice>(this.SelectedListingRequest.FullListing.MarketCode),
+                        Entity.Lot => !this.SelectedListingRequest.FullLotListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdatePrice>(this.SelectedListingRequest.FullLotListing.MarketCode),
+                        _ => false,
+                    };
 
-        public bool CanStartCompletionDateUpdate => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdateCompletionDate>(this.SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartCompletionDateUpdate => this.SelectedListingRequest != null &&
+                    this.CurrentEntity switch
+                    {
+                        Entity.Listing => !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdateCompletionDate>(this.SelectedListingRequest.FullListing.MarketCode),
+                        Entity.Lot => !this.SelectedListingRequest.FullLotListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdateCompletionDate>(this.SelectedListingRequest.FullLotListing.MarketCode),
+                        _ => false,
+                    };
 
-        public bool CanStartUploadVirtualTour => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IUpdateImages>(this.SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartUploadVirtualTour => this.SelectedListingRequest != null &&
+                    this.CurrentEntity switch
+                    {
+                        Entity.Listing => UploaderFactory.IsActionSupported<IUpdateImages>(this.SelectedListingRequest.FullListing.MarketCode),
+                        Entity.Lot => UploaderFactory.IsActionSupported<IUpdateImages>(this.SelectedListingRequest.FullLotListing.MarketCode),
+                        _ => false,
+                    };
 
         public bool CanStartOHUpdate
         {
             get
             {
-                if (this.SelectedListingRequest == null || !UploaderFactory.IsActionSupported<IUpdateOpenHouse>(this.SelectedListingRequest.FullListing.MarketCode))
+                if (this.SelectedListingRequest == null)
                 {
                     return false;
                 }
 
-                var isPending = this.SelectedListingRequest.FullListing.ListStatus == "Pending" || this.SelectedListingRequest.FullListing.ListStatus == "PND";
-                var enableInPending = isPending && this.SelectedListingRequest.FullListing.AllowPendingList;
-                var isActive = this.SelectedListingRequest.FullListing.ListStatus == "Active" || this.SelectedListingRequest.FullListing.ListStatus == "ACT";
-                var isPCH = this.SelectedListingRequest.FullListing.ListStatus == "PCH";
-                var isBOM = this.SelectedListingRequest.FullListing.ListStatus == "BOM";
-                var isSanAntonio = this.SelectedListingRequest.FullListing.MarketCode == MarketCode.SanAntonio;
-                return !this.SelectedListingRequest.FullListing.IsNewListing
-                    && this.SelectedListingRequest.FullListing.EnableOpenHouse
-                    && (isActive || enableInPending || (isSanAntonio && (isPCH || isBOM)));
+                switch (this.CurrentEntity)
+                {
+                    case Entity.Listing:
+                        if (this.SelectedListingRequest.FullListing == null || !UploaderFactory.IsActionSupported<IUpdateOpenHouse>(this.SelectedListingRequest.FullListing.MarketCode))
+                        {
+                            return false;
+                        }
+
+                        var isPending = this.SelectedListingRequest.FullListing.ListStatus == "Pending" || this.SelectedListingRequest.FullListing.ListStatus == "PND";
+                        var enableInPending = isPending && this.SelectedListingRequest.FullListing.AllowPendingList;
+                        var isActive = this.SelectedListingRequest.FullListing.ListStatus == "Active" || this.SelectedListingRequest.FullListing.ListStatus == "ACT";
+                        var isPCH = this.SelectedListingRequest.FullListing.ListStatus == "PCH";
+                        var isBOM = this.SelectedListingRequest.FullListing.ListStatus == "BOM";
+                        var isSanAntonio = this.SelectedListingRequest.FullListing.MarketCode == MarketCode.SanAntonio;
+                        return !this.SelectedListingRequest.FullListing.IsNewListing
+                            && this.SelectedListingRequest.FullListing.EnableOpenHouse
+                            && (isActive || enableInPending || (isSanAntonio && (isPCH || isBOM)));
+                    case Entity.Lot:
+                        return false;
+                    default:
+                        return false;
+                }
             }
         }
 
@@ -784,6 +844,24 @@ namespace Husa.Uploader.Desktop.ViewModels
                         this.DatabaseOnline = DataBaseStatus.Online;
                         this.ProcessListingData(fullListings);
                         this.LastUpdated = $"Total {entity} records: [{fullListings.Count()}]. Last Updated: {DateTime.Now:MM/dd/yyyy h:mm:ss tt}";
+                    }
+                    catch (Exception ex)
+                    {
+                        this.logger.LogError(ex, "Failed to Connect to Server.");
+                        this.LastUpdated = "Failed to Connect to Database Server.";
+                        this.LoadFailed = true;
+                        this.DatabaseOnline = DataBaseStatus.Failed;
+                        this.Refresh();
+                    }
+
+                    break;
+                case Entity.Lot:
+                    try
+                    {
+                        var fullLotListings = await this.sqlLotDataLoader.GetListingRequests();
+                        this.DatabaseOnline = DataBaseStatus.Online;
+                        this.ProcessLotListingData(fullLotListings);
+                        this.LastUpdated = $"Total {entity} records: [{fullLotListings.Count()}]. Last Updated: {DateTime.Now:MM/dd/yyyy h:mm:ss tt}";
                     }
                     catch (Exception ex)
                     {
@@ -1014,6 +1092,73 @@ namespace Husa.Uploader.Desktop.ViewModels
                         brokerOffice: "HHRE00",
                         isLeasing: string.Empty,
                         isLot: "No",
+                        this.CurrentEntity,
+                        worker,
+                        workingStatus,
+                        workingSourceAction);
+
+                    return uploadItem;
+                }).ToList();
+
+                // Verify if the user has any listing requested and if so, keep it in the interface (replacing anything coming from the DB, or adding it)
+                if (this.SelectedListingRequest != null)
+                {
+                    var uploadItem = uploadItems.Find(c => c.RequestId == this.SelectedListingRequest.RequestId);
+                    if (uploadItem != null)
+                    {
+                        var uploadItemIndex = uploadItems.IndexOf(uploadItem);
+                        uploadItems.Remove(uploadItem);
+                        uploadItems.Insert(uploadItemIndex, this.SelectedListingRequest);
+                    }
+                    else
+                    {
+                        if (!this.IsReadyListing)
+                        {
+                            uploadItems.Add(this.SelectedListingRequest);
+                        }
+                        else
+                        {
+                            this.SelectedListingRequest = null;
+                        }
+                    }
+                }
+
+                this.ListingRequests = new ObservableCollection<UploadListingItem>(uploadItems);
+            }
+            catch
+            {
+                this.ListingRequests = new ObservableCollection<UploadListingItem>();
+            }
+        }
+
+        private void ProcessLotListingData(IEnumerable<LotListingRequest> fullLotListings)
+        {
+            try
+            {
+                this.LoadFailed = false;
+                var uploadItems = fullLotListings.Select(listingRequest =>
+                {
+                    var worker = string.Empty;
+                    var workingStatus = string.Empty;
+                    var workingSourceAction = string.Empty;
+                    if (this.Workers != null)
+                    {
+                        foreach (var workerItem in this.Workers)
+                        {
+                            if (workerItem.Value.SelectedItemID == listingRequest.ResidentialListingRequestID.ToString())
+                            {
+                                worker = workerItem.Key;
+                                workingStatus = workerItem.Value.Status;
+                                workingSourceAction = workerItem.Value.SourceAction;
+                            }
+                        }
+                    }
+
+                    var uploadItem = listingRequest.AsUploadItem(
+                        builderName: "Ben Caballero",
+                        brokerOffice: "HHRE00",
+                        isLeasing: string.Empty,
+                        isLot: "Yes",
                         this.CurrentEntity,
                         worker,
                         workingStatus,
