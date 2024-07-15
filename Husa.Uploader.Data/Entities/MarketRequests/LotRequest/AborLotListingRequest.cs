@@ -33,7 +33,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
 
         public override LotListingRequest CreateFromApiResponse() => new AborLotListingRequest()
         {
-            ResidentialListingRequestID = this.listingResponse.Id,
+            LotListingRequestID = this.listingResponse.Id,
             CompanyName = this.listingResponse.OwnerName,
             MLSNum = this.listingResponse.MlsNumber,
             MarketName = this.listingResponse.Market,
@@ -46,7 +46,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
         {
             var residentialListingRequest = new AborLotListingRequest
             {
-                ResidentialListingRequestID = this.listingDetailResponse.Id,
+                LotListingRequestID = this.listingDetailResponse.Id,
                 MarketName = this.MarketCode.GetEnumDescription(),
                 MLSNum = this.listingDetailResponse.MlsNumber,
                 ListStatus = this.listingDetailResponse.MlsStatus.ToStringFromEnumMember(),
