@@ -149,11 +149,21 @@ namespace Husa.Uploader.Data.Repositories
             }
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         private async Task<LotListingRequest> GetRequestById(Guid lotListingRequestId, MarketCode marketCode, CancellationToken token)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            throw new NotImplementedException();
+            LotListingRequest listingRequest = marketCode switch
+            {
+                MarketCode.Austin => await GetLotFromAbor(),
+                _ => throw new NotSupportedException($"The market {marketCode} is not yet supported for Lot Listings."),
+            };
+
+            return listingRequest ?? null;
+
+            async Task<LotListingRequest> GetLotFromAbor()
+            {
+                var request = await this.quicklisterAborClient.ListingLotRequest.GetListRequestSaleByIdAsync(lotListingRequestId, token);
+                return new AborLotListingRequest(request).CreateFromApiResponseDetail();
+            }
         }
 
         private async Task<IEnumerable<LotListingRequest>> GetRequestByMarket<TLotListingRequestResponse, TListingRequestDetailResponse>(

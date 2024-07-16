@@ -13,6 +13,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Crosscutting.Extensions.Abor;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
@@ -531,6 +532,54 @@ namespace Husa.Uploader.Core.Services
 
                 this.CleanOpenHouse();
                 this.AddOpenHouses(listing);
+                return UploadResult.Success;
+            }
+        }
+
+        public Task<UploadResult> UploadLot(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        {
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            return UploadLotListing(logIn);
+
+            async Task<UploadResult> UploadLotListing(bool logIn)
+            {
+                this.logger.LogInformation("Uploading the information for the lot listing {requestId}", listing.LotListingRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.LotListingRequestID, listing.IsNewListing);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                }
+
+                Thread.Sleep(2000);
+
+                return UploadResult.Success;
+            }
+        }
+
+        public Task<UploadResult> UpdateLotStatus(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        {
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            return UpdateLotListingStatus(logIn);
+
+            async Task<UploadResult> UpdateLotListingStatus(bool logIn)
+            {
+                this.logger.LogInformation("Editing the status information for the lot listing {requestId}", listing.LotListingRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.LotListingRequestID, isNewListing: false);
+
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                    Thread.Sleep(1000);
+                }
+
                 return UploadResult.Success;
             }
         }

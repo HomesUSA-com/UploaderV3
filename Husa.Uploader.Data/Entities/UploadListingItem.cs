@@ -53,5 +53,28 @@ namespace Husa.Uploader.Data.Entities
             this.FullListingConfigured = true;
             this.SetMlsNumber(request.MLSNum);
         }
+
+        public void SetFullLotListing(LotListingRequest request)
+        {
+            if (this.FullListingConfigured)
+            {
+                return;
+            }
+
+            this.FullLotListing = request;
+            this.FullListingConfigured = true;
+            this.SetLotMlsNumber(request.MLSNum);
+        }
+
+        public void SetLotMlsNumber(string mlsNumber)
+        {
+            if (string.IsNullOrWhiteSpace(mlsNumber))
+            {
+                return;
+            }
+
+            this.FullLotListing.MLSNum = mlsNumber;
+            this.MlsNumber = mlsNumber;
+        }
     }
 }
