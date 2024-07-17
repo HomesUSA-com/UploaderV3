@@ -26,7 +26,7 @@ namespace Husa.Uploader.Data.Entities
         public string WorkingStatus { get; set; }
         public string WorkingSourceAction { get; set; }
         public string UnitNumber { get; set; }
-        public bool IsNewListing => this.FullListing.IsNewListing || this.FullLotListing.IsNewListing || string.IsNullOrWhiteSpace(this.MlsNumber) || this.MlsNumber == NewListingMlsNumber;
+        public bool IsNewListing => (this.FullListing != null && this.FullListing.IsNewListing) || (this.FullLotListing != null && this.FullLotListing.IsNewListing) || string.IsNullOrWhiteSpace(this.MlsNumber) || this.MlsNumber == NewListingMlsNumber;
         public ResidentialListingRequest FullListing { get; set; }
         public LotListingRequest FullLotListing { get; set; }
         public bool FullListingConfigured { get; protected set; }
