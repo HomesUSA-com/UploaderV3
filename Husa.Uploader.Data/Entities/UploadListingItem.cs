@@ -26,7 +26,7 @@ namespace Husa.Uploader.Data.Entities
         public string WorkingStatus { get; set; }
         public string WorkingSourceAction { get; set; }
         public string UnitNumber { get; set; }
-        public bool IsNewListing => this.FullListing.IsNewListing || string.IsNullOrWhiteSpace(this.MlsNumber) || this.MlsNumber == NewListingMlsNumber;
+        public bool IsNewListing => (this.FullListing != null && this.FullListing.IsNewListing) || (this.FullLotListing != null && this.FullLotListing.IsNewListing) || string.IsNullOrWhiteSpace(this.MlsNumber) || this.MlsNumber == NewListingMlsNumber;
         public ResidentialListingRequest FullListing { get; set; }
         public LotListingRequest FullLotListing { get; set; }
         public bool FullListingConfigured { get; protected set; }
@@ -61,9 +61,17 @@ namespace Husa.Uploader.Data.Entities
                 return;
             }
 
+            var newLatitude = this.FullLotListing.Latitude;
+            var newLongitude = this.FullLotListing.Longitude;
+
             this.FullLotListing = request;
             this.FullListingConfigured = true;
             this.SetLotMlsNumber(request.MLSNum);
+
+            if (string.IsNullOrEmpty(this.FullLotListing.MLSNum) && this.FullLotListing.UpdateGeocodes)
+            {
+                this.SetLotLatitudeAndLongitude(newLatitude, newLongitude);
+            }
         }
 
         public void SetLotMlsNumber(string mlsNumber)
@@ -75,6 +83,17 @@ namespace Husa.Uploader.Data.Entities
 
             this.FullLotListing.MLSNum = mlsNumber;
             this.MlsNumber = mlsNumber;
+        }
+
+        public void SetLotLatitudeAndLongitude(decimal? latitude, decimal? longitude)
+        {
+            if (latitude == null && longitude == null)
+            {
+                return;
+            }
+
+            this.FullLotListing.Latitude = latitude;
+            this.FullLotListing.Longitude = longitude;
         }
     }
 }
