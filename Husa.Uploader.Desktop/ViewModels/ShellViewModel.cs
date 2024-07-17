@@ -1604,8 +1604,8 @@ namespace Husa.Uploader.Desktop.ViewModels
 
                 if (locationInfo.IsValidLocation)
                 {
-                    this.SelectedListingRequest.FullListing.Latitude = locationInfo.Latitude;
-                    this.SelectedListingRequest.FullListing.Longitude = locationInfo.Longitude;
+                    this.SelectedListingRequest.FullLotListing.Latitude = locationInfo.Latitude;
+                    this.SelectedListingRequest.FullLotListing.Longitude = locationInfo.Longitude;
                 }
                 else
                 {
