@@ -568,6 +568,7 @@ namespace Husa.Uploader.Core.Services
                     }
 
                     this.FillLotListingInformation(listing);
+                    this.FillLotGeneralInformation(listing);
                 }
                 catch (Exception exception)
                 {
@@ -1232,13 +1233,13 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetSelect(By.Id("Input_545"), listing.BuilderRestrictions ? "1" : "0"); // Association YN
 
             // Location Information
-            this.uploaderClient.WriteTextbox(By.Id("Input_197"), listing.Legal); // Tax Legal Description
+            this.uploaderClient.WriteTextbox(By.Id("Input_197"), listing.LegalDescription); // Tax Legal Description
             this.SetLotLongitudeAndLatitudeValues(listing);
 
             this.uploaderClient.WriteTextbox(By.Id("Input_183"), listing.StreetNum); // Street #
             this.uploaderClient.WriteTextbox(By.Id("Input_185"), listing.StreetName); // Street Name
             this.uploaderClient.SetSelect(By.Id("Input_186"), listing.StreetType); // Street Type (NM)
-            this.uploaderClient.WriteTextbox(By.Id("Input_190"), !string.IsNullOrEmpty(listing.UnitNum) ? listing.UnitNum : string.Empty); // Unit # (NM)
+            this.uploaderClient.WriteTextbox(By.Id("Input_190"), !string.IsNullOrEmpty(listing.UnitNumber) ? listing.UnitNumber : string.Empty); // Unit # (NM)
             this.uploaderClient.SetSelect(By.Id("Input_191"), listing.County); // County
             this.uploaderClient.SetSelectIfExist(By.Id("Input_192"), listing.CityCode); // City
             this.uploaderClient.SetSelect(By.Id("Input_193"), listing.State); // State
@@ -1246,11 +1247,11 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_194"), listing.Zip); // ZIP Code
             this.uploaderClient.WriteTextbox(By.Id("Input_196"), listing.Subdivision); // Subdivision
             this.uploaderClient.WriteTextbox(By.Id("Input_199"), listing.OtherFees); // Tax Lot
-            this.uploaderClient.WriteTextbox(By.Id("Input_201"), listing.TaxID); // Parcel ID
+            this.uploaderClient.WriteTextbox(By.Id("Input_201"), listing.TaxId); // Parcel ID
             this.uploaderClient.SetSelect(By.Id("Input_202"), "0"); // Additional Parcels Y/N
 
             this.uploaderClient.ScrollDown(1000);
-            this.uploaderClient.FillFieldSingleOption("Input_204", listing.MLSArea); // MLS Area
+            this.uploaderClient.FillFieldSingleOption("Input_204", listing.MlsArea); // MLS Area
             this.uploaderClient.SetMultipleCheckboxById("Input_343", listing.FemaFloodPlain); // FEMA 100 Yr Flood Plain
             this.uploaderClient.SetSelect(By.Id("Input_206"), "N"); // ETJ
 
@@ -1262,6 +1263,39 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_212"), listing.SchoolName4); // Elementary Other
             this.uploaderClient.WriteTextbox(By.Id("Input_213"), listing.SchoolName5); // Middle or Junior Other
             this.uploaderClient.WriteTextbox(By.Id("Input_214"), listing.SchoolName6); // High School Other
+        }
+
+        private void FillLotGeneralInformation(LotListingRequest listing)
+        {
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.ClickOnElement(By.LinkText("General"));
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_461"));
+            this.uploaderClient.SetSelect(By.Id("Input_461"), listing.PropertySubType); // Property Sub Type (1)
+            this.uploaderClient.SetSelect(By.Id("Input_445"), listing.SurfaceWater ? "1" : "0"); // SurfaceWater YN
+            this.uploaderClient.SetSelect(By.Id("Input_235"), listing.DistanceToWaterAccess); // Distance To Water Access
+            this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.LotSize); // Lot Size Acres
+            this.uploaderClient.WriteTextbox(By.Id("Input_241"), listing.LotDimension); // Lot Dimensions (Frontage x Depth)
+            this.uploaderClient.WriteTextbox(By.Id("Input_352"), listing.AlsoListedAs); // Also Listed As (Enter ML #)
+            this.uploaderClient.SetMultipleCheckboxById("Input_442", listing.TypeOfHomeAllowed); // Type Of Home Allowed
+            this.uploaderClient.SetSelect(By.Id("Input_462"), listing.LiveStock ? "1" : "0"); // LiveStock
+            this.uploaderClient.WriteTextbox(By.Id("Input_433"), listing.NumberOfPonds); // Ponds
+            this.uploaderClient.WriteTextbox(By.Id("Input_434"), listing.NumberOfWells); // Wells
+            this.uploaderClient.SetSelect(By.Id("Input_446"), listing.CommercialAllowed ? "1" : "0"); // Commercial Allowed YN
+            this.uploaderClient.SetSelect(By.Id("Input_238"), listing.WaterBodyName); // Water Body Name
+            this.uploaderClient.SetMultipleCheckboxById("Input_234", listing.View); // View (4)
+            this.uploaderClient.SetMultipleCheckboxById("Input_249", listing.HorseAmenities); // Horse Amenities
+            this.uploaderClient.SetMultipleCheckboxById("Input_439", listing.SoilType); // Soil Type
+            this.uploaderClient.SetMultipleCheckboxById("Input_237", listing.WaterfrontFeatures); // Waterfront Features
+
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.ScrollDown(100);
+            this.uploaderClient.SetMultipleCheckboxById("Input_441", listing.MineralsFeatures); // Minerals
+            this.uploaderClient.SetMultipleCheckboxById("Input_244", listing.LotDescription); // Lot Description (4)
+
+            this.uploaderClient.SetMultipleCheckboxById("Input_261", listing.Fencing); // Fencing
+            this.uploaderClient.SetMultipleCheckboxById("Input_240", listing.RestrictionsDescription); // Restrictions Description (5)
+            this.uploaderClient.SetMultipleCheckboxById("Input_443", listing.RoadSurface); // Road Surface
         }
 
         private void SetLotLongitudeAndLatitudeValues(LotListingRequest listing)
