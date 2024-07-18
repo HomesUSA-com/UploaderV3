@@ -44,6 +44,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
             Address = this.listingResponse.Address,
             ListPrice = this.listingResponse.ListPrice.HasValue ? (int)this.listingResponse.ListPrice.Value : 0,
             ListStatus = this.listingResponse.MlsStatus.ToStringFromEnumMember(),
+            ListDate = this.ListDate,
             SysCreatedOn = this.listingResponse.SysCreatedOn,
             SysCreatedBy = this.listingResponse.SysCreatedBy,
             UpdateGeocodes = this.listingResponse.UpdateGeocodes,
@@ -57,6 +58,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 MarketName = this.MarketCode.GetEnumDescription(),
                 MLSNum = this.listingDetailResponse.MlsNumber,
                 ListPrice = this.listingDetailResponse.ListPrice.HasValue ? (int)this.listingDetailResponse.ListPrice.Value : 0,
+                ListDate = this.ListDate,
                 SysCreatedOn = this.listingDetailResponse.SysCreatedOn,
                 SysCreatedBy = this.listingDetailResponse.SysCreatedBy,
                 SysModifiedOn = this.listingDetailResponse.SysModifiedOn,
@@ -69,6 +71,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
             FillLotPropertyInfo(this.listingDetailResponse.PropertyInfo);
             FillLotAddressInfo(this.listingDetailResponse.AddressInfo);
             FillLotSchoolsInfo(this.listingDetailResponse.SchoolsInfo);
+            FillLotFeaturesInfo(this.listingDetailResponse.FeaturesInfo);
 
             return lotListingRequest;
 
@@ -92,13 +95,25 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                     throw new ArgumentNullException(nameof(propertyInfo));
                 }
 
-                lotListingRequest.Legal = propertyInfo.LegalDescription;
-                lotListingRequest.TaxID = propertyInfo.TaxId;
-                lotListingRequest.MLSArea = propertyInfo.MlsArea?.ToStringFromEnumMember();
+                lotListingRequest.LegalDescription = propertyInfo.LegalDescription;
+                lotListingRequest.TaxId = propertyInfo.TaxId;
+                lotListingRequest.MlsArea = propertyInfo.MlsArea?.ToStringFromEnumMember();
                 lotListingRequest.UpdateGeocodes = propertyInfo.UpdateGeocodes;
                 lotListingRequest.OtherFees = propertyInfo.TaxLot;
                 lotListingRequest.FemaFloodPlain = propertyInfo.FemaFloodPlain.ToStringFromEnumMembers();
                 lotListingRequest.BuilderRestrictions = propertyInfo.BuilderRestrictions;
+                lotListingRequest.PropertySubType = propertyInfo.PropertySubType?.ToStringFromEnumMember();
+                lotListingRequest.SurfaceWater = propertyInfo.SurfaceWater;
+                lotListingRequest.LotSize = propertyInfo.LotSize;
+                lotListingRequest.LotDimension = propertyInfo.LotDimension;
+                lotListingRequest.AlsoListedAs = propertyInfo.AlsoListedAs;
+                lotListingRequest.TypeOfHomeAllowed = propertyInfo.TypeOfHomeAllowed?.ToStringFromEnumMembers();
+                lotListingRequest.LiveStock = propertyInfo.LiveStock;
+                lotListingRequest.NumberOfPonds = propertyInfo.NumberOfPonds;
+                lotListingRequest.NumberOfWells = propertyInfo.NumberOfWells;
+                lotListingRequest.CommercialAllowed = propertyInfo.CommercialAllowed;
+                lotListingRequest.SoilType = propertyInfo.SoilType.ToStringFromEnumMembers();
+                lotListingRequest.LotDescription = propertyInfo.LotDescription.ToStringFromEnumMembers();
             }
 
             void FillLotAddressInfo(LotAddressResponse addressInfo)
@@ -117,7 +132,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.County = addressInfo.County?.ToStringFromEnumMember();
                 lotListingRequest.StreetType = addressInfo.StreetType?.ToStringFromEnumMember();
                 lotListingRequest.Subdivision = addressInfo.Subdivision;
-                lotListingRequest.UnitNum = addressInfo.UnitNumber;
+                lotListingRequest.UnitNumber = addressInfo.UnitNumber;
             }
 
             void FillLotSchoolsInfo(LotSchoolsResponse schoolsInfo)
@@ -134,6 +149,24 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.SchoolName4 = schoolsInfo.OtherElementarySchool;
                 lotListingRequest.SchoolName5 = schoolsInfo.OtherMiddleSchool;
                 lotListingRequest.SchoolName6 = schoolsInfo.OtherHighSchool;
+            }
+
+            void FillLotFeaturesInfo(LotFeaturesResponse featureInfo)
+            {
+                if (featureInfo is null)
+                {
+                    throw new ArgumentNullException(nameof(featureInfo));
+                }
+
+                lotListingRequest.DistanceToWaterAccess = featureInfo.DistanceToWaterAccess?.ToStringFromEnumMember();
+                lotListingRequest.WaterBodyName = featureInfo.WaterBodyName?.ToStringFromEnumMember();
+                lotListingRequest.View = featureInfo.View?.ToStringFromEnumMembers();
+                lotListingRequest.HorseAmenities = featureInfo.HorseAmenities?.ToStringFromEnumMembers();
+                lotListingRequest.WaterfrontFeatures = featureInfo.WaterfrontFeatures?.ToStringFromEnumMembers();
+                lotListingRequest.MineralsFeatures = featureInfo.MineralsFeatures?.ToStringFromEnumMembers();
+                lotListingRequest.Fencing = featureInfo.Fencing?.ToStringFromEnumMembers();
+                lotListingRequest.RestrictionsDescription = featureInfo.RestrictionsDescription?.ToStringFromEnumMembers();
+                lotListingRequest.RoadSurface = featureInfo.RoadSurface?.ToStringFromEnumMembers();
             }
         }
     }
