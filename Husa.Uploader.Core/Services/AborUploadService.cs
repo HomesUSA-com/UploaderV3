@@ -572,6 +572,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillLotAdditionalInformation(listing);
                     this.FillLotDocumentsUtilitiesInformation(listing);
                     this.FillLotFinancialInformation(listing);
+                    this.FillLotShowingInformation(listing);
                 }
                 catch (Exception exception)
                 {
@@ -1355,6 +1356,21 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ScrollDown(400);
             this.uploaderClient.WriteTextbox(By.Id("Input_728"), listing.PreferredTitleCompany); // Preferred Title Company
             this.uploaderClient.SetMultipleCheckboxById("Input_299", "Funding"); // Possession
+        }
+
+        private void FillLotShowingInformation(LotListingRequest listing)
+        {
+            this.uploaderClient.ClickOnElement(By.LinkText("Showing"));
+            Thread.Sleep(200);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_302"));
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_302"), listing.OwnerName); // Owner Name
+            this.uploaderClient.SetMultipleCheckboxById("Input_305", listing.ShowingRequirements); // Showing Requirements
+            this.uploaderClient.SetMultipleCheckboxById("Input_720", !string.IsNullOrEmpty(listing.ShowingContactType) ? listing.ShowingContactType : "OWN"); // Showing Contact Type
+            this.uploaderClient.WriteTextbox(By.Id("Input_310"), listing.OwnerName);
+            this.uploaderClient.WriteTextbox(By.Id("Input_311"), listing.ApptPhone, true); // Showing Contact Phone
+            this.uploaderClient.WriteTextbox(By.Id("Input_406"), listing.ShowingServicePhone, true);  // Showing Service Phone
+            this.uploaderClient.WriteTextbox(By.Id("Input_313"), listing.ShowingInstructions); // Showing Instructions
         }
 
         private void SetLotLongitudeAndLatitudeValues(LotListingRequest listing)
