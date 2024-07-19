@@ -73,6 +73,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
             FillLotSchoolsInfo(this.listingDetailResponse.SchoolsInfo);
             FillLotFeaturesInfo(this.listingDetailResponse.FeaturesInfo);
             FillLotFinantialInfo(this.listingDetailResponse.FinancialInfo);
+            FillLotShowingInfo(this.listingDetailResponse.ShowingInfo);
 
             return lotListingRequest;
 
@@ -209,6 +210,24 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.AgentBonusAmount = financialRequest.AgentBonusAmount;
                 lotListingRequest.AgentBonusAmountType = financialRequest.AgentBonusAmountType.ToStringFromEnumMember();
                 lotListingRequest.BonusExpirationDate = financialRequest.BonusExpirationDate;
+            }
+
+            void FillLotShowingInfo(LotShowingResponse financialRequest)
+            {
+                if (financialRequest is null)
+                {
+                    throw new ArgumentNullException(nameof(financialRequest));
+                }
+
+                lotListingRequest.OwnerName = financialRequest.OwnerName;
+                lotListingRequest.ShowingRequirements = financialRequest.ShowingRequirements?.ToStringFromEnumMembers();
+                lotListingRequest.ApptPhone = financialRequest.ApptPhone;
+                lotListingRequest.ShowingServicePhone = financialRequest.ShowingServicePhone;
+                lotListingRequest.ShowingInstructions = financialRequest.ShowingInstructions;
+                lotListingRequest.PublicRemarks = financialRequest.PublicRemarks;
+                lotListingRequest.Directions = financialRequest.Directions;
+                lotListingRequest.ShowingContactType = financialRequest.ShowingContactType?.ToStringFromEnumMembers();
+                lotListingRequest.ShowingContactName = financialRequest.ShowingContactName;
             }
         }
     }

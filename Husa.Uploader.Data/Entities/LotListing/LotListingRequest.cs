@@ -16,7 +16,6 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public Guid? SysModifiedBy { get; set; }
         public DateTime? SysModifiedOn { get; set; }
         public string BuilderName { get; set; }
-        public string OwnerName { get; set; }
         public string Address { get; set; }
         public string MLSNum { get; set; }
         public string ListStatus { get; set; }
@@ -121,6 +120,17 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public decimal? AgentBonusAmount { get; set; }
         public string AgentBonusAmountType { get; set; }
         public DateTime? BonusExpirationDate { get; set; }
+
+        // Lot Financial
+        public string OwnerName { get; set; }
+        public string ShowingRequirements { get; set; }
+        public string ApptPhone { get; set; }
+        public string ShowingServicePhone { get; set; }
+        public string ShowingInstructions { get; set; }
+        public string PublicRemarks { get; set; }
+        public string Directions { get; set; }
+        public string ShowingContactType { get; set; }
+        public string ShowingContactName { get; set; }
 
         public abstract LotListingRequest CreateFromApiResponse();
 
