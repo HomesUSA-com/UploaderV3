@@ -171,6 +171,12 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.OtherStructures = featureInfo.OtherStructures?.ToStringFromEnumMembers();
                 lotListingRequest.ExteriorFeatures = featureInfo.ExteriorFeatures?.ToStringFromEnumMembers();
                 lotListingRequest.NeighborhoodAmenities = featureInfo.NeighborhoodAmenities?.ToStringFromEnumMembers();
+                lotListingRequest.Disclosures = featureInfo.Disclosures?.ToStringFromEnumMembers();
+                lotListingRequest.DocumentsAvailable = featureInfo.DocumentsAvailable?.ToStringFromEnumMembers();
+                lotListingRequest.UtilitiesDescription = featureInfo.UtilitiesDescription?.ToStringFromEnumMembers();
+                lotListingRequest.GroundWaterConservDistric = featureInfo.GroundWaterConservDistric;
+                lotListingRequest.WaterSource = featureInfo.WaterSource?.ToStringFromEnumMembers();
+                lotListingRequest.WaterSewer = featureInfo.WaterSewer?.ToStringFromEnumMembers();
             }
         }
     }

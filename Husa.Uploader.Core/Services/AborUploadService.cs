@@ -570,6 +570,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillLotListingInformation(listing);
                     this.FillLotGeneralInformation(listing);
                     this.FillLotAdditionalInformation(listing);
+                    this.FillLotDocumentsUtilities(listing);
                 }
                 catch (Exception exception)
                 {
@@ -1309,6 +1310,20 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_269", listing.OtherStructures); // Other Structures
             this.uploaderClient.SetMultipleCheckboxById("Input_264", listing.ExteriorFeatures); // Exterior Features
             this.uploaderClient.SetMultipleCheckboxById("Input_268", listing.NeighborhoodAmenities); // Neighborhood Amenities
+        }
+
+        private void FillLotDocumentsUtilities(LotListingRequest listing)
+        {
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.ClickOnElement(By.LinkText("Documents & Utilities"));
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_271"));
+            this.uploaderClient.SetMultipleCheckboxById("Input_271", listing.Disclosures); // Disclosures
+            this.uploaderClient.SetMultipleCheckboxById("Input_272", listing.DocumentsAvailable); // Documents Available
+            this.uploaderClient.SetMultipleCheckboxById("Input_278", listing.UtilitiesDescription); // Utilities Description
+            this.uploaderClient.SetSelect(By.Id("Input_277"), listing.GroundWaterConservDistric ? "1" : "0"); // Ground Water ConservDistric YN
+            this.uploaderClient.SetMultipleCheckboxById("Input_275", listing.WaterSource); // Water Source
+            this.uploaderClient.SetMultipleCheckboxById("Input_276", listing.WaterSewer); // Water Sewer
         }
 
         private void SetLotLongitudeAndLatitudeValues(LotListingRequest listing)
