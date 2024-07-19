@@ -72,6 +72,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
             FillLotAddressInfo(this.listingDetailResponse.AddressInfo);
             FillLotSchoolsInfo(this.listingDetailResponse.SchoolsInfo);
             FillLotFeaturesInfo(this.listingDetailResponse.FeaturesInfo);
+            FillLotFinantialInfo(this.listingDetailResponse.FinancialInfo);
 
             return lotListingRequest;
 
@@ -177,6 +178,37 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.GroundWaterConservDistric = featureInfo.GroundWaterConservDistric;
                 lotListingRequest.WaterSource = featureInfo.WaterSource?.ToStringFromEnumMembers();
                 lotListingRequest.WaterSewer = featureInfo.WaterSewer?.ToStringFromEnumMembers();
+            }
+
+            void FillLotFinantialInfo(LotFinancialResponse financialRequest)
+            {
+                if (financialRequest is null)
+                {
+                    throw new ArgumentNullException(nameof(financialRequest));
+                }
+
+                lotListingRequest.HasHoa = financialRequest.HasHoa;
+                lotListingRequest.HoaName = financialRequest.HoaName;
+                lotListingRequest.HoaFee = financialRequest.HoaFee;
+                lotListingRequest.HOARequirement = financialRequest.HOARequirement?.ToStringFromEnumMember();
+                lotListingRequest.BillingFrequency = financialRequest.BillingFrequency?.ToStringFromEnumMember();
+                lotListingRequest.HoaIncludes = financialRequest.HoaIncludes?.ToStringFromEnumMembers();
+                lotListingRequest.AcceptableFinancing = financialRequest.AcceptableFinancing?.ToStringFromEnumMembers();
+                lotListingRequest.EstimatedTax = financialRequest.EstimatedTax;
+                lotListingRequest.TaxYear = financialRequest.TaxYear;
+                lotListingRequest.TaxAssesedValue = financialRequest.TaxAssesedValue;
+                lotListingRequest.TaxRate = financialRequest.TaxRate;
+                lotListingRequest.TaxExemptions = financialRequest.TaxExemptions?.ToStringFromEnumMembers();
+                lotListingRequest.LandTitleEvidence = financialRequest.LandTitleEvidence?.ToStringFromEnumMember();
+                lotListingRequest.PreferredTitleCompany = financialRequest.PreferredTitleCompany;
+                lotListingRequest.HasBuyerIncentive = financialRequest.HasBuyerIncentive;
+                lotListingRequest.BuyersAgentCommission = financialRequest.BuyersAgentCommission;
+                lotListingRequest.BuyersAgentCommissionType = financialRequest.BuyersAgentCommissionType.ToStringFromEnumMember();
+                lotListingRequest.HasAgentBonus = financialRequest.HasAgentBonus;
+                lotListingRequest.HasBonusWithAmount = financialRequest.HasBonusWithAmount;
+                lotListingRequest.AgentBonusAmount = financialRequest.AgentBonusAmount;
+                lotListingRequest.AgentBonusAmountType = financialRequest.AgentBonusAmountType.ToStringFromEnumMember();
+                lotListingRequest.BonusExpirationDate = financialRequest.BonusExpirationDate;
             }
         }
     }
