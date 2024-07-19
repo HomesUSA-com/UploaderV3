@@ -4,6 +4,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Abor.Api.Contracts.Response.ListingRequest.LotRequest;
     using Husa.Quicklister.Abor.Api.Contracts.Response.LotListing;
+    using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities.LotListing;
 
     public class AborLotListingRequest : LotListingRequest
@@ -190,15 +191,15 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
 
                 lotListingRequest.HasHoa = financialRequest.HasHoa;
                 lotListingRequest.HoaName = financialRequest.HoaName;
-                lotListingRequest.HoaFee = financialRequest.HoaFee;
+                lotListingRequest.HoaFee = financialRequest.HoaFee.DecimalToString();
                 lotListingRequest.HOARequirement = financialRequest.HOARequirement?.ToStringFromEnumMember();
                 lotListingRequest.BillingFrequency = financialRequest.BillingFrequency?.ToStringFromEnumMember();
                 lotListingRequest.HoaIncludes = financialRequest.HoaIncludes?.ToStringFromEnumMembers();
                 lotListingRequest.AcceptableFinancing = financialRequest.AcceptableFinancing?.ToStringFromEnumMembers();
-                lotListingRequest.EstimatedTax = financialRequest.EstimatedTax;
-                lotListingRequest.TaxYear = financialRequest.TaxYear;
-                lotListingRequest.TaxAssesedValue = financialRequest.TaxAssesedValue;
-                lotListingRequest.TaxRate = financialRequest.TaxRate;
+                lotListingRequest.EstimatedTax = financialRequest.EstimatedTax.DecimalToString();
+                lotListingRequest.TaxYear = financialRequest.TaxYear.IntegerToString();
+                lotListingRequest.TaxAssesedValue = financialRequest.TaxAssesedValue.IntegerToString();
+                lotListingRequest.TaxRate = financialRequest.TaxRate.DecimalToString();
                 lotListingRequest.TaxExemptions = financialRequest.TaxExemptions?.ToStringFromEnumMembers();
                 lotListingRequest.LandTitleEvidence = financialRequest.LandTitleEvidence?.ToStringFromEnumMember();
                 lotListingRequest.PreferredTitleCompany = financialRequest.PreferredTitleCompany;
@@ -207,27 +208,28 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.BuyersAgentCommissionType = financialRequest.BuyersAgentCommissionType.ToStringFromEnumMember();
                 lotListingRequest.HasAgentBonus = financialRequest.HasAgentBonus;
                 lotListingRequest.HasBonusWithAmount = financialRequest.HasBonusWithAmount;
-                lotListingRequest.AgentBonusAmount = financialRequest.AgentBonusAmount;
+                lotListingRequest.AgentBonusAmount = financialRequest.AgentBonusAmount.DecimalToString();
                 lotListingRequest.AgentBonusAmountType = financialRequest.AgentBonusAmountType.ToStringFromEnumMember();
                 lotListingRequest.BonusExpirationDate = financialRequest.BonusExpirationDate;
             }
 
-            void FillLotShowingInfo(LotShowingResponse financialRequest)
+            void FillLotShowingInfo(LotShowingResponse showingInfo)
             {
-                if (financialRequest is null)
+                if (showingInfo is null)
                 {
-                    throw new ArgumentNullException(nameof(financialRequest));
+                    throw new ArgumentNullException(nameof(showingInfo));
                 }
 
-                lotListingRequest.OwnerName = financialRequest.OwnerName;
-                lotListingRequest.ShowingRequirements = financialRequest.ShowingRequirements?.ToStringFromEnumMembers();
-                lotListingRequest.ApptPhone = financialRequest.ApptPhone;
-                lotListingRequest.ShowingServicePhone = financialRequest.ShowingServicePhone;
-                lotListingRequest.ShowingInstructions = financialRequest.ShowingInstructions;
-                lotListingRequest.PublicRemarks = financialRequest.PublicRemarks;
-                lotListingRequest.Directions = financialRequest.Directions;
-                lotListingRequest.ShowingContactType = financialRequest.ShowingContactType?.ToStringFromEnumMembers();
-                lotListingRequest.ShowingContactName = financialRequest.ShowingContactName;
+                lotListingRequest.AgentListApptPhone = showingInfo.ApptPhone;
+                lotListingRequest.OwnerName = showingInfo.OwnerName;
+                lotListingRequest.ShowingRequirements = showingInfo.ShowingRequirements?.ToStringFromEnumMembers();
+                lotListingRequest.ApptPhone = showingInfo.ApptPhone;
+                lotListingRequest.ShowingServicePhone = showingInfo.ShowingServicePhone;
+                lotListingRequest.ShowingInstructions = showingInfo.ShowingInstructions;
+                lotListingRequest.PublicRemarks = showingInfo.PublicRemarks;
+                lotListingRequest.Directions = showingInfo.Directions;
+                lotListingRequest.ShowingContactType = showingInfo.ShowingContactType?.ToStringFromEnumMembers();
+                lotListingRequest.ShowingContactName = showingInfo.ShowingContactName;
             }
         }
     }
