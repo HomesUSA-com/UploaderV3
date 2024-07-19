@@ -570,7 +570,8 @@ namespace Husa.Uploader.Core.Services
                     this.FillLotListingInformation(listing);
                     this.FillLotGeneralInformation(listing);
                     this.FillLotAdditionalInformation(listing);
-                    this.FillLotDocumentsUtilities(listing);
+                    this.FillLotDocumentsUtilitiesInformation(listing);
+                    this.FillLotFinancialInformation(listing);
                 }
                 catch (Exception exception)
                 {
@@ -1312,7 +1313,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_268", listing.NeighborhoodAmenities); // Neighborhood Amenities
         }
 
-        private void FillLotDocumentsUtilities(LotListingRequest listing)
+        private void FillLotDocumentsUtilitiesInformation(LotListingRequest listing)
         {
             this.uploaderClient.ScrollToTop();
             this.uploaderClient.ClickOnElement(By.LinkText("Documents & Utilities"));
@@ -1324,6 +1325,36 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetSelect(By.Id("Input_277"), listing.GroundWaterConservDistric ? "1" : "0"); // Ground Water ConservDistric YN
             this.uploaderClient.SetMultipleCheckboxById("Input_275", listing.WaterSource); // Water Source
             this.uploaderClient.SetMultipleCheckboxById("Input_276", listing.WaterSewer); // Water Sewer
+        }
+
+        private void FillLotFinancialInformation(LotListingRequest listing)
+        {
+            this.uploaderClient.ClickOnElement(By.LinkText("Financial"));
+            Thread.Sleep(200);
+            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
+
+            this.uploaderClient.SetSelect(By.Id("Input_282"), listing.HasHoa ? "1" : "0"); // Association YN
+
+            if (listing.HasHoa)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_283"), listing.HoaName, true); // HOA Name
+                this.uploaderClient.WriteTextbox(By.Id("Input_285"), listing.HoaFee, true); // HOA Fee
+                this.uploaderClient.SetSelect(By.Id("Input_286"), listing.HOARequirement, true); // Association Requirement
+                this.uploaderClient.SetSelect(By.Id("Input_287"), listing.BillingFrequency, true); // HOA Frequency
+                this.uploaderClient.SetMultipleCheckboxById("Input_290", listing.HoaIncludes); // HOA Fees Include (5)
+            }
+
+            this.uploaderClient.SetMultipleCheckboxById("Input_291", listing.AcceptableFinancing); // Acceptable Financing (5)
+            this.uploaderClient.WriteTextbox(By.Id("Input_296"), !string.IsNullOrEmpty(listing.EstimatedTax?.ToString()) ? listing.EstimatedTax : "0"); // Estimated Taxes ($)
+            this.uploaderClient.WriteTextbox(By.Id("Input_297"), listing.TaxYear); // Tax Year
+            this.uploaderClient.WriteTextbox(By.Id("Input_293"), !string.IsNullOrEmpty(listing.TaxAssesedValue?.ToString()) ? listing.TaxAssesedValue : "0"); // Tax Assessed Value
+            this.uploaderClient.WriteTextbox(By.Id("Input_294"), listing.TaxRate); // Tax Rate
+            this.uploaderClient.SetMultipleCheckboxById("Input_298", listing.TaxExemptions); // Tax Exemptions
+            this.uploaderClient.SetMultipleCheckboxById("Input_295", "None"); // Buyer Incentive
+            this.uploaderClient.SetSelect(By.Id("Input_554"), listing.LandTitleEvidence, true); // Land Title Evidence
+            this.uploaderClient.ScrollDown(400);
+            this.uploaderClient.WriteTextbox(By.Id("Input_728"), listing.PreferredTitleCompany); // Preferred Title Company
+            this.uploaderClient.SetMultipleCheckboxById("Input_299", "Funding"); // Possession
         }
 
         private void SetLotLongitudeAndLatitudeValues(LotListingRequest listing)

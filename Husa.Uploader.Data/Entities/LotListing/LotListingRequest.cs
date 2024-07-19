@@ -98,6 +98,30 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public string DocumentsAvailable { get; set; }
         public string WaterBodyName { get; set; }
 
+        // Lot Finantial
+        public bool HasHoa { get; set; }
+        public string HoaName { get; set; }
+        public decimal? HoaFee { get; set; }
+        public string HOARequirement { get; set; }
+        public string BillingFrequency { get; set; }
+        public string HoaIncludes { get; set; }
+        public string AcceptableFinancing { get; set; }
+        public decimal? EstimatedTax { get; set; }
+        public int? TaxYear { get; set; }
+        public int? TaxAssesedValue { get; set; }
+        public decimal? TaxRate { get; set; }
+        public string TaxExemptions { get; set; }
+        public string LandTitleEvidence { get; set; }
+        public string PreferredTitleCompany { get; set; }
+        public bool HasBuyerIncentive { get; set; }
+        public decimal? BuyersAgentCommission { get; set; }
+        public string BuyersAgentCommissionType { get; set; }
+        public bool HasAgentBonus { get; set; }
+        public bool HasBonusWithAmount { get; set; }
+        public decimal? AgentBonusAmount { get; set; }
+        public string AgentBonusAmountType { get; set; }
+        public DateTime? BonusExpirationDate { get; set; }
+
         public abstract LotListingRequest CreateFromApiResponse();
 
         public abstract LotListingRequest CreateFromApiResponseDetail();
