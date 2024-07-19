@@ -114,6 +114,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.CommercialAllowed = propertyInfo.CommercialAllowed;
                 lotListingRequest.SoilType = propertyInfo.SoilType.ToStringFromEnumMembers();
                 lotListingRequest.LotDescription = propertyInfo.LotDescription.ToStringFromEnumMembers();
+                lotListingRequest.PropCondition = propertyInfo.PropCondition.ToStringFromEnumMembers();
             }
 
             void FillLotAddressInfo(LotAddressResponse addressInfo)
@@ -167,6 +168,9 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.Fencing = featureInfo.Fencing?.ToStringFromEnumMembers();
                 lotListingRequest.RestrictionsDescription = featureInfo.RestrictionsDescription?.ToStringFromEnumMembers();
                 lotListingRequest.RoadSurface = featureInfo.RoadSurface?.ToStringFromEnumMembers();
+                lotListingRequest.OtherStructures = featureInfo.OtherStructures?.ToStringFromEnumMembers();
+                lotListingRequest.ExteriorFeatures = featureInfo.ExteriorFeatures?.ToStringFromEnumMembers();
+                lotListingRequest.NeighborhoodAmenities = featureInfo.NeighborhoodAmenities?.ToStringFromEnumMembers();
             }
         }
     }
