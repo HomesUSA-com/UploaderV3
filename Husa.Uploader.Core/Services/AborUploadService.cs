@@ -569,6 +569,7 @@ namespace Husa.Uploader.Core.Services
 
                     this.FillLotListingInformation(listing);
                     this.FillLotGeneralInformation(listing);
+                    this.FillLotAdditionalInformation(listing);
                 }
                 catch (Exception exception)
                 {
@@ -1296,6 +1297,18 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_261", listing.Fencing); // Fencing
             this.uploaderClient.SetMultipleCheckboxById("Input_240", listing.RestrictionsDescription); // Restrictions Description (5)
             this.uploaderClient.SetMultipleCheckboxById("Input_443", listing.RoadSurface); // Road Surface
+        }
+
+        private void FillLotAdditionalInformation(LotListingRequest listing)
+        {
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.ClickOnElement(By.LinkText("Additional"));
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_713"));
+            this.uploaderClient.SetMultipleCheckboxById("Input_713", listing.PropCondition); // Prop Condition
+            this.uploaderClient.SetMultipleCheckboxById("Input_269", listing.OtherStructures); // Other Structures
+            this.uploaderClient.SetMultipleCheckboxById("Input_264", listing.ExteriorFeatures); // Exterior Features
+            this.uploaderClient.SetMultipleCheckboxById("Input_268", listing.NeighborhoodAmenities); // Neighborhood Amenities
         }
 
         private void SetLotLongitudeAndLatitudeValues(LotListingRequest listing)
