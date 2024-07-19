@@ -573,6 +573,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillLotDocumentsUtilitiesInformation(listing);
                     this.FillLotFinancialInformation(listing);
                     this.FillLotShowingInformation(listing);
+                    this.FillLotAgentOfficeInformation(listing);
                 }
                 catch (Exception exception)
                 {
@@ -1371,6 +1372,25 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_311"), listing.ApptPhone, true); // Showing Contact Phone
             this.uploaderClient.WriteTextbox(By.Id("Input_406"), listing.ShowingServicePhone, true);  // Showing Service Phone
             this.uploaderClient.WriteTextbox(By.Id("Input_313"), listing.ShowingInstructions); // Showing Instructions
+        }
+
+        private void FillLotAgentOfficeInformation(LotListingRequest listing)
+        {
+            this.uploaderClient.ClickOnElement(By.LinkText("Agent/Office"));
+            Thread.Sleep(100);
+            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
+
+            this.uploaderClient.SetSelect(By.Id("Input_315"), "Percent"); // Sub Agency Compensation Type
+            this.uploaderClient.WriteTextbox(By.Id("Input_314"), "0.0"); // Sub Agency Compensation
+
+            if (listing.HasBonusWithAmount)
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_318"), listing.AgentBonusAmountType.ToCommissionType(), true); // Bonus to BA
+                this.uploaderClient.WriteTextbox(By.Id("Input_317"), listing.AgentBonusAmount); // Bonus to BA Amount
+            }
+
+            this.uploaderClient.SetSelect(By.Id("Input_319"), "0", true); // Dual Variable Compensation
+            this.uploaderClient.SetSelect(By.Id("Input_353"), "0", true); // Intermediary
         }
 
         private void SetLotLongitudeAndLatitudeValues(LotListingRequest listing)
