@@ -2,9 +2,13 @@ namespace Husa.Uploader.Data.Entities.LotListing
 {
     using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Crosscutting.Extensions;
 
     public abstract class LotListingRequest
     {
+        public const string DollarSign = "$";
+        private string agentListApptPhone;
+
         // Never remove this property
         public string WorkingBy { get; set; }
         public bool IsNewListing => string.IsNullOrWhiteSpace(this.MLSNum);
@@ -25,6 +29,8 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public Guid InternalLotRequestGUID { get; set; }
         public DateTime? ExpiredDate { get; set; }
         public string ExpectedActiveDate { get; set; }
+        public string AgentListApptPhone { get => this.agentListApptPhone.PhoneFormat(); set => this.agentListApptPhone = value; }
+
         public string StreetNum { get; set; }
         public string StreetName { get; set; }
         public string StreetType { get; set; }
@@ -100,15 +106,15 @@ namespace Husa.Uploader.Data.Entities.LotListing
         // Lot Finantial
         public bool HasHoa { get; set; }
         public string HoaName { get; set; }
-        public decimal? HoaFee { get; set; }
+        public string HoaFee { get; set; }
         public string HOARequirement { get; set; }
         public string BillingFrequency { get; set; }
         public string HoaIncludes { get; set; }
         public string AcceptableFinancing { get; set; }
-        public decimal? EstimatedTax { get; set; }
-        public int? TaxYear { get; set; }
-        public int? TaxAssesedValue { get; set; }
-        public decimal? TaxRate { get; set; }
+        public string EstimatedTax { get; set; }
+        public string TaxYear { get; set; }
+        public string TaxAssesedValue { get; set; }
+        public string TaxRate { get; set; }
         public string TaxExemptions { get; set; }
         public string LandTitleEvidence { get; set; }
         public string PreferredTitleCompany { get; set; }
@@ -117,7 +123,7 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public string BuyersAgentCommissionType { get; set; }
         public bool HasAgentBonus { get; set; }
         public bool HasBonusWithAmount { get; set; }
-        public decimal? AgentBonusAmount { get; set; }
+        public string AgentBonusAmount { get; set; }
         public string AgentBonusAmountType { get; set; }
         public DateTime? BonusExpirationDate { get; set; }
 
@@ -163,5 +169,103 @@ namespace Husa.Uploader.Data.Entities.LotListing
                 WorkingStatus = workingStatus,
                 WorkingSourceAction = workingSourceAction,
             };
+
+        public virtual string GetAgentRemarksMessage()
+        {
+            var privateRemarks = "LIMITED SERVICE LISTING: Buyer verifies dimensions & ISD info. Use Bldr contract.";
+
+            var bonusMessage = this.GetAgentBonusRemarksMessage();
+            if (!string.IsNullOrWhiteSpace(bonusMessage))
+            {
+                privateRemarks = $"{bonusMessage} {privateRemarks}";
+            }
+
+            var saleOfficeInfo = this.GetSalesAssociateRemarksMessage();
+            if (!string.IsNullOrWhiteSpace(saleOfficeInfo))
+            {
+                privateRemarks += $" {saleOfficeInfo}";
+            }
+
+            return privateRemarks;
+        }
+
+        public virtual string GetSalesAssociateRemarksMessage()
+        {
+            var phones = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(this.AgentListApptPhone))
+            {
+                phones.Add(this.AgentListApptPhone.PhoneFormat());
+            }
+
+            if (!string.IsNullOrWhiteSpace(this.ShowingServicePhone))
+            {
+                phones.Add(this.ShowingServicePhone.PhoneFormat());
+            }
+
+            return phones.Any()
+                ? string.Format("For more information call {0}. {1}.", string.Join(" or ", phones), string.Empty)
+                : string.Empty;
+        }
+
+        public virtual string GetAgentBonusAmount()
+        {
+            if (this.HasBonusWithAmount && !string.IsNullOrWhiteSpace(this.AgentBonusAmountType) && decimal.TryParse(this.AgentBonusAmount, out decimal agentBonusAmount))
+            {
+                return this.AgentBonusAmountType == DollarSign ? string.Format("${0:n2}", agentBonusAmount) : string.Format("{0}%", agentBonusAmount);
+            }
+
+            return string.Empty;
+        }
+
+        public virtual string GetAgentBonusRemarksMessage()
+        {
+            var hasBuyerIncentive = this.HasBuyerIncentive;
+
+            if (this.HasAgentBonus)
+            {
+                return hasBuyerIncentive
+                    ? "Contact Builder for Bonus & Buyer Incentive Information. "
+                    : "Contact Builder for Bonus Information. ";
+            }
+
+            if (hasBuyerIncentive)
+            {
+                return "Contact Builder for Buyer Incentive Information. ";
+            }
+
+            return string.Empty;
+        }
+
+        public virtual string GetPublicRemarks()
+        {
+            var builtNote = !string.IsNullOrWhiteSpace(this.MLSNum) ? $"MLS# {this.MLSNum}" : "MLS# ";
+
+            if (!string.IsNullOrWhiteSpace(this.CompanyName))
+            {
+                builtNote += !string.IsNullOrWhiteSpace(builtNote) ? " - " : string.Empty;
+                builtNote += "Built by " + this.CompanyName + " - ";
+            }
+
+            return GetRemarks();
+
+            string GetRemarks()
+            {
+                string remark;
+
+                if (string.IsNullOrWhiteSpace(this.PublicRemarks) || !this.PublicRemarks.Contains('~'))
+                {
+                    remark = (builtNote + (this.PublicRemarks ?? string.Empty)).RemoveSlash();
+                }
+                else
+                {
+                    var tempIndex = this.PublicRemarks.IndexOf("~", StringComparison.Ordinal) + 1;
+                    var temp = this.PublicRemarks[tempIndex..].Trim();
+                    remark = (builtNote + temp).RemoveSlash();
+                }
+
+                return remark.Replace("\t", string.Empty).Replace("\n", " ");
+            }
+        }
     }
 }

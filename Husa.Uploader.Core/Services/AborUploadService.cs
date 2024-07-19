@@ -574,6 +574,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillLotFinancialInformation(listing);
                     this.FillLotShowingInformation(listing);
                     this.FillLotAgentOfficeInformation(listing);
+                    this.FillLotRemarksInformation(listing);
                 }
                 catch (Exception exception)
                 {
@@ -1369,7 +1370,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_305", listing.ShowingRequirements); // Showing Requirements
             this.uploaderClient.SetMultipleCheckboxById("Input_720", !string.IsNullOrEmpty(listing.ShowingContactType) ? listing.ShowingContactType : "OWN"); // Showing Contact Type
             this.uploaderClient.WriteTextbox(By.Id("Input_310"), listing.OwnerName);
-            this.uploaderClient.WriteTextbox(By.Id("Input_311"), listing.ApptPhone, true); // Showing Contact Phone
+            this.uploaderClient.WriteTextbox(By.Id("Input_311"), listing.AgentListApptPhone, true); // Showing Contact Phone
             this.uploaderClient.WriteTextbox(By.Id("Input_406"), listing.ShowingServicePhone, true);  // Showing Service Phone
             this.uploaderClient.WriteTextbox(By.Id("Input_313"), listing.ShowingInstructions); // Showing Instructions
         }
@@ -1391,6 +1392,29 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.SetSelect(By.Id("Input_319"), "0", true); // Dual Variable Compensation
             this.uploaderClient.SetSelect(By.Id("Input_353"), "0", true); // Intermediary
+        }
+
+        private void FillLotRemarksInformation(LotListingRequest listing)
+        {
+            this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
+            Thread.Sleep(100);
+            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_320"), listing.Directions); // Directions
+            this.uploaderClient.ScrollDown(200);
+
+            this.UpdateLotPublicRemarksInRemarksTab(listing);
+
+            if (listing.IsNewListing)
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_329"), "1"); // Internet
+                this.uploaderClient.ScrollDown();
+                this.uploaderClient.SetMultipleCheckboxById("Input_333", "APT"); // Listing Will Appear On (4)
+
+                this.uploaderClient.SetSelect(By.Id("Input_330"), "1"); // Internet Automated Valuation Display
+                this.uploaderClient.SetSelect(By.Id("Input_331"), "1"); // Internet Consumer Comment
+                this.uploaderClient.SetSelect(By.Id("Input_332"), "1"); // Internet Address Display
+            }
         }
 
         private void SetLotLongitudeAndLatitudeValues(LotListingRequest listing)
@@ -1415,6 +1439,15 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(1000);
                 }
             }
+        }
+
+        private void UpdateLotPublicRemarksInRemarksTab(LotListingRequest listing)
+        {
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_322"));
+            var remarks = listing.GetPublicRemarks();
+            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.GetAgentRemarksMessage());
+            this.uploaderClient.WriteTextbox(By.Id("Input_322"), remarks); // Internet / Remarks / Desc. of Property
+            this.uploaderClient.WriteTextbox(By.Id("Input_323"), remarks); // Syndication Remarks
         }
     }
 }
