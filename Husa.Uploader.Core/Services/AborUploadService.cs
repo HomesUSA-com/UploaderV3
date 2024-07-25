@@ -576,6 +576,11 @@ namespace Husa.Uploader.Core.Services
                     this.FillLotAgentOfficeInformation(listing);
                     this.FillLotRemarksInformation(listing);
 
+                    if (listing.IsNewListing)
+                    {
+                        await this.UpdateLotVirtualTour(listing, cancellationToken);
+                    }
+
                     await this.FillLotMedia(listing, cancellationToken);
                 }
                 catch (Exception exception)
@@ -1509,6 +1514,33 @@ namespace Husa.Uploader.Core.Services
                 }
 
                 this.uploaderClient.ScrollDown(200);
+            }
+        }
+
+        private async Task UpdateLotVirtualTour(LotListingRequest listing, CancellationToken cancellationToken = default)
+        {
+            var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.LotListingRequestID, market: MarketCode.Austin, cancellationToken);
+
+            if (!virtualTours.Any())
+            {
+                return;
+            }
+
+            this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
+            Thread.Sleep(200);
+            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
+
+            var firstVirtualTour = virtualTours.FirstOrDefault();
+            if (firstVirtualTour != null)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_325"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+            }
+
+            virtualTours = virtualTours.Skip(1).ToList();
+            var secondVirtualTour = virtualTours.FirstOrDefault();
+            if (secondVirtualTour != null)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_324"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
             }
         }
     }
