@@ -487,6 +487,11 @@ namespace Husa.Uploader.Core.Services
             throw new NotImplementedException();
         }
 
+        public Task<UploadResult> UpdateLotImages(LotListingRequest listing, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
         private void NavigateToNewPropertyInput()
         {
             this.uploaderClient.NavigateToUrl("https://matrix.ctxmls.com/Matrix/Input");
