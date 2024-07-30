@@ -23,6 +23,7 @@ namespace Husa.Uploader.Desktop.Configuration
     using Husa.Uploader.Crosscutting.Constants;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Interfaces;
+    using Husa.Uploader.Data.Interfaces.LotListing;
     using Husa.Uploader.Data.Repositories;
     using Husa.Uploader.Desktop.Factories;
     using Husa.Uploader.Desktop.ViewModels;
@@ -98,6 +99,7 @@ namespace Husa.Uploader.Desktop.Configuration
         {
             services.AddTransient<IMediaRepository, MediaRepository>();
             services.AddTransient<IListingRequestRepository, ListingRequestRepository>();
+            services.AddTransient<ILotListingRequestRepository, LotListingRequestRepository>();
         }
 
         public static void ConfigureServices(this IServiceCollection services)
