@@ -617,6 +617,33 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
+        public Task<UploadResult> UpdateLotImages(LotListingRequest listing, CancellationToken cancellationToken = default)
+        {
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            return UpdateLotListingImages();
+            async Task<UploadResult> UpdateLotListingImages()
+            {
+                this.logger.LogInformation("Updating media for the Lot listing {requestId}", listing.LotListingRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.LotListingRequestID, listing.IsNewListing);
+
+                await this.Login(listing.CompanyId);
+                this.NavigateToQuickEdit(listing.MLSNum);
+
+                // Enter Manage Photos
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"), cancellationToken);
+                this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSave"), cancellationToken);
+
+                this.DeleteAllImages();
+                await this.ProcessLotImages(listing, cancellationToken);
+                return UploadResult.Success;
+            }
+        }
+
         private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
             var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.Austin, cancellationToken);
