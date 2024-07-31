@@ -10,7 +10,6 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
-    using Husa.Uploader.Crosscutting.Extensions.Ctx;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.MarketRequests;
@@ -778,10 +777,6 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElement(By.LinkText("Brokerage/Showing Information")); // Brokerage/Showing Information
 
             // Brokerage
-            this.uploaderClient.SetSelect(By.Id("Input_632"), listing.BuyerIncentiveDesc.ToCommissionType(), fieldLabel: "Buyer Agency $ or %", tabName);
-            this.uploaderClient.WriteTextbox(By.Id("Input_633"), listing.BuyerIncentive); // Buyer Agency Compensation
-            this.uploaderClient.WriteTextbox(By.Id("Input_635"), value: "0"); // Sub Agency Compensation (default hardcode "0")
-            this.uploaderClient.SetSelect(By.Id("Input_636"), value: "Pct", fieldLabel: "Sub Agency $ or % ", tabName); // Sub Agency $ or % (default hardcode "%")
             this.uploaderClient.SetSelect(By.Id("Input_637"), listing.ProspectsExempt, "Prospects Exempt", tabName); // Prospects Exempt (default hardcode "No")
             this.uploaderClient.WriteTextbox(By.Id("Input_638"), listing.TitleCo); // Pref Title Company
             this.uploaderClient.WriteTextbox(By.Id("Input_639"), listing.EarnestMoney); // Earnest Money

@@ -166,7 +166,7 @@ namespace Husa.Uploader.Data.Tests
             var result = sut.GetAgentBonusRemarksMessage();
 
             // Assert
-            Assert.Contains("Contact Builder for Bonus Information", result);
+            Assert.Contains("Contact Builder for Seller Concession Information", result);
         }
 
         [Fact]
@@ -183,7 +183,7 @@ namespace Husa.Uploader.Data.Tests
             var result = sut.GetAgentBonusRemarksMessage();
 
             // Assert
-            Assert.Contains("Contact Builder for Bonus & Buyer Incentive Information", result);
+            Assert.Contains("Contact Builder for Seller Concession & Buyer Incentive Information", result);
         }
 
         [Fact]
@@ -220,7 +220,7 @@ namespace Husa.Uploader.Data.Tests
             var result = sut.GetAgentBonusRemarksMessage();
 
             // Assert
-            Assert.Contains("1% Bonus. Contact Builder for Buyer Incentive Information", result);
+            Assert.Contains("Contact Builder for Buyer Incentive Information", result);
         }
 
         [Fact]
@@ -240,7 +240,7 @@ namespace Husa.Uploader.Data.Tests
             var result = sut.GetAgentBonusRemarksMessage();
 
             // Assert
-            Assert.Contains("$1,344.78 Bonus", result);
+            Assert.Empty(result);
         }
 
         [Fact]

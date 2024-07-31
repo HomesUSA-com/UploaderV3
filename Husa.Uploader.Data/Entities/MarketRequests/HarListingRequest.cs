@@ -378,20 +378,5 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.OpenHouse = this.OpenHouse;
             }
         }
-
-        public override string GetAgentBonusRemarksMessage()
-        {
-            var agentBonusAmount = this.GetAgentBonusAmount();
-            if (string.IsNullOrWhiteSpace(agentBonusAmount))
-            {
-                return base.GetAgentBonusRemarksMessage();
-            }
-
-            var agentAmount = agentBonusAmount + " Bonus. ";
-            var hasBuyerIncentive = this.BuyerCheckBox.HasValue && this.BuyerCheckBox.Value;
-            return hasBuyerIncentive
-                ? agentAmount + "Contact Builder for Bonus & Buyer Incentive Information. "
-                : agentAmount + "Contact Builder for Bonus Information. ";
-        }
     }
 }

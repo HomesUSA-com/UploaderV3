@@ -1344,9 +1344,6 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Name("OCCUPANCY"), entry: "VACNT", isElementOptional: true); // Occupancy
             this.uploaderClient.WriteTextbox(By.Name("CURRENTLY_LEASED"), entry: "NO", isElementOptional: true); // Currently Being Leased
             this.uploaderClient.WriteTextbox(By.Name("OWNER"), listing.OwnerName); // Owner
-            this.uploaderClient.WriteTextbox(By.Name("SUBAGTCOM"), entry: "0%"); // Subagent Com
-            this.uploaderClient.WriteTextbox(By.Name("BUYAGTCOM"), listing.GetBuyerAgentComp(listing.CompBuy, listing.CompBuyType)); // Buyer Agent Com
-            this.uploaderClient.WriteTextbox(By.Name("BONUS"), entry: listing.GetAgentBonusAmount()); // Bonus
 
             this.uploaderClient.WriteTextbox(By.Name("LREAORLREB"), "NO"); // Owner LREA/LREB
             this.uploaderClient.WriteTextbox(By.Name("PRFTITLECO"), listing.TitleCo); // Preferred Title Company
