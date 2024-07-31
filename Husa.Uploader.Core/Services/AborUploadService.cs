@@ -10,6 +10,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
+    using Husa.Uploader.Crosscutting.Extensions.Abor;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.LotListing;
