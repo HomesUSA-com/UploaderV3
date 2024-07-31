@@ -12,6 +12,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
@@ -473,6 +474,16 @@ namespace Husa.Uploader.Core.Services
                 this.AddOpenHouses(listing);
                 return UploadResult.Success;
             }
+        }
+
+        public Task<UploadResult> UploadLot(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<UploadResult> UpdateLotStatus(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        {
+            throw new NotImplementedException();
         }
 
         private void NavigateToNewPropertyInput()
