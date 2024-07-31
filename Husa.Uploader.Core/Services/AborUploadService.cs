@@ -12,6 +12,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
@@ -530,6 +531,114 @@ namespace Husa.Uploader.Core.Services
 
                 this.CleanOpenHouse();
                 this.AddOpenHouses(listing);
+                return UploadResult.Success;
+            }
+        }
+
+        public Task<UploadResult> UploadLot(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        {
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            return UploadLotListing(logIn);
+
+            async Task<UploadResult> UploadLotListing(bool logIn)
+            {
+                this.logger.LogInformation("Uploading the information for the lot listing {requestId}", listing.LotListingRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.LotListingRequestID, listing.IsNewListing);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                }
+
+                Thread.Sleep(2000);
+
+                try
+                {
+                    if (listing.IsNewListing)
+                    {
+                        this.NavigateToNewLotPropertyInput();
+                    }
+                    else
+                    {
+                        this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
+                    }
+
+                    this.FillLotListingInformation(listing);
+                    this.FillLotGeneralInformation(listing);
+                    this.FillLotAdditionalInformation(listing);
+                    this.FillLotDocumentsUtilitiesInformation(listing);
+                    this.FillLotFinancialInformation(listing);
+                    this.FillLotShowingInformation(listing);
+                    this.FillLotAgentOfficeInformation(listing);
+                    this.FillLotRemarksInformation(listing);
+
+                    if (listing.IsNewListing)
+                    {
+                        await this.UpdateLotVirtualTour(listing, cancellationToken);
+                    }
+
+                    await this.FillLotMedia(listing, cancellationToken);
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.LotListingRequestID);
+                    return UploadResult.Failure;
+                }
+
+                return UploadResult.Success;
+            }
+        }
+
+        public Task<UploadResult> UpdateLotStatus(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        {
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            return UpdateLotListingStatus(logIn);
+
+            async Task<UploadResult> UpdateLotListingStatus(bool logIn)
+            {
+                this.logger.LogInformation("Editing the status information for the lot listing {requestId}", listing.LotListingRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.LotListingRequestID, isNewListing: false);
+
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                    Thread.Sleep(1000);
+                }
+
+                return UploadResult.Success;
+            }
+        }
+
+        public Task<UploadResult> UpdateLotImages(LotListingRequest listing, CancellationToken cancellationToken = default)
+        {
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            return UpdateLotListingImages();
+            async Task<UploadResult> UpdateLotListingImages()
+            {
+                this.logger.LogInformation("Updating media for the Lot listing {requestId}", listing.LotListingRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.LotListingRequestID, listing.IsNewListing);
+
+                await this.Login(listing.CompanyId);
+                this.NavigateToQuickEdit(listing.MLSNum);
+
+                // Enter Manage Photos
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"), cancellationToken);
+                this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSave"), cancellationToken);
+
+                this.DeleteAllImages();
+                await this.ProcessLotImages(listing, cancellationToken);
                 return UploadResult.Success;
             }
         }
@@ -1106,6 +1215,344 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(800));
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
             this.uploaderClient.ResetImplicitWait();
+        }
+
+        private void NavigateToNewLotPropertyInput()
+        {
+            this.uploaderClient.NavigateToUrl("https://matrix.abor.com/Matrix/AddEdit");
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Add new"));
+            this.uploaderClient.ClickOnElement(By.LinkText("Add new"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Land (Lot) Input Form"));
+            this.uploaderClient.ClickOnElement(By.LinkText("Land (Lot) Input Form"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.PartialLinkText("Start with a blank Property"));
+            this.uploaderClient.ClickOnElement(By.PartialLinkText("Start with a blank Property"));
+
+            Thread.Sleep(1000);
+        }
+
+        private void FillLotListingInformation(LotListingRequest listing)
+        {
+            const string tabName = "Listing";
+            this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // click in tab Listing Information
+
+            // Listing Information
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_77"));
+            this.uploaderClient.WriteTextbox(By.Id("Input_77"), listing.ListPrice); // List Price
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_179"));
+            this.uploaderClient.SetSelect(By.Id("Input_179"), "EA"); // List Agreement Type
+            this.uploaderClient.SetSelect(By.Id("Input_341"), "LIMIT"); // Listing Service
+            this.uploaderClient.SetMultipleCheckboxById("Input_180", "STANDARD"); // Special Listing Conditions
+            this.uploaderClient.SetSelect(By.Id("Input_181"), "A"); // List Agreement Document
+
+            if (listing.ListDate.HasValue)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ListDate.Value.AddYears(1).ToShortDateString()); // Expiration Date
+            }
+            else
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_83"), DateTime.Now.AddYears(1).ToShortDateString()); // Expiration Date
+            }
+
+            this.uploaderClient.SetSelect(By.Id("Input_545"), listing.BuilderRestrictions ? "1" : "0"); // Association YN
+
+            // Location Information
+            this.uploaderClient.WriteTextbox(By.Id("Input_197"), listing.LegalDescription); // Tax Legal Description
+            this.SetLotLongitudeAndLatitudeValues(listing);
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_183"), listing.StreetNum); // Street #
+            this.uploaderClient.WriteTextbox(By.Id("Input_185"), listing.StreetName); // Street Name
+            this.uploaderClient.SetSelect(By.Id("Input_186"), listing.StreetType); // Street Type (NM)
+            this.uploaderClient.WriteTextbox(By.Id("Input_190"), !string.IsNullOrEmpty(listing.UnitNumber) ? listing.UnitNumber : string.Empty); // Unit # (NM)
+            this.uploaderClient.SetSelect(By.Id("Input_191"), listing.County); // County
+            this.uploaderClient.SetSelectIfExist(By.Id("Input_192"), listing.CityCode); // City
+            this.uploaderClient.SetSelect(By.Id("Input_193"), listing.State); // State
+            this.uploaderClient.SetSelect(By.Id("Input_399"), "US"); // Country
+            this.uploaderClient.WriteTextbox(By.Id("Input_194"), listing.Zip); // ZIP Code
+            this.uploaderClient.WriteTextbox(By.Id("Input_196"), listing.Subdivision); // Subdivision
+            this.uploaderClient.WriteTextbox(By.Id("Input_199"), listing.OtherFees); // Tax Lot
+            this.uploaderClient.WriteTextbox(By.Id("Input_201"), listing.TaxId); // Parcel ID
+            this.uploaderClient.SetSelect(By.Id("Input_202"), "0"); // Additional Parcels Y/N
+
+            this.uploaderClient.ScrollDown(1000);
+            this.uploaderClient.FillFieldSingleOption("Input_204", listing.MlsArea); // MLS Area
+            this.uploaderClient.SetMultipleCheckboxById("Input_343", listing.FemaFloodPlain); // FEMA 100 Yr Flood Plain
+            this.uploaderClient.SetSelect(By.Id("Input_206"), "N"); // ETJ
+
+            // School Information
+            this.uploaderClient.SetSelectIfExist(By.Id("Input_207"), listing.SchoolDistrict); // School District
+            this.uploaderClient.SetSelectIfExist(By.Id("Input_209"), listing.SchoolName1); // School District/Elementary A
+            this.uploaderClient.SetSelectIfExist(By.Id("Input_210"), listing.SchoolName2); // School District/Middle / Intermediate School
+            this.uploaderClient.SetSelectIfExist(By.Id("Input_211"), listing.HighSchool); // School District/9 Grade / High School
+            this.uploaderClient.WriteTextbox(By.Id("Input_212"), listing.SchoolName4); // Elementary Other
+            this.uploaderClient.WriteTextbox(By.Id("Input_213"), listing.SchoolName5); // Middle or Junior Other
+            this.uploaderClient.WriteTextbox(By.Id("Input_214"), listing.SchoolName6); // High School Other
+        }
+
+        private void FillLotGeneralInformation(LotListingRequest listing)
+        {
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.ClickOnElement(By.LinkText("General"));
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_461"));
+            this.uploaderClient.SetSelect(By.Id("Input_461"), listing.PropertySubType); // Property Sub Type (1)
+            this.uploaderClient.SetSelect(By.Id("Input_445"), listing.SurfaceWater ? "1" : "0"); // SurfaceWater YN
+            this.uploaderClient.SetSelect(By.Id("Input_235"), listing.DistanceToWaterAccess); // Distance To Water Access
+            this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.LotSize); // Lot Size Acres
+            this.uploaderClient.WriteTextbox(By.Id("Input_241"), listing.LotDimension); // Lot Dimensions (Frontage x Depth)
+            this.uploaderClient.WriteTextbox(By.Id("Input_352"), listing.AlsoListedAs); // Also Listed As (Enter ML #)
+            this.uploaderClient.SetMultipleCheckboxById("Input_442", listing.TypeOfHomeAllowed); // Type Of Home Allowed
+            this.uploaderClient.SetSelect(By.Id("Input_462"), listing.LiveStock ? "1" : "0"); // LiveStock
+            this.uploaderClient.WriteTextbox(By.Id("Input_433"), listing.NumberOfPonds); // Ponds
+            this.uploaderClient.WriteTextbox(By.Id("Input_434"), listing.NumberOfWells); // Wells
+            this.uploaderClient.SetSelect(By.Id("Input_446"), listing.CommercialAllowed ? "1" : "0"); // Commercial Allowed YN
+            this.uploaderClient.SetSelect(By.Id("Input_238"), listing.WaterBodyName); // Water Body Name
+            this.uploaderClient.SetMultipleCheckboxById("Input_234", listing.View); // View (4)
+            this.uploaderClient.SetMultipleCheckboxById("Input_249", listing.HorseAmenities); // Horse Amenities
+            this.uploaderClient.SetMultipleCheckboxById("Input_439", listing.SoilType); // Soil Type
+            this.uploaderClient.SetMultipleCheckboxById("Input_237", listing.WaterfrontFeatures); // Waterfront Features
+
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.ScrollDown(100);
+            this.uploaderClient.SetMultipleCheckboxById("Input_441", listing.MineralsFeatures); // Minerals
+            this.uploaderClient.SetMultipleCheckboxById("Input_244", listing.LotDescription); // Lot Description (4)
+
+            this.uploaderClient.SetMultipleCheckboxById("Input_261", listing.Fencing); // Fencing
+            this.uploaderClient.SetMultipleCheckboxById("Input_240", listing.RestrictionsDescription); // Restrictions Description (5)
+            this.uploaderClient.SetMultipleCheckboxById("Input_443", listing.RoadSurface); // Road Surface
+        }
+
+        private void FillLotAdditionalInformation(LotListingRequest listing)
+        {
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.ClickOnElement(By.LinkText("Additional"));
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_713"));
+            this.uploaderClient.SetMultipleCheckboxById("Input_713", listing.PropCondition); // Prop Condition
+            this.uploaderClient.SetMultipleCheckboxById("Input_269", listing.OtherStructures); // Other Structures
+            this.uploaderClient.SetMultipleCheckboxById("Input_264", listing.ExteriorFeatures); // Exterior Features
+            this.uploaderClient.SetMultipleCheckboxById("Input_268", listing.NeighborhoodAmenities); // Neighborhood Amenities
+        }
+
+        private void FillLotDocumentsUtilitiesInformation(LotListingRequest listing)
+        {
+            this.uploaderClient.ScrollToTop();
+            this.uploaderClient.ClickOnElement(By.LinkText("Documents & Utilities"));
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_271"));
+            this.uploaderClient.SetMultipleCheckboxById("Input_271", listing.Disclosures); // Disclosures
+            this.uploaderClient.SetMultipleCheckboxById("Input_272", listing.DocumentsAvailable); // Documents Available
+            this.uploaderClient.SetMultipleCheckboxById("Input_278", listing.UtilitiesDescription); // Utilities Description
+            this.uploaderClient.SetSelect(By.Id("Input_277"), listing.GroundWaterConservDistric ? "1" : "0"); // Ground Water ConservDistric YN
+            this.uploaderClient.SetMultipleCheckboxById("Input_275", listing.WaterSource); // Water Source
+            this.uploaderClient.SetMultipleCheckboxById("Input_276", listing.WaterSewer); // Water Sewer
+        }
+
+        private void FillLotFinancialInformation(LotListingRequest listing)
+        {
+            this.uploaderClient.ClickOnElement(By.LinkText("Financial"));
+            Thread.Sleep(200);
+            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
+
+            this.uploaderClient.SetSelect(By.Id("Input_282"), listing.HasHoa ? "1" : "0"); // Association YN
+
+            if (listing.HasHoa)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_283"), listing.HoaName, true); // HOA Name
+                this.uploaderClient.WriteTextbox(By.Id("Input_285"), listing.HoaFee, true); // HOA Fee
+                this.uploaderClient.SetSelect(By.Id("Input_286"), listing.HOARequirement, true); // Association Requirement
+                this.uploaderClient.SetSelect(By.Id("Input_287"), listing.BillingFrequency, true); // HOA Frequency
+                this.uploaderClient.SetMultipleCheckboxById("Input_290", listing.HoaIncludes); // HOA Fees Include (5)
+            }
+
+            this.uploaderClient.SetMultipleCheckboxById("Input_291", listing.AcceptableFinancing); // Acceptable Financing (5)
+            this.uploaderClient.WriteTextbox(By.Id("Input_296"), !string.IsNullOrEmpty(listing.EstimatedTax?.ToString()) ? listing.EstimatedTax : "0"); // Estimated Taxes ($)
+            this.uploaderClient.WriteTextbox(By.Id("Input_297"), listing.TaxYear); // Tax Year
+            this.uploaderClient.WriteTextbox(By.Id("Input_293"), !string.IsNullOrEmpty(listing.TaxAssesedValue?.ToString()) ? listing.TaxAssesedValue : "0"); // Tax Assessed Value
+            this.uploaderClient.WriteTextbox(By.Id("Input_294"), listing.TaxRate); // Tax Rate
+            this.uploaderClient.SetMultipleCheckboxById("Input_298", listing.TaxExemptions); // Tax Exemptions
+            this.uploaderClient.SetMultipleCheckboxById("Input_295", "None"); // Buyer Incentive
+            this.uploaderClient.SetSelect(By.Id("Input_554"), listing.LandTitleEvidence, true); // Land Title Evidence
+            this.uploaderClient.ScrollDown(400);
+            this.uploaderClient.WriteTextbox(By.Id("Input_728"), listing.PreferredTitleCompany); // Preferred Title Company
+            this.uploaderClient.SetMultipleCheckboxById("Input_299", "Funding"); // Possession
+        }
+
+        private void FillLotShowingInformation(LotListingRequest listing)
+        {
+            this.uploaderClient.ClickOnElement(By.LinkText("Showing"));
+            Thread.Sleep(200);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_302"));
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_302"), listing.OwnerName); // Owner Name
+            this.uploaderClient.SetMultipleCheckboxById("Input_305", listing.ShowingRequirements); // Showing Requirements
+            this.uploaderClient.SetMultipleCheckboxById("Input_720", !string.IsNullOrEmpty(listing.ShowingContactType) ? listing.ShowingContactType : "OWN"); // Showing Contact Type
+            this.uploaderClient.WriteTextbox(By.Id("Input_310"), listing.OwnerName);
+            this.uploaderClient.WriteTextbox(By.Id("Input_311"), listing.AgentListApptPhone, true); // Showing Contact Phone
+            this.uploaderClient.WriteTextbox(By.Id("Input_406"), listing.ShowingServicePhone, true);  // Showing Service Phone
+            this.uploaderClient.WriteTextbox(By.Id("Input_313"), listing.ShowingInstructions); // Showing Instructions
+        }
+
+        private void FillLotAgentOfficeInformation(LotListingRequest listing)
+        {
+            this.uploaderClient.ClickOnElement(By.LinkText("Agent/Office"));
+            Thread.Sleep(100);
+            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
+
+            this.uploaderClient.SetSelect(By.Id("Input_315"), "Percent"); // Sub Agency Compensation Type
+            this.uploaderClient.WriteTextbox(By.Id("Input_314"), "0.0"); // Sub Agency Compensation
+
+            if (listing.HasBonusWithAmount)
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_318"), listing.AgentBonusAmountType.ToCommissionType(), true); // Bonus to BA
+                this.uploaderClient.WriteTextbox(By.Id("Input_317"), listing.AgentBonusAmount); // Bonus to BA Amount
+            }
+
+            this.uploaderClient.SetSelect(By.Id("Input_319"), "0", true); // Dual Variable Compensation
+            this.uploaderClient.SetSelect(By.Id("Input_353"), "0", true); // Intermediary
+        }
+
+        private void FillLotRemarksInformation(LotListingRequest listing)
+        {
+            this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
+            Thread.Sleep(100);
+            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_320"), listing.Directions); // Directions
+            this.uploaderClient.ScrollDown(200);
+
+            this.UpdateLotPublicRemarksInRemarksTab(listing);
+
+            if (listing.IsNewListing)
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_329"), "1"); // Internet
+                this.uploaderClient.ScrollDown();
+                this.uploaderClient.SetMultipleCheckboxById("Input_333", "APT"); // Listing Will Appear On (4)
+
+                this.uploaderClient.SetSelect(By.Id("Input_330"), "1"); // Internet Automated Valuation Display
+                this.uploaderClient.SetSelect(By.Id("Input_331"), "1"); // Internet Consumer Comment
+                this.uploaderClient.SetSelect(By.Id("Input_332"), "1"); // Internet Address Display
+            }
+        }
+
+        private void SetLotLongitudeAndLatitudeValues(LotListingRequest listing)
+        {
+            if (!listing.IsNewListing)
+            {
+                this.logger.LogInformation("Skipping configuration of latitude and longitude for listing {address} because it already has an mls number", $"{listing.StreetNum} {listing.StreetName}");
+                return;
+            }
+
+            if (listing.UpdateGeocodes)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("INPUT__146"), value: listing.Latitude); // Latitude
+                this.uploaderClient.WriteTextbox(By.Id("INPUT__168"), value: listing.Longitude); // Longitude
+            }
+            else
+            {
+                var getLatLongFromAddress = "Get Lat/Long from address";
+                if (this.uploaderClient.FindElements(By.LinkText(getLatLongFromAddress))?.Any() == true)
+                {
+                    this.uploaderClient.ClickOnElement(By.LinkText(getLatLongFromAddress));
+                    Thread.Sleep(1000);
+                }
+            }
+        }
+
+        private void UpdateLotPublicRemarksInRemarksTab(LotListingRequest listing)
+        {
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_322"));
+            var remarks = listing.GetPublicRemarks();
+            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.GetAgentRemarksMessage());
+            this.uploaderClient.WriteTextbox(By.Id("Input_322"), remarks); // Internet / Remarks / Desc. of Property
+            this.uploaderClient.WriteTextbox(By.Id("Input_323"), remarks); // Syndication Remarks
+        }
+
+        private async Task FillLotMedia(LotListingRequest listing, CancellationToken cancellationToken)
+        {
+            if (!listing.IsNewListing)
+            {
+                this.logger.LogInformation("Skipping media upload for existing lot listing {listingId}", listing.LotListingRequestID);
+                return;
+            }
+
+            // Enter Manage Photos
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSaveIncomplete"), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.Id("m_lbSaveIncomplete"));
+            Thread.Sleep(1000);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbManagePhotos"), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.Id("m_lbManagePhotos"));
+
+            await this.ProcessLotImages(listing, cancellationToken);
+        }
+
+        [SuppressMessage("SonarLint", "S2583", Justification = "Ignored due to suspected false positive")]
+        private async Task ProcessLotImages(LotListingRequest listing, CancellationToken cancellationToken)
+        {
+            var media = await this.mediaRepository.GetListingImages(listing.LotListingRequestID, market: this.CurrentMarket, cancellationToken);
+            var imageOrder = 0;
+            var imageRow = 0;
+            var imageCell = 0;
+            var maxCol = 5;
+            string mediaFolderName = "Husa.Core.Uploader";
+            var folder = Path.Combine(Path.GetTempPath(), mediaFolderName, Path.GetRandomFileName());
+            Directory.CreateDirectory(folder);
+            var captionImageId = string.Empty;
+
+            foreach (var image in media)
+            {
+                captionImageId = $"m_rptPhotoRows_ctl{imageRow:D2}_m_rptPhotoCells_ctl{imageCell:D2}_m_ucPhotoCell_m_tbxDescription";
+
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
+                await this.mediaRepository.PrepareImage(image, MarketCode.Austin, cancellationToken, folder);
+                this.uploaderClient.FindElement(By.Id("m_ucImageLoader_m_tblImageLoader")).FindElement(By.CssSelector("input[type=file]")).SendKeys(image.PathOnDisk);
+                this.WaitForElementAndThenDoAction(
+                        By.Id(captionImageId),
+                        (element) =>
+                        {
+                            if (!string.IsNullOrEmpty(image.Caption))
+                            {
+                                this.uploaderClient.ExecuteScript(script: $"jQuery('#{captionImageId}').val('{image.Caption.Replace("'", "\\'")}');");
+                            }
+                        });
+
+                imageOrder++;
+                imageCell++;
+                if (imageOrder % maxCol == 0)
+                {
+                    imageRow++;
+                    imageCell = 0;
+                }
+
+                this.uploaderClient.ScrollDown(200);
+            }
+        }
+
+        private async Task UpdateLotVirtualTour(LotListingRequest listing, CancellationToken cancellationToken = default)
+        {
+            var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.LotListingRequestID, market: MarketCode.Austin, cancellationToken);
+
+            if (!virtualTours.Any())
+            {
+                return;
+            }
+
+            this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
+            Thread.Sleep(200);
+            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
+
+            var firstVirtualTour = virtualTours.FirstOrDefault();
+            if (firstVirtualTour != null)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_325"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+            }
+
+            virtualTours = virtualTours.Skip(1).ToList();
+            var secondVirtualTour = virtualTours.FirstOrDefault();
+            if (secondVirtualTour != null)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_324"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+            }
         }
     }
 }

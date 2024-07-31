@@ -20,7 +20,9 @@ namespace Husa.Uploader.Desktop.ViewModels
     using Husa.Uploader.Crosscutting.Models;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Interfaces;
+    using Husa.Uploader.Data.Interfaces.LotListing;
     using Husa.Uploader.Desktop.Commands;
     using Husa.Uploader.Desktop.Factories;
     using Husa.Uploader.Desktop.Models;
@@ -43,6 +45,7 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private readonly IOptions<ApplicationOptions> options;
         private readonly IListingRequestRepository sqlDataLoader;
+        private readonly ILotListingRequestRepository sqlLotDataLoader;
         private readonly IAuthenticationService authenticationClient;
         private readonly IVersionManagerService versionManagerService;
         private readonly IChildViewFactory mlsIssueReportFactory;
@@ -93,9 +96,14 @@ namespace Husa.Uploader.Desktop.ViewModels
         private ICommand startOHUpdateCommand;
         private ICommand startVTUploadCommand;
 
+        private ICommand startLotUploadCommand;
+        private ICommand startLotStatusUpdateCommand;
+        private ICommand startLotImageUpdateCommand;
+
         public ShellViewModel(
             IOptions<ApplicationOptions> options,
             IListingRequestRepository sqlDataLoader,
+            ILotListingRequestRepository sqlLotDataLoader,
             IAuthenticationService authenticationClient,
             IVersionManagerService versionManagerService,
             IChildViewFactory mlsIssueReportFactory,
@@ -109,6 +117,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         {
             this.options = options ?? throw new ArgumentNullException(nameof(options));
             this.sqlDataLoader = sqlDataLoader ?? throw new ArgumentNullException(nameof(sqlDataLoader));
+            this.sqlLotDataLoader = sqlLotDataLoader ?? throw new ArgumentNullException(nameof(sqlLotDataLoader));
             this.authenticationClient = authenticationClient ?? throw new ArgumentNullException(nameof(authenticationClient));
             this.versionManagerService = versionManagerService ?? throw new ArgumentNullException(nameof(versionManagerService));
             this.mlsIssueReportFactory = mlsIssueReportFactory ?? throw new ArgumentNullException(nameof(mlsIssueReportFactory));
@@ -220,7 +229,7 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         public bool UploadFailed => this.State == UploaderState.UploadFailed;
 
-        public bool ShowBulkUploadButton => this.State == UploaderState.Ready;
+        public bool ShowBulkUploadButton => this.State == UploaderState.Ready && this.CurrentEntity == Entity.Listing;
 
         public Dictionary<string, Item> Workers { get; set; }
 
@@ -247,10 +256,13 @@ namespace Husa.Uploader.Desktop.ViewModels
         public bool NoUploadInProgress => !NoUploadInProgressStatuses.Contains(this.State) && !this.LoadFailed;
 
         public bool IsReadyListing => this.CurrentEntity == Entity.Listing && this.State == UploaderState.Ready && this.SelectedListingRequest != null;
-        public bool IsSucceededAndReady => this.CurrentEntity == Entity.Listing && this.State == UploaderState.SucceededAndReady && this.SelectedListingRequest != null;
-
         public bool ShowListingActions => this.IsReadyListing || this.IsSucceededAndReady;
-        public bool ShowPanelAction => this.IsReadyListing || this.IsSucceededAndReady || this.UploadSucceeded || this.UploadFailed || this.ShowCancelButton;
+        public bool IsSucceededAndReady => this.CurrentEntity == Entity.Listing && this.State == UploaderState.SucceededAndReady && this.SelectedListingRequest != null;
+        public bool ShowPanelAction => this.IsReadyListing || this.IsReadyLot || this.IsSucceededAndReady || this.UploadSucceeded || this.UploadFailed || this.ShowCancelButton;
+
+        public bool IsReadyLot => this.CurrentEntity == Entity.Lot && this.State == UploaderState.Ready && this.SelectedListingRequest != null;
+        public bool ShowLotActions => this.IsReadyLot || this.IsLotSucceededAndReady;
+        public bool IsLotSucceededAndReady => this.CurrentEntity == Entity.Lot && this.State == UploaderState.SucceededAndReady && this.SelectedListingRequest != null;
 
         public string UserName
         {
@@ -568,25 +580,73 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        public bool CanStartEdit => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IEditListing>(this.SelectedListingRequest.FullListing.MarketCode);
+        public ICommand StartLotUploadCommand
+        {
+            get
+            {
+                this.startLotUploadCommand ??= new RelayAsyncCommand(param => this.StartLotUpload(), param => this.CanStartLotUpload);
+                return this.startLotUploadCommand;
+            }
+        }
 
-        public bool CanStartUpload => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IUploadListing>(this.SelectedListingRequest.FullListing.MarketCode);
+        public ICommand StartLotStatusUpdateCommand
+        {
+            get
+            {
+                this.startLotStatusUpdateCommand ??= new RelayAsyncCommand(param => this.StartLotStatusUpdate(), param => this.CanStartLotStatusUpdate);
+                return this.startLotStatusUpdateCommand;
+            }
+        }
 
-        public bool CanStartImageUpdate => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IUpdateImages>(this.SelectedListingRequest.FullListing.MarketCode);
+        public ICommand StartLotImageUpdateCommand
+        {
+            get
+            {
+                this.startLotImageUpdateCommand ??= new RelayAsyncCommand(param => this.StartLotImageUpdate(), param => this.CanStartLotImageUpdate);
+                return this.startLotImageUpdateCommand;
+            }
+        }
 
-        public bool CanStartStatusUpdate => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdateStatus>(this.SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartEdit => this.SelectedListingRequest != null &&
+            this.CurrentEntity == Entity.Listing &&
+            !this.SelectedListingRequest.FullListing.IsNewListing &&
+            UploaderFactory.IsActionSupported<IEditListing>(this.SelectedListingRequest.FullListing.MarketCode);
 
-        public bool CanStartPriceUpdate => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdatePrice>(this.SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartUpload => this.SelectedListingRequest != null &&
+            this.CurrentEntity == Entity.Listing &&
+            UploaderFactory.IsActionSupported<IUploadListing>(this.SelectedListingRequest.FullListing.MarketCode);
 
-        public bool CanStartCompletionDateUpdate => this.SelectedListingRequest != null && !this.SelectedListingRequest.FullListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdateCompletionDate>(this.SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartImageUpdate => this.SelectedListingRequest != null &&
+            this.CurrentEntity == Entity.Listing &&
+            UploaderFactory.IsActionSupported<IUpdateImages>(this.SelectedListingRequest.FullListing.MarketCode);
 
-        public bool CanStartUploadVirtualTour => this.SelectedListingRequest != null && UploaderFactory.IsActionSupported<IUpdateImages>(this.SelectedListingRequest.FullListing.MarketCode);
+        public bool CanStartStatusUpdate => this.SelectedListingRequest != null &&
+            this.CurrentEntity == Entity.Listing &&
+            !this.SelectedListingRequest.FullListing.IsNewListing &&
+            UploaderFactory.IsActionSupported<IUpdateStatus>(this.SelectedListingRequest.FullListing.MarketCode);
+
+        public bool CanStartPriceUpdate => this.SelectedListingRequest != null &&
+            this.CurrentEntity == Entity.Listing &&
+            !this.SelectedListingRequest.FullListing.IsNewListing &&
+            UploaderFactory.IsActionSupported<IUpdatePrice>(this.SelectedListingRequest.FullListing.MarketCode);
+
+        public bool CanStartCompletionDateUpdate => this.SelectedListingRequest != null &&
+            this.CurrentEntity == Entity.Listing &&
+            !this.SelectedListingRequest.FullListing.IsNewListing &&
+            UploaderFactory.IsActionSupported<IUpdateCompletionDate>(this.SelectedListingRequest.FullListing.MarketCode);
+
+        public bool CanStartUploadVirtualTour => this.SelectedListingRequest != null &&
+            this.CurrentEntity == Entity.Listing &&
+            UploaderFactory.IsActionSupported<IUpdateImages>(this.SelectedListingRequest.FullListing.MarketCode);
 
         public bool CanStartOHUpdate
         {
             get
             {
-                if (this.SelectedListingRequest == null || !UploaderFactory.IsActionSupported<IUpdateOpenHouse>(this.SelectedListingRequest.FullListing.MarketCode))
+                if (this.CurrentEntity != Entity.Listing ||
+                    this.SelectedListingRequest == null ||
+                    this.SelectedListingRequest.FullListing == null ||
+                    !UploaderFactory.IsActionSupported<IUpdateOpenHouse>(this.SelectedListingRequest.FullListing.MarketCode))
                 {
                     return false;
                 }
@@ -602,6 +662,16 @@ namespace Husa.Uploader.Desktop.ViewModels
                     && (isActive || enableInPending || (isSanAntonio && (isPCH || isBOM)));
             }
         }
+
+        public bool CanStartLotUpload => this.SelectedListingRequest != null && this.CurrentEntity == Entity.Lot &&
+            UploaderFactory.IsActionSupported<IUploadListing>(this.SelectedListingRequest.FullLotListing.MarketCode);
+
+        public bool CanStartLotStatusUpdate => this.SelectedListingRequest != null && this.CurrentEntity == Entity.Lot &&
+        !this.SelectedListingRequest.FullLotListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdateStatus>(this.SelectedListingRequest.FullLotListing.MarketCode);
+
+        public bool CanStartLotImageUpdate => this.SelectedListingRequest != null &&
+            this.CurrentEntity == Entity.Lot &&
+            UploaderFactory.IsActionSupported<IUpdateImages>(this.SelectedListingRequest.FullLotListing.MarketCode);
 
         private UploadResult UploadResult { get; set; }
 
@@ -784,6 +854,24 @@ namespace Husa.Uploader.Desktop.ViewModels
                         this.DatabaseOnline = DataBaseStatus.Online;
                         this.ProcessListingData(fullListings);
                         this.LastUpdated = $"Total {entity} records: [{fullListings.Count()}]. Last Updated: {DateTime.Now:MM/dd/yyyy h:mm:ss tt}";
+                    }
+                    catch (Exception ex)
+                    {
+                        this.logger.LogError(ex, "Failed to Connect to Server.");
+                        this.LastUpdated = "Failed to Connect to Database Server.";
+                        this.LoadFailed = true;
+                        this.DatabaseOnline = DataBaseStatus.Failed;
+                        this.Refresh();
+                    }
+
+                    break;
+                case Entity.Lot:
+                    try
+                    {
+                        var fullLotListings = await this.sqlLotDataLoader.GetListingRequests();
+                        this.DatabaseOnline = DataBaseStatus.Online;
+                        this.ProcessLotListingData(fullLotListings);
+                        this.LastUpdated = $"Total {entity} records: [{fullLotListings.Count()}]. Last Updated: {DateTime.Now:MM/dd/yyyy h:mm:ss tt}";
                     }
                     catch (Exception ex)
                     {
@@ -1053,6 +1141,73 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
+        private void ProcessLotListingData(IEnumerable<LotListingRequest> fullLotListings)
+        {
+            try
+            {
+                this.LoadFailed = false;
+                var uploadItems = fullLotListings.Select(listingRequest =>
+                {
+                    var worker = string.Empty;
+                    var workingStatus = string.Empty;
+                    var workingSourceAction = string.Empty;
+                    if (this.Workers != null)
+                    {
+                        foreach (var workerItem in this.Workers)
+                        {
+                            if (workerItem.Value.SelectedItemID == listingRequest.LotListingRequestID.ToString())
+                            {
+                                worker = workerItem.Key;
+                                workingStatus = workerItem.Value.Status;
+                                workingSourceAction = workerItem.Value.SourceAction;
+                            }
+                        }
+                    }
+
+                    var uploadItem = listingRequest.AsUploadItem(
+                        builderName: "Ben Caballero",
+                        brokerOffice: "HHRE00",
+                        isLeasing: string.Empty,
+                        isLot: "Yes",
+                        this.CurrentEntity,
+                        worker,
+                        workingStatus,
+                        workingSourceAction);
+
+                    return uploadItem;
+                }).ToList();
+
+                // Verify if the user has any listing requested and if so, keep it in the interface (replacing anything coming from the DB, or adding it)
+                if (this.SelectedListingRequest != null)
+                {
+                    var uploadItem = uploadItems.Find(c => c.RequestId == this.SelectedListingRequest.RequestId);
+                    if (uploadItem != null)
+                    {
+                        var uploadItemIndex = uploadItems.IndexOf(uploadItem);
+                        uploadItems.Remove(uploadItem);
+                        uploadItems.Insert(uploadItemIndex, this.SelectedListingRequest);
+                    }
+                    else
+                    {
+                        if (!this.IsReadyListing)
+                        {
+                            uploadItems.Add(this.SelectedListingRequest);
+                        }
+                        else
+                        {
+                            this.SelectedListingRequest = null;
+                        }
+                    }
+                }
+
+                this.ListingRequests = new ObservableCollection<UploadListingItem>(uploadItems);
+            }
+            catch
+            {
+                this.ListingRequests = new ObservableCollection<UploadListingItem>();
+            }
+        }
+
         private async Task BroadcastSelectedList(Guid? selectedId = null)
         {
             if (!this.options.Value.FeatureFlags.EnableSignalR)
@@ -1215,6 +1370,91 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
+        private async Task<UploadResult> RunLotAction(
+            Func<LotListingRequest, CancellationToken, Task<UploadResult>> action)
+        {
+            this.cancellationTokenSource = new CancellationTokenSource();
+            try
+            {
+                this.logger.LogInformation("Starting the requested lot upload operation");
+                await this.SetFullLotRequestInformation();
+                var listing = this.SelectedListingRequest.FullLotListing;
+                var token = this.cancellationTokenSource.Token;
+                return await Task.Run(() => action(listing, token));
+            }
+            catch (OperationCanceledException)
+            {
+                return this.CatchCanceledException();
+            }
+            finally
+            {
+                this.cancellationTokenSource.Dispose();
+                this.cancellationTokenSource = null;
+            }
+        }
+
+        private async Task StartLot(UploadType opType, Func<LotListingRequest, CancellationToken, Task<UploadResult>> action, string sourceAction)
+        {
+            var listing = this.SelectedListingRequest.FullLotListing;
+            this.ShowCancelButton = true;
+            var entityID = Guid.Empty;
+            entityID = listing.LotListingRequestID;
+
+            try
+            {
+                this.signalRConnectionTriesError = 0;
+                this.State = UploaderState.UploadInProgress;
+                this.SourceAction = sourceAction;
+
+                // 1. Broadcast the current seleted request ID to other users
+                await this.BroadcastSelectedList(selectedId: entityID);
+
+                // 2. Refresh the table
+                await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(listing.LotListingRequestID, this.State, this.SourceAction));
+
+                // 2. Execute de action
+                var response = await this.RunLotAction(action);
+                this.HandleUploadExecutionResult(response);
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, "Failed when processing the user request.");
+                this.HandleUploadExecutionResult(response: UploadResult.Failure);
+            }
+            finally
+            {
+                switch (this.UploadResult)
+                {
+                    case UploadResult.Success:
+                        this.State = UploaderState.UploadSucceeded;
+                        break;
+                    case UploadResult.SuccessWithErrors:
+                        this.State = UploaderState.UploadSucceededWithErrors;
+                        this.logger.LogWarning("[{uploadType}] upload for [{marketName}] listing with [{ResidentialListingRequestId}] succeeded WITH ERRORS", opType, listing.MarketName, listing.LotListingRequestID);
+                        break;
+                    case UploadResult.Failure:
+                        this.logger.LogError("[{uploadType}] upload for [{marketName}] listing with [{ResidentialListingRequestId}] succeeded WITH ERRORS", opType, listing.MarketName, listing.LotListingRequestID);
+                        this.State = UploaderState.UploadFailed;
+                        break;
+                }
+
+                // 1. roadcast message to other users
+                await this.BroadcastSelectedList(selectedId: entityID);
+
+                // 2. Refresh the table
+                await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(listing.LotListingRequestID, this.State, this.SourceAction));
+
+                try
+                {
+                    Application.Current.MainWindow.Activate();
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogWarning(exception, "Failed to Activate windows when processing listing with {LotListingRequestId}", listing.LotListingRequestID);
+                }
+            }
+        }
+
         private UploadResult CatchCanceledException()
         {
             this.State = UploaderState.Cancelled;
@@ -1369,6 +1609,65 @@ namespace Husa.Uploader.Desktop.ViewModels
             await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(this.SelectedListingRequest.RequestId, uploaderStatus: UploaderState.Cancelled, this.SourceAction));
         }
 
+        private async Task StartLotUpload()
+        {
+            this.SourceAction = Crosscutting.Enums.SourceAction.Upload.GetEnumDescription();
+            if (string.IsNullOrEmpty(this.SelectedListingRequest.FullLotListing.MLSNum) && this.selectedListingRequest.FullLotListing.UpdateGeocodes)
+            {
+                var locationInfo = this.RequestLocationInfo();
+
+                if (locationInfo.IsValidLocation)
+                {
+                    this.SelectedListingRequest.FullLotListing.Latitude = locationInfo.Latitude;
+                    this.SelectedListingRequest.FullLotListing.Longitude = locationInfo.Longitude;
+                }
+                else
+                {
+                    await this.FinishUpload();
+                    return;
+                }
+            }
+
+            this.ShowCancelButton = true;
+            var uploader = this.uploadFactory.Create<IUploadListing>(this.SelectedListingRequest.FullLotListing.MarketCode);
+            await this.StartLot(
+                opType: UploadType.InserOrUpdate,
+                action: (listing, cancellationToken) => uploader.UploadLot(listing, cancellationToken, logIn: true),
+                sourceAction: this.SourceAction);
+        }
+
+        private async Task StartLotStatusUpdate()
+        {
+            this.SourceAction = Crosscutting.Enums.SourceAction.UpdateStatus.GetEnumDescription();
+            var uploader = this.uploadFactory.Create<IUpdateStatus>(this.SelectedListingRequest.FullLotListing.MarketCode);
+            await this.StartLot(
+                opType: UploadType.Status,
+                action: (listing, cancellationToken) => uploader.UpdateLotStatus(listing, cancellationToken, logIn: true),
+                sourceAction: this.SourceAction);
+        }
+
+        private async Task StartLotImageUpdate()
+        {
+            this.SourceAction = Crosscutting.Enums.SourceAction.UpdateImages.GetEnumDescription();
+            this.AskAndSetLotMlsNumber();
+
+            if (!this.LotMediaUpload())
+            {
+                return;
+            }
+
+            var uploader = this.uploadFactory.Create<IUpdateImages>(this.SelectedListingRequest.FullLotListing.MarketCode);
+            await this.StartLot(
+                opType: UploadType.Image,
+                action: uploader.UpdateLotImages,
+                sourceAction: this.SourceAction);
+        }
+
+        private bool LotMediaUpload()
+        {
+            return !(this.SelectedListingRequest.IsNewListing || string.IsNullOrEmpty(this.SelectedListingRequest.FullLotListing.MLSNum));
+        }
+
         private string RequestMlsNumber()
         {
             var childWindow = this.mlsNumberInputFactory.Create();
@@ -1427,6 +1726,21 @@ namespace Husa.Uploader.Desktop.ViewModels
             this.SelectedListingRequest.SetFullListing(requestData);
         }
 
+        private async Task SetFullLotRequestInformation()
+        {
+            if (this.SelectedListingRequest.FullListingConfigured)
+            {
+                return;
+            }
+
+            var requestData = await this.sqlLotDataLoader.GetListingRequest(
+                this.SelectedListingRequest.RequestId,
+                this.SelectedListingRequest.FullLotListing.MarketCode,
+                this.cancellationTokenSource.Token)
+                ?? throw new NotFoundException<LotListingRequest>(this.SelectedListingRequest.RequestId);
+            this.SelectedListingRequest.SetFullLotListing(requestData);
+        }
+
         private async Task FinishUploadAndChangeState(UploaderState newState)
         {
             if (this.State == UploaderState.UploadInProgress || this.State == UploaderState.UploadSucceeded)
@@ -1459,6 +1773,15 @@ namespace Husa.Uploader.Desktop.ViewModels
             {
                 var mlsNumber = this.RequestMlsNumber();
                 this.SelectedListingRequest.SetMlsNumber(mlsNumber);
+            }
+        }
+
+        private void AskAndSetLotMlsNumber()
+        {
+            if (string.IsNullOrWhiteSpace(this.SelectedListingRequest.FullLotListing.MLSNum))
+            {
+                var mlsNumber = this.RequestMlsNumber();
+                this.SelectedListingRequest.SetLotMlsNumber(mlsNumber);
             }
         }
     }
