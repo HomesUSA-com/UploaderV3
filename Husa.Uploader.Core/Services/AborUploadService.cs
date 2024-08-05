@@ -619,10 +619,7 @@ namespace Husa.Uploader.Core.Services
 
         public Task<UploadResult> UpdateLotImages(LotListingRequest listing, CancellationToken cancellationToken = default)
         {
-            if (listing is null)
-            {
-                throw new ArgumentNullException(nameof(listing));
-            }
+            ArgumentNullException.ThrowIfNull(listing);
 
             return UpdateLotListingImages();
             async Task<UploadResult> UpdateLotListingImages()
@@ -1540,7 +1537,7 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
             Thread.Sleep(200);
-            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
+            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"), cancellationToken);
 
             var firstVirtualTour = virtualTours.FirstOrDefault();
             if (firstVirtualTour != null)
