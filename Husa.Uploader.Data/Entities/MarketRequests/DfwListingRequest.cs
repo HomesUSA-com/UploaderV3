@@ -387,21 +387,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             }
         }
 
-        public override string GetAgentBonusRemarksMessage()
-        {
-            var agentBonusAmount = this.GetAgentBonusAmount();
-            if (string.IsNullOrWhiteSpace(agentBonusAmount))
-            {
-                return base.GetAgentBonusRemarksMessage();
-            }
-
-            var agentAmount = agentBonusAmount + " Bonus. ";
-            var hasBuyerIncentive = this.BuyerCheckBox.HasValue && this.BuyerCheckBox.Value;
-            return hasBuyerIncentive
-                ? agentAmount + "Contact Builder for Buyer Incentive Information. "
-                : agentAmount;
-        }
-
         public string GetAgentRemarksMessage(string constructionStage)
         {
             var privateRemarks = "LIMITED SERVICE LISTING: Buyer verifies dimensions & ISD info. Use Bldr contract.";

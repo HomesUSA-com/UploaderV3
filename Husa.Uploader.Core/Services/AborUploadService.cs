@@ -175,7 +175,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillGreenEnergyInformation();
                     this.FillFinancialInformation(listing as AborListingRequest);
                     this.FillShowingInformation(listing);
-                    this.FillAgentOfficeInformation(listing);
+                    this.FillAgentOfficeInformation();
                     this.FillRemarks(listing as AborListingRequest);
 
                     if (listing.IsNewListing)
@@ -619,10 +619,7 @@ namespace Husa.Uploader.Core.Services
 
         public Task<UploadResult> UpdateLotImages(LotListingRequest listing, CancellationToken cancellationToken = default)
         {
-            if (listing is null)
-            {
-                throw new ArgumentNullException(nameof(listing));
-            }
+            ArgumentNullException.ThrowIfNull(listing);
 
             return UpdateLotListingImages();
             async Task<UploadResult> UpdateLotListingImages()
@@ -992,26 +989,11 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_313"), listing.ShowingInstructions); // Showing Instructions
         }
 
-        private void FillAgentOfficeInformation(ResidentialListingRequest listing)
+        private void FillAgentOfficeInformation()
         {
             this.uploaderClient.ClickOnElement(By.LinkText("Agent/Office"));
             Thread.Sleep(100);
             this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
-
-            this.uploaderClient.SetSelect(By.Id("Input_315"), "Percent"); // Sub Agency Compensation Type
-            this.uploaderClient.WriteTextbox(By.Id("Input_314"), "0.0"); // Sub Agency Compensation
-
-            this.uploaderClient.SetSelect(By.Id("Input_316"), listing.BuyerIncentiveDesc.ToCommissionType(), true); // Buyer Agency Compensation Type
-            this.uploaderClient.WriteTextbox(By.Id("Input_510"), listing.BuyerIncentive, true);
-
-            if (listing.HasBonusWithAmount)
-            {
-                this.uploaderClient.SetSelect(By.Id("Input_318"), listing.AgentBonusAmountType.ToCommissionType(), true); // Bonus to BA
-                this.uploaderClient.WriteTextbox(By.Id("Input_317"), listing.AgentBonusAmount); // Bonus to BA Amount
-            }
-
-            this.uploaderClient.SetSelect(By.Id("Input_319"), "0", true); // Dual Variable Compensation
-            this.uploaderClient.SetSelect(By.Id("Input_353"), "0", true); // Intermediary
         }
 
         private void FillRemarks(AborListingRequest listing)
@@ -1555,7 +1537,7 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
             Thread.Sleep(200);
-            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
+            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"), cancellationToken);
 
             var firstVirtualTour = virtualTours.FirstOrDefault();
             if (firstVirtualTour != null)
