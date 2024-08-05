@@ -996,8 +996,8 @@ namespace Husa.Uploader.Data.Entities
             if (this.HasAgentBonus.HasValue && this.HasAgentBonus.Value)
             {
                 return hasBuyerIncentive
-                    ? "Contact Builder for Bonus & Buyer Incentive Information. "
-                    : "Contact Builder for Bonus Information. ";
+                    ? "Contact Builder for Seller Concession & Buyer Incentive Information. "
+                    : "Contact Builder for Seller Concession Information. ";
             }
 
             if (hasBuyerIncentive)

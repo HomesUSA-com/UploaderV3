@@ -175,7 +175,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillGreenEnergyInformation();
                     this.FillFinancialInformation(listing as AborListingRequest);
                     this.FillShowingInformation(listing);
-                    this.FillAgentOfficeInformation(listing);
+                    this.FillAgentOfficeInformation();
                     this.FillRemarks(listing as AborListingRequest);
 
                     if (listing.IsNewListing)
@@ -575,6 +575,13 @@ namespace Husa.Uploader.Core.Services
                     this.FillLotShowingInformation(listing);
                     this.FillLotAgentOfficeInformation(listing);
                     this.FillLotRemarksInformation(listing);
+
+                    if (listing.IsNewListing)
+                    {
+                        await this.UpdateLotVirtualTour(listing, cancellationToken);
+                    }
+
+                    await this.FillLotMedia(listing, cancellationToken);
                 }
                 catch (Exception exception)
                 {
@@ -606,6 +613,30 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(1000);
                 }
 
+                return UploadResult.Success;
+            }
+        }
+
+        public Task<UploadResult> UpdateLotImages(LotListingRequest listing, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(listing);
+
+            return UpdateLotListingImages();
+            async Task<UploadResult> UpdateLotListingImages()
+            {
+                this.logger.LogInformation("Updating media for the Lot listing {requestId}", listing.LotListingRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.LotListingRequestID, listing.IsNewListing);
+
+                await this.Login(listing.CompanyId);
+                this.NavigateToQuickEdit(listing.MLSNum);
+
+                // Enter Manage Photos
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"), cancellationToken);
+                this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSave"), cancellationToken);
+
+                this.DeleteAllImages();
+                await this.ProcessLotImages(listing, cancellationToken);
                 return UploadResult.Success;
             }
         }
@@ -958,26 +989,11 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_313"), listing.ShowingInstructions); // Showing Instructions
         }
 
-        private void FillAgentOfficeInformation(ResidentialListingRequest listing)
+        private void FillAgentOfficeInformation()
         {
             this.uploaderClient.ClickOnElement(By.LinkText("Agent/Office"));
             Thread.Sleep(100);
             this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
-
-            this.uploaderClient.SetSelect(By.Id("Input_315"), "Percent"); // Sub Agency Compensation Type
-            this.uploaderClient.WriteTextbox(By.Id("Input_314"), "0.0"); // Sub Agency Compensation
-
-            this.uploaderClient.SetSelect(By.Id("Input_316"), listing.BuyerIncentiveDesc.ToCommissionType(), true); // Buyer Agency Compensation Type
-            this.uploaderClient.WriteTextbox(By.Id("Input_510"), listing.BuyerIncentive, true);
-
-            if (listing.HasBonusWithAmount)
-            {
-                this.uploaderClient.SetSelect(By.Id("Input_318"), listing.AgentBonusAmountType.ToCommissionType(), true); // Bonus to BA
-                this.uploaderClient.WriteTextbox(By.Id("Input_317"), listing.AgentBonusAmount); // Bonus to BA Amount
-            }
-
-            this.uploaderClient.SetSelect(By.Id("Input_319"), "0", true); // Dual Variable Compensation
-            this.uploaderClient.SetSelect(By.Id("Input_353"), "0", true); // Intermediary
         }
 
         private void FillRemarks(AborListingRequest listing)
@@ -1448,6 +1464,93 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.GetAgentRemarksMessage());
             this.uploaderClient.WriteTextbox(By.Id("Input_322"), remarks); // Internet / Remarks / Desc. of Property
             this.uploaderClient.WriteTextbox(By.Id("Input_323"), remarks); // Syndication Remarks
+        }
+
+        private async Task FillLotMedia(LotListingRequest listing, CancellationToken cancellationToken)
+        {
+            if (!listing.IsNewListing)
+            {
+                this.logger.LogInformation("Skipping media upload for existing lot listing {listingId}", listing.LotListingRequestID);
+                return;
+            }
+
+            // Enter Manage Photos
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSaveIncomplete"), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.Id("m_lbSaveIncomplete"));
+            Thread.Sleep(1000);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbManagePhotos"), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.Id("m_lbManagePhotos"));
+
+            await this.ProcessLotImages(listing, cancellationToken);
+        }
+
+        [SuppressMessage("SonarLint", "S2583", Justification = "Ignored due to suspected false positive")]
+        private async Task ProcessLotImages(LotListingRequest listing, CancellationToken cancellationToken)
+        {
+            var media = await this.mediaRepository.GetListingImages(listing.LotListingRequestID, market: this.CurrentMarket, cancellationToken);
+            var imageOrder = 0;
+            var imageRow = 0;
+            var imageCell = 0;
+            var maxCol = 5;
+            string mediaFolderName = "Husa.Core.Uploader";
+            var folder = Path.Combine(Path.GetTempPath(), mediaFolderName, Path.GetRandomFileName());
+            Directory.CreateDirectory(folder);
+            var captionImageId = string.Empty;
+
+            foreach (var image in media)
+            {
+                captionImageId = $"m_rptPhotoRows_ctl{imageRow:D2}_m_rptPhotoCells_ctl{imageCell:D2}_m_ucPhotoCell_m_tbxDescription";
+
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
+                await this.mediaRepository.PrepareImage(image, MarketCode.Austin, cancellationToken, folder);
+                this.uploaderClient.FindElement(By.Id("m_ucImageLoader_m_tblImageLoader")).FindElement(By.CssSelector("input[type=file]")).SendKeys(image.PathOnDisk);
+                this.WaitForElementAndThenDoAction(
+                        By.Id(captionImageId),
+                        (element) =>
+                        {
+                            if (!string.IsNullOrEmpty(image.Caption))
+                            {
+                                this.uploaderClient.ExecuteScript(script: $"jQuery('#{captionImageId}').val('{image.Caption.Replace("'", "\\'")}');");
+                            }
+                        });
+
+                imageOrder++;
+                imageCell++;
+                if (imageOrder % maxCol == 0)
+                {
+                    imageRow++;
+                    imageCell = 0;
+                }
+
+                this.uploaderClient.ScrollDown(200);
+            }
+        }
+
+        private async Task UpdateLotVirtualTour(LotListingRequest listing, CancellationToken cancellationToken = default)
+        {
+            var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.LotListingRequestID, market: MarketCode.Austin, cancellationToken);
+
+            if (!virtualTours.Any())
+            {
+                return;
+            }
+
+            this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
+            Thread.Sleep(200);
+            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"), cancellationToken);
+
+            var firstVirtualTour = virtualTours.FirstOrDefault();
+            if (firstVirtualTour != null)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_325"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+            }
+
+            virtualTours = virtualTours.Skip(1).ToList();
+            var secondVirtualTour = virtualTours.FirstOrDefault();
+            if (secondVirtualTour != null)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_324"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+            }
         }
     }
 }

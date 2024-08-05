@@ -1145,11 +1145,6 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_236"), listing.OtherPhone.PhoneFormat(true), isElementOptional: true);  // Agent Alternate Phone
             this.uploaderClient.WriteTextbox(By.Id("Input_136"), listing.Directions.RemoveSlash(), true); // Directions
             this.uploaderClient.SetMultipleCheckboxById("Input_218", listing.ShowingInstructions);  // Showing Instructions
-            this.uploaderClient.WriteTextbox(By.Id("Input_327"), listing.BuyerIncentive.AmountByType(listing.BuyerIncentiveDesc)); // Buyer Agency Compensation
-            this.uploaderClient.WriteTextbox(By.Id("Input_226"), "0%"); // Sub Agency Compensation
-            this.uploaderClient.WriteTextbox(By.Id("Input_229"), listing.GetAgentBonusAmount()); // Bonus
-            this.uploaderClient.WriteTextbox(By.Id("Input_230"), listing.CompBuyBonusExpireDate.HasValue ? listing.CompBuyBonusExpireDate.Value : string.Empty); // Bonus End Date
-            this.uploaderClient.SetSelect(By.Id("Input_216"), "0");  // Variable Compensation
         }
 
         private void FillRemarks(HarListingRequest listing, HousingType housingType)
