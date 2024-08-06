@@ -15,6 +15,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
@@ -201,7 +202,7 @@ namespace Husa.Uploader.Core.Services
                 this.FillUtilitiesInformation(listing as DfwListingRequest);
                 this.FillEnvironmentInformation(listing as DfwListingRequest);
                 this.FillFinancialInformation(listing as DfwListingRequest);
-                this.FillAgentOfficeInformation(listing as DfwListingRequest);
+                this.FillAgentOfficeInformation();
                 this.FillShowingInformation(listing as DfwListingRequest);
                 this.FillRemarksInformation(listing as DfwListingRequest);
 
@@ -239,7 +240,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillPropertyInformation(listing as DfwListingRequest, isNotPartialFill: false);
                     this.FillLocationSchools(listing as DfwListingRequest, isNotPartialFill: false);
                     this.FillFinancialInformation(listing as DfwListingRequest);
-                    this.FillAgentOfficeInformation(listing as DfwListingRequest);
+                    this.FillAgentOfficeInformation();
                     this.FillShowingInformation(listing as DfwListingRequest, isNotPartialFill: false);
                     this.FillRemarksInformation(listing as DfwListingRequest);
                 }
@@ -536,6 +537,16 @@ namespace Husa.Uploader.Core.Services
 
                 return UploadResult.Success;
             }
+        }
+
+        public Task<UploadResult> UploadLot(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<UploadResult> UpdateLotStatus(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        {
+            throw new NotImplementedException();
         }
 
         private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
@@ -1068,7 +1079,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_385", listing.AssocFeeIncludes, "HOA Includes", tabName); // HOA Includes
         }
 
-        private void FillAgentOfficeInformation(DfwListingRequest listing)
+        private void FillAgentOfficeInformation()
         {
             var tabName = "Agent/Office";
             this.GoToTab(tabName);
@@ -1105,25 +1116,7 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.FindElement(By.Id("Input_761_displayValue")).SendKeys(Keys.Enter);
                     this.uploaderClient.ExecuteScript("javascript:$('#Input_761_Refresh').val('changed');RefreshToSamePage();");
                 }
-
-                Thread.Sleep(400);
-                this.uploaderClient.ScrollDown();
-
-                if (!string.IsNullOrWhiteSpace(listing.BuyerIncentive))
-                {
-                    this.uploaderClient.WriteTextbox(By.Id("Input_800"), listing.BuyerIncentive.Replace("$", string.Empty).Replace("%", string.Empty)); // Buyer Agency Commission
-
-                    this.uploaderClient.SetSelect(By.Id("Input_801"), "PERCENT", "Buyer Agency Type (% or $)", tabName); // Buyer Agency Type (% or $)
-                }
-
-                this.uploaderClient.WriteTextbox(By.Id("Input_803"), "0"); // SubAgency Commission
-
-                this.uploaderClient.SetSelect(By.Id("Input_804"), "PERCENT", "SubAgency Type (% or $)", tabName); // SubAgency Type (% or $)
-
-                this.uploaderClient.SetSelect(By.Id("Input_802"), "0", "Dual Variable Fee", tabName); // Dual Variable Fee
             }
-
-            this.uploaderClient.ScrollDown();
         }
 
         private void FillShowingInformation(DfwListingRequest listing, bool isNotPartialFill = true)

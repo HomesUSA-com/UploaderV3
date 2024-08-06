@@ -23,11 +23,13 @@ namespace Husa.Uploader.Desktop.ViewModels
         private readonly IBulkUploadFactory bulkUploadFactory;
         private ICommand startBulkUploadCommand;
 
+        public bool CanStartBulk => this.CurrentEntity == Entity.Listing && this.ListingRequests?.Any() != null;
+
         public ICommand StartBulkUploadCommand
         {
             get
             {
-                this.startBulkUploadCommand ??= new RelayAsyncCommand(param => this.StartBulkUpload(), param => true);
+                this.startBulkUploadCommand ??= new RelayAsyncCommand(param => this.StartBulkUpload(), param => this.CanStartBulk);
                 return this.startBulkUploadCommand;
             }
         }

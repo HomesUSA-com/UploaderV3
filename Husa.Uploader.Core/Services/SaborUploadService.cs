@@ -11,6 +11,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
@@ -538,6 +539,16 @@ namespace Husa.Uploader.Core.Services
 
                 return UploadResult.Success;
             }
+        }
+
+        public Task<UploadResult> UploadLot(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<UploadResult> UpdateLotStatus(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        {
+            throw new NotImplementedException();
         }
 
         private void NewProperty(ResidentialListingRequest listing)
@@ -1344,9 +1355,6 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Name("OCCUPANCY"), entry: "VACNT", isElementOptional: true); // Occupancy
             this.uploaderClient.WriteTextbox(By.Name("CURRENTLY_LEASED"), entry: "NO", isElementOptional: true); // Currently Being Leased
             this.uploaderClient.WriteTextbox(By.Name("OWNER"), listing.OwnerName); // Owner
-            this.uploaderClient.WriteTextbox(By.Name("SUBAGTCOM"), entry: "0%"); // Subagent Com
-            this.uploaderClient.WriteTextbox(By.Name("BUYAGTCOM"), listing.GetBuyerAgentComp(listing.CompBuy, listing.CompBuyType)); // Buyer Agent Com
-            this.uploaderClient.WriteTextbox(By.Name("BONUS"), entry: listing.GetAgentBonusAmount()); // Bonus
 
             this.uploaderClient.WriteTextbox(By.Name("LREAORLREB"), "NO"); // Owner LREA/LREB
             this.uploaderClient.WriteTextbox(By.Name("PRFTITLECO"), listing.TitleCo); // Preferred Title Company

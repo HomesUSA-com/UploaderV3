@@ -1,10 +1,10 @@
-﻿namespace Husa.Uploader.Crosscutting.Enums
+namespace Husa.Uploader.Crosscutting.Enums
 {
     public enum Entity
     {
         Listing,
-        Leasing,
         Lot,
+        Leasing,
         Empty,
     }
 }
