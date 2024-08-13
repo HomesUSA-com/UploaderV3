@@ -684,7 +684,7 @@ namespace Husa.Uploader.Core.Services
                 }
 
                 this.uploaderClient.WriteTextbox(By.Id("Input_81"), DateTime.Today.AddYears(1).ToShortDateString()); // Expire Date
-                this.uploaderClient.WriteTextbox(By.Id("Input_235"), string.IsNullOrWhiteSpace(listing.ParcelId) ? "NA" : listing.ParcelId); // Parcel Id: StreetNum + StreetName
+                this.uploaderClient.WriteTextbox(By.Id("Input_235"), string.IsNullOrWhiteSpace(listing.TaxID) ? "NA" : listing.TaxID); // Parcel Id
                 this.uploaderClient.SetSelect(By.Id("Input_237"), value: "0"); // Multi Parcel ID YN
             }
 
