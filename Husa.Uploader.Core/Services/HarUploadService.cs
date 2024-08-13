@@ -814,10 +814,6 @@ namespace Husa.Uploader.Core.Services
                     var expirationDate = listing.ExpiredDate.HasValue ? listing.ExpiredDate.Value : (listing.SysCreatedOn ?? DateTime.Today).AddYears(1);
                     this.uploaderClient.WriteTextbox(By.Id("Input_184"), expirationDate.ToShortDateString()); // Expiration Date
                 }
-                else if (listing.ListDate.HasValue)
-                {
-                    this.uploaderClient.WriteTextbox(By.Id("Input_183"), listing.ListDate.Value.ToShortDateString()); // List Date
-                }
             }
 
             DateTime? GetNewListingDate(string listStatus)
