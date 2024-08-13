@@ -549,6 +549,11 @@ namespace Husa.Uploader.Core.Services
             throw new NotImplementedException();
         }
 
+        public Task<UploadResult> UpdateLotImages(LotListingRequest listing, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
         private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
             var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.DFW, cancellationToken);
@@ -742,10 +747,10 @@ namespace Husa.Uploader.Core.Services
 
                     this.uploaderClient.SetSelect(By.Id("Input_285"), value: listing.County); // County
                     this.uploaderClient.SetSelect(By.Id("Input_284"), value: listing.CityCode); // City Code
+                    this.uploaderClient.WriteTextbox(By.Id("Input_283"), listing.UnitNum); // Unit #
                 }
 
                 this.uploaderClient.SetSelect(By.Id("Input_282"), value: listing.StreetSuffixFQ); // Street Directional Suffix
-                this.uploaderClient.WriteTextbox(By.Id("Input_283"), listing.UnitNum); // Unit #
 
                 this.uploaderClient.WriteTextbox(By.Id("Input_294"), listing.Zip); // Zip
                 this.uploaderClient.WriteTextbox(By.Id("Input_295"), string.Empty); // Zip + 4
