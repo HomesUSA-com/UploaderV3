@@ -484,6 +484,7 @@
                                             <StackPanel>
                                                 <Button Name="StartLotUpdate" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartLotUploadCommand}">Upload Lot</Button>
                                                 <Button Name="StartStatusLotUpdate" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartLotStatusUpdateCommand}">Upload Lot Status</Button>
+                                                <Button Name="StartLotImageUpdate" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartLotImageUpdateCommand}">Update Lot Images</Button>
                                             </StackPanel>
                                         </GroupBox>
                                     </StackPanel>
