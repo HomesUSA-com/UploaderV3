@@ -167,14 +167,14 @@ namespace Husa.Uploader.Core.Services
 
                     listing.Longitude = newLongitude;
                     listing.Latitude = newLatitude;
-                    this.FillListingInformation(listing);
+                    /*this.FillListingInformation(listing);
                     this.FillGeneralInformation(listing);
                     this.FillAdditionalInformation(listing as AborListingRequest);
                     this.FillRoomInformation(listing);
                     this.FillDocumentsAndUtilities(listing as AborListingRequest);
-                    this.FillGreenEnergyInformation();
+                    this.FillGreenEnergyInformation();*/
                     this.FillFinancialInformation(listing as AborListingRequest);
-                    this.FillShowingInformation(listing);
+                    /*this.FillShowingInformation(listing);*/
                     this.FillAgentOfficeInformation();
                     this.FillRemarks(listing as AborListingRequest);
 
@@ -969,6 +969,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_728"), listing.TitleCo); // Preferred Title Company
             this.uploaderClient.ScrollDown(400);
             this.uploaderClient.SetMultipleCheckboxById("Input_299", "Funding"); // Possession
+            this.uploaderClient.SetSelect(By.Id("Input_779"), (bool)listing.HasAgentBonus ? "1" : "0"); // Seller Contributions YN
         }
 
         private void FillShowingInformation(ResidentialListingRequest listing)
