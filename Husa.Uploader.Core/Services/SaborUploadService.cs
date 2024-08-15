@@ -551,6 +551,11 @@ namespace Husa.Uploader.Core.Services
             throw new NotImplementedException();
         }
 
+        public Task<UploadResult> UpdateLotImages(LotListingRequest listing, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
         private void NewProperty(ResidentialListingRequest listing)
         {
             const string tabName = "General";
@@ -1354,7 +1359,12 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Name("LOCKBOX"), entry: "NONE"); // Lockbox Type
             this.uploaderClient.WriteTextbox(By.Name("OCCUPANCY"), entry: "VACNT", isElementOptional: true); // Occupancy
             this.uploaderClient.WriteTextbox(By.Name("CURRENTLY_LEASED"), entry: "NO", isElementOptional: true); // Currently Being Leased
+            this.uploaderClient.WriteTextbox(By.Name("SELLCONCESSYN"), listing.HasBonusWithAmount ? "YES" : "NO"); // Has Seller Concessions
             this.uploaderClient.WriteTextbox(By.Name("OWNER"), listing.OwnerName); // Owner
+            if (listing.HasBonusWithAmount)
+            {
+                this.uploaderClient.WriteTextbox(By.Name("SELLCONCES"), entry: listing.AgentBonusAmount); // Seller Concessions
+            }
 
             this.uploaderClient.WriteTextbox(By.Name("LREAORLREB"), "NO"); // Owner LREA/LREB
             this.uploaderClient.WriteTextbox(By.Name("PRFTITLECO"), listing.TitleCo); // Preferred Title Company
