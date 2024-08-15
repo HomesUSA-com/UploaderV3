@@ -684,7 +684,7 @@ namespace Husa.Uploader.Core.Services
                 }
 
                 this.uploaderClient.WriteTextbox(By.Id("Input_81"), DateTime.Today.AddYears(1).ToShortDateString()); // Expire Date
-                this.uploaderClient.WriteTextbox(By.Id("Input_235"), string.IsNullOrWhiteSpace(listing.ParcelId) ? "NA" : listing.ParcelId); // Parcel Id: StreetNum + StreetName
+                this.uploaderClient.WriteTextbox(By.Id("Input_235"), string.IsNullOrWhiteSpace(listing.TaxID) ? "NA" : listing.TaxID); // Parcel Id
                 this.uploaderClient.SetSelect(By.Id("Input_237"), value: "0"); // Multi Parcel ID YN
             }
 
@@ -742,10 +742,10 @@ namespace Husa.Uploader.Core.Services
 
                     this.uploaderClient.SetSelect(By.Id("Input_285"), value: listing.County); // County
                     this.uploaderClient.SetSelect(By.Id("Input_284"), value: listing.CityCode); // City Code
+                    this.uploaderClient.WriteTextbox(By.Id("Input_283"), listing.UnitNum); // Unit #
                 }
 
                 this.uploaderClient.SetSelect(By.Id("Input_282"), value: listing.StreetSuffixFQ); // Street Directional Suffix
-                this.uploaderClient.WriteTextbox(By.Id("Input_283"), listing.UnitNum); // Unit #
 
                 this.uploaderClient.WriteTextbox(By.Id("Input_294"), listing.Zip); // Zip
                 this.uploaderClient.WriteTextbox(By.Id("Input_295"), string.Empty); // Zip + 4
