@@ -969,6 +969,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_728"), listing.TitleCo); // Preferred Title Company
             this.uploaderClient.ScrollDown(400);
             this.uploaderClient.SetMultipleCheckboxById("Input_299", "Funding"); // Possession
+            this.uploaderClient.SetSelect(By.Id("Input_779"), (bool)listing.HasAgentBonus ? "1" : "0"); // Seller Contributions YN
         }
 
         private void FillShowingInformation(ResidentialListingRequest listing)
