@@ -9,6 +9,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.MarketRequests;
+    using Husa.Uploader.Data.Entities.MarketRequests.LotRequest;
     using Microsoft.Extensions.Logging;
     using Moq;
     using OpenQA.Selenium;
@@ -140,6 +141,43 @@ namespace Husa.Uploader.Core.Tests
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Theory]
+        [InlineData("Canceled")] // UpdateStatus_Canceled
+        public async Task UpdateLotStatus_Success(string status)
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var aborListing = new AborLotListingRequest(new AborResponse.ListingRequest.LotRequest.LotListingRequestDetailResponse());
+            aborListing.ListStatus = status;
+            aborListing.Directions = "This is a test for the directions info field";
+            aborListing.StreetNum = "10";
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdateLotStatus(aborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UpdateLotStatus_InvalidStatusFail()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var aborListing = new AborLotListingRequest(new AborResponse.ListingRequest.LotRequest.LotListingRequestDetailResponse());
+            aborListing.ListStatus = "TEST";
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdateLotStatus(aborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Failure, result);
         }
 
         [Fact]

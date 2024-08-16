@@ -613,7 +613,48 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(1000);
                 }
 
+                try
+                {
+                    this.NavigateToQuickEdit(listing.MLSNum);
+                    Thread.Sleep(1000);
+                    string buttonText = GetButtonTextForStatus(listing.ListStatus);
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                    this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                    HandleListingStatusAsync(listing);
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.LotListingRequestID);
+                    return UploadResult.Failure;
+                }
+
                 return UploadResult.Success;
+            }
+
+            string GetButtonTextForStatus(string status)
+            {
+                return status switch
+                {
+                    "Canceled" => "Change to Withdrawn",
+                    _ => throw new InvalidOperationException($"Invalid Status '{status}' for Austin Listing with Id '{listing.LotListingRequestID}'"),
+                };
+            }
+
+            void HandleListingStatusAsync(LotListingRequest listing)
+            {
+                switch (listing.ListStatus)
+                {
+                    case "Canceled":
+                        HandleWithdrawnStatusAsync();
+                        break;
+                }
+            }
+
+            void HandleWithdrawnStatusAsync()
+            {
+                var expirationDate = DateTime.Now.ToShortDateString();
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_529"));
+                this.uploaderClient.WriteTextbox(By.Id("Input_529"), expirationDate);
             }
         }
 
