@@ -241,6 +241,9 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 {
                     throw new ArgumentNullException(nameof(statusInfo));
                 }
+
+                lotListingRequest.OffMarketDate = statusInfo.OffMarketDate;
+                lotListingRequest.BackOnMarketDate = statusInfo.BackOnMarketDate;
             }
         }
     }

@@ -8,6 +8,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Entities.MarketRequests.LotRequest;
     using Microsoft.Extensions.Logging;
@@ -145,6 +146,7 @@ namespace Husa.Uploader.Core.Tests
 
         [Theory]
         [InlineData("Canceled")] // UpdateStatus_Canceled
+        [InlineData("Hold")] // UpdateStatus_Hold
         public async Task UpdateLotStatus_Success(string status)
         {
             // Arrange
@@ -154,6 +156,8 @@ namespace Husa.Uploader.Core.Tests
             aborListing.ListStatus = status;
             aborListing.Directions = "This is a test for the directions info field";
             aborListing.StreetNum = "10";
+            aborListing.BackOnMarketDate = DateTime.Now;
+            aborListing.OffMarketDate = DateTime.Now;
             var sut = this.GetSut();
 
             // Act
@@ -331,6 +335,26 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(UploadResult.Success, result);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task SetLotGeocodesSuccess(bool updateGeocodes)
+        {
+            // Arrange
+            this.SetUpConfigs();
+            var request = this.GetLotListingRequest();
+            request.UpdateGeocodes = updateGeocodes;
+            request.Longitude = 24;
+            request.Latitude = -97;
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UploadLot(request);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
         [Fact]
         public void GetComments_RefreshmentsAndLunch_ReturnsCombinedString()
         {
@@ -379,6 +403,12 @@ namespace Husa.Uploader.Core.Tests
         {
             var listingSale = GetListingRequestDetailResponse(isNewListing);
             return new AborListingRequest(listingSale).CreateFromApiResponseDetail();
+        }
+
+        protected LotListingRequest GetLotListingRequest(bool isNewListing = true)
+        {
+            var lotListing = GetLotListingRequestDetailResponse(isNewListing);
+            return new AborLotListingRequest(lotListing).CreateFromApiResponseDetail();
         }
 
         private static AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse GetListingRequestDetailResponse(bool isNewListing)
@@ -473,6 +503,47 @@ namespace Husa.Uploader.Core.Tests
             listingSale.SaleProperty.OpenHouses = openHouses;
 
             return listingSale;
+        }
+
+        private static AborResponse.ListingRequest.LotRequest.LotListingRequestDetailResponse GetLotListingRequestDetailResponse(bool isNewListing)
+        {
+            var addressInfo = new Mock<AborResponse.LotListing.LotAddressResponse>();
+            var propertyInfo = new AborResponse.LotListing.LotPropertyResponse()
+            {
+                UpdateGeocodes = true,
+            };
+            var featuresInfo = new Mock<AborResponse.LotListing.LotFeaturesResponse>();
+            var financialInfo = new AborResponse.LotListing.LotFinancialResponse()
+            {
+                HasBonusWithAmount = true,
+                BuyersAgentCommissionType = CommissionType.Amount,
+                AgentBonusAmountType = CommissionType.Percent,
+            };
+            var showingInfo = new AborResponse.LotListing.LotShowingResponse()
+            {
+                Directions = "directions test",
+            };
+            var schoolsInfo = new AborResponse.LotListing.LotSchoolsResponse()
+            {
+                OtherElementarySchool = "School test",
+            };
+
+            var statusFields = new Mock<AborResponse.ListingSaleStatusFieldsResponse>();
+
+            var lotListing = new AborResponse.ListingRequest.LotRequest.LotListingRequestDetailResponse()
+            {
+                AddressInfo = addressInfo.Object,
+                PropertyInfo = propertyInfo,
+                FeaturesInfo = featuresInfo.Object,
+                FinancialInfo = financialInfo,
+                ShowingInfo = showingInfo,
+                SchoolsInfo = schoolsInfo,
+                ListPrice = 127738,
+                StatusFieldsInfo = statusFields.Object,
+                MlsNumber = isNewListing ? null : "mlsNumber",
+            };
+
+            return lotListing;
         }
     }
 }

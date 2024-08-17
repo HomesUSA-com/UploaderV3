@@ -636,6 +636,7 @@ namespace Husa.Uploader.Core.Services
                 return status switch
                 {
                     "Canceled" => "Change to Withdrawn",
+                    "Hold" => "Change to Hold",
                     _ => throw new InvalidOperationException($"Invalid Status '{status}' for Austin Listing with Id '{listing.LotListingRequestID}'"),
                 };
             }
@@ -647,6 +648,9 @@ namespace Husa.Uploader.Core.Services
                     case "Canceled":
                         HandleWithdrawnStatusAsync();
                         break;
+                    case "Hold":
+                        HandleHoldStatusAsync(listing);
+                        break;
                 }
             }
 
@@ -655,6 +659,13 @@ namespace Husa.Uploader.Core.Services
                 var expirationDate = DateTime.Now.ToShortDateString();
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_529"));
                 this.uploaderClient.WriteTextbox(By.Id("Input_529"), expirationDate);
+            }
+
+            void HandleHoldStatusAsync(LotListingRequest listing)
+            {
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_528"));
+                this.uploaderClient.WriteTextbox(By.Id("Input_528"), listing.OffMarketDate.Value.ToShortDateString());
+                this.uploaderClient.WriteTextbox(By.Id("Input_81"), listing.BackOnMarketDate.Value.ToShortDateString());
             }
         }
 
