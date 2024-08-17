@@ -147,6 +147,7 @@ namespace Husa.Uploader.Core.Tests
         [Theory]
         [InlineData("Canceled")] // UpdateStatus_Canceled
         [InlineData("Hold")] // UpdateStatus_Hold
+        [InlineData("Pending")] // UpdateStatus_Pending
         public async Task UpdateLotStatus_Success(string status)
         {
             // Arrange
@@ -158,6 +159,10 @@ namespace Husa.Uploader.Core.Tests
             aborListing.StreetNum = "10";
             aborListing.BackOnMarketDate = DateTime.Now;
             aborListing.OffMarketDate = DateTime.Now;
+            aborListing.PendingDate = DateTime.Now;
+            aborListing.EstClosedDate = DateTime.Now;
+            aborListing.ExpiredDate = DateTime.Now;
+            aborListing.HasContingencyInfo = false;
             var sut = this.GetSut();
 
             // Act

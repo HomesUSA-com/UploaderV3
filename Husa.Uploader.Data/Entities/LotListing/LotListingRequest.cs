@@ -141,7 +141,9 @@ namespace Husa.Uploader.Data.Entities.LotListing
         // Lot Status
         public DateTime? BackOnMarketDate { get; set; }
         public DateTime? OffMarketDate { get; set; }
-
+        public DateTime? PendingDate { get; set; }
+        public DateTime? EstClosedDate { get; set; }
+        public bool HasContingencyInfo { get; set; }
         public abstract LotListingRequest CreateFromApiResponse();
 
         public abstract LotListingRequest CreateFromApiResponseDetail();

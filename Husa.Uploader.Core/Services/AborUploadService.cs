@@ -637,6 +637,7 @@ namespace Husa.Uploader.Core.Services
                 {
                     "Canceled" => "Change to Withdrawn",
                     "Hold" => "Change to Hold",
+                    "Pending" => "Change to Pending",
                     _ => throw new InvalidOperationException($"Invalid Status '{status}' for Austin Listing with Id '{listing.LotListingRequestID}'"),
                 };
             }
@@ -650,6 +651,9 @@ namespace Husa.Uploader.Core.Services
                         break;
                     case "Hold":
                         HandleHoldStatusAsync(listing);
+                        break;
+                    case "Pending":
+                        HandlePendingStatusAsync(listing);
                         break;
                 }
             }
@@ -666,6 +670,15 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_528"));
                 this.uploaderClient.WriteTextbox(By.Id("Input_528"), listing.OffMarketDate.Value.ToShortDateString());
                 this.uploaderClient.WriteTextbox(By.Id("Input_81"), listing.BackOnMarketDate.Value.ToShortDateString());
+            }
+
+            void HandlePendingStatusAsync(LotListingRequest listing)
+            {
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_94"));
+                this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString());
+                this.uploaderClient.WriteTextbox(By.Id("Input_515"), listing.EstClosedDate.Value.ToShortDateString());
+                this.uploaderClient.WriteTextbox(By.Id("Input_81"), listing.ExpiredDate.Value.ToShortDateString());
+                this.uploaderClient.SetSelect(By.Id("Input_655"), listing.HasContingencyInfo.BoolToNumericBool());
             }
         }
 

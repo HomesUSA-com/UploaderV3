@@ -244,6 +244,9 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
 
                 lotListingRequest.OffMarketDate = statusInfo.OffMarketDate;
                 lotListingRequest.BackOnMarketDate = statusInfo.BackOnMarketDate;
+                lotListingRequest.PendingDate = statusInfo.PendingDate;
+                lotListingRequest.EstClosedDate = statusInfo.EstimatedClosedDate;
+                lotListingRequest.HasContingencyInfo = statusInfo.HasContingencyInfo;
             }
         }
     }
