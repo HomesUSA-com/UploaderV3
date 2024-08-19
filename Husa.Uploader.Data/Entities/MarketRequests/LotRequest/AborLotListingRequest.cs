@@ -249,6 +249,11 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.HasContingencyInfo = statusInfo.HasContingencyInfo;
                 lotListingRequest.ClosedDate = statusInfo.ClosedDate;
                 lotListingRequest.ContingencyInfo = statusInfo.ContingencyInfo?.ToStringFromEnumMembers();
+                lotListingRequest.SoldPrice = statusInfo.ClosePrice;
+                lotListingRequest.SoldTerms = statusInfo.SaleTerms.ToStringFromEnumMembers();
+                lotListingRequest.AgentMarketUniqueId = statusInfo.AgentMarketUniqueId;
+                lotListingRequest.SecondAgentMarketUniqueId = statusInfo.SecondAgentMarketUniqueId;
+                lotListingRequest.SellConcess = statusInfo.SellConcess;
             }
         }
     }

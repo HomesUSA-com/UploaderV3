@@ -639,6 +639,7 @@ namespace Husa.Uploader.Core.Services
                     "Hold" => "Change to Hold",
                     "Pending" => "Change to Pending",
                     "ActiveUnderContract" => "Change to Active Under Contract",
+                    "Closed" => "Change to Closed",
                     _ => throw new InvalidOperationException($"Invalid Status '{status}' for Austin Listing with Id '{listing.LotListingRequestID}'"),
                 };
             }
@@ -658,6 +659,9 @@ namespace Husa.Uploader.Core.Services
                         break;
                     case "ActiveUnderContract":
                         HandleActiveUnderContractStatusAsync(listing);
+                        break;
+                    case "Closed":
+                        HandleClosedStatusAsync(listing);
                         break;
                 }
             }
@@ -698,6 +702,38 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetSelect(By.Id("Input_655"), value: listing.HasContingencyInfo.BoolToNumericBool());
                 this.uploaderClient.SetMultipleCheckboxById("Input_656", listing.ContingencyInfo);
                 this.uploaderClient.WriteTextbox(By.Id("Input_515"), listing.EstClosedDate.Value.ToShortDateString());
+            }
+
+            void HandleClosedStatusAsync(LotListingRequest listing)
+            {
+                Thread.Sleep(500);
+                this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString());
+                this.uploaderClient.WriteTextbox(By.Id("Input_85"), listing.ClosedDate.Value.ToShortDateString());
+                this.uploaderClient.SetSelect(By.Id("Input_524"), value: "EXCL");
+                this.uploaderClient.WriteTextbox(By.Id("Input_84"), listing.SoldPrice);
+                this.uploaderClient.WriteTextbox(By.Id("Input_526"), "None");
+                this.uploaderClient.SetSelect(By.Id("Input_655"), value: listing.HasContingencyInfo.BoolToNumericBool());
+                this.uploaderClient.WriteTextbox(By.Id("Input_517"), listing.SellConcess);
+                this.uploaderClient.SetMultipleCheckboxById("Input_525", listing.SoldTerms, "Buyer Financing", " ");
+                this.uploaderClient.WriteTextbox(By.Id("Input_519"), "0");
+                HandleAgentInfoAsync(listing);
+            }
+
+            void HandleAgentInfoAsync(LotListingRequest listing)
+            {
+                if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_726"), listing.AgentMarketUniqueId);
+                    string js = " document.getElementById('Input_726_Refresh').value='1';RefreshToSamePage(); ";
+                    this.uploaderClient.ExecuteScript(@js);
+                }
+
+                if (!string.IsNullOrEmpty(listing.SecondAgentMarketUniqueId))
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_727"), listing.SecondAgentMarketUniqueId);
+                    string js = " document.getElementById('Input_727_Refresh').value='1';RefreshToSamePage(); ";
+                    this.uploaderClient.ExecuteScript(@js);
+                }
             }
         }
 

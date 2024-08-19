@@ -146,6 +146,11 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public bool HasContingencyInfo { get; set; }
         public DateTime? ClosedDate { get; set; }
         public string ContingencyInfo { get; set; }
+        public decimal? SoldPrice { get; set; }
+        public string AgentMarketUniqueId { get; set; }
+        public string SecondAgentMarketUniqueId { get; set; }
+        public string SoldTerms { get; set; }
+        public string SellConcess { get; set; }
         public abstract LotListingRequest CreateFromApiResponse();
 
         public abstract LotListingRequest CreateFromApiResponseDetail();

@@ -149,6 +149,7 @@ namespace Husa.Uploader.Core.Tests
         [InlineData("Hold")] // UpdateStatus_Hold
         [InlineData("Pending")] // UpdateStatus_Pending
         [InlineData("ActiveUnderContract")] // UpdateStatus_ActiveUnderContract
+        [InlineData("Closed")] // UpdateStatus_Closed
         public async Task UpdateLotStatus_Success(string status)
         {
             // Arrange
@@ -166,6 +167,11 @@ namespace Husa.Uploader.Core.Tests
             aborListing.HasContingencyInfo = false;
             aborListing.ContingencyInfo = "FIN";
             aborListing.ClosedDate = DateTime.Now;
+            aborListing.AgentMarketUniqueId = "12234";
+            aborListing.SecondAgentMarketUniqueId = "354752";
+            aborListing.SellConcess = "1";
+            aborListing.SoldPrice = 150000;
+            aborListing.SoldTerms = "CASH";
             var sut = this.GetSut();
 
             // Act
