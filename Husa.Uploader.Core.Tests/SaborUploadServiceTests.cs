@@ -15,6 +15,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
@@ -400,6 +401,16 @@ namespace Husa.Uploader.Core.Tests
             var result = OpenHouseExtensions.GetOpenHouseHours("10:30");
 
             Assert.Equal("10", result);
+        }
+
+        [Fact]
+        public async Task UpdateLotPrice_NotImplementedException_Fails()
+        {
+            // Arrange
+            var lotListingRequest = new Mock<LotListingRequest>();
+
+            // Act && Assert
+            await Assert.ThrowsAsync<NotImplementedException>(async () => await this.GetSut().UpdateLotPrice(lotListingRequest.Object));
         }
 
         private static ResidentialListingVirtualTour GetResidentialListingVirtualTour()

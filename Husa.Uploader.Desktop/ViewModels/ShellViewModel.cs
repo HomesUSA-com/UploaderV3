@@ -99,6 +99,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private ICommand startLotUploadCommand;
         private ICommand startLotStatusUpdateCommand;
         private ICommand startLotImageUpdateCommand;
+        private ICommand startLotPriceUpdateCommand;
 
         public ShellViewModel(
             IOptions<ApplicationOptions> options,
@@ -598,6 +599,15 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
+        public ICommand StartLotPriceUpdateCommand
+        {
+            get
+            {
+                this.startLotPriceUpdateCommand ??= new RelayAsyncCommand(param => this.StartLotPriceUpdate(), param => this.CanStartLotPriceUpdate);
+                return this.startLotPriceUpdateCommand;
+            }
+        }
+
         public ICommand StartLotImageUpdateCommand
         {
             get
@@ -668,6 +678,11 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         public bool CanStartLotStatusUpdate => this.SelectedListingRequest != null && this.CurrentEntity == Entity.Lot &&
         !this.SelectedListingRequest.FullLotListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdateStatus>(this.SelectedListingRequest.FullLotListing.MarketCode);
+
+        public bool CanStartLotPriceUpdate => this.SelectedListingRequest != null
+            && this.CurrentEntity == Entity.Lot
+            && !this.SelectedListingRequest.FullLotListing.IsNewListing
+            && UploaderFactory.IsActionSupported<IUpdatePrice>(this.SelectedListingRequest.FullLotListing.MarketCode);
 
         public bool CanStartLotImageUpdate => this.SelectedListingRequest != null &&
             this.CurrentEntity == Entity.Lot &&
@@ -1643,6 +1658,16 @@ namespace Husa.Uploader.Desktop.ViewModels
             await this.StartLot(
                 opType: UploadType.Status,
                 action: (listing, cancellationToken) => uploader.UpdateLotStatus(listing, cancellationToken, logIn: true),
+                sourceAction: this.SourceAction);
+        }
+
+        private async Task StartLotPriceUpdate()
+        {
+            this.SourceAction = Crosscutting.Enums.SourceAction.UpdateStatus.GetEnumDescription();
+            var uploader = this.uploadFactory.Create<IUpdatePrice>(this.SelectedListingRequest.FullLotListing.MarketCode);
+            await this.StartLot(
+                opType: UploadType.Price,
+                action: (listing, cancellationToken) => uploader.UpdateLotPrice(listing, cancellationToken, logIn: true),
                 sourceAction: this.SourceAction);
         }
 
