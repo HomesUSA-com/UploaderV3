@@ -613,6 +613,159 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(1000);
                 }
 
+                try
+                {
+                    this.NavigateToQuickEdit(listing.MLSNum);
+                    Thread.Sleep(1000);
+                    string buttonText = GetButtonTextForStatus(listing.ListStatus);
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText(buttonText), cancellationToken);
+                    this.uploaderClient.ClickOnElement(By.LinkText(buttonText));
+                    HandleListingStatusAsync(listing);
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.LotListingRequestID);
+                    return UploadResult.Failure;
+                }
+
+                return UploadResult.Success;
+            }
+
+            string GetButtonTextForStatus(string status)
+            {
+                return status switch
+                {
+                    "Canceled" => "Change to Withdrawn",
+                    "Hold" => "Change to Hold",
+                    "Pending" => "Change to Pending",
+                    "ActiveUnderContract" => "Change to Active Under Contract",
+                    "Closed" => "Change to Closed",
+                    _ => throw new InvalidOperationException($"Invalid Status '{status}' for Austin Listing with Id '{listing.LotListingRequestID}'"),
+                };
+            }
+
+            void HandleListingStatusAsync(LotListingRequest listing)
+            {
+                switch (listing.ListStatus)
+                {
+                    case "Canceled":
+                        HandleWithdrawnStatusAsync();
+                        break;
+                    case "Hold":
+                        HandleHoldStatusAsync(listing);
+                        break;
+                    case "Pending":
+                        HandlePendingStatusAsync(listing);
+                        break;
+                    case "ActiveUnderContract":
+                        HandleActiveUnderContractStatusAsync(listing);
+                        break;
+                    case "Closed":
+                        HandleClosedStatusAsync(listing);
+                        break;
+                }
+            }
+
+            void HandleWithdrawnStatusAsync()
+            {
+                var expirationDate = DateTime.Now.ToShortDateString();
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_529"));
+                this.uploaderClient.WriteTextbox(By.Id("Input_529"), expirationDate);
+            }
+
+            void HandleHoldStatusAsync(LotListingRequest listing)
+            {
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_528"));
+                this.uploaderClient.WriteTextbox(By.Id("Input_528"), listing.OffMarketDate.Value.ToShortDateString());
+                this.uploaderClient.WriteTextbox(By.Id("Input_81"), listing.BackOnMarketDate.Value.ToShortDateString());
+            }
+
+            void HandlePendingStatusAsync(LotListingRequest listing)
+            {
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_94"));
+                this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString());
+                this.uploaderClient.WriteTextbox(By.Id("Input_515"), listing.EstClosedDate.Value.ToShortDateString());
+                this.uploaderClient.WriteTextbox(By.Id("Input_81"), listing.ExpiredDate.Value.ToShortDateString());
+                this.uploaderClient.SetSelect(By.Id("Input_655"), listing.HasContingencyInfo.BoolToNumericBool());
+            }
+
+            void HandleActiveUnderContractStatusAsync(LotListingRequest listing)
+            {
+                Thread.Sleep(500);
+                this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString());
+
+                if (listing.ClosedDate.HasValue)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_512"), listing.ClosedDate.Value.ToShortDateString());
+                }
+
+                this.uploaderClient.SetSelect(By.Id("Input_655"), value: listing.HasContingencyInfo.BoolToNumericBool());
+                this.uploaderClient.SetMultipleCheckboxById("Input_656", listing.ContingencyInfo);
+                this.uploaderClient.WriteTextbox(By.Id("Input_515"), listing.EstClosedDate.Value.ToShortDateString());
+            }
+
+            void HandleClosedStatusAsync(LotListingRequest listing)
+            {
+                Thread.Sleep(500);
+                this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString());
+                this.uploaderClient.WriteTextbox(By.Id("Input_85"), listing.ClosedDate.Value.ToShortDateString());
+                this.uploaderClient.SetSelect(By.Id("Input_524"), value: "EXCL");
+                this.uploaderClient.WriteTextbox(By.Id("Input_84"), listing.SoldPrice);
+                this.uploaderClient.WriteTextbox(By.Id("Input_526"), "None");
+                this.uploaderClient.SetSelect(By.Id("Input_655"), value: listing.HasContingencyInfo.BoolToNumericBool());
+                this.uploaderClient.WriteTextbox(By.Id("Input_517"), listing.SellConcess);
+                this.uploaderClient.SetMultipleCheckboxById("Input_525", listing.SoldTerms, "Buyer Financing", " ");
+                this.uploaderClient.WriteTextbox(By.Id("Input_519"), "0");
+                HandleAgentInfoAsync(listing);
+            }
+
+            void HandleAgentInfoAsync(LotListingRequest listing)
+            {
+                if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_726"), listing.AgentMarketUniqueId);
+                    string js = " document.getElementById('Input_726_Refresh').value='1';RefreshToSamePage(); ";
+                    this.uploaderClient.ExecuteScript(@js);
+                }
+
+                if (!string.IsNullOrEmpty(listing.SecondAgentMarketUniqueId))
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_727"), listing.SecondAgentMarketUniqueId);
+                    string js = " document.getElementById('Input_727_Refresh').value='1';RefreshToSamePage(); ";
+                    this.uploaderClient.ExecuteScript(@js);
+                }
+            }
+        }
+
+        public Task<UploadResult> UpdateLotPrice(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        {
+            return UpdateListingPrice(logIn);
+
+            async Task<UploadResult> UpdateListingPrice(bool logIn)
+            {
+                this.logger.LogInformation("Updating the price of the listing {requestId} to {listPrice}.", listing.LotListingRequestID, listing.ListPrice);
+                this.uploaderClient.InitializeUploadInfo(listing.LotListingRequestID, listing.IsNewListing);
+
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                    Thread.Sleep(1000);
+                }
+
+                try
+                {
+                    this.NavigateToQuickEdit(listing.MLSNum);
+
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Price Change"), cancellationToken);
+                    this.uploaderClient.ClickOnElement(By.LinkText("Price Change"));
+                    this.uploaderClient.WriteTextbox(By.Id("Input_77"), listing.ListPrice); // List Price
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.LotListingRequestID);
+                    return UploadResult.Failure;
+                }
+
                 return UploadResult.Success;
             }
         }
@@ -1002,6 +1155,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_728"), listing.TitleCo); // Preferred Title Company
             this.uploaderClient.ScrollDown(400);
             this.uploaderClient.SetMultipleCheckboxById("Input_299", "Funding"); // Possession
+            this.uploaderClient.SetSelect(By.Id("Input_779"), (bool)listing.HasAgentBonus ? "1" : "0"); // Seller Contributions YN
         }
 
         private void FillShowingInformation(ResidentialListingRequest listing)

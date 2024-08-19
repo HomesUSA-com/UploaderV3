@@ -667,8 +667,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                 var isPCH = this.SelectedListingRequest.FullListing.ListStatus == "PCH";
                 var isBOM = this.SelectedListingRequest.FullListing.ListStatus == "BOM";
                 var isSanAntonio = this.SelectedListingRequest.FullListing.MarketCode == MarketCode.SanAntonio;
-                return !this.SelectedListingRequest.FullListing.IsNewListing
-                    && this.SelectedListingRequest.FullListing.EnableOpenHouse
+                return this.SelectedListingRequest.FullListing.EnableOpenHouse
                     && (isActive || enableInPending || (isSanAntonio && (isPCH || isBOM)));
             }
         }
@@ -1545,6 +1544,8 @@ namespace Husa.Uploader.Desktop.ViewModels
         private async Task StartOHUpdate()
         {
             this.SourceAction = Crosscutting.Enums.SourceAction.UpdateOpenHouse.GetEnumDescription();
+            this.AskAndSetMlsNumber();
+
             var uploader = this.uploadFactory.Create<IUpdateOpenHouse>(this.SelectedListingRequest.FullListing.MarketCode);
             await this.Start(opType: UploadType.OpenHouse, action: uploader.UpdateOpenHouse, sourceAction: this.SourceAction);
         }

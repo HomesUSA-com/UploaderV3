@@ -144,6 +144,60 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(UploadResult.Success, result);
         }
 
+        [Theory]
+        [InlineData("Canceled")] // UpdateStatus_Canceled
+        [InlineData("Hold")] // UpdateStatus_Hold
+        [InlineData("Pending")] // UpdateStatus_Pending
+        [InlineData("ActiveUnderContract")] // UpdateStatus_ActiveUnderContract
+        [InlineData("Closed")] // UpdateStatus_Closed
+        public async Task UpdateLotStatus_Success(string status)
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var aborListing = new AborLotListingRequest(new AborResponse.ListingRequest.LotRequest.LotListingRequestDetailResponse());
+            aborListing.ListStatus = status;
+            aborListing.Directions = "This is a test for the directions info field";
+            aborListing.StreetNum = "10";
+            aborListing.BackOnMarketDate = DateTime.Now;
+            aborListing.OffMarketDate = DateTime.Now;
+            aborListing.PendingDate = DateTime.Now;
+            aborListing.EstClosedDate = DateTime.Now;
+            aborListing.ExpiredDate = DateTime.Now;
+            aborListing.HasContingencyInfo = false;
+            aborListing.ContingencyInfo = "FIN";
+            aborListing.ClosedDate = DateTime.Now;
+            aborListing.AgentMarketUniqueId = "12234";
+            aborListing.SecondAgentMarketUniqueId = "354752";
+            aborListing.SellConcess = "1";
+            aborListing.SoldPrice = 150000;
+            aborListing.SoldTerms = "CASH";
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdateLotStatus(aborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UpdateLotStatus_InvalidStatusFail()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var aborListing = new AborLotListingRequest(new AborResponse.ListingRequest.LotRequest.LotListingRequestDetailResponse());
+            aborListing.ListStatus = "TEST";
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdateLotStatus(aborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Failure, result);
+        }
+
         [Fact]
         public async Task UpdateImagesSuccess()
         {
@@ -290,6 +344,26 @@ namespace Husa.Uploader.Core.Tests
 
             // Act
             var result = await sut.Upload(request);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task SetLotGeocodesSuccess(bool updateGeocodes)
+        {
+            // Arrange
+            this.SetUpConfigs();
+            var request = this.GetLotListingRequest();
+            request.UpdateGeocodes = updateGeocodes;
+            request.Longitude = 24;
+            request.Latitude = -97;
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UploadLot(request);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
