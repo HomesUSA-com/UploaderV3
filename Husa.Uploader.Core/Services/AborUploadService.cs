@@ -638,6 +638,7 @@ namespace Husa.Uploader.Core.Services
                     "Canceled" => "Change to Withdrawn",
                     "Hold" => "Change to Hold",
                     "Pending" => "Change to Pending",
+                    "ActiveUnderContract" => "Change to Active Under Contract",
                     _ => throw new InvalidOperationException($"Invalid Status '{status}' for Austin Listing with Id '{listing.LotListingRequestID}'"),
                 };
             }
@@ -654,6 +655,9 @@ namespace Husa.Uploader.Core.Services
                         break;
                     case "Pending":
                         HandlePendingStatusAsync(listing);
+                        break;
+                    case "ActiveUnderContract":
+                        HandleActiveUnderContractStatusAsync(listing);
                         break;
                 }
             }
@@ -679,6 +683,21 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WriteTextbox(By.Id("Input_515"), listing.EstClosedDate.Value.ToShortDateString());
                 this.uploaderClient.WriteTextbox(By.Id("Input_81"), listing.ExpiredDate.Value.ToShortDateString());
                 this.uploaderClient.SetSelect(By.Id("Input_655"), listing.HasContingencyInfo.BoolToNumericBool());
+            }
+
+            void HandleActiveUnderContractStatusAsync(LotListingRequest listing)
+            {
+                Thread.Sleep(500);
+                this.uploaderClient.WriteTextbox(By.Id("Input_94"), listing.PendingDate.Value.ToShortDateString());
+
+                if (listing.ClosedDate.HasValue)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_512"), listing.ClosedDate.Value.ToShortDateString());
+                }
+
+                this.uploaderClient.SetSelect(By.Id("Input_655"), value: listing.HasContingencyInfo.BoolToNumericBool());
+                this.uploaderClient.SetMultipleCheckboxById("Input_656", listing.ContingencyInfo);
+                this.uploaderClient.WriteTextbox(By.Id("Input_515"), listing.EstClosedDate.Value.ToShortDateString());
             }
         }
 
