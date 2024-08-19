@@ -393,6 +393,37 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(string.Empty, result);
         }
 
+        [Fact]
+        public async Task UpdateLotPrice_Success()
+        {
+            // Arrange
+            this.SetUpConfigs();
+            var lotListingRequest = this.GetLotListingRequest();
+
+            // Act
+            var result = await this.GetSut().UpdateLotPrice(lotListingRequest);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UpdateLotPrice_ListingException_Fails()
+        {
+            // Arrange
+            this.SetUpConfigs();
+            var lotListingRequest = this.GetLotListingRequest();
+            this.uploaderClient
+                .Setup(x => x.WaitUntilElementIsDisplayed(It.Is<By>(x => x == By.LinkText("Price Change")), It.IsAny<CancellationToken>()))
+                .Throws(new Exception("price update failure"));
+
+            // Act
+            var result = await this.GetSut().UpdateLotPrice(lotListingRequest);
+
+            // Assert
+            Assert.Equal(UploadResult.Failure, result);
+        }
+
         protected override AborUploadService GetSut()
             => new(
                 this.uploaderClient.Object,
@@ -410,10 +441,41 @@ namespace Husa.Uploader.Core.Tests
             return new AborListingRequest(listingSale).CreateFromApiResponseDetail();
         }
 
-        protected LotListingRequest GetLotListingRequest(bool isNewListing = true)
+        protected override LotListingRequest GetLotListingRequest(bool isNewListing = true)
         {
-            var lotListing = GetLotListingRequestDetailResponse(isNewListing);
-            return new AborLotListingRequest(lotListing).CreateFromApiResponseDetail();
+            var listingSale = GetLotListingRequestDetailResponse(isNewListing);
+            return new AborLotListingRequest(listingSale).CreateFromApiResponseDetail();
+        }
+
+        private static AborResponse.ListingRequest.LotRequest.LotListingRequestDetailResponse GetLotListingRequestDetailResponse(bool isNewListing)
+        {
+            var propertyInfo = new AborResponse.LotListing.LotPropertyResponse()
+            {
+                PropCondition = new List<PropCondition>() { PropCondition.UnderConstruction },
+                UpdateGeocodes = true,
+            };
+
+            var showingInfo = new AborResponse.LotListing.LotShowingResponse()
+            {
+                ApptPhone = "8888888888",
+            };
+
+            var lotListing = new AborResponse.ListingRequest.LotRequest.LotListingRequestDetailResponse()
+            {
+                AddressInfo = new Mock<AborResponse.LotListing.LotAddressResponse>().Object,
+                CommunityId = Guid.NewGuid(),
+                CompanyId = Guid.NewGuid(),
+                CreatedBy = "CreatedBy",
+                FeaturesInfo = new Mock<AborResponse.LotListing.LotFeaturesResponse>().Object,
+                FinancialInfo = new Mock<AborResponse.LotListing.LotFinancialResponse>().Object,
+                Id = Guid.NewGuid(),
+                MlsNumber = isNewListing ? null : "mlsNumber",
+                PropertyInfo = propertyInfo,
+                ShowingInfo = showingInfo,
+                SchoolsInfo = new Mock<AborResponse.LotListing.LotSchoolsResponse>().Object,
+                StatusFieldsInfo = new Mock<AborResponse.ListingStatusFieldsResponse>().Object,
+            };
+            return lotListing;
         }
 
         private static AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse GetListingRequestDetailResponse(bool isNewListing)
@@ -508,47 +570,6 @@ namespace Husa.Uploader.Core.Tests
             listingSale.SaleProperty.OpenHouses = openHouses;
 
             return listingSale;
-        }
-
-        private static AborResponse.ListingRequest.LotRequest.LotListingRequestDetailResponse GetLotListingRequestDetailResponse(bool isNewListing)
-        {
-            var addressInfo = new Mock<AborResponse.LotListing.LotAddressResponse>();
-            var propertyInfo = new AborResponse.LotListing.LotPropertyResponse()
-            {
-                UpdateGeocodes = true,
-            };
-            var featuresInfo = new Mock<AborResponse.LotListing.LotFeaturesResponse>();
-            var financialInfo = new AborResponse.LotListing.LotFinancialResponse()
-            {
-                HasBonusWithAmount = true,
-                BuyersAgentCommissionType = CommissionType.Amount,
-                AgentBonusAmountType = CommissionType.Percent,
-            };
-            var showingInfo = new AborResponse.LotListing.LotShowingResponse()
-            {
-                Directions = "directions test",
-            };
-            var schoolsInfo = new AborResponse.LotListing.LotSchoolsResponse()
-            {
-                OtherElementarySchool = "School test",
-            };
-
-            var statusFields = new Mock<AborResponse.ListingSaleStatusFieldsResponse>();
-
-            var lotListing = new AborResponse.ListingRequest.LotRequest.LotListingRequestDetailResponse()
-            {
-                AddressInfo = addressInfo.Object,
-                PropertyInfo = propertyInfo,
-                FeaturesInfo = featuresInfo.Object,
-                FinancialInfo = financialInfo,
-                ShowingInfo = showingInfo,
-                SchoolsInfo = schoolsInfo,
-                ListPrice = 127738,
-                StatusFieldsInfo = statusFields.Object,
-                MlsNumber = isNewListing ? null : "mlsNumber",
-            };
-
-            return lotListing;
         }
     }
 }

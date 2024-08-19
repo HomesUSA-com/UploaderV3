@@ -8,6 +8,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Interfaces;
     using Moq;
     using Xunit;
@@ -125,6 +126,7 @@ namespace Husa.Uploader.Core.Tests
         protected abstract TUploadService GetSut();
         protected abstract TResidentialListingRequest GetEmptyListingRequest();
         protected abstract ResidentialListingRequest GetResidentialListingRequest(bool isNewListing = true);
+        protected abstract LotListingRequest GetLotListingRequest(bool isNewListing = true);
 
         protected void SetUpCompany(string username = "username", string password = "password")
         {
