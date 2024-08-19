@@ -8,7 +8,9 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
+    using Husa.Uploader.Data.Entities.MarketRequests.LotRequest;
     using Microsoft.Extensions.Logging;
     using Moq;
     using OpenQA.Selenium;
@@ -326,6 +328,37 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(string.Empty, result);
         }
 
+        [Fact]
+        public async Task UpdateLotPrice_Success()
+        {
+            // Arrange
+            this.SetUpConfigs();
+            var lotListingRequest = this.GetLotListingRequest();
+
+            // Act
+            var result = await this.GetSut().UpdateLotPrice(lotListingRequest);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UpdateLotPrice_ListingException_Fails()
+        {
+            // Arrange
+            this.SetUpConfigs();
+            var lotListingRequest = this.GetLotListingRequest();
+            this.uploaderClient
+                .Setup(x => x.WaitUntilElementIsDisplayed(It.Is<By>(x => x == By.LinkText("Price Change")), It.IsAny<CancellationToken>()))
+                .Throws(new Exception("price update failure"));
+
+            // Act
+            var result = await this.GetSut().UpdateLotPrice(lotListingRequest);
+
+            // Assert
+            Assert.Equal(UploadResult.Failure, result);
+        }
+
         protected override AborUploadService GetSut()
             => new(
                 this.uploaderClient.Object,
@@ -341,6 +374,43 @@ namespace Husa.Uploader.Core.Tests
         {
             var listingSale = GetListingRequestDetailResponse(isNewListing);
             return new AborListingRequest(listingSale).CreateFromApiResponseDetail();
+        }
+
+        protected override LotListingRequest GetLotListingRequest(bool isNewListing = true)
+        {
+            var listingSale = GetLotListingRequestDetailResponse(isNewListing);
+            return new AborLotListingRequest(listingSale).CreateFromApiResponseDetail();
+        }
+
+        private static AborResponse.ListingRequest.LotRequest.LotListingRequestDetailResponse GetLotListingRequestDetailResponse(bool isNewListing)
+        {
+            var propertyInfo = new AborResponse.LotListing.LotPropertyResponse()
+            {
+                PropCondition = new List<PropCondition>() { PropCondition.UnderConstruction },
+                UpdateGeocodes = true,
+            };
+
+            var showingInfo = new AborResponse.LotListing.LotShowingResponse()
+            {
+                ApptPhone = "8888888888",
+            };
+
+            var lotListing = new AborResponse.ListingRequest.LotRequest.LotListingRequestDetailResponse()
+            {
+                AddressInfo = new Mock<AborResponse.LotListing.LotAddressResponse>().Object,
+                CommunityId = Guid.NewGuid(),
+                CompanyId = Guid.NewGuid(),
+                CreatedBy = "CreatedBy",
+                FeaturesInfo = new Mock<AborResponse.LotListing.LotFeaturesResponse>().Object,
+                FinancialInfo = new Mock<AborResponse.LotListing.LotFinancialResponse>().Object,
+                Id = Guid.NewGuid(),
+                MlsNumber = isNewListing ? null : "mlsNumber",
+                PropertyInfo = propertyInfo,
+                ShowingInfo = showingInfo,
+                SchoolsInfo = new Mock<AborResponse.LotListing.LotSchoolsResponse>().Object,
+                StatusFieldsInfo = new Mock<AborResponse.ListingStatusFieldsResponse>().Object,
+            };
+            return lotListing;
         }
 
         private static AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse GetListingRequestDetailResponse(bool isNewListing)
