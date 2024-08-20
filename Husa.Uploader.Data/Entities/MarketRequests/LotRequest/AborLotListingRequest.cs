@@ -2,6 +2,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
 {
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Abor.Api.Contracts.Response;
     using Husa.Quicklister.Abor.Api.Contracts.Response.ListingRequest.LotRequest;
     using Husa.Quicklister.Abor.Api.Contracts.Response.LotListing;
     using Husa.Uploader.Crosscutting.Extensions;
@@ -58,6 +59,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 LotListingRequestID = this.listingDetailResponse.Id,
                 MarketName = this.MarketCode.GetEnumDescription(),
                 MLSNum = this.listingDetailResponse.MlsNumber,
+                ListStatus = this.listingDetailResponse.MlsStatus.ToStringFromEnumMember(),
                 ListPrice = this.listingDetailResponse.ListPrice.HasValue ? (int)this.listingDetailResponse.ListPrice.Value : 0,
                 ListDate = this.ListDate,
                 SysCreatedOn = this.listingDetailResponse.SysCreatedOn,
@@ -75,6 +77,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
             FillLotFeaturesInfo(this.listingDetailResponse.FeaturesInfo);
             FillLotFinantialInfo(this.listingDetailResponse.FinancialInfo);
             FillLotShowingInfo(this.listingDetailResponse.ShowingInfo);
+            FillStatusInfo(this.listingDetailResponse.StatusFieldsInfo);
 
             return lotListingRequest;
 
@@ -230,6 +233,27 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.Directions = showingInfo.Directions;
                 lotListingRequest.ShowingContactType = showingInfo.ShowingContactType?.ToStringFromEnumMembers();
                 lotListingRequest.ShowingContactName = showingInfo.ShowingContactName;
+            }
+
+            void FillStatusInfo(ListingStatusFieldsResponse statusInfo)
+            {
+                if (statusInfo is null)
+                {
+                    throw new ArgumentNullException(nameof(statusInfo));
+                }
+
+                lotListingRequest.OffMarketDate = statusInfo.OffMarketDate;
+                lotListingRequest.BackOnMarketDate = statusInfo.BackOnMarketDate;
+                lotListingRequest.PendingDate = statusInfo.PendingDate;
+                lotListingRequest.EstClosedDate = statusInfo.EstimatedClosedDate;
+                lotListingRequest.HasContingencyInfo = statusInfo.HasContingencyInfo;
+                lotListingRequest.ClosedDate = statusInfo.ClosedDate;
+                lotListingRequest.ContingencyInfo = statusInfo.ContingencyInfo?.ToStringFromEnumMembers();
+                lotListingRequest.SoldPrice = statusInfo.ClosePrice;
+                lotListingRequest.SoldTerms = statusInfo.SaleTerms.ToStringFromEnumMembers();
+                lotListingRequest.AgentMarketUniqueId = statusInfo.AgentMarketUniqueId;
+                lotListingRequest.SecondAgentMarketUniqueId = statusInfo.SecondAgentMarketUniqueId;
+                lotListingRequest.SellConcess = statusInfo.SellConcess;
             }
         }
     }

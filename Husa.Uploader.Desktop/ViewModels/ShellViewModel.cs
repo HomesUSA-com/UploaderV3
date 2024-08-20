@@ -98,6 +98,8 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private ICommand startLotUploadCommand;
         private ICommand startLotStatusUpdateCommand;
+        private ICommand startLotImageUpdateCommand;
+        private ICommand startLotPriceUpdateCommand;
 
         public ShellViewModel(
             IOptions<ApplicationOptions> options,
@@ -597,6 +599,24 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
+        public ICommand StartLotPriceUpdateCommand
+        {
+            get
+            {
+                this.startLotPriceUpdateCommand ??= new RelayAsyncCommand(param => this.StartLotPriceUpdate(), param => this.CanStartLotPriceUpdate);
+                return this.startLotPriceUpdateCommand;
+            }
+        }
+
+        public ICommand StartLotImageUpdateCommand
+        {
+            get
+            {
+                this.startLotImageUpdateCommand ??= new RelayAsyncCommand(param => this.StartLotImageUpdate(), param => this.CanStartLotImageUpdate);
+                return this.startLotImageUpdateCommand;
+            }
+        }
+
         public bool CanStartEdit => this.SelectedListingRequest != null &&
             this.CurrentEntity == Entity.Listing &&
             !this.SelectedListingRequest.FullListing.IsNewListing &&
@@ -657,6 +677,15 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         public bool CanStartLotStatusUpdate => this.SelectedListingRequest != null && this.CurrentEntity == Entity.Lot &&
         !this.SelectedListingRequest.FullLotListing.IsNewListing && UploaderFactory.IsActionSupported<IUpdateStatus>(this.SelectedListingRequest.FullLotListing.MarketCode);
+
+        public bool CanStartLotPriceUpdate => this.SelectedListingRequest != null
+            && this.CurrentEntity == Entity.Lot
+            && !this.SelectedListingRequest.FullLotListing.IsNewListing
+            && UploaderFactory.IsActionSupported<IUpdatePrice>(this.SelectedListingRequest.FullLotListing.MarketCode);
+
+        public bool CanStartLotImageUpdate => this.SelectedListingRequest != null &&
+            this.CurrentEntity == Entity.Lot &&
+            UploaderFactory.IsActionSupported<IUpdateImages>(this.SelectedListingRequest.FullLotListing.MarketCode);
 
         private UploadResult UploadResult { get; set; }
 
@@ -1633,6 +1662,38 @@ namespace Husa.Uploader.Desktop.ViewModels
                 sourceAction: this.SourceAction);
         }
 
+        private async Task StartLotPriceUpdate()
+        {
+            this.SourceAction = Crosscutting.Enums.SourceAction.UpdateStatus.GetEnumDescription();
+            var uploader = this.uploadFactory.Create<IUpdatePrice>(this.SelectedListingRequest.FullLotListing.MarketCode);
+            await this.StartLot(
+                opType: UploadType.Price,
+                action: (listing, cancellationToken) => uploader.UpdateLotPrice(listing, cancellationToken, logIn: true),
+                sourceAction: this.SourceAction);
+        }
+
+        private async Task StartLotImageUpdate()
+        {
+            this.SourceAction = Crosscutting.Enums.SourceAction.UpdateImages.GetEnumDescription();
+            this.AskAndSetLotMlsNumber();
+
+            if (!this.LotMediaUpload())
+            {
+                return;
+            }
+
+            var uploader = this.uploadFactory.Create<IUpdateImages>(this.SelectedListingRequest.FullLotListing.MarketCode);
+            await this.StartLot(
+                opType: UploadType.Image,
+                action: uploader.UpdateLotImages,
+                sourceAction: this.SourceAction);
+        }
+
+        private bool LotMediaUpload()
+        {
+            return !(this.SelectedListingRequest.IsNewListing || string.IsNullOrEmpty(this.SelectedListingRequest.FullLotListing.MLSNum));
+        }
+
         private string RequestMlsNumber()
         {
             var childWindow = this.mlsNumberInputFactory.Create();
@@ -1738,6 +1799,15 @@ namespace Husa.Uploader.Desktop.ViewModels
             {
                 var mlsNumber = this.RequestMlsNumber();
                 this.SelectedListingRequest.SetMlsNumber(mlsNumber);
+            }
+        }
+
+        private void AskAndSetLotMlsNumber()
+        {
+            if (string.IsNullOrWhiteSpace(this.SelectedListingRequest.FullLotListing.MLSNum))
+            {
+                var mlsNumber = this.RequestMlsNumber();
+                this.SelectedListingRequest.SetLotMlsNumber(mlsNumber);
             }
         }
     }

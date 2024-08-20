@@ -12,6 +12,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Microsoft.Extensions.Logging;
     using Moq;
@@ -392,6 +393,21 @@ namespace Husa.Uploader.Core.Tests
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UpdateLotPrice_NotImplementedException_Fails()
+        {
+            // Arrange
+            var lotListingRequest = new Mock<LotListingRequest>();
+
+            // Act && Assert
+            await Assert.ThrowsAsync<NotImplementedException>(async () => await this.GetSut().UpdateLotPrice(lotListingRequest.Object));
+        }
+
+        protected override LotListingRequest GetLotListingRequest(bool isNewListing = true)
+        {
+            throw new NotImplementedException();
         }
 
         protected override HarUploadService GetSut()

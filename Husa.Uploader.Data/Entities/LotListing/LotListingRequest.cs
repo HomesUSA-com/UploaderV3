@@ -138,6 +138,19 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public string ShowingContactType { get; set; }
         public string ShowingContactName { get; set; }
 
+        // Lot Status
+        public DateTime? BackOnMarketDate { get; set; }
+        public DateTime? OffMarketDate { get; set; }
+        public DateTime? PendingDate { get; set; }
+        public DateTime? EstClosedDate { get; set; }
+        public bool HasContingencyInfo { get; set; }
+        public DateTime? ClosedDate { get; set; }
+        public string ContingencyInfo { get; set; }
+        public decimal? SoldPrice { get; set; }
+        public string AgentMarketUniqueId { get; set; }
+        public string SecondAgentMarketUniqueId { get; set; }
+        public string SoldTerms { get; set; }
+        public string SellConcess { get; set; }
         public abstract LotListingRequest CreateFromApiResponse();
 
         public abstract LotListingRequest CreateFromApiResponseDetail();
