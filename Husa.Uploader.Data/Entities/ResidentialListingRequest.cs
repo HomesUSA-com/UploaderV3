@@ -173,7 +173,6 @@ namespace Husa.Uploader.Data.Entities
         public string OpenHouseWeekendEnd { get; set; }
         public decimal LandSQFT { get; set; }
         public string BodyofWater { get; set; }
-        public bool? BuyerCheckBox { get; set; }
         public bool? HasAgentBonus { get; set; }
 
         public bool HasContingencyInfo { get; set; }
