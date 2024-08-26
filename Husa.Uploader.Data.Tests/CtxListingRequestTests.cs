@@ -159,7 +159,6 @@ namespace Husa.Uploader.Data.Tests
             var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
             {
                 HasAgentBonus = true,
-                BuyerCheckBox = false,
             };
 
             // Act
@@ -176,7 +175,6 @@ namespace Husa.Uploader.Data.Tests
             var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
             {
                 HasAgentBonus = true,
-                BuyerCheckBox = true,
             };
 
             // Act
@@ -193,7 +191,6 @@ namespace Husa.Uploader.Data.Tests
             var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
             {
                 HasAgentBonus = false,
-                BuyerCheckBox = true,
             };
 
             // Act
@@ -210,7 +207,6 @@ namespace Husa.Uploader.Data.Tests
             var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
             {
                 HasAgentBonus = false,
-                BuyerCheckBox = true,
                 HasBonusWithAmount = true,
                 AgentBonusAmount = "1",
                 AgentBonusAmountType = "%",
@@ -230,7 +226,6 @@ namespace Husa.Uploader.Data.Tests
             var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
             {
                 HasAgentBonus = false,
-                BuyerCheckBox = false,
                 HasBonusWithAmount = true,
                 AgentBonusAmount = "1344.7811",
                 AgentBonusAmountType = "$",
