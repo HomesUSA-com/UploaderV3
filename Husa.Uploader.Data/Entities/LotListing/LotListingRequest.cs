@@ -233,18 +233,9 @@ namespace Husa.Uploader.Data.Entities.LotListing
 
         public virtual string GetAgentBonusRemarksMessage()
         {
-            var hasBuyerIncentive = this.HasBuyerIncentive;
-
             if (this.HasAgentBonus)
             {
-                return hasBuyerIncentive
-                    ? "Contact Builder for Bonus & Buyer Incentive Information. "
-                    : "Contact Builder for Bonus Information. ";
-            }
-
-            if (hasBuyerIncentive)
-            {
-                return "Contact Builder for Buyer Incentive Information. ";
+                return "Contact Builder for Bonus Information. ";
             }
 
             return string.Empty;
