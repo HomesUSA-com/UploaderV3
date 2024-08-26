@@ -990,18 +990,9 @@ namespace Husa.Uploader.Data.Entities
 
         public virtual string GetAgentBonusRemarksMessage()
         {
-            var hasBuyerIncentive = this.BuyerCheckBox.HasValue && this.BuyerCheckBox.Value;
-
             if (this.HasAgentBonus.HasValue && this.HasAgentBonus.Value)
             {
-                return hasBuyerIncentive
-                    ? "Contact Builder for Seller Concession & Buyer Incentive Information. "
-                    : "Contact Builder for Seller Concession Information. ";
-            }
-
-            if (hasBuyerIncentive)
-            {
-                return "Contact Builder for Buyer Incentive Information. ";
+                return "Contact Builder for Seller Concession Information. ";
             }
 
             return string.Empty;

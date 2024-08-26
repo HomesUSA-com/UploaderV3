@@ -154,7 +154,7 @@ namespace Husa.Uploader.Data.Tests
         }
 
         [Fact]
-        public void GetAgentBonusRemarksMessage_AgentBonusOn()
+        public void GetAgentBonusRemarksMessageAgentBonusOn()
         {
             // Arrange
             var sut = new DfwListingRequest(new SaleListingRequestQueryResponse())
@@ -170,7 +170,7 @@ namespace Husa.Uploader.Data.Tests
         }
 
         [Fact]
-        public void GetAgentBonusRemarksMessage_AgentBonusAndBuyerIncentiveOn()
+        public void GetAgentBonusRemarksMessage_AgentBonusOn()
         {
             // Arrange
             var sut = new DfwListingRequest(new SaleListingRequestQueryResponse())
@@ -182,11 +182,11 @@ namespace Husa.Uploader.Data.Tests
             var result = sut.GetAgentBonusRemarksMessage();
 
             // Assert
-            Assert.Contains("Contact Builder for Seller Concession & Buyer Incentive Information", result);
+            Assert.Contains("Contact Builder for Seller Concession", result);
         }
 
         [Fact]
-        public void GetAgentBonusRemarksMessage_BuyerIncentiveOn()
+        public void GetAgentBonusRemarksMessage_AgentBonusOff()
         {
             // Arrange
             var sut = new DfwListingRequest(new SaleListingRequestQueryResponse())
@@ -198,7 +198,7 @@ namespace Husa.Uploader.Data.Tests
             var result = sut.GetAgentBonusRemarksMessage();
 
             // Assert
-            Assert.Contains("Contact Builder for Buyer Incentive Information", result);
+            Assert.Contains(string.Empty, result);
         }
 
         [Fact]
@@ -217,7 +217,7 @@ namespace Husa.Uploader.Data.Tests
             var result = sut.GetAgentBonusRemarksMessage();
 
             // Assert
-            Assert.Contains("Contact Builder for Buyer Incentive Information", result);
+            Assert.Contains(string.Empty, result);
         }
 
         [Fact]
