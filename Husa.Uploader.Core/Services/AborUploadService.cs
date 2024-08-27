@@ -770,39 +770,6 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> UpdateLotPrice(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
-        {
-            return UpdateListingPrice(logIn);
-
-            async Task<UploadResult> UpdateListingPrice(bool logIn)
-            {
-                this.logger.LogInformation("Updating the price of the listing {requestId} to {listPrice}.", listing.LotListingRequestID, listing.ListPrice);
-                this.uploaderClient.InitializeUploadInfo(listing.LotListingRequestID, listing.IsNewListing);
-
-                if (logIn)
-                {
-                    await this.Login(listing.CompanyId);
-                    Thread.Sleep(1000);
-                }
-
-                try
-                {
-                    this.NavigateToQuickEdit(listing.MLSNum);
-
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Price Change"), cancellationToken);
-                    this.uploaderClient.ClickOnElement(By.LinkText("Price Change"));
-                    this.uploaderClient.WriteTextbox(By.Id("Input_77"), listing.ListPrice); // List Price
-                }
-                catch (Exception exception)
-                {
-                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.LotListingRequestID);
-                    return UploadResult.Failure;
-                }
-
-                return UploadResult.Success;
-            }
-        }
-
         public Task<UploadResult> UpdateLotImages(LotListingRequest listing, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(listing);

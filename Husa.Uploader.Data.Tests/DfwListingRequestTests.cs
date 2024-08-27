@@ -154,13 +154,12 @@ namespace Husa.Uploader.Data.Tests
         }
 
         [Fact]
-        public void GetAgentBonusRemarksMessage_AgentBonusOn()
+        public void GetAgentBonusRemarksMessageAgentBonusOn()
         {
             // Arrange
             var sut = new DfwListingRequest(new SaleListingRequestQueryResponse())
             {
                 HasAgentBonus = true,
-                BuyerCheckBox = false,
             };
 
             // Act
@@ -171,37 +170,35 @@ namespace Husa.Uploader.Data.Tests
         }
 
         [Fact]
-        public void GetAgentBonusRemarksMessage_AgentBonusAndBuyerIncentiveOn()
+        public void GetAgentBonusRemarksMessage_AgentBonusOn()
         {
             // Arrange
             var sut = new DfwListingRequest(new SaleListingRequestQueryResponse())
             {
                 HasAgentBonus = true,
-                BuyerCheckBox = true,
             };
 
             // Act
             var result = sut.GetAgentBonusRemarksMessage();
 
             // Assert
-            Assert.Contains("Contact Builder for Seller Concession & Buyer Incentive Information", result);
+            Assert.Contains("Contact Builder for Seller Concession", result);
         }
 
         [Fact]
-        public void GetAgentBonusRemarksMessage_BuyerIncentiveOn()
+        public void GetAgentBonusRemarksMessage_AgentBonusOff()
         {
             // Arrange
             var sut = new DfwListingRequest(new SaleListingRequestQueryResponse())
             {
                 HasAgentBonus = false,
-                BuyerCheckBox = true,
             };
 
             // Act
             var result = sut.GetAgentBonusRemarksMessage();
 
             // Assert
-            Assert.Contains("Contact Builder for Buyer Incentive Information", result);
+            Assert.Contains(string.Empty, result);
         }
 
         [Fact]
@@ -211,7 +208,6 @@ namespace Husa.Uploader.Data.Tests
             var sut = new DfwListingRequest(new SaleListingRequestQueryResponse())
             {
                 HasAgentBonus = false,
-                BuyerCheckBox = true,
                 HasBonusWithAmount = true,
                 AgentBonusAmount = "1",
                 AgentBonusAmountType = "%",
@@ -221,7 +217,7 @@ namespace Husa.Uploader.Data.Tests
             var result = sut.GetAgentBonusRemarksMessage();
 
             // Assert
-            Assert.Contains("Contact Builder for Buyer Incentive Information", result);
+            Assert.Contains(string.Empty, result);
         }
 
         [Fact]
@@ -231,7 +227,6 @@ namespace Husa.Uploader.Data.Tests
             var sut = new DfwListingRequest(new SaleListingRequestQueryResponse())
             {
                 HasAgentBonus = false,
-                BuyerCheckBox = false,
                 HasBonusWithAmount = true,
                 AgentBonusAmount = "1344.7811",
                 AgentBonusAmountType = "$",
