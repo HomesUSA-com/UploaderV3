@@ -153,13 +153,12 @@ namespace Husa.Uploader.Data.Tests
         }
 
         [Fact]
-        public void GetAgentBonusRemarksMessage_AgentBonusOn()
+        public void GetAgentBonusRemarksMessageAgentBonusOn()
         {
             // Arrange
             var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
             {
                 HasAgentBonus = true,
-                BuyerCheckBox = false,
             };
 
             // Act
@@ -170,47 +169,28 @@ namespace Husa.Uploader.Data.Tests
         }
 
         [Fact]
-        public void GetAgentBonusRemarksMessage_AgentBonusAndBuyerIncentiveOn()
+        public void GetAgentBonusRemarksMessageAgentBonusOff()
+        {
+            // Arrange
+            var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
+            {
+                HasAgentBonus = false,
+            };
+
+            // Act
+            var result = sut.GetAgentBonusRemarksMessage();
+
+            // Assert
+            Assert.Contains(string.Empty, result);
+        }
+
+        [Fact]
+        public void GetAgentBonusRemarksMessage_AgentBonusWithAmountOn()
         {
             // Arrange
             var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
             {
                 HasAgentBonus = true,
-                BuyerCheckBox = true,
-            };
-
-            // Act
-            var result = sut.GetAgentBonusRemarksMessage();
-
-            // Assert
-            Assert.Contains("Contact Builder for Seller Concession & Buyer Incentive Information", result);
-        }
-
-        [Fact]
-        public void GetAgentBonusRemarksMessage_BuyerIncentiveOn()
-        {
-            // Arrange
-            var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
-            {
-                HasAgentBonus = false,
-                BuyerCheckBox = true,
-            };
-
-            // Act
-            var result = sut.GetAgentBonusRemarksMessage();
-
-            // Assert
-            Assert.Contains("Contact Builder for Buyer Incentive Information", result);
-        }
-
-        [Fact]
-        public void GetAgentBonusRemarksMessage_AgentBonusWithAmountAndBuyerIncentiveOn()
-        {
-            // Arrange
-            var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
-            {
-                HasAgentBonus = false,
-                BuyerCheckBox = true,
                 HasBonusWithAmount = true,
                 AgentBonusAmount = "1",
                 AgentBonusAmountType = "%",
@@ -220,7 +200,7 @@ namespace Husa.Uploader.Data.Tests
             var result = sut.GetAgentBonusRemarksMessage();
 
             // Assert
-            Assert.Contains("Contact Builder for Buyer Incentive Information", result);
+            Assert.Contains("Contact Builder for Seller Concession Information", result);
         }
 
         [Fact]
@@ -230,7 +210,6 @@ namespace Husa.Uploader.Data.Tests
             var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
             {
                 HasAgentBonus = false,
-                BuyerCheckBox = false,
                 HasBonusWithAmount = true,
                 AgentBonusAmount = "1344.7811",
                 AgentBonusAmountType = "$",
