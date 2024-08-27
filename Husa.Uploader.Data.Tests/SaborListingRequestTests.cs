@@ -46,7 +46,6 @@ namespace Husa.Uploader.Data.Tests
             var sut = new SaborListingRequest(new ListingSaleRequestQueryResponse())
             {
                 HasAgentBonus = false,
-                BuyerCheckBox = false,
                 HasBonusWithAmount = true,
                 AgentBonusAmount = "1",
                 AgentBonusAmountType = "%",

@@ -129,7 +129,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.StreetNum = addressInfo.StreetNumber;
                 residentialListingRequest.StreetName = addressInfo.StreetName;
                 residentialListingRequest.StreetDir = addressInfo.StreetDirection?.ToStringFromEnumMember();
-                residentialListingRequest.StreetType = addressInfo.StreetType.ToStringFromEnumMember();
+                residentialListingRequest.StreetType = addressInfo.StreetType?.ToStringFromEnumMember();
                 residentialListingRequest.UnitNum = addressInfo.UnitNumber;
                 residentialListingRequest.City = addressInfo.City.GetEnumDescription();
                 residentialListingRequest.CityCode = addressInfo.City.ToStringFromEnumMember();
@@ -266,7 +266,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
                 residentialListingRequest.AgentListApptPhone = showingInfo.ShowingPhone;
                 residentialListingRequest.OtherPhone = showingInfo.SecondShowingPhone;
-                residentialListingRequest.BuyerCheckBox = showingInfo.HasBuyerIncentive;
                 residentialListingRequest.BuyerIncentive = showingInfo.BuyersAgentCommission.DecimalToString();
                 residentialListingRequest.BuyerIncentiveDesc = showingInfo.BuyersAgentCommissionType.ToStringFromEnumMember();
                 residentialListingRequest.LockboxTypeDesc = showingInfo.LockboxType?.ToStringFromEnumMember();

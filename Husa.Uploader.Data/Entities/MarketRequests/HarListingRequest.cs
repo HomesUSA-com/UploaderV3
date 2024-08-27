@@ -261,7 +261,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.AgentBonusAmount = financialInfo.AgentBonusAmount.DecimalToString();
                 residentialListingRequest.AgentBonusAmountType = financialInfo.AgentBonusAmountType.ToStringFromEnumMember();
                 residentialListingRequest.CompBuyBonusExpireDate = financialInfo.BonusExpirationDate;
-                residentialListingRequest.BuyerCheckBox = financialInfo.HasBuyerIncentive;
                 residentialListingRequest.BuyerIncentive = financialInfo.BuyersAgentCommission.DecimalToString();
                 residentialListingRequest.BuyerIncentiveDesc = financialInfo.BuyersAgentCommissionType.ToStringFromEnumMember();
                 residentialListingRequest.HOA = financialInfo.HOARequirement?.ToStringFromEnumMember();

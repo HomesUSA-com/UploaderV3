@@ -206,7 +206,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.TaxExemptions = financialRequest.TaxExemptions?.ToStringFromEnumMembers();
                 lotListingRequest.LandTitleEvidence = financialRequest.LandTitleEvidence?.ToStringFromEnumMember();
                 lotListingRequest.PreferredTitleCompany = financialRequest.PreferredTitleCompany;
-                lotListingRequest.HasBuyerIncentive = financialRequest.HasBuyerIncentive;
                 lotListingRequest.BuyersAgentCommission = financialRequest.BuyersAgentCommission;
                 lotListingRequest.BuyersAgentCommissionType = financialRequest.BuyersAgentCommissionType.ToStringFromEnumMember();
                 lotListingRequest.HasAgentBonus = financialRequest.HasAgentBonus;
