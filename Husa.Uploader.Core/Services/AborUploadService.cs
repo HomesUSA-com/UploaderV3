@@ -531,7 +531,12 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(2000);
 
                 this.CleanOpenHouse();
-                this.AddOpenHouses(listing);
+
+                if (listing.EnableOpenHouse)
+                {
+                    this.AddOpenHouses(listing);
+                }
+
                 return UploadResult.Success;
             }
         }

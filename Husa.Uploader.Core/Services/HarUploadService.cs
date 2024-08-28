@@ -639,7 +639,12 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(3000);
 
                 this.CleanOpenHouse();
-                this.AddOpenHouses(listing);
+
+                if (listing.EnableOpenHouse)
+                {
+                    this.AddOpenHouses(listing);
+                }
+
                 return UploadResult.Success;
             }
         }
