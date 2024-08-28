@@ -412,9 +412,6 @@ namespace Husa.Uploader.Core.Services
                     case "ActiveUnderContract":
                         HandleActiveUnderContractStatusAsync(listing);
                         break;
-                    case "Active":
-                        HandleActiveStatusAsync();
-                        break;
                 }
             }
 
@@ -462,13 +459,6 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetSelect(By.Id("Input_655"), value: listing.HasContingencyInfo.BoolToNumericBool());
                 this.uploaderClient.SetMultipleCheckboxById("Input_656", listing.ContingencyInfo, "Other Contingency Type", " ");
                 this.uploaderClient.WriteTextbox(By.Id("Input_515"), listing.EstClosedDate.Value.ToShortDateString());
-            }
-
-            void HandleActiveStatusAsync()
-            {
-                var expirationDate = DateTime.Now.ToShortDateString();
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_81"));
-                this.uploaderClient.WriteTextbox(By.Id("Input_81"), expirationDate);
             }
 
             void HandleAgentInfoAsync(ResidentialListingRequest listing)
@@ -675,9 +665,6 @@ namespace Husa.Uploader.Core.Services
                     case "Closed":
                         HandleClosedStatusAsync(listing);
                         break;
-                    case "Active":
-                        HandleActiveStatusAsync();
-                        break;
                 }
             }
 
@@ -732,13 +719,6 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetMultipleCheckboxById("Input_525", listing.SoldTerms, "Buyer Financing", " ");
                 this.uploaderClient.WriteTextbox(By.Id("Input_519"), "0");
                 HandleAgentInfoAsync(listing);
-            }
-
-            void HandleActiveStatusAsync()
-            {
-                var expirationDate = DateTime.Now.ToShortDateString();
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_81"));
-                this.uploaderClient.WriteTextbox(By.Id("Input_81"), expirationDate);
             }
 
             void HandleAgentInfoAsync(LotListingRequest listing)
