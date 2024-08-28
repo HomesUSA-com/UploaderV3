@@ -955,7 +955,7 @@ namespace Husa.Uploader.Core.Services
 
         private void CleanOpenHouse()
         {
-            var elems = this.uploaderClient.FindElements(By.CssSelector("table[id^=_Input_349__del_REPEAT] a")).Count(c => c.Displayed);
+            var elems = this.uploaderClient.FindElements(By.CssSelector("table[id^=_Input_349__del_REPEAT] a"))?.Count(c => c.Displayed);
             this.uploaderClient.ScrollDown(3000);
             while (elems > 1)
             {
