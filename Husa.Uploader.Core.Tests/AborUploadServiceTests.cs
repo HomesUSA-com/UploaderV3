@@ -320,6 +320,7 @@ namespace Husa.Uploader.Core.Tests
 
             var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
             aborListing.OpenHouse = openHouses;
+            aborListing.EnableOpenHouse = true;
             var sut = this.GetSut();
 
             // Act
