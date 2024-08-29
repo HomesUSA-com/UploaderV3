@@ -391,6 +391,7 @@ namespace Husa.Uploader.Core.Services
                     "Closed" => "Change to Closed",
                     "Pending" => "Change to Pending",
                     "ActiveUnderContract" => "Change to Active Under Contract",
+                    "Active" => "Change to Active",
                     _ => throw new InvalidOperationException($"Invalid Status '{status}' for Austin Listing with Id '{listing.ResidentialListingID}'"),
                 };
             }
@@ -640,6 +641,7 @@ namespace Husa.Uploader.Core.Services
                     "Pending" => "Change to Pending",
                     "ActiveUnderContract" => "Change to Active Under Contract",
                     "Closed" => "Change to Closed",
+                    "Active" => "Change to Active",
                     _ => throw new InvalidOperationException($"Invalid Status '{status}' for Austin Listing with Id '{listing.LotListingRequestID}'"),
                 };
             }
