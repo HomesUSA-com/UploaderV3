@@ -319,6 +319,7 @@ namespace Husa.Uploader.Core.Tests
 
             var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
             harListing.OpenHouse = openHouses;
+            harListing.EnableOpenHouse = true;
             var sut = this.GetSut();
 
             // Act

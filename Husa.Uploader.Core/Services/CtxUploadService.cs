@@ -457,11 +457,6 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(5000);
                 this.NavigateToQuickEdit(listing.MLSNum);
 
-                if (!listing.OpenHouse.Any())
-                {
-                    return UploadResult.Success;
-                }
-
                 Thread.Sleep(400);
 
                 // Enter OpenHouse
@@ -471,7 +466,12 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(3000);
 
                 this.CleanOpenHouse();
-                this.AddOpenHouses(listing);
+
+                if (listing.EnableOpenHouse)
+                {
+                    this.AddOpenHouses(listing);
+                }
+
                 return UploadResult.Success;
             }
         }
@@ -955,7 +955,7 @@ namespace Husa.Uploader.Core.Services
 
         private void CleanOpenHouse()
         {
-            var elems = this.uploaderClient.FindElements(By.CssSelector("table[id^=_Input_349__del_REPEAT] a")).Count(c => c.Displayed);
+            var elems = this.uploaderClient.FindElements(By.CssSelector("table[id^=_Input_349__del_REPEAT] a"))?.Count(c => c.Displayed);
             this.uploaderClient.ScrollDown(3000);
             while (elems > 1)
             {
