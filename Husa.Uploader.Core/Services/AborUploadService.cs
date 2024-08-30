@@ -536,6 +536,40 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
+        public Task<UploadResult> EditLot(LotListingRequest listing, CancellationToken cancellationToken, bool logIn)
+        {
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            return EditLotListing();
+
+            async Task<UploadResult> EditLotListing()
+            {
+                this.logger.LogInformation("Editing the information for the lot {requestId}", listing.InternalLotRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.LotListingRequestID, listing.IsNewListing);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                }
+
+                Thread.Sleep(2000);
+
+                try
+                {
+                    this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lot {requestId}", listing.LotListingRequestID);
+                    return UploadResult.Failure;
+                }
+
+                return UploadResult.Success;
+            }
+        }
+
         public Task<UploadResult> UploadLot(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             if (listing is null)
