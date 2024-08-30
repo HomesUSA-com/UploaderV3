@@ -496,6 +496,11 @@ namespace Husa.Uploader.Core.Services
             throw new NotImplementedException();
         }
 
+        public Task<UploadResult> EditLot(LotListingRequest listing, CancellationToken cancellationToken, bool logIn)
+        {
+            throw new NotImplementedException();
+        }
+
         private void NavigateToNewPropertyInput()
         {
             this.uploaderClient.NavigateToUrl("https://matrix.ctxmls.com/Matrix/Input");

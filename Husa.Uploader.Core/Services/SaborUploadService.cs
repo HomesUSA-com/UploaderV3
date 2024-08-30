@@ -561,6 +561,11 @@ namespace Husa.Uploader.Core.Services
             throw new NotImplementedException();
         }
 
+        public Task<UploadResult> EditLot(LotListingRequest listing, CancellationToken cancellationToken, bool logIn)
+        {
+            throw new NotImplementedException();
+        }
+
         private void NewProperty(ResidentialListingRequest listing)
         {
             const string tabName = "General";

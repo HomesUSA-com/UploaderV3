@@ -96,6 +96,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private ICommand startOHUpdateCommand;
         private ICommand startVTUploadCommand;
 
+        private ICommand startLotEditCommand;
         private ICommand startLotUploadCommand;
         private ICommand startLotStatusUpdateCommand;
         private ICommand startLotImageUpdateCommand;
@@ -581,6 +582,15 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
+        public ICommand StartLotEditCommand
+        {
+            get
+            {
+                this.startLotEditCommand ??= new RelayAsyncCommand(param => this.StartLotEdit(), param => this.CanStartLotEdit);
+                return this.startLotEditCommand;
+            }
+        }
+
         public ICommand StartLotUploadCommand
         {
             get
@@ -670,6 +680,11 @@ namespace Husa.Uploader.Desktop.ViewModels
                 return isActive || enableInPending || (isSanAntonio && (isPCH || isBOM));
             }
         }
+
+        public bool CanStartLotEdit => this.SelectedListingRequest != null
+            && this.CurrentEntity == Entity.Lot
+            && !this.SelectedListingRequest.FullLotListing.IsNewListing
+            && UploaderFactory.IsActionSupported<IEditListing>(this.SelectedListingRequest.FullLotListing.MarketCode);
 
         public bool CanStartLotUpload => this.SelectedListingRequest != null && this.CurrentEntity == Entity.Lot &&
             UploaderFactory.IsActionSupported<IUploadListing>(this.SelectedListingRequest.FullLotListing.MarketCode);
@@ -1622,6 +1637,16 @@ namespace Husa.Uploader.Desktop.ViewModels
 
             // 2. Refresh the table
             await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(this.SelectedListingRequest.RequestId, uploaderStatus: UploaderState.Cancelled, this.SourceAction));
+        }
+
+        private async Task StartLotEdit()
+        {
+            this.SourceAction = Crosscutting.Enums.SourceAction.View.GetEnumDescription();
+            var uploader = this.uploadFactory.Create<IEditListing>(this.SelectedListingRequest.FullLotListing.MarketCode);
+            await this.StartLot(
+                opType: UploadType.Edit,
+                action: (listing, cancellationToken) => uploader.EditLot(listing, cancellationToken, logIn: true),
+                sourceAction: this.SourceAction);
         }
 
         private async Task StartLotUpload()
