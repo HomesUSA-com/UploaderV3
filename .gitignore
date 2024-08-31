@@ -367,3 +367,4 @@ FodyWeavers.xsd
 **/chromedriver.exe
 **/*.user
 **/Husa.Uploader.Desktop/ChromeForTesting/*
+/.idea/
