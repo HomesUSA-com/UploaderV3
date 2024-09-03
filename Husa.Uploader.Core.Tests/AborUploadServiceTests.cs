@@ -144,12 +144,32 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(UploadResult.Success, result);
         }
 
+        [Fact]
+        public async Task UpdateStatus_ActiveSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+            aborListing.ListStatus = "Active";
+            aborListing.EstClosedDate = DateTime.Now;
+            aborListing.HasContingencyInfo = false;
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdateStatus(aborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
         [Theory]
         [InlineData("Canceled")] // UpdateStatus_Canceled
         [InlineData("Hold")] // UpdateStatus_Hold
         [InlineData("Pending")] // UpdateStatus_Pending
         [InlineData("ActiveUnderContract")] // UpdateStatus_ActiveUnderContract
         [InlineData("Closed")] // UpdateStatus_Closed
+        [InlineData("Active")] // UpdateStatus_Active
         public async Task UpdateLotStatus_Success(string status)
         {
             // Arrange
@@ -320,6 +340,7 @@ namespace Husa.Uploader.Core.Tests
 
             var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
             aborListing.OpenHouse = openHouses;
+            aborListing.EnableOpenHouse = true;
             var sut = this.GetSut();
 
             // Act

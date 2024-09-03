@@ -677,8 +677,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                 var isPCH = this.SelectedListingRequest.FullListing.ListStatus == "PCH";
                 var isBOM = this.SelectedListingRequest.FullListing.ListStatus == "BOM";
                 var isSanAntonio = this.SelectedListingRequest.FullListing.MarketCode == MarketCode.SanAntonio;
-                return this.SelectedListingRequest.FullListing.EnableOpenHouse
-                    && (isActive || enableInPending || (isSanAntonio && (isPCH || isBOM)));
+                return isActive || enableInPending || (isSanAntonio && (isPCH || isBOM));
             }
         }
 
