@@ -178,6 +178,7 @@ namespace Husa.Uploader.Core.Tests
             var ctxListing = new CtxListingRequest(new ListingSaleRequestDetailResponse())
             {
                 MLSNum = "mlsNum",
+                EnableOpenHouse = true,
             };
 
             // Act

@@ -509,16 +509,11 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(5000);
                 this.NavigateToQuickEdit(listing.MLSNum);
 
-                if (!listing.OpenHouse.Any())
-                {
-                    return UploadResult.Success;
-                }
-
                 Thread.Sleep(400);
 
                 // Enter OpenHouse
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_dlInputList_ctl03_m_btnSelect"), cancellationToken);
-                this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl03_m_btnSelect"));
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_dlInputList_ctl11_m_btnSelect"), cancellationToken);
+                this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl11_m_btnSelect"));
                 Thread.Sleep(3000);
 
                 this.CleanOpenHouse(cancellationToken);
@@ -555,6 +550,11 @@ namespace Husa.Uploader.Core.Services
         }
 
         public Task<UploadResult> UpdateLotPrice(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<UploadResult> EditLot(LotListingRequest listing, CancellationToken cancellationToken, bool logIn)
         {
             throw new NotImplementedException();
         }

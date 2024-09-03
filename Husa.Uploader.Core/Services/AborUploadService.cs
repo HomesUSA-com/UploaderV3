@@ -391,6 +391,7 @@ namespace Husa.Uploader.Core.Services
                     "Closed" => "Change to Closed",
                     "Pending" => "Change to Pending",
                     "ActiveUnderContract" => "Change to Active Under Contract",
+                    "Active" => "Change to Active",
                     _ => throw new InvalidOperationException($"Invalid Status '{status}' for Austin Listing with Id '{listing.ResidentialListingID}'"),
                 };
             }
@@ -517,11 +518,6 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(2000);
                 this.NavigateToQuickEdit(listing.MLSNum);
 
-                if (!listing.OpenHouse.Any())
-                {
-                    return UploadResult.Success;
-                }
-
                 Thread.Sleep(400);
 
                 // Enter OpenHouse
@@ -531,7 +527,46 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(2000);
 
                 this.CleanOpenHouse();
-                this.AddOpenHouses(listing);
+
+                if (listing.EnableOpenHouse)
+                {
+                    this.AddOpenHouses(listing);
+                }
+
+                return UploadResult.Success;
+            }
+        }
+
+        public Task<UploadResult> EditLot(LotListingRequest listing, CancellationToken cancellationToken, bool logIn)
+        {
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            return EditLotListing();
+
+            async Task<UploadResult> EditLotListing()
+            {
+                this.logger.LogInformation("Editing the information for the lot {requestId}", listing.InternalLotRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.LotListingRequestID, listing.IsNewListing);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                }
+
+                Thread.Sleep(2000);
+
+                try
+                {
+                    this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lot {requestId}", listing.LotListingRequestID);
+                    return UploadResult.Failure;
+                }
+
                 return UploadResult.Success;
             }
         }
@@ -640,6 +675,7 @@ namespace Husa.Uploader.Core.Services
                     "Pending" => "Change to Pending",
                     "ActiveUnderContract" => "Change to Active Under Contract",
                     "Closed" => "Change to Closed",
+                    "Active" => "Change to Active",
                     _ => throw new InvalidOperationException($"Invalid Status '{status}' for Austin Listing with Id '{listing.LotListingRequestID}'"),
                 };
             }
