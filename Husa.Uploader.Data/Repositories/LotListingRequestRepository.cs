@@ -181,6 +181,7 @@ namespace Husa.Uploader.Data.Repositories
                 var saleListingRequestFilter = new SaleListingRequestFilter()
                 {
                     RequestState = QuicklisterStatus.Pending,
+                    IsPrint = true,
                 };
 
                 var requests = await requestClient.GetListRequestAsync(
