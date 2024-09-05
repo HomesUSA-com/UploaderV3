@@ -10,7 +10,6 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
-    using Husa.Uploader.Crosscutting.Extensions.Abor;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.LotListing;
@@ -608,7 +607,6 @@ namespace Husa.Uploader.Core.Services
                     this.FillLotDocumentsUtilitiesInformation(listing);
                     this.FillLotFinancialInformation(listing);
                     this.FillLotShowingInformation(listing);
-                    this.FillLotAgentOfficeInformation(listing);
                     this.FillLotRemarksInformation(listing);
 
                     if (listing.IsNewListing)
@@ -883,8 +881,8 @@ namespace Husa.Uploader.Core.Services
         private void NavigateToEditResidentialForm(string mlsNumber, CancellationToken cancellationToken = default)
         {
             this.NavigateToQuickEdit(mlsNumber);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
-            this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_dlInputList_ctl00_m_btnSelect"), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl00_m_btnSelect"));
         }
 
         private void FillListingInformation(ResidentialListingRequest listing, bool isNotPartialFill = true)
@@ -1581,25 +1579,6 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_313"), listing.ShowingInstructions); // Showing Instructions
         }
 
-        private void FillLotAgentOfficeInformation(LotListingRequest listing)
-        {
-            this.uploaderClient.ClickOnElement(By.LinkText("Agent/Office"));
-            Thread.Sleep(100);
-            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
-
-            this.uploaderClient.SetSelect(By.Id("Input_315"), "Percent"); // Sub Agency Compensation Type
-            this.uploaderClient.WriteTextbox(By.Id("Input_314"), "0.0"); // Sub Agency Compensation
-
-            if (listing.HasBonusWithAmount)
-            {
-                this.uploaderClient.SetSelect(By.Id("Input_318"), listing.AgentBonusAmountType.ToCommissionType(), true); // Bonus to BA
-                this.uploaderClient.WriteTextbox(By.Id("Input_317"), listing.AgentBonusAmount); // Bonus to BA Amount
-            }
-
-            this.uploaderClient.SetSelect(By.Id("Input_319"), "0", true); // Dual Variable Compensation
-            this.uploaderClient.SetSelect(By.Id("Input_353"), "0", true); // Intermediary
-        }
-
         private void FillLotRemarksInformation(LotListingRequest listing)
         {
             this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
@@ -1732,14 +1711,14 @@ namespace Husa.Uploader.Core.Services
             var firstVirtualTour = virtualTours.FirstOrDefault();
             if (firstVirtualTour != null)
             {
-                this.uploaderClient.WriteTextbox(By.Id("Input_325"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+                this.uploaderClient.WriteTextbox(By.Id("Input_324"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
             }
 
             virtualTours = virtualTours.Skip(1).ToList();
             var secondVirtualTour = virtualTours.FirstOrDefault();
             if (secondVirtualTour != null)
             {
-                this.uploaderClient.WriteTextbox(By.Id("Input_324"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+                this.uploaderClient.WriteTextbox(By.Id("Input_325"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
             }
         }
     }
