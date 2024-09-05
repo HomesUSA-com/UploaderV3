@@ -5,6 +5,7 @@ namespace Husa.Uploader.Core.Services
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
+    using Husa.MediaService.Domain.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services.Common;
@@ -1279,7 +1280,7 @@ namespace Husa.Uploader.Core.Services
         [SuppressMessage("SonarLint", "S2583", Justification = "Ignored due to suspected false positive")]
         private async Task ProcessImages(ResidentialListingRequest listing, CancellationToken cancellationToken)
         {
-            var media = await this.mediaRepository.GetListingImages(listing.ResidentialListingRequestID, market: this.CurrentMarket, cancellationToken);
+            var media = await this.mediaRepository.GetListingImages(listing.ResidentialListingRequestID, market: this.CurrentMarket, token: cancellationToken, mediaType: MediaType.ListingRequest);
             var imageOrder = 0;
             var imageRow = 0;
             var imageCell = 0;
@@ -1656,7 +1657,7 @@ namespace Husa.Uploader.Core.Services
         [SuppressMessage("SonarLint", "S2583", Justification = "Ignored due to suspected false positive")]
         private async Task ProcessLotImages(LotListingRequest listing, CancellationToken cancellationToken)
         {
-            var media = await this.mediaRepository.GetListingImages(listing.LotListingRequestID, market: this.CurrentMarket, cancellationToken);
+            var media = await this.mediaRepository.GetListingImages(listing.LotListingRequestID, market: this.CurrentMarket, token: cancellationToken, mediaType: MediaType.LotRequest);
             var imageOrder = 0;
             var imageRow = 0;
             var imageCell = 0;
