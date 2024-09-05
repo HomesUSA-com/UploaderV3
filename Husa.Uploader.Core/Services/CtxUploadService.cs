@@ -803,6 +803,15 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElement(By.LinkText("Brokerage/Showing Information")); // Brokerage/Showing Information
 
             // Brokerage
+            string hasAgentBonus = (listing.HasAgentBonus.HasValue && (bool)listing.HasAgentBonus) ? "1" : "0";
+            this.uploaderClient.SetSelect(By.Id("Input_861"), hasAgentBonus, fieldLabel: "Concessions Y/N", tabName);
+            if (!string.IsNullOrEmpty(listing.AgentBonusAmountType) || !string.IsNullOrEmpty(listing.AgentBonusAmount))
+            {
+                string agentBonusType = listing.AgentBonusAmountType.Equals("%") ? "PER" : "DOL";
+                this.uploaderClient.WriteTextbox(By.Id("Input_863"), listing.AgentBonusAmount, isElementOptional: true);  // Concession Amount
+                this.uploaderClient.SetSelect(By.Id("Input_864"), agentBonusType, "Prospects Exempt", tabName); // Concession Type
+            }
+
             this.uploaderClient.SetSelect(By.Id("Input_637"), listing.ProspectsExempt, "Prospects Exempt", tabName); // Prospects Exempt (default hardcode "No")
             this.uploaderClient.WriteTextbox(By.Id("Input_638"), listing.TitleCo); // Pref Title Company
             this.uploaderClient.WriteTextbox(By.Id("Input_639"), listing.EarnestMoney); // Earnest Money
