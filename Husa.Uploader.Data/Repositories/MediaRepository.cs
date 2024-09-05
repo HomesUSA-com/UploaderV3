@@ -35,9 +35,9 @@ namespace Husa.Uploader.Data.Repositories
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IEnumerable<ResidentialListingMedia>> GetListingImages(Guid residentialListingRequestId, MarketCode market, CancellationToken token)
+        public async Task<IEnumerable<ResidentialListingMedia>> GetListingImages(Guid residentialListingRequestId, MarketCode market, CancellationToken token, MediaType mediaType = MediaType.ListingRequest)
         {
-            var listingMedia = await this.mediaServiceClient.GetResources(entityId: residentialListingRequestId, type: MediaType.ListingRequest, token);
+            var listingMedia = await this.mediaServiceClient.GetResources(entityId: residentialListingRequestId, type: mediaType, token);
             var consolidatedMedia = ConsolidateImages(listingMedia.Media);
             var result = new List<ResidentialListingMedia>();
             int count = 0;

@@ -51,7 +51,7 @@ namespace Husa.Uploader.Data.Tests
             var repository = this.GetSut();
 
             // Act
-            var result = await repository.GetListingImages(listingRequestId, MarketCode.SanAntonio, default);
+            var result = await repository.GetListingImages(listingRequestId, MarketCode.SanAntonio, default, MediaType.ListingRequest);
 
             // Assert
             Assert.NotEmpty(result);
@@ -79,7 +79,7 @@ namespace Husa.Uploader.Data.Tests
             var repository = this.GetSut();
 
             // Act
-            var result = await repository.GetListingImages(listingRequestId, MarketCode.SanAntonio, default);
+            var result = await repository.GetListingImages(listingRequestId, MarketCode.SanAntonio, default, MediaType.ListingRequest);
 
             // Assert
             Assert.Empty(result);

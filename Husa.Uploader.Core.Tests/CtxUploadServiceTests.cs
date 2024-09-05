@@ -1,6 +1,7 @@
 namespace Husa.Uploader.Core.Tests
 {
     using Husa.Extensions.Common.Enums;
+    using Husa.MediaService.Domain.Enums;
     using Husa.Quicklister.CTX.Api.Contracts.Response;
     using Husa.Quicklister.CTX.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.CTX.Api.Contracts.Response.SalePropertyDetail;
@@ -105,7 +106,7 @@ namespace Husa.Uploader.Core.Tests
             };
 
             this.mediaRepository
-                .Setup(x => x.GetListingImages(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetListingImages(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>(), MediaType.ListingRequest))
                 .ReturnsAsync(listingImages);
             this.uploaderClient
                 .Setup(x => x.FindElement(It.IsAny<By>(), false, false).FindElement(It.IsAny<By>()).SendKeys(It.IsAny<string>()));
@@ -127,7 +128,7 @@ namespace Husa.Uploader.Core.Tests
             var request = this.GetResidentialListingRequest(false);
 
             this.mediaRepository
-                .Setup(x => x.GetListingImages(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetListingImages(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>(), MediaType.ListingRequest))
                 .ThrowsAsync(new Exception("error getting images"));
             this.uploaderClient
                 .Setup(x => x.FindElement(It.IsAny<By>(), false, false).FindElement(It.IsAny<By>()).SendKeys(It.IsAny<string>()));
@@ -154,7 +155,7 @@ namespace Husa.Uploader.Core.Tests
             }
 
             this.mediaRepository
-                .Setup(x => x.GetListingImages(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetListingImages(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>(), MediaType.ListingRequest))
                 .ReturnsAsync(listingImages);
 
             this.uploaderClient
