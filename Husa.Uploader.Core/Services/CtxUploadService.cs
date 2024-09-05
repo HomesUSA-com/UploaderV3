@@ -915,7 +915,7 @@ namespace Husa.Uploader.Core.Services
         [SuppressMessage("SonarLint", "S2583", Justification = "Ignored due to suspected false positive")]
         private async Task ProcessImages(ResidentialListingRequest listing, CancellationToken cancellationToken)
         {
-            var media = await this.mediaRepository.GetListingImages(listing.ResidentialListingRequestID, market: MarketCode.CTX, cancellationToken);
+            var media = await this.mediaRepository.GetListingImages(listing.ResidentialListingRequestID, market: MarketCode.CTX, token: cancellationToken);
             var imageOrder = 0;
             var imageRow = 0;
             var imageCell = 0;

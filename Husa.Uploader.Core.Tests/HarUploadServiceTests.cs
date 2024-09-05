@@ -6,6 +6,7 @@ namespace Husa.Uploader.Core.Tests
     using System.Threading.Tasks;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
+    using Husa.MediaService.Domain.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Quicklister.Har.Domain.Enums.Domain;
     using Husa.Uploader.Core.Interfaces;
@@ -383,7 +384,7 @@ namespace Husa.Uploader.Core.Tests
             };
 
             this.mediaRepository
-                .Setup(x => x.GetListingImages(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetListingImages(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>(), MediaType.ListingRequest))
                 .ReturnsAsync(listingImages);
             this.uploaderClient
                 .Setup(x => x.FindElement(It.IsAny<By>(), false, false).FindElement(It.IsAny<By>()).SendKeys(It.IsAny<string>()));
