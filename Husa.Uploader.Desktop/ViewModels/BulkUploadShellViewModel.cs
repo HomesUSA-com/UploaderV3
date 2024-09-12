@@ -21,6 +21,7 @@ namespace Husa.Uploader.Desktop.ViewModels
     {
         private readonly IAbstractFactory<BulkUploadView> bulkUploadViewFactory;
         private readonly IBulkUploadFactory bulkUploadFactory;
+        private List<UploadListingItem> filteredListings;
         private ICommand startBulkUploadCommand;
 
         public bool CanStartBulk => this.CurrentEntity == Entity.Listing && this.ListingRequests?.Any() != null;
@@ -102,6 +103,8 @@ namespace Husa.Uploader.Desktop.ViewModels
                 this.FinishBulkUpload();
                 return;
             }
+
+            this.filteredListings = filteredBulkListings.ToList();
 
             this.ShowCancelButton = true;
             var uploader = this.bulkUploadFactory.Create<IBulkUploadListings>(bulkUploadInfo.Market.Value, bulkUploadInfo.RequestFieldChange.Value, filteredBulkListings);
@@ -190,12 +193,7 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private async Task SetBulkFullRequestsInformation()
         {
-            if (this.ListingRequests != null && this.ListingRequests.Any() && this.ListingRequests[0].FullListingConfigured)
-            {
-                return;
-            }
-
-            foreach (var bulkListing in this.ListingRequests)
+            foreach (var bulkListing in this.filteredListings)
             {
                 var requestData = await this.sqlDataLoader.GetListingRequest(
                     bulkListing.RequestId,
