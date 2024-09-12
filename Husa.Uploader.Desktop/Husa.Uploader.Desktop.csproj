@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -69,12 +69,6 @@
         <PackageReference Include="Husa.Migration.Api.Client" Version="2.0.1" />
         <PackageReference Include="Husa.CompanyServiceManager.Client" Version="2.6.0" />
         <PackageReference Include="Husa.Extensions.Api" Version="5.0.1" />
-        <PackageReference Include="Husa.Quicklister.Abor.Api.Client" Version="2.9.0" />
-        <PackageReference Include="Husa.Quicklister.Dfw.Api.Client" Version="0.9.0" />
-        <PackageReference Include="Husa.Quicklister.Extensions.Api.Client" Version="1.7.0" />
-        <PackageReference Include="Husa.Quicklister.Extensions.Api.Contracts" Version="1.7.0" />
-        <PackageReference Include="Husa.Quicklister.Har.Api.Client" Version="2.6.0" />
-        <PackageReference Include="Husa.Quicklister.Sabor.Api.Client" Version="2.7.0" />
         <PackageReference Include="MahApps.Metro" Version="3.0.0-alpha0457" />
         <PackageReference Include="MaterialDesignColors" Version="2.1.4" />
         <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
