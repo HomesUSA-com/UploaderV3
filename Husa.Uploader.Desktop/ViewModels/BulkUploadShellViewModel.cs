@@ -78,11 +78,6 @@ namespace Husa.Uploader.Desktop.ViewModels
             {
                 return this.CatchCanceledException();
             }
-            catch (Exception ex)
-            {
-                this.logger.LogWarning(ex, "Failed to logout of listing {ResidentialListingRequestId}", this.SelectedListingRequest.FullListing.ResidentialListingRequestID);
-                return UploadResult.Failure;
-            }
             finally
             {
                 this.cancellationTokenSource.Dispose();
