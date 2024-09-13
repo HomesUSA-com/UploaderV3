@@ -818,8 +818,8 @@ namespace Husa.Uploader.Core.Services
 
             // Showing
             this.uploaderClient.SetSelect(By.Id("Input_642"), listing.LockboxTypeDesc, fieldLabel: "Lockbox Type", tabName, isElementOptional: true);
-            this.uploaderClient.WriteTextbox(By.Id("Input_648"), listing.AgentListApptPhone, isElementOptional: true);  // Showing Phone
-            this.uploaderClient.WriteTextbox(By.Id("Input_649"), listing.OtherPhone, isElementOptional: true);  // Showing Phone #2
+            this.uploaderClient.WriteTextbox(By.Id("Input_648"), listing.AgentListApptPhone.PhoneFormat(true), isElementOptional: true);  // Showing Phone
+            this.uploaderClient.WriteTextbox(By.Id("Input_649"), listing.OtherPhone.PhoneFormat(true), isElementOptional: true);  // Showing Phone #2
             this.uploaderClient.SetMultipleCheckboxById("Input_643", listing.LockboxLocDesc, fieldLabel: "Lockbox Location", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_645", listing.Showing, fieldLabel: "Showing Instructions", tabName);
 
