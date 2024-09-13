@@ -250,7 +250,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.AssocName = financialInfo.HoaName;
                 residentialListingRequest.AssocTransferFee = (int?)financialInfo.HoaTransferFeeAmount;
                 residentialListingRequest.HoaWebsite = financialInfo.HoaWebsite;
-                residentialListingRequest.AssocPhone = financialInfo.HoaPhone;
+                residentialListingRequest.AssocPhone = financialInfo.HoaPhone.PhoneFormat(true);
                 residentialListingRequest.ManagementCompany = financialInfo.HoaMgmtCo;
                 residentialListingRequest.AssocFeeFrequency = financialInfo.HoaTerm?.ToStringFromEnumMember();
                 residentialListingRequest.AssocFeeIncludes = financialInfo.HoaFeeIncludes.ToStringFromEnumMembers();
