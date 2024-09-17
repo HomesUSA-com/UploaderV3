@@ -7,9 +7,9 @@
         <PackageReference Include="Husa.Extensions.Common" Version="4.1.5" />
         <PackageReference Include="Husa.Extensions.Media" Version="4.0.0" />
         <PackageReference Include="Husa.MediaService.Client" Version="2.1.0" />
+        <PackageReference Include="Husa.Quicklister.Abor.Api.Client" Version="2.9.1" />
+        <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="2.6.1" />
         <PackageReference Include="Husa.Quicklister.Extensions.Api.Client" Version="1.7.0" />
-        <PackageReference Include="Husa.Quicklister.Abor.Api.Client" Version="2.9.0" />
-        <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="2.6.0" />
         <PackageReference Include="Husa.Quicklister.Har.Api.Client" Version="2.6.0" />
         <PackageReference Include="Husa.Quicklister.Dfw.Api.Client" Version="0.9.0" />
         <PackageReference Include="Husa.Quicklister.Sabor.Api.Client" Version="2.7.0" />

@@ -250,7 +250,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.AssocName = financialInfo.HoaName;
                 residentialListingRequest.AssocTransferFee = (int?)financialInfo.HoaTransferFeeAmount;
                 residentialListingRequest.HoaWebsite = financialInfo.HoaWebsite;
-                residentialListingRequest.AssocPhone = financialInfo.HoaPhone;
+                residentialListingRequest.AssocPhone = financialInfo.HoaPhone.PhoneFormat(true);
                 residentialListingRequest.ManagementCompany = financialInfo.HoaMgmtCo;
                 residentialListingRequest.AssocFeeFrequency = financialInfo.HoaTerm?.ToStringFromEnumMember();
                 residentialListingRequest.AssocFeeIncludes = financialInfo.HoaFeeIncludes.ToStringFromEnumMembers();
@@ -354,6 +354,37 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
                 residentialListingRequest.OpenHouse = this.OpenHouse;
             }
+        }
+
+        public override string GetAgentRemarksMessage()
+        {
+            var privateRemarks = "For more information call (512) 571-3831. LIMITED SERVICE LISTING: Buyer verifies dimensions & ISD info. Use Bldr contract.";
+
+            var bonusMessage = this.GetAgentBonusRemarksMessage();
+            if (!string.IsNullOrWhiteSpace(bonusMessage))
+            {
+                privateRemarks += $"{bonusMessage} {privateRemarks}";
+            }
+
+            var saleOfficeInfo = this.GetSalesAssociateRemarksMessage();
+            if (!string.IsNullOrWhiteSpace(saleOfficeInfo))
+            {
+                privateRemarks += $" {saleOfficeInfo}";
+            }
+
+            if (!string.IsNullOrWhiteSpace(this.RealtorContactEmail))
+            {
+                privateRemarks += $" Email contact: {this.RealtorContactEmail}.";
+            }
+
+            if (!string.IsNullOrWhiteSpace(this.PlanProfileName))
+            {
+                privateRemarks += $" Plan - {this.PlanProfileName}.";
+            }
+
+            const string homeUnderConstruction = "Home is under construction. For your safety, call appt number for showings.";
+
+            return this.BuiltStatus != BuiltStatus.ReadyNow ? $"{homeUnderConstruction} {privateRemarks}" : privateRemarks;
         }
     }
 }
