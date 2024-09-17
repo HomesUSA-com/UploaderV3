@@ -1456,7 +1456,7 @@ namespace Husa.Uploader.Core.Services
 
             Thread.Sleep(1000);
 
-            var mediaFiles = await this.mediaRepository.GetListingImages(residentialListingRequestID, market: MarketCode.SanAntonio, token);
+            var mediaFiles = await this.mediaRepository.GetListingImages(residentialListingRequestID, market: MarketCode.SanAntonio, token: token);
             var folder = Path.Combine(Path.GetTempPath(), mediaFolderName, Path.GetRandomFileName());
             Directory.CreateDirectory(folder);
             foreach (var photo in mediaFiles)

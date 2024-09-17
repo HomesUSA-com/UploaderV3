@@ -241,6 +241,32 @@ namespace Husa.Uploader.Data.Tests
             Assert.Contains("For more information call (999) 999-9999 or (888) 888-8888. Sales Office at 11 Sales Off St.", result);
         }
 
+        [Fact]
+        public void GetAgentRemarks()
+        {
+            // Arrange
+            var sut = new CtxListingRequest(new ListingSaleRequestQueryResponse())
+            {
+                HasAgentBonus = true,
+                RealtorContactEmail = "realtor@email.com",
+                AgentListApptPhone = "(832)-256-3698",
+                YearBuiltDesc = "TOBEB",
+            };
+
+            // Act
+            var result = sut.GetAgentRemarksMessage();
+
+            // Assert
+            Assert.Contains(
+                "Home is under construction. For your safety, call appt number for showings. " +
+                "For more information call (512) 571-3831. LIMITED SERVICE LISTING: " +
+                "Buyer verifies dimensions & ISD info. Use Bldr contract.Contact Builder for Seller Concession Information.  " +
+                "For more information call (512) 571-3831. " +
+                "LIMITED SERVICE LISTING: Buyer verifies dimensions & ISD info. " +
+                "Use Bldr contract. For more information call (832) 256-3698. . Email contact: realtor@email.com.",
+                result);
+        }
+
         private static ListingSaleRequestDetailResponse GetDetailResponse(
             bool includeSaleProperty = true,
             bool includeAddress = true,
