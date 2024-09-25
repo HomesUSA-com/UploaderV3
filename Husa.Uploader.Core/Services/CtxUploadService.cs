@@ -359,7 +359,6 @@ namespace Husa.Uploader.Core.Services
                 if (logIn)
                 {
                     await this.Login(listing.CompanyId);
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl03_m_divFooterContainer"), cancellationToken);
                 }
 
                 try
