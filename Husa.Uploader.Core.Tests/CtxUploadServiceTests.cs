@@ -49,6 +49,7 @@ namespace Husa.Uploader.Core.Tests
         [Theory]
         [InlineData("CSLD")] // UpdateStatus_Sold
         [InlineData("AUC")] // UpdateStatus_ActiveUnderContract
+        [InlineData("PND")] // UpdateStatus_Pending
         public async Task UpdateStatus_Success(string status)
         {
             // Arrange
