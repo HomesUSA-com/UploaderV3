@@ -313,6 +313,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.IsWithdrawalListingAgreement = statusInfo.WithdrawalActiveListingAgreement.BoolToNumericBool();
                 residentialListingRequest.WithdrawalReason = statusInfo.WithdrawalReason;
                 residentialListingRequest.WithdrawnDate = statusInfo.WithdrawalDate;
+                residentialListingRequest.OffMarketDate = statusInfo.OffMarketDate;
             }
 
             void FillRoomsInfo(IEnumerable<RoomResponse> rooms)

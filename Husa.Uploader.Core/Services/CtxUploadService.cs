@@ -410,6 +410,13 @@ namespace Husa.Uploader.Core.Services
                             this.uploaderClient.WriteTextbox(By.Id("Input_310"), listing.WithdrawalReason);
                             this.uploaderClient.SetSelect(By.Id("Input_799"), listing.IsWithdrawalListingAgreement);
                             break;
+                        case "CS":
+
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Hold"), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText("Change to Hold"));
+                            Thread.Sleep(500);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_306"), listing.OffMarketDate.HasValue ? listing.OffMarketDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                            break;
 
                         default:
                             throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for CTX Listing with Id '{listing.ResidentialListingID}'");
