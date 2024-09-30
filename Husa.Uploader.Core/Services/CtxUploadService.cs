@@ -384,6 +384,15 @@ namespace Husa.Uploader.Core.Services
                             this.uploaderClient.WriteTextbox(By.Id("Input_323"), listing.SecondAgentMarketUniqueId);
                             this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_323_Refresh').value='1';RefreshToSamePage();");
                             break;
+                        case "AUC":
+
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Active Under Contract"), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText("Change to Active Under Contract"));
+                            Thread.Sleep(500);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_455"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_810"), listing.EstClosedDate.HasValue ? listing.EstClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+
+                            break;
 
                         default:
                             throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for CTX Listing with Id '{listing.ResidentialListingID}'");
