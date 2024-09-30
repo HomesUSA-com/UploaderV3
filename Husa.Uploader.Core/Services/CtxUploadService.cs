@@ -370,8 +370,8 @@ namespace Husa.Uploader.Core.Services
                     {
                         case "CSLD":
 
-                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Sold"), cancellationToken);
-                            this.uploaderClient.ClickOnElement(By.LinkText("Change to Sold"));
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Closed"), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText("Change to Closed"));
                             Thread.Sleep(500);
                             this.uploaderClient.WriteTextbox(By.Id("Input_74"), listing.SoldPrice);
                             this.uploaderClient.WriteTextbox(By.Id("Input_73"), listing.ClosedDate.HasValue ? listing.ClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
