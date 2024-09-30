@@ -390,7 +390,6 @@ namespace Husa.Uploader.Core.Services
                             Thread.Sleep(500);
                             this.uploaderClient.WriteTextbox(By.Id("Input_455"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
                             this.uploaderClient.WriteTextbox(By.Id("Input_810"), listing.EstClosedDate.HasValue ? listing.EstClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
-
                             break;
                         case "PND":
 
@@ -398,10 +397,18 @@ namespace Husa.Uploader.Core.Services
                             this.uploaderClient.ClickOnElement(By.LinkText("Change to Pending"));
                             Thread.Sleep(500);
                             this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_811"), listing.EstClosedDate.HasValue ? listing.EstClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty); 
+                            this.uploaderClient.WriteTextbox(By.Id("Input_811"), listing.EstClosedDate.HasValue ? listing.EstClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
                             this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.AgentMarketUniqueId);
                             this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_321_Refresh').value='1';RefreshToSamePage();");
+                            break;
+                        case "WDN":
 
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Withdrawn"), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText("Change to Withdrawn"));
+                            Thread.Sleep(500);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_309"), listing.WithdrawnDate.HasValue ? listing.WithdrawnDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_310"), listing.WithdrawalReason);
+                            this.uploaderClient.SetSelect(By.Id("Input_799"), listing.IsWithdrawalListingAgreement);
                             break;
 
                         default:

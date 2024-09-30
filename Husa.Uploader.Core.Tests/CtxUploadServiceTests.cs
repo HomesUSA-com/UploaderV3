@@ -50,6 +50,7 @@ namespace Husa.Uploader.Core.Tests
         [InlineData("CSLD")] // UpdateStatus_Sold
         [InlineData("AUC")] // UpdateStatus_ActiveUnderContract
         [InlineData("PND")] // UpdateStatus_Pending
+        [InlineData("WDN")] // UpdateStatus_Withdrawn
         public async Task UpdateStatus_Success(string status)
         {
             // Arrange
@@ -66,6 +67,9 @@ namespace Husa.Uploader.Core.Tests
             ctxListing.SecondAgentMarketUniqueId = "354752";
             ctxListing.SoldPrice = 150000;
             ctxListing.SoldTerms = "CASH";
+            ctxListing.WithdrawnDate = DateTime.Now;
+            ctxListing.WithdrawalReason = "this is a test";
+            ctxListing.IsWithdrawalListingAgreement = "1";
             var sut = this.GetSut();
 
             // Act

@@ -874,6 +874,9 @@ namespace Husa.Uploader.Data.Entities
 
         public string RepairsPaidBySeller { get; set; }
         public string FemaFloodPlain { get; set; }
+        public string WithdrawalReason { get; set; }
+        public string IsWithdrawalListingAgreement { get; set; }
+
         public List<ResidentialListingRequestRoom> Rooms { get; set; }
 
         public List<OpenHouseRequest> OpenHouse { get; set; }
