@@ -167,12 +167,12 @@ namespace Husa.Uploader.Core.Services
 
                     listing.Longitude = newLongitude;
                     listing.Latitude = newLatitude;
-                   /*this.FillListingInformation(listing);
+                    this.FillListingInformation(listing);
                     this.FillGeneralInformation(listing);
                     this.FillAdditionalInformation(listing as AborListingRequest);
-                    this.FillRoomInformation(listing);*/
+                    this.FillRoomInformation(listing);
                     this.FillDocumentsAndUtilities(listing as AborListingRequest);
-                    /*this.FillGreenEnergyInformation();
+                    this.FillGreenEnergyInformation();
                     this.FillFinancialInformation(listing as AborListingRequest);
                     this.FillShowingInformation(listing);
                     this.FillAgentOfficeInformation();
@@ -183,7 +183,7 @@ namespace Husa.Uploader.Core.Services
                         await this.UpdateVirtualTour(listing, cancellationToken);
                     }
 
-                    await this.FillMedia(listing, cancellationToken);*/
+                    await this.FillMedia(listing, cancellationToken);
                 }
                 catch (Exception exception)
                 {
