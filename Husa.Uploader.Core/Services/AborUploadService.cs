@@ -167,12 +167,12 @@ namespace Husa.Uploader.Core.Services
 
                     listing.Longitude = newLongitude;
                     listing.Latitude = newLatitude;
-                    this.FillListingInformation(listing);
+                   /*this.FillListingInformation(listing);
                     this.FillGeneralInformation(listing);
                     this.FillAdditionalInformation(listing as AborListingRequest);
-                    this.FillRoomInformation(listing);
+                    this.FillRoomInformation(listing);*/
                     this.FillDocumentsAndUtilities(listing as AborListingRequest);
-                    this.FillGreenEnergyInformation();
+                    /*this.FillGreenEnergyInformation();
                     this.FillFinancialInformation(listing as AborListingRequest);
                     this.FillShowingInformation(listing);
                     this.FillAgentOfficeInformation();
@@ -183,7 +183,7 @@ namespace Husa.Uploader.Core.Services
                         await this.UpdateVirtualTour(listing, cancellationToken);
                     }
 
-                    await this.FillMedia(listing, cancellationToken);
+                    await this.FillMedia(listing, cancellationToken);*/
                 }
                 catch (Exception exception)
                 {
@@ -957,13 +957,9 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // click in tab DocumentsAndUtilities
             Thread.Sleep(100);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_271"));
-            if (listing.IsNewListing)
-            {
-                this.uploaderClient.SetMultipleCheckboxById("Input_271", "None", "Disclosures", tabName);
-                this.uploaderClient.SetMultipleCheckboxById("Input_272", "NA", "Documents Available", tabName);
-                this.uploaderClient.ScrollToTop();
-            }
-
+            this.uploaderClient.SetMultipleCheckboxById("Input_271", listing.Disclosures, "Disclosures", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_272", listing.Documents, "Documents Available", tabName);
+            this.uploaderClient.ScrollToTop();
             this.uploaderClient.SetMultipleCheckboxById("Input_273", listing.HeatSystemDesc, "Heating", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_274", listing.CoolSystemDesc, "Cooling", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_275", listing.GreenWaterConservation, "Water Source", tabName);
