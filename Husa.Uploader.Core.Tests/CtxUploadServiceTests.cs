@@ -46,24 +46,56 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(UploadResult.Success, result);
         }
 
-        [Fact]
-        public async Task UpdateStatus_SoldSuccess()
+        [Theory]
+        [InlineData("CSLD")] // UpdateStatus_Sold
+        [InlineData("AUC")] // UpdateStatus_ActiveUnderContract
+        [InlineData("PND")] // UpdateStatus_Pending
+        [InlineData("WDN")] // UpdateStatus_Withdrawn
+        [InlineData("CS")] // UpdateStatus_Hold
+        public async Task UpdateStatus_Success(string status)
         {
             // Arrange
-            var ctxListing = new CtxListingRequest(new ListingSaleRequestDetailResponse())
-            {
-                ListStatus = "CSLD",
-                BackOnMarketDate = DateTime.Now,
-                OffMarketDate = DateTime.Now,
-            };
-            this.SetUpConfigs(ctxListing, setUpVirtualTours: false);
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var ctxListing = new CtxListingRequest(new ListingSaleRequestDetailResponse());
+            ctxListing.ListStatus = status;
+            ctxListing.Directions = "This is a test for the directions info field";
+            ctxListing.StreetNum = "10";
+            ctxListing.BackOnMarketDate = DateTime.Now;
+            ctxListing.OffMarketDate = DateTime.Now;
+            ctxListing.EstClosedDate = DateTime.Now;
+            ctxListing.AgentMarketUniqueId = "12234";
+            ctxListing.SecondAgentMarketUniqueId = "354752";
+            ctxListing.SoldPrice = 150000;
+            ctxListing.SoldTerms = "CASH";
+            ctxListing.WithdrawnDate = DateTime.Now;
+            ctxListing.WithdrawalReason = "this is a test";
+            ctxListing.IsWithdrawalListingAgreement = "1";
+            ctxListing.OffMarketDate = DateTime.Now;
+            var sut = this.GetSut();
 
             // Act
-            var sut = this.GetSut();
             var result = await sut.UpdateStatus(ctxListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UpdateStatus_InvalidStatusFail()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var ctxListing = new CtxListingRequest(new ListingSaleRequestDetailResponse());
+            ctxListing.ListStatus = "TEST";
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdateStatus(ctxListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Failure, result);
         }
 
         [Theory]
