@@ -370,19 +370,52 @@ namespace Husa.Uploader.Core.Services
                     {
                         case "CSLD":
 
-                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Sold"), cancellationToken);
-                            this.uploaderClient.ClickOnElement(By.LinkText("Change to Sold"));
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Closed"), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText("Change to Closed"));
                             Thread.Sleep(500);
                             this.uploaderClient.WriteTextbox(By.Id("Input_74"), listing.SoldPrice);
                             this.uploaderClient.WriteTextbox(By.Id("Input_73"), listing.ClosedDate.HasValue ? listing.ClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
                             this.uploaderClient.SetSelect(By.Id($"Input_324"), value: listing.Financing);
                             this.uploaderClient.WriteTextbox(By.Id("Input_325"), listing.SellConcess);
                             this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
-                            // this.uploaderClient.WriteTextbox(By.Id("Input_527"), listing.SoldComments);
                             this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.AgentMarketUniqueId);
                             this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_321_Refresh').value='1';RefreshToSamePage();");
                             this.uploaderClient.WriteTextbox(By.Id("Input_323"), listing.SecondAgentMarketUniqueId);
                             this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_323_Refresh').value='1';RefreshToSamePage();");
+                            break;
+                        case "AUC":
+
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Active Under Contract"), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText("Change to Active Under Contract"));
+                            Thread.Sleep(500);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_455"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_810"), listing.EstClosedDate.HasValue ? listing.EstClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                            break;
+                        case "PND":
+
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Pending"), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText("Change to Pending"));
+                            Thread.Sleep(500);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_811"), listing.EstClosedDate.HasValue ? listing.EstClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.AgentMarketUniqueId);
+                            this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_321_Refresh').value='1';RefreshToSamePage();");
+                            break;
+                        case "WDN":
+
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Withdrawn"), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText("Change to Withdrawn"));
+                            Thread.Sleep(500);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_309"), listing.WithdrawnDate.HasValue ? listing.WithdrawnDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_310"), listing.WithdrawalReason);
+                            this.uploaderClient.SetSelect(By.Id("Input_799"), listing.IsWithdrawalListingAgreement);
+                            break;
+                        case "CS":
+
+                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Hold"), cancellationToken);
+                            this.uploaderClient.ClickOnElement(By.LinkText("Change to Hold"));
+                            Thread.Sleep(500);
+                            this.uploaderClient.WriteTextbox(By.Id("Input_306"), listing.OffMarketDate.HasValue ? listing.OffMarketDate.Value.ToString("MM/dd/yyyy") : string.Empty);
                             break;
 
                         default:
