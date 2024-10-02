@@ -518,7 +518,11 @@ namespace Husa.Uploader.Core.Tests
                 ConstructionStage = ConstructionStage.Incomplete,
                 UpdateGeocodes = true,
             };
-            var featuresInfo = new Mock<AborResponse.SalePropertyDetail.FeaturesResponse>();
+            var featuresInfo = new AborResponse.SalePropertyDetail.FeaturesResponse()
+            {
+                Disclosures = new Disclosures[] { Disclosures.ReloAddendumRequired },
+                DocumentsAvailable = new DocumentsAvailable[] { DocumentsAvailable.ALTASurvey },
+            };
             var financialInfo = new AborResponse.SalePropertyDetail.FinancialResponse()
             {
                 HasBonusWithAmount = true,
@@ -554,7 +558,7 @@ namespace Husa.Uploader.Core.Tests
                 SpacesDimensionsInfo = spacesDimensionsInfo.Object,
                 AddressInfo = addressInfo.Object,
                 PropertyInfo = propertyInfo,
-                FeaturesInfo = featuresInfo.Object,
+                FeaturesInfo = featuresInfo,
                 FinancialInfo = financialInfo,
                 SchoolsInfo = schoolsInfo.Object,
                 ShowingInfo = showingInfo,
