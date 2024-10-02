@@ -957,13 +957,9 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // click in tab DocumentsAndUtilities
             Thread.Sleep(100);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_271"));
-            if (listing.IsNewListing)
-            {
-                this.uploaderClient.SetMultipleCheckboxById("Input_271", "None", "Disclosures", tabName);
-                this.uploaderClient.SetMultipleCheckboxById("Input_272", "NA", "Documents Available", tabName);
-                this.uploaderClient.ScrollToTop();
-            }
-
+            this.uploaderClient.SetMultipleCheckboxById("Input_271", listing.Disclosures, "Disclosures", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_272", listing.Documents, "Documents Available", tabName);
+            this.uploaderClient.ScrollToTop();
             this.uploaderClient.SetMultipleCheckboxById("Input_273", listing.HeatSystemDesc, "Heating", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_274", listing.CoolSystemDesc, "Cooling", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_275", listing.GreenWaterConservation, "Water Source", tabName);
