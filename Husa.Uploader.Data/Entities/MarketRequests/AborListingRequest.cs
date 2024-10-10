@@ -219,6 +219,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.NumGuestFullBaths = featuresInfo.GuestFullBathsTotal;
                 residentialListingRequest.PatioAndPorchFeatures = featuresInfo.PatioAndPorchFeatures.ToStringFromEnumMembers();
                 residentialListingRequest.ViewDesc = featuresInfo.View.ToStringFromEnumMembers();
+                residentialListingRequest.Disclosures = featuresInfo.Disclosures.ToStringFromEnumMembers();
+                residentialListingRequest.Documents = featuresInfo.DocumentsAvailable.ToStringFromEnumMembers();
             }
 
             void FillFinancialInfo(FinancialResponse financialInfo)

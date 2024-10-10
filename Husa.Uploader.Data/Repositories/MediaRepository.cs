@@ -139,11 +139,8 @@ namespace Husa.Uploader.Data.Repositories
                     savePath: filePath,
                     token);
 
-                if (image.MediaType == ManagedMediaTypes.Gif || image.MediaType == ManagedMediaTypes.Png || image.MediaType == ManagedMediaTypes.Jpeg)
-                {
-                    this.ConvertFilePngToJpg(filePath, image.Extension);
-                    image.Extension = ManagedFileExtensions.Jpg;
-                }
+                this.ConvertFilePngToJpg(filePath, image.Extension);
+                image.Extension = ManagedFileExtensions.Jpg;
 
                 image.PathOnDisk = $"{filePath}{image.Extension}";
                 var modifiedImage = this.ChangeSize(filePath, image);

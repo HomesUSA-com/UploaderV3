@@ -995,7 +995,7 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(1000);
 
             this.uploaderClient.WriteTextbox(By.Id("Input_247"), listing.LotSizeAcres); // Acres
-            this.uploaderClient.SetSelect(By.Id("Input_248"), "ACRE", "Lot Size Unit", tabName); // Lot Size Unit
+            this.uploaderClient.SetSelect(By.Id("Input_248"), listing.LotSizeUnit, "Lot Size Unit", tabName); // Lot Size Unit
             this.uploaderClient.SetMultipleCheckboxById("Input_325", listing.LotDesc, "Lot Features", tabName); // Lot Features
             this.uploaderClient.SetMultipleCheckboxById("Input_326", listing.ExteriorDesc, "Exterior Features", tabName); // Exterior Features
             this.uploaderClient.SetMultipleCheckboxById("Input_327", listing.Restrictions, "Restrictions", tabName); // Restrictions
