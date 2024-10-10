@@ -63,6 +63,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
         public bool IsSpecialTaxingAuthority { get; set; }
         public string HoaTerm { get; set; }
         public bool HasPropertyAttached { get; set; }
+        public string LotSizeUnit { get; set; }
 
         public override MarketCode MarketCode => MarketCode.DFW;
         public override BuiltStatus BuiltStatus => this.YearBuiltDesc switch
@@ -183,7 +184,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.LotSizeSrc = "OTHER";
                 residentialListingRequest.IsNewConstruction = propertyInfo.IsNewConstruction;
                 residentialListingRequest.HousingTypeDesc = propertyInfo.HousingType?.ToStringFromEnumMembers();
-                residentialListingRequest.LotSizeAcres = propertyInfo.Acres.ToString();
+                residentialListingRequest.LotSizeAcres = propertyInfo.LotSizeArea.ToString();
+                residentialListingRequest.LotSizeUnit = propertyInfo.LotSizeUnit.ToStringFromEnumMember() ?? "ACRE";
                 residentialListingRequest.HasPropertyAttached = propertyInfo.HasPropertyAttached;
                 residentialListingRequest.PlannedDevelopment = propertyInfo.PlannedCommunity;
                 residentialListingRequest.Latitude = propertyInfo.Latitude;
