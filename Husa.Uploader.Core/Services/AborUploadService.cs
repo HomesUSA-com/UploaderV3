@@ -1352,7 +1352,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSubmit"), cancellationToken);
             this.uploaderClient.ClickOnElement(By.Id("m_lbSubmit"));
             Thread.Sleep(2000);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lblInputCompletedMessage"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lblInputCompletedMessage"), cancellationToken);
             this.uploaderClient.ClickOnElement(By.Id("m_lbContinueEdit"));
             Thread.Sleep(2000);
         }
