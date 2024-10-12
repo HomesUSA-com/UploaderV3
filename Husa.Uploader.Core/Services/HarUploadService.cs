@@ -633,7 +633,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl02_m_btnSelect"));
                 Thread.Sleep(3000);
 
-                this.CleanOpenHouse();
+                this.CleanOpenHouse(cancellationToken);
 
                 if (listing.EnableOpenHouse)
                 {
@@ -1338,7 +1338,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        private void CleanOpenHouse()
+        private void CleanOpenHouse(CancellationToken cancellationToken = default)
         {
             var elems = this.uploaderClient.FindElements(By.CssSelector("table[id^=_Input_337__del_REPEAT] a"))?.Count(c => c.Displayed);
             if (elems == null || elems == 0)
@@ -1355,6 +1355,15 @@ namespace Husa.Uploader.Core.Services
                 elems--;
                 Thread.Sleep(300);
             }
+
+            this.uploaderClient.ScrollDown(5000);
+            Thread.Sleep(2000);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSubmit"), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.Id("m_lbSubmit"));
+            Thread.Sleep(2000);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lblInputCompletedMessage"));
+            this.uploaderClient.ClickOnElement(By.Id("m_lbContinueEdit"));
+            Thread.Sleep(2000);
         }
 
         private void AddOpenHouses(ResidentialListingRequest listing)

@@ -1630,6 +1630,8 @@ namespace Husa.Uploader.Core.Services
                 }
             }
 
+            this.uploaderClient.ExecuteScript("jQuery('.button.Save').click();");
+
             Thread.Sleep(2000);
         }
 
