@@ -1254,7 +1254,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ExecuteScript(" next_tab('4') ");
             Thread.Sleep(2000);
 
-            this.uploaderClient.WriteTextbox(By.Name("MTPLCNTY"), "NO"); // Taxed by Mltpl Counties
+            this.uploaderClient.WriteTextbox(By.Name("MTPLCNTY"), listing.IsMultiParcel); // Taxed by Mltpl Counties
             this.uploaderClient.WriteTextbox(By.Name("TAX_YEAR"), listing.TaxYear); // Certified Tax Year
             this.uploaderClient.WriteTextbox(By.Name("TOTALTAX"), listing.TaxRate); // Total Tax (Without Exemptions)
             this.uploaderClient.WriteTextbox(By.Name("HOAMNDTRY"), listing.HOA); // HOA

@@ -217,7 +217,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
                 residentialListingRequest.TaxRate = financialInfo.TaxRate.StrictDecimalToString();
                 residentialListingRequest.TaxYear = financialInfo.TaxYear.IntegerToString();
-                residentialListingRequest.IsMultiParcel = financialInfo.IsMultipleTaxed.ToString();
+                residentialListingRequest.IsMultiParcel = financialInfo.IsMultipleTaxed.BoolToYesNoBool();
                 residentialListingRequest.TitleCo = financialInfo.TitleCompany;
                 residentialListingRequest.ProposedTerms = financialInfo.ProposedTerms.ToStringFromEnumMembers();
                 residentialListingRequest.HasMultipleHOA = financialInfo.HasMultipleHOA.ToString();
