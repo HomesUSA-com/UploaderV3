@@ -1233,9 +1233,12 @@ namespace Husa.Uploader.Core.Services
         {
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_322"));
             var remarks = listing.GetPublicRemarks();
-            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.GetAgentRemarksMessage());
+            string agentRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
+            string privateRemarks2 = listing.AgentPrivateRemarks2 ?? string.Empty;
+            var privateRemarks = $"{agentRemarks}. {privateRemarks2}";
+            this.uploaderClient.WriteTextbox(By.Id("Input_321"), privateRemarks);
             this.uploaderClient.WriteTextbox(By.Id("Input_322"), remarks); // Internet / Remarks / Desc. of Property
-            this.uploaderClient.WriteTextbox(By.Id("Input_323"), listing.AgentPrivateRemarks2); // Syndication Remarks
+            this.uploaderClient.WriteTextbox(By.Id("Input_323"), remarks); // Syndication Remarks
         }
 
         private void SetLongitudeAndLatitudeValues(ResidentialListingRequest listing)
