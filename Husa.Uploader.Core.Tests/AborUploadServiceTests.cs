@@ -552,6 +552,7 @@ namespace Husa.Uploader.Core.Tests
                     RoomFeatures.BreakfastBar,
                     RoomFeatures.CeilingFans,
                 },
+                Description = "this is a test description",
             };
             var saleProperty = new AborResponse.SalePropertyDetail.SalePropertyDetailResponse()
             {
