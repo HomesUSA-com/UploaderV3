@@ -1118,6 +1118,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ResetImplicitWait();
                 this.uploaderClient.SetSelect(By.Id($"_Input_349__REPEAT{i}_346"), room.Level, "Level", tabName, isElementOptional: true);
                 this.uploaderClient.SetMultipleCheckboxById($"_Input_349__REPEAT{i}_347", room.Features);
+                this.uploaderClient.WriteTextbox(By.Id($"_Input_349__REPEAT{i}_648"), room.Description, true);
 
                 this.uploaderClient.ScrollDownToElementHTML(roomType);
                 i++;
