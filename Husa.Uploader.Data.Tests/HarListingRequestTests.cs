@@ -1,5 +1,6 @@
 namespace Husa.Uploader.Data.Tests
 {
+    using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Har.Api.Contracts.Response;
     using Husa.Quicklister.Har.Api.Contracts.Response.ListingRequest.SaleRequest;
@@ -7,6 +8,7 @@ namespace Husa.Uploader.Data.Tests
     using Husa.Quicklister.Har.Domain.Enums.Domain;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.MarketRequests;
+    using Moq;
     using Xunit;
 
     public class HarListingRequestTests
@@ -106,7 +108,8 @@ namespace Husa.Uploader.Data.Tests
             var sut = new HarListingRequest(listingResponse);
 
             // Act
-            var result = sut.CreateFromApiResponseDetail();
+            var company = new Mock<CompanyDetail>().Object;
+            var result = sut.CreateFromApiResponseDetail(company);
 
             // Assert
             Assert.NotNull(result);
@@ -147,7 +150,8 @@ namespace Husa.Uploader.Data.Tests
             var sut = new HarListingRequest(listingResponse);
 
             // Act
-            var act = () => sut.CreateFromApiResponseDetail();
+            var company = new Mock<CompanyDetail>().Object;
+            var act = () => sut.CreateFromApiResponseDetail(company);
 
             // Assert
             Assert.Throws<ArgumentNullException>(act);

@@ -1,10 +1,12 @@
 namespace Husa.Uploader.Data.Entities
 {
     using System.Collections.Generic;
+    using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities.MarketRequests;
+    using Microsoft.IdentityModel.Tokens;
     using BuiltStatus = Husa.Uploader.Crosscutting.Enums.BuiltStatus;
 
     public abstract class ResidentialListingRequest
@@ -885,7 +887,7 @@ namespace Husa.Uploader.Data.Entities
 
         public abstract ResidentialListingRequest CreateFromApiResponse();
 
-        public abstract ResidentialListingRequest CreateFromApiResponseDetail();
+        public abstract ResidentialListingRequest CreateFromApiResponseDetail(CompanyDetail company);
 
         public UploadListingItem AsUploadItem(
             string builderName,
@@ -1011,25 +1013,28 @@ namespace Husa.Uploader.Data.Entities
                 builtNote += "Built by " + this.CompanyName + " - ";
             }
 
+            var remarkOptions = this.RemarkOptions();
+            var remarkDate = this.BuildCompletionDate?.ToString(remarkOptions["SD"].Item2);
+            var remarkInfo = remarkDate is null ? null : string.Format(remarkOptions["SD"].Item1, remarkDate);
+
             switch (this.BuiltStatus)
             {
                 case BuiltStatus.ToBeBuilt:
-                    if (this.BuildCompletionDate.HasValue)
-                    {
-                        builtNote += this.BuildCompletionDate.Value.ToString("MMMM") + " completion ~ ";
-                    }
+                    builtNote += remarkInfo.IsNullOrEmpty() ? string.Empty
+                        : $"{remarkInfo} completion ~ ";
 
                     break;
 
                 case BuiltStatus.ReadyNow:
-                    builtNote += "Ready Now! ~ ";
+                    builtNote += this.RemarksFormatFromCompany == "SD" ?
+                        $"{remarkInfo} ~ " : $"{remarkOptions["GEN"].Item1} ~ ";
 
                     break;
 
                 case BuiltStatus.WithCompletion:
-                    if (this.BuildCompletionDate.HasValue)
+                    if (remarkInfo is not null)
                     {
-                        builtNote += this.BuildCompletionDate.Value.ToString("MMMM") + " completion! ~ ";
+                        builtNote += $"{remarkInfo} completion! ~ ";
                     }
 
                     break;
@@ -1062,6 +1067,15 @@ namespace Husa.Uploader.Data.Entities
 
                 return remark.Replace("\t", string.Empty).Replace("\n", " ");
             }
+        }
+
+        protected virtual Dictionary<string, Tuple<string, string>> RemarkOptions()
+        {
+            return new Dictionary<string, Tuple<string, string>>
+            {
+                { "GEN", new Tuple<string, string>("Ready Now!", null) },
+                { "SD", new Tuple<string, string>("Const. Completed {0}", "MMM dd yyyy") },
+            };
         }
     }
 }

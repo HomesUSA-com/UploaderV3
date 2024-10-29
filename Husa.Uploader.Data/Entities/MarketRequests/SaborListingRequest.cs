@@ -60,7 +60,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             EnableOpenHouse = this.listingResponse.EnableOpenHouse,
         };
 
-        public override ResidentialListingRequest CreateFromApiResponseDetail()
+        public override ResidentialListingRequest CreateFromApiResponseDetail(CompanyServicesManager.Api.Contracts.Response.CompanyDetail company)
         {
             var residentialListingRequest = new SaborListingRequest
             {
@@ -77,6 +77,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 SysModifiedOn = this.listingDetailResponse.SysModifiedOn,
                 SysModifiedBy = this.listingDetailResponse.SysModifiedBy,
                 ExpiredDate = this.listingDetailResponse.ExpirationDate,
+                RemarksFormatFromCompany = company?.MlsInfo?.RemarksForCompletedHomes,
             };
 
             FillSalePropertyInfo(this.listingDetailResponse.SaleProperty.SalePropertyInfo);
