@@ -48,8 +48,9 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCredentials();
             this.SetUpCompany();
             this.SetUpVirtualTours();
+            var company = new Mock<CompanyDetail>().Object;
             var listingSale = GetListingRequestDetailResponse();
-            var saborListing = new SaborListingRequest(listingSale).CreateFromApiResponseDetail();
+            var saborListing = new SaborListingRequest(listingSale).CreateFromApiResponseDetail(company);
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).SendKeys(It.IsAny<string>()));
             this.uploaderClient.SetupGet(x => x.UploadInformation).Returns(this.uploadCommandInfo.Object);
             this.uploaderClient.Setup(x => x.WaitUntilElementDisappears(
@@ -70,8 +71,9 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
+            var company = new Mock<CompanyDetail>().Object;
             var listingSale = GetListingRequestDetailResponse();
-            var saborListing = new SaborListingRequest(listingSale).CreateFromApiResponseDetail();
+            var saborListing = new SaborListingRequest(listingSale).CreateFromApiResponseDetail(company);
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
             this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
             this.uploaderClient.Setup(x => x.SwitchTo().Frame(It.IsAny<int>())).Returns(new Mock<IWebDriver>().Object);

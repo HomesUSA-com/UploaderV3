@@ -1,6 +1,7 @@
 namespace Husa.Uploader.Data.Tests
 {
     using System.Threading.Tasks;
+    using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Abor.Api.Client;
     using Husa.Quicklister.CTX.Api.Client;
@@ -30,12 +31,14 @@ namespace Husa.Uploader.Data.Tests
         private readonly Mock<IQuicklisterAborClient> mockAborClient = new();
         private readonly Mock<IQuicklisterHarClient> mockHarClient = new();
         private readonly Mock<IQuicklisterDfwClient> mockDfwClient = new();
+        private readonly Mock<IServiceSubscriptionClient> mockServiceSubscriptionClient = new();
         private readonly Mock<ILogger<ListingRequestRepository>> mockLogger = new();
         private readonly ApplicationServicesFixture fixture;
 
         public ListingRequestRepositoryTests(ApplicationServicesFixture fixture)
         {
             this.fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
+            this.mockServiceSubscriptionClient.SetupGet(m => m.Company).Returns(new Mock<ICompany>().Object);
         }
 
         [Fact]
@@ -198,6 +201,7 @@ namespace Husa.Uploader.Data.Tests
             this.mockAborClient.Object,
             this.mockHarClient.Object,
             this.mockDfwClient.Object,
+            this.mockServiceSubscriptionClient.Object,
             this.mockLogger.Object);
 
         private void SetUpGetListingById(MarketCode market, Guid listingId, string mlsNumber)

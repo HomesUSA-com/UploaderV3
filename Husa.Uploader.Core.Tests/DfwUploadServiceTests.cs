@@ -4,6 +4,7 @@ namespace Husa.Uploader.Core.Tests
     using System.Collections.ObjectModel;
     using System.Threading;
     using System.Threading.Tasks;
+    using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
     using Husa.MediaService.Domain.Enums;
@@ -515,7 +516,8 @@ namespace Husa.Uploader.Core.Tests
         protected override ResidentialListingRequest GetResidentialListingRequest(bool isNewListing = true)
         {
             var listingSale = GetListingRequestDetailResponse(isNewListing);
-            var result = new DfwListingRequest(listingSale).CreateFromApiResponseDetail();
+            var company = new Mock<CompanyDetail>().Object;
+            var result = new DfwListingRequest(listingSale).CreateFromApiResponseDetail(company);
             result.BrokerName = "Ben Caballero";
             result.SellingAgentSupervisor = "Ben Caballero";
             result.PropType = ListPropertyType.Residencial.ToStringFromEnumMember();
