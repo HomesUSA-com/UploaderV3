@@ -387,6 +387,7 @@ namespace Husa.Uploader.Core.Services
             {
                 return status switch
                 {
+                    "Canceled" => "Change to Withdrawn",
                     "Hold" => "Change to Hold",
                     "Closed" => "Change to Closed",
                     "Pending" => "Change to Pending",
