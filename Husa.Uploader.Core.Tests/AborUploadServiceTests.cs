@@ -164,6 +164,23 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(UploadResult.Success, result);
         }
 
+        [Fact]
+        public async Task UpdateStatus_CanceledSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var aborListing = new AborListingRequest(new AborResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
+            aborListing.ListStatus = "Canceled";
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdateStatus(aborListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
         [Theory]
         [InlineData("Canceled")] // UpdateStatus_Canceled
         [InlineData("Hold")] // UpdateStatus_Hold
