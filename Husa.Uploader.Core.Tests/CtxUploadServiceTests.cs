@@ -1,5 +1,6 @@
 namespace Husa.Uploader.Core.Tests
 {
+    using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common.Enums;
     using Husa.MediaService.Domain.Enums;
     using Husa.Quicklister.CTX.Api.Contracts.Response;
@@ -251,7 +252,8 @@ namespace Husa.Uploader.Core.Tests
         protected override ResidentialListingRequest GetResidentialListingRequest(bool isNewListing = true)
         {
             var listingSale = GetListingRequestDetailResponse(isNewListing);
-            return new CtxListingRequest(listingSale).CreateFromApiResponseDetail();
+            var company = new Mock<CompanyDetail>().Object;
+            return new CtxListingRequest(listingSale).CreateFromApiResponseDetail(company);
         }
 
         private static ListingSaleRequestDetailResponse GetListingRequestDetailResponse(bool isNewListing)

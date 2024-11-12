@@ -2,6 +2,7 @@ namespace Husa.Uploader.Data.Repositories
 {
     using System.Linq;
     using System.Linq.Expressions;
+    using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Abor.Api.Client;
     using Husa.Quicklister.CTX.Api.Client;
@@ -30,6 +31,7 @@ namespace Husa.Uploader.Data.Repositories
         private readonly IQuicklisterDfwClient quicklisterDfwClient;
         private readonly ILogger<ListingRequestRepository> logger;
         private readonly MarketConfiguration marketConfiguration;
+        private readonly IServiceSubscriptionClient serviceSubscriptionClient;
 
         public ListingRequestRepository(
             IOptions<ApplicationOptions> applicationOptions,
@@ -38,6 +40,7 @@ namespace Husa.Uploader.Data.Repositories
             IQuicklisterAborClient quicklisterAborClient,
             IQuicklisterHarClient quicklisterHarClient,
             IQuicklisterDfwClient quicklisterDfwClient,
+            IServiceSubscriptionClient serviceSubscriptionClient,
             ILogger<ListingRequestRepository> logger)
         {
             this.quicklisterSaborClient = quicklisterSaborClient ?? throw new ArgumentNullException(nameof(quicklisterSaborClient));
@@ -45,7 +48,7 @@ namespace Husa.Uploader.Data.Repositories
             this.quicklisterAborClient = quicklisterAborClient ?? throw new ArgumentNullException(nameof(quicklisterAborClient));
             this.quicklisterHarClient = quicklisterHarClient ?? throw new ArgumentNullException(nameof(quicklisterHarClient));
             this.quicklisterDfwClient = quicklisterDfwClient ?? throw new ArgumentNullException(nameof(quicklisterDfwClient));
-
+            this.serviceSubscriptionClient = serviceSubscriptionClient ?? throw new ArgumentNullException(nameof(serviceSubscriptionClient));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.marketConfiguration = applicationOptions?.Value?.MarketInfo ?? throw new ArgumentNullException(nameof(applicationOptions));
         }
@@ -221,31 +224,36 @@ namespace Husa.Uploader.Data.Repositories
             async Task<ResidentialListingRequest> GetFromSabor()
             {
                 var request = await this.quicklisterSaborClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
-                return new SaborListingRequest(request).CreateFromApiResponseDetail();
+                var company = await this.serviceSubscriptionClient.Company.GetCompany(request.SaleProperty.SalePropertyInfo.CompanyId, token);
+                return new SaborListingRequest(request).CreateFromApiResponseDetail(company);
             }
 
             async Task<ResidentialListingRequest> GetFromCtx()
             {
                 var request = await this.quicklisterCtxClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
-                return new CtxListingRequest(request).CreateFromApiResponseDetail();
+                var company = await this.serviceSubscriptionClient.Company.GetCompany(request.SaleProperty.SalePropertyInfo.CompanyId, token);
+                return new CtxListingRequest(request).CreateFromApiResponseDetail(company);
             }
 
             async Task<ResidentialListingRequest> GetFromAbor()
             {
                 var request = await this.quicklisterAborClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
-                return new AborListingRequest(request).CreateFromApiResponseDetail();
+                var company = await this.serviceSubscriptionClient.Company.GetCompany(request.SaleProperty.SalePropertyInfo.CompanyId, token);
+                return new AborListingRequest(request).CreateFromApiResponseDetail(company);
             }
 
             async Task<ResidentialListingRequest> GetFromHar()
             {
                 var request = await this.quicklisterHarClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
-                return new HarListingRequest(request).CreateFromApiResponseDetail();
+                var company = await this.serviceSubscriptionClient.Company.GetCompany(request.SaleProperty.SalePropertyInfo.CompanyId, token);
+                return new HarListingRequest(request).CreateFromApiResponseDetail(company);
             }
 
             async Task<ResidentialListingRequest> GetFromDfw()
             {
                 var request = await this.quicklisterDfwClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
-                return new DfwListingRequest(request).CreateFromApiResponseDetail();
+                var company = await this.serviceSubscriptionClient.Company.GetCompany(request.SaleProperty.SalePropertyInfo.CompanyId, token);
+                return new DfwListingRequest(request).CreateFromApiResponseDetail(company);
             }
         }
 

@@ -71,7 +71,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             UpdateGeocodes = this.listingResponse.UpdateGeocodes,
         };
 
-        public override ResidentialListingRequest CreateFromApiResponseDetail()
+        public override ResidentialListingRequest CreateFromApiResponseDetail(CompanyServicesManager.Api.Contracts.Response.CompanyDetail company)
         {
             var residentialListingRequest = new CtxListingRequest
             {
@@ -88,6 +88,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 SysModifiedOn = this.listingDetailResponse.SysModifiedOn,
                 SysModifiedBy = this.listingDetailResponse.SysModifiedBy,
                 ExpectedActiveDate = DateTime.Now.ToString("MM/dd/yy"),
+                RemarksFormatFromCompany = company?.MlsInfo?.RemarksForCompletedHomes,
             };
 
             FillSalePropertyInfo(this.listingDetailResponse.SaleProperty.SalePropertyInfo);
