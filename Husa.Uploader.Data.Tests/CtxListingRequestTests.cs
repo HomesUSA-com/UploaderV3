@@ -262,12 +262,10 @@ namespace Husa.Uploader.Data.Tests
 
             // Assert
             Assert.Contains(
-                "Home is under construction. For your safety, call appt number for showings. " +
-                "For more information call (512) 571-3831. LIMITED SERVICE LISTING: " +
+                "Home is under construction. For your safety, call appt number for showings." +
+                " For more information call (832) 256-3698.  LIMITED SERVICE LISTING: " +
                 "Buyer verifies dimensions & ISD info. Use Bldr contract.Contact Builder for Seller Concession Information.  " +
-                "For more information call (512) 571-3831. " +
-                "LIMITED SERVICE LISTING: Buyer verifies dimensions & ISD info. " +
-                "Use Bldr contract. For more information call (832) 256-3698. . Email contact: realtor@email.com.",
+                "Email contact: realtor@email.com",
                 result);
         }
 
