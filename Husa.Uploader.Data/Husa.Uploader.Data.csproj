@@ -5,7 +5,7 @@
 
     <ItemGroup>
         <PackageReference Include="Husa.CompanyServiceManager.Client" Version="2.8.1" />
-        <PackageReference Include="Husa.Extensions.Api" Version="5.0.3" />
+        <PackageReference Include="Husa.Extensions.Api" Version="5.0.5" />
         <PackageReference Include="Husa.Extensions.Common" Version="4.1.7" />
         <PackageReference Include="Husa.Extensions.Media" Version="4.0.0" />
         <PackageReference Include="Husa.MediaService.Client" Version="2.1.0" />
