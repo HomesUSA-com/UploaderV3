@@ -1,15 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-  <PropertyGroup>
-    <UserSecretsId>a8887609-deb9-4f36-9432-a1c0ab421045</UserSecretsId>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Serilog" Version="3.1.1" />
-    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
-    <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
-    <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Husa.Uploader.Crosscutting\Husa.Uploader.Crosscutting.csproj" />
-  </ItemGroup>
+    <PropertyGroup>
+        <UserSecretsId>a8887609-deb9-4f36-9432-a1c0ab421045</UserSecretsId>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Serilog" Version="3.1.1" />
+        <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+        <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
+        <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+        <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Husa.Uploader.Crosscutting\Husa.Uploader.Crosscutting.csproj" />
+    </ItemGroup>
 </Project>
