@@ -72,7 +72,7 @@
         <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
         <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.3.0" />
         <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.4.3" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.11" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.0" />
