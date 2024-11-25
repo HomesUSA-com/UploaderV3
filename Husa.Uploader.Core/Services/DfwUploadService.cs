@@ -1105,12 +1105,13 @@ namespace Husa.Uploader.Core.Services
                     foreach (var charact in agentName)
                     {
                         Thread.Sleep(400);
-                        this.uploaderClient.FindElement(By.Id("Input_146_displayValue")).SendKeys(charact.ToString());
+                        this.uploaderClient.FindElement(By.Id("filter_Input_146")).SendKeys(charact.ToString());
                     }
 
-                    this.uploaderClient.FindElement(By.Id("Input_146_displayValue")).SendKeys(Keys.Tab);
-                    this.uploaderClient.ExecuteScript("javascript:$('#Input_146_Refresh').val('changed');RefreshToSamePage();");
                     Thread.Sleep(1000);
+                    this.uploaderClient.FindElement(By.Id("filter_Input_146")).SendKeys(Keys.Enter);
+                    Thread.Sleep(1000);
+                    this.uploaderClient.FindElement(By.Id("filter_Input_146")).SendKeys(Keys.Tab);
                 }
 
                 var supervisorName = this.options.MarketInfo.Dfw.SupervisorId;
@@ -1119,12 +1120,13 @@ namespace Husa.Uploader.Core.Services
                     foreach (var charact in supervisorName)
                     {
                         Thread.Sleep(400);
-                        this.uploaderClient.FindElement(By.Id("Input_761_displayValue")).SendKeys(charact.ToString());
+                        this.uploaderClient.FindElement(By.Id("filter_Input_761")).SendKeys(charact.ToString());
                     }
 
                     Thread.Sleep(1000);
-                    this.uploaderClient.FindElement(By.Id("Input_761_displayValue")).SendKeys(Keys.Enter);
-                    this.uploaderClient.ExecuteScript("javascript:$('#Input_761_Refresh').val('changed');RefreshToSamePage();");
+                    this.uploaderClient.FindElement(By.Id("filter_Input_761")).SendKeys(Keys.Enter);
+                    Thread.Sleep(1000);
+                    this.uploaderClient.FindElement(By.Id("filter_Input_146")).SendKeys(Keys.Tab);
                 }
             }
         }
