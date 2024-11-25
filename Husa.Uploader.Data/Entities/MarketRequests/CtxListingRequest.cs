@@ -364,18 +364,18 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
         public override string GetAgentRemarksMessage()
         {
-            var privateRemarks = "For more information call (512) 571-3831. LIMITED SERVICE LISTING: Buyer verifies dimensions & ISD info. Use Bldr contract.";
-
-            var bonusMessage = this.GetAgentBonusRemarksMessage();
-            if (!string.IsNullOrWhiteSpace(bonusMessage))
-            {
-                privateRemarks += $"{bonusMessage} {privateRemarks}";
-            }
-
+            var privateRemarks = "LIMITED SERVICE LISTING: Buyer verifies dimensions & ISD info. Use Bldr contract.";
             var saleOfficeInfo = this.GetSalesAssociateRemarksMessage();
+            var bonusMessage = this.GetAgentBonusRemarksMessage();
+
             if (!string.IsNullOrWhiteSpace(saleOfficeInfo))
             {
-                privateRemarks += $" {saleOfficeInfo}";
+                privateRemarks = $"{saleOfficeInfo} {privateRemarks}";
+            }
+
+            if (!string.IsNullOrWhiteSpace(bonusMessage))
+            {
+                privateRemarks += $"{bonusMessage}";
             }
 
             if (!string.IsNullOrWhiteSpace(this.RealtorContactEmail))
