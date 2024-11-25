@@ -979,7 +979,7 @@ namespace Husa.Uploader.Data.Entities
             }
 
             return phones.Any()
-                ? string.Format("For more information call {0}. {1}.", string.Join(" or ", phones), salesOfficeAddr)
+                ? string.Format("For more information call {0}. {1}", string.Join(" or ", phones), salesOfficeAddr)
                 : salesOfficeAddr;
         }
 
