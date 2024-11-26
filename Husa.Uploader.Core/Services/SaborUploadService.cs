@@ -576,7 +576,6 @@ namespace Husa.Uploader.Core.Services
 
             string propertyCategoryType = listing.Category == "SFD" ? "RE" : "MF";
             this.uploaderClient.SetSelectWithScript("category", "property-type-selector", 0, propertyCategoryType, "Class", tabName); // Class
-            this.uploaderClient.ExecuteScript("$('.search-options input[type=\"checkbox\"]').attr('id', 'autoPopulateFromTax');$('#autoPopulateFromTax').click();"); // Auto-populate from Tax data
             this.uploaderClient.ExecuteScript("$('.search-options input[type=\"checkbox\"]:last').attr('id', 'manuallyEnterAllData');$('#manuallyEnterAllData').click();"); // Manually enter all listing data
             this.uploaderClient.ExecuteScript("$('.modal-header button:eq(2)').click();"); // Next>>
 
