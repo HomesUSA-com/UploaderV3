@@ -9,6 +9,7 @@ namespace Husa.Uploader.Data.Repositories
     using Husa.MediaService.Domain.Enums;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Interfaces;
+    using ImageMagick;
     using Microsoft.Extensions.Logging;
 
     public class MediaRepository : IMediaRepository
@@ -67,20 +68,23 @@ namespace Husa.Uploader.Data.Repositories
             switch (market)
             {
                 case MarketCode.CTX:
-                    this.maxWidth = 1024;
-                    this.maxHeight = 768;
+                    this.SetMaxDimensions(1024, 768);
                     break;
                 case MarketCode.SanAntonio:
-                    this.maxWidth = 1280;
-                    this.maxHeight = 853;
+                    this.SetMaxDimensions(1280, 853);
                     break;
                 default:
-                    this.maxWidth = 2048;
-                    this.maxHeight = 1536;
+                    this.SetMaxDimensions(2048, 1536);
                     break;
             }
 
             return result.Where(m => !m.IsBrokenLink).OrderBy(m => m.Order);
+        }
+
+        public void SetMaxDimensions(int width, int height)
+        {
+            this.maxWidth = width;
+            this.maxHeight = height;
         }
 
         public async Task<IEnumerable<ResidentialListingVirtualTour>> GetListingVirtualTours(Guid residentialListingRequestId, MarketCode market, CancellationToken token)
@@ -127,7 +131,7 @@ namespace Husa.Uploader.Data.Repositories
             }
         }
 
-        public void ConvertFilePngToJpg(string pathFile, string actualExt) => this.ConvertImageFormat(pathFile, actualExt, ManagedFileExtensions.Jpg, ImageFormat.Jpeg);
+        public void ConvertFilePngToJpg(string pathFile, string actualExt) => this.ConvertImageFormat(pathFile, actualExt, ManagedFileExtensions.Jpg);
 
         public async Task PrepareImage(ResidentialListingMedia image, MarketCode marketName, CancellationToken token, string folder)
         {
@@ -204,75 +208,74 @@ namespace Husa.Uploader.Data.Repositories
             string newFileName = $"{pathFile}_modified_{DateTime.Now.Ticks}";
             File.Move(pathFile + img.Extension, newFileName + img.Extension);
 
-            var newImage = Image.FromFile(newFileName + img.Extension);
-            int newImageWidth = newImage.Width;
-            int newImageHeight = newImage.Height;
-
-            int maxImageArea = this.maxWidth * this.maxHeight;
-
-            if ((newImageWidth * newImageHeight) >= maxImageArea)
+            using (var newImage = Image.FromFile(newFileName + img.Extension))
             {
-                double percentage = (double)maxImageArea / (newImageWidth * newImageHeight);
-                percentage = (Math.Sqrt(percentage) * 100) - 100;
+                int newImageWidth = newImage.Width;
+                int newImageHeight = newImage.Height;
 
-                newImageWidth = (int)(newImageWidth * (1 + (percentage / 100)));
-                newImageHeight = (int)(newImageHeight * (1 + (percentage / 100)));
+                int maxImageArea = this.maxWidth * this.maxHeight;
 
-                var resizedImage = new Bitmap(newImage, newImageWidth, newImageHeight);
+                if ((newImageWidth * newImageHeight) >= maxImageArea)
+                {
+                    double percentage = Math.Sqrt((double)maxImageArea / (newImageWidth * newImageHeight));
+                    newImageWidth = (int)(newImageWidth * percentage);
+                    newImageHeight = (int)(newImageHeight * percentage);
 
-                resizedImage.Save($"{pathFile}{ManagedFileExtensions.Jpg}", ImageFormat.Jpeg);
-
-                img.Extension = ManagedFileExtensions.Jpg;
-                img.PathOnDisk = $"{pathFile}{ManagedFileExtensions.Jpg}";
-
-                resizedImage.Dispose();
-                newImage.Dispose();
-
-                File.Delete(newFileName + img.Extension);
+                    using (var resizedImage = new Bitmap(newImage, newImageWidth, newImageHeight))
+                    {
+                        resizedImage.Save($"{pathFile}{ManagedFileExtensions.Jpg}", ImageFormat.Jpeg);
+                        img.Extension = ManagedFileExtensions.Jpg;
+                        img.PathOnDisk = $"{pathFile}{ManagedFileExtensions.Jpg}";
+                    }
+                }
             }
-            else
+
+            GC.WaitForPendingFinalizers();
+
+            var destinationFilePath = $"{pathFile}{ManagedFileExtensions.Jpg}";
+            if (File.Exists(destinationFilePath))
             {
-                newImage.Dispose();
-                img.PathOnDisk = newFileName + img.Extension;
+                File.Delete(destinationFilePath);
+            }
+
+            File.Move(newFileName + img.Extension, destinationFilePath);
+            img.Extension = ManagedFileExtensions.Jpg;
+            img.PathOnDisk = destinationFilePath;
+
+            if (File.Exists(newFileName + img.Extension))
+            {
+                File.Delete(newFileName + img.Extension);
             }
 
             return img;
         }
 
-        private void ConvertFileJpgToPng(string pathFile, string actualExt) => this.ConvertImageFormat(pathFile, actualExt, ManagedFileExtensions.Png, ImageFormat.Png);
-
-        private void ConvertImageFormat(string filePath, string actualExt, string newExtension, ImageFormat imageFormat)
+        private void ConvertImageFormat(string filePath, string actualExt, string newExtension)
         {
             string newFileName = $"{filePath}_backup_{DateTime.Now.Ticks}";
             File.Move(filePath + actualExt, newFileName + actualExt);
 
-            var newImage = Image.FromFile(newFileName + actualExt);
-            var newFileSize = new Size(newImage.Width, newImage.Height);
-            var photoFile = new Bitmap(newImage, newFileSize);
-            photoFile.SetResolution(newImage.HorizontalResolution, newImage.VerticalResolution);
-            using (var imageGraphics = Graphics.FromImage(photoFile))
+            using (var image = new MagickImage(newFileName + actualExt))
             {
-                imageGraphics.Clear(Color.White);
-                imageGraphics.DrawImageUnscaled(newImage, x: 0, y: 0);
+                image.Format = this.GetMagickFormat(newExtension);
+                image.Quality = (uint)BitmapQualityLevel;
+                image.Write($"{filePath}{newExtension}");
             }
 
-            var imageEncoder = this.GetEncoder(imageFormat);
-            var myEncoderParameters = new EncoderParameters(count: EncoderParametersCount);
-            var myEncoderParameter = new EncoderParameter(
-                encoder: Encoder.Quality,
-                value: BitmapQualityLevel);
-            myEncoderParameters.Param[0] = myEncoderParameter;
-
-            photoFile.Save(
-                filename: $"{filePath}{newExtension}",
-                encoder: imageEncoder,
-                encoderParams: myEncoderParameters);
-
-            photoFile.Dispose();
-            newImage.Dispose();
-
-            // Delete the original file
             File.Delete(newFileName + actualExt);
+        }
+
+        private MagickFormat GetMagickFormat(string extension)
+        {
+            return extension.ToLower() switch
+            {
+                ".jpg" or ".jpeg" => MagickFormat.Jpeg,
+                ".png" => MagickFormat.Png,
+                ".webp" => MagickFormat.WebP,
+                ".bmp" => MagickFormat.Bmp,
+                ".gif" => MagickFormat.Gif,
+                _ => throw new NotSupportedException($"format {extension} is not supported."),
+            };
         }
 
         private ImageCodecInfo GetEncoder(ImageFormat format)
