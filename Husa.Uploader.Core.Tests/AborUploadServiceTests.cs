@@ -286,8 +286,10 @@ namespace Husa.Uploader.Core.Tests
 
             // Act
             var sut = this.GetSut();
-            var exception = await Assert.ThrowsAsync<Exception>(() => sut.UpdateImages(request));
-            Assert.Equal("error getting images", exception.Message);
+            var result = await sut.UpdateImages(request, It.IsAny<CancellationToken>(), true);
+
+            // Assert
+            Assert.Equal(UploadResult.Failure, result);
         }
 
         [Fact]
