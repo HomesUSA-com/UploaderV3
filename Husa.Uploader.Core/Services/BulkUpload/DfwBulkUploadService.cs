@@ -105,7 +105,7 @@ namespace Husa.Uploader.Core.Services.BulkUpload
                     await this.uploadService.UpdateStatus(bulkFullListing, cancellationToken, logInForCompany);
                     break;
                 case RequestFieldChange.UploadMedia:
-                    await this.uploadService.UpdateImages(bulkFullListing, cancellationToken, logInForCompany);
+                    await this.uploadService.UpdateImages(bulkFullListing, logInForCompany, cancellationToken);
                     break;
                 default:
                     throw new NotImplementedException();
