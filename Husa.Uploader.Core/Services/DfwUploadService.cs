@@ -155,11 +155,6 @@ namespace Husa.Uploader.Core.Services
                     NavigateToForm(listing);
                     FillListingDetails(listing);
 
-                    if (listing.IsNewListing)
-                    {
-                        await this.UpdateVirtualTour(listing, cancellationToken);
-                    }
-
                     await this.FillMedia(listing, cancellationToken);
                 }
                 catch (Exception exception)
@@ -1243,7 +1238,6 @@ namespace Husa.Uploader.Core.Services
         {
             var tabName = "Status";
             this.GoToTab(tabName);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
 
             Thread.Sleep(1000);
 
