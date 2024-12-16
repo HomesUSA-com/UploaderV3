@@ -389,31 +389,46 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> UpdateImages(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploadResult> UpdateImages(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
         {
             if (listing is null)
             {
                 throw new ArgumentNullException(nameof(listing));
             }
 
-            return UpdateListingImages();
+            return UpdateListingImages(logIn);
 
-            async Task<UploadResult> UpdateListingImages()
+            async Task<UploadResult> UpdateListingImages(bool logIn)
             {
                 this.logger.LogInformation("Updating the media of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
-                await this.Login(listing.CompanyId);
-                Thread.Sleep(1000);
 
-                this.EditProperty(listing.MLSNum);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                    Thread.Sleep(1000);
+                }
 
-                Thread.Sleep(1000);
-                this.uploaderClient.ExecuteScript($"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(27) > span > a:first').click();");
-                Thread.Sleep(1000);
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
-                this.uploaderClient.ExecuteScript("jQuery('.modal-body > .inner-modal-body > div').find('button')[5].click();");
-                Thread.Sleep(1000);
-                await this.ProcessImages(listing.ResidentialListingRequestID, cancellationToken);
+                try
+                {
+                    Thread.Sleep(1000);
+
+                    this.EditProperty(listing.MLSNum);
+
+                    Thread.Sleep(1000);
+                    this.uploaderClient.ExecuteScript($"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(27) > span > a:first').click();");
+                    Thread.Sleep(1000);
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("modal-dialog"), cancellationToken);
+                    this.uploaderClient.ExecuteScript("jQuery('.modal-body > .inner-modal-body > div').find('button')[5].click();");
+                    Thread.Sleep(1000);
+                    await this.ProcessImages(listing.ResidentialListingRequestID, cancellationToken);
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
+                }
+
                 return UploadResult.Success;
             }
         }

@@ -36,6 +36,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.CompletionDate, Text = "Completion Date" },
             new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.ListPrice, Text = "List Price" },
             new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.ConstructionStage, Text = "Construction stage" },
+            new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.UploadMedia, Text = "Upload Media" },
         };
 
         public RequestFieldChange? RequestFieldChange
