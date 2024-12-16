@@ -284,7 +284,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> UpdateImages(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploadResult> UpdateImages(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
         {
             if (listing is null)
             {
@@ -297,14 +297,27 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Updating media for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
-                await this.Login(listing.CompanyId);
-                this.NavigateToQuickEdit(listing.MLSNum);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                }
 
-                // Enter Manage Photos
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"), cancellationToken);
-                this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
-                this.DeleteAllImages();
-                await this.ProcessImages(listing, cancellationToken);
+                try
+                {
+                    this.NavigateToQuickEdit(listing.MLSNum);
+
+                    // Enter Manage Photos
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"), cancellationToken);
+                    this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
+                    this.DeleteAllImages();
+                    await this.ProcessImages(listing, cancellationToken);
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
+                }
+
                 return UploadResult.Success;
             }
         }
