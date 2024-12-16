@@ -1577,7 +1577,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             var uploader = this.uploadFactory.Create<IUpdateImages>(this.SelectedListingRequest.FullListing.MarketCode);
             await this.Start(
                 opType: UploadType.Image,
-                action: (listing, cancellationToken) => uploader.UpdateImages(listing, cancellationToken, logIn: true),
+                action: (listing, cancellationToken) => uploader.UpdateImages(listing, logIn: true, cancellationToken),
                 sourceAction: this.SourceAction);
         }
 

@@ -168,7 +168,7 @@ namespace Husa.Uploader.Core.Tests
 
             // Act
             var sut = this.GetSut();
-            var result = await sut.UpdateImages(request, It.IsAny<CancellationToken>(), true);
+            var result = await sut.UpdateImages(request, true, It.IsAny<CancellationToken>());
 
             // Assert
             Assert.Equal(UploadResult.Failure, result);
