@@ -6,7 +6,7 @@ namespace Husa.Uploader.Core.Interfaces.ServiceActions
 
     public interface IUpdateImages
     {
-        Task<UploadResult> UpdateImages(ResidentialListingRequest listing, CancellationToken cancellationToken = default);
+        Task<UploadResult> UpdateImages(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true);
         Task<UploadResult> UpdateLotImages(LotListingRequest listing, CancellationToken cancellationToken = default);
     }
 }

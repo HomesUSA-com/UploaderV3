@@ -293,27 +293,47 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> UpdateImages(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploadResult> UpdateImages(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             if (listing is null)
             {
                 throw new ArgumentNullException(nameof(listing));
             }
 
-            return UpdateListingImages();
-            async Task<UploadResult> UpdateListingImages()
+            return UpdateListingImages(logIn);
+            async Task<UploadResult> UpdateListingImages(bool logIn)
             {
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                    Thread.Sleep(1000);
+                }
+
                 this.logger.LogInformation("Updating media for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
-                await this.Login(listing.CompanyId);
-                this.NavigateToQuickEdit(listing.MLSNum);
+                try
+                {
+                    this.NavigateToQuickEdit(listing.MLSNum);
 
-                // Enter Manage Photos
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"), cancellationToken);
-                this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
-                this.DeleteAllImages();
-                await this.ProcessImages(listing, cancellationToken);
+                    // Enter Manage Photos
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"), cancellationToken);
+                    this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
+                    this.DeleteAllImages();
+                    await this.ProcessImages(listing, cancellationToken);
+
+                    if (logIn)
+                    {
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSave"), cancellationToken);
+                        Thread.Sleep(1000);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
+                    return UploadResult.Failure;
+                }
+
                 return UploadResult.Success;
             }
         }
