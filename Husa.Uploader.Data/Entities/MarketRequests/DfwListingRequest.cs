@@ -60,6 +60,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
         public string PatioAndPorchFeatures { get; set; }
         public string ShowingContactType { get; set; }
         public bool HasMudDistrict { get; set; }
+        public bool IsPropertyInPID { get; set; }
         public bool IsSpecialTaxingAuthority { get; set; }
         public string HoaTerm { get; set; }
         public bool HasPropertyAttached { get; set; }
@@ -251,6 +252,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.FenceDesc = featuresInfo.Fencing.ToStringFromEnumMembers();
                 residentialListingRequest.UtilitiesDesc = featuresInfo.UtilitiesDescription.ToStringFromEnumMembers();
                 residentialListingRequest.HasMudDistrict = featuresInfo.HasMudDistrict;
+                residentialListingRequest.IsPropertyInPID = featuresInfo.IsPropertyInPID;
                 residentialListingRequest.IsSpecialTaxingAuthority = featuresInfo.IsSpecialTaxingAuthority;
                 residentialListingRequest.CommonFeatures = featuresInfo.NeighborhoodAmenities.ToStringFromEnumMembers();
             }
