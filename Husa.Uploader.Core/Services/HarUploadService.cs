@@ -1165,8 +1165,10 @@ namespace Husa.Uploader.Core.Services
             this.GoToTab("Showing Information");
 
             this.uploaderClient.WriteTextbox(By.Id("Input_304"), listing.AgentListApptPhone.PhoneFormat(true), isElementOptional: true);  // Appointment Desk Phone
+            this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(2000));
             this.uploaderClient.SetSelect(By.Id("Input_303"), "OFFIC");  // Appointment Phone Desc
             this.uploaderClient.WriteTextbox(By.Id("Input_236"), listing.OtherPhone.PhoneFormat(true), isElementOptional: true);  // Agent Alternate Phone
+            this.uploaderClient.ResetImplicitWait();
             this.uploaderClient.WriteTextbox(By.Id("Input_136"), listing.Directions.RemoveSlash(), true); // Directions
             this.uploaderClient.SetMultipleCheckboxById("Input_218", listing.ShowingInstructions);  // Showing Instructions
         }
