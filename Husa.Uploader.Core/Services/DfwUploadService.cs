@@ -1159,7 +1159,7 @@ namespace Husa.Uploader.Core.Services
 
             Thread.Sleep(1000);
 
-            this.uploaderClient.WriteTextbox(By.Id("Input_396"), listing.AltPhoneCommunity); // Occupant Alternate Phone
+            this.uploaderClient.WriteTextbox(By.Id("Input_396"), listing.OtherPhone.PhoneFormat(), isElementOptional: true); // Occupant Alternate Phone
 
             if (isNotPartialFill)
             {
