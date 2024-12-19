@@ -180,7 +180,7 @@ namespace Husa.Uploader.Core.Services
 
             void FillListingDetails(ResidentialListingRequest listing)
             {
-                /*this.FillPropertyInformation(listing as DfwListingRequest);
+                this.FillPropertyInformation(listing as DfwListingRequest);
                 this.FillLocationSchools(listing as DfwListingRequest);
 
                 if (listing.PropType == this.MultiFamilyPropType)
@@ -195,16 +195,16 @@ namespace Husa.Uploader.Core.Services
                 this.FillFeaturesInformation(listing as DfwListingRequest);
                 this.FillLotInformation(listing as DfwListingRequest);
                 this.FillUtilitiesInformation(listing as DfwListingRequest);
-                this.FillEnvironmentInformation(listing as DfwListingRequest);*/
+                this.FillEnvironmentInformation(listing as DfwListingRequest);
                 this.FillFinancialInformation(listing as DfwListingRequest);
-                /*this.FillAgentOfficeInformation();
+                this.FillAgentOfficeInformation();
                 this.FillShowingInformation(listing as DfwListingRequest);
                 this.FillRemarksInformation(listing as DfwListingRequest);
 
                 if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
                 {
                     this.FillStatusInformation(listing as DfwListingRequest);
-                }*/
+                }
             }
         }
 
