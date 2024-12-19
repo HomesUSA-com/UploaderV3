@@ -180,7 +180,7 @@ namespace Husa.Uploader.Core.Services
 
             void FillListingDetails(ResidentialListingRequest listing)
             {
-                this.FillPropertyInformation(listing as DfwListingRequest);
+                /*this.FillPropertyInformation(listing as DfwListingRequest);
                 this.FillLocationSchools(listing as DfwListingRequest);
 
                 if (listing.PropType == this.MultiFamilyPropType)
@@ -195,16 +195,16 @@ namespace Husa.Uploader.Core.Services
                 this.FillFeaturesInformation(listing as DfwListingRequest);
                 this.FillLotInformation(listing as DfwListingRequest);
                 this.FillUtilitiesInformation(listing as DfwListingRequest);
-                this.FillEnvironmentInformation(listing as DfwListingRequest);
+                this.FillEnvironmentInformation(listing as DfwListingRequest);*/
                 this.FillFinancialInformation(listing as DfwListingRequest);
-                this.FillAgentOfficeInformation();
+                /*this.FillAgentOfficeInformation();
                 this.FillShowingInformation(listing as DfwListingRequest);
                 this.FillRemarksInformation(listing as DfwListingRequest);
 
                 if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
                 {
                     this.FillStatusInformation(listing as DfwListingRequest);
-                }
+                }*/
             }
         }
 
@@ -1042,6 +1042,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetMultipleCheckboxById("Input_363", listing.CoolSystemDesc, "Cooling", tabName); // Cooling
                 this.uploaderClient.SetSelect(By.Id("Input_364"), listing.HasMudDistrict.BoolToNumericBool(), "MUD District", tabName); // MUD District
                 this.uploaderClient.SetSelect(By.Id("Input_436"), listing.IsSpecialTaxingAuthority.BoolToNumericBool(), "Special Taxing Authority YN", tabName); // Special Taxing Authority YN
+                this.uploaderClient.SetSelect(By.Id("Input_799"), listing.IsPropertyInPID.BoolToNumericBool()); // Public Improvement District YN
             }
             catch (Exception e)
             {
@@ -1089,6 +1090,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_377"), listing.TitleCo); // Title Company-Preferred
             this.uploaderClient.WriteTextbox(By.Id("Input_378"), listing.TitleCoPhone); // Title Company Phone
             this.uploaderClient.WriteTextbox(By.Id("Input_379"), listing.TitleCoLocation); // Title Company Location
+            this.uploaderClient.SetSelect(By.Id("Input_835"), listing.HasAgentBonus.Value.BoolToNumericBool()); // seller concessions
 
             this.uploaderClient.ScrollToTop();
 
