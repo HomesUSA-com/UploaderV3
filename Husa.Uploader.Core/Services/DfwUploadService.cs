@@ -1042,6 +1042,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetMultipleCheckboxById("Input_363", listing.CoolSystemDesc, "Cooling", tabName); // Cooling
                 this.uploaderClient.SetSelect(By.Id("Input_364"), listing.HasMudDistrict.BoolToNumericBool(), "MUD District", tabName); // MUD District
                 this.uploaderClient.SetSelect(By.Id("Input_436"), listing.IsSpecialTaxingAuthority.BoolToNumericBool(), "Special Taxing Authority YN", tabName); // Special Taxing Authority YN
+                this.uploaderClient.SetSelect(By.Id("Input_799"), listing.IsPropertyInPID.BoolToNumericBool()); // Public Improvement District YN
             }
             catch (Exception e)
             {
@@ -1089,6 +1090,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_377"), listing.TitleCo); // Title Company-Preferred
             this.uploaderClient.WriteTextbox(By.Id("Input_378"), listing.TitleCoPhone); // Title Company Phone
             this.uploaderClient.WriteTextbox(By.Id("Input_379"), listing.TitleCoLocation); // Title Company Location
+            this.uploaderClient.SetSelect(By.Id("Input_835"), listing.HasAgentBonus.Value.BoolToNumericBool()); // seller concessions
 
             this.uploaderClient.ScrollToTop();
 
