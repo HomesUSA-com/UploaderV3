@@ -1415,6 +1415,8 @@ namespace Husa.Uploader.Core.Services
 
             var index = 0;
             var sortedOpenHouses = listing.OpenHouse.OrderBy(openHouse => openHouse.Date).ToList();
+            this.uploaderClient.ClickOnElement(By.Id("m_lbContinueEdit"));
+            Thread.Sleep(2000);
             foreach (var openHouse in sortedOpenHouses)
             {
                 if (index != 0)
