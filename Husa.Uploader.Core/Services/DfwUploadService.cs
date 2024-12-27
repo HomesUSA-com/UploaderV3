@@ -587,14 +587,16 @@ namespace Husa.Uploader.Core.Services
             var firstVirtualTour = virtualTours.FirstOrDefault();
             if (firstVirtualTour != null)
             {
-                this.uploaderClient.WriteTextbox(By.Id("Input_341"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+                var uri = firstVirtualTour.GetUnbrandedUrl();
+                this.uploaderClient.WriteTextbox(By.Id("Input_341"), uri); // Virtual Tour URL Unbranded
             }
 
             virtualTours = virtualTours.Skip(1).ToList();
             var secondVirtualTour = virtualTours.FirstOrDefault();
             if (secondVirtualTour != null)
             {
-                this.uploaderClient.WriteTextbox(By.Id("Input_532"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+                var uri = secondVirtualTour.GetUnbrandedUrl();
+                this.uploaderClient.WriteTextbox(By.Id("Input_532"), uri); // Virtual Tour URL Unbranded
             }
         }
 
@@ -638,14 +640,16 @@ namespace Husa.Uploader.Core.Services
             var firstVirtualTour = virtualTours.FirstOrDefault();
             if (firstVirtualTour != null)
             {
-                this.uploaderClient.WriteTextbox(By.Id("Input_697"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+                var uri = firstVirtualTour.GetUnbrandedUrl();
+                this.uploaderClient.WriteTextbox(By.Id("Input_697"), uri); // Virtual Tour URL Unbranded
             }
 
             virtualTours = virtualTours.Skip(1).ToList();
             var secondVirtualTour = virtualTours.FirstOrDefault();
             if (secondVirtualTour != null)
             {
-                this.uploaderClient.WriteTextbox(By.Id("Input_698"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+                var uri = secondVirtualTour.GetUnbrandedUrl();
+                this.uploaderClient.WriteTextbox(By.Id("Input_698"), uri); // Virtual Tour URL Unbranded
             }
         }
 
@@ -820,7 +824,7 @@ namespace Husa.Uploader.Core.Services
 
         private void SetLongitudeAndLatitudeValues(ResidentialListingRequest listing)
         {
-            if ((listing.IsForLease == "Yes" && string.IsNullOrEmpty(listing.MLSNum)) || string.IsNullOrEmpty(listing.MLSNum))
+            if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
             {
                 this.uploaderClient.WriteTextbox(By.Id("INPUT__146"), listing.Latitude); // Latitude
                 this.uploaderClient.WriteTextbox(By.Id("INPUT__168"), listing.Longitude); // Longitude
