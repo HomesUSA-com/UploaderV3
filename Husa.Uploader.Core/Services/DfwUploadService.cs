@@ -825,7 +825,7 @@ namespace Husa.Uploader.Core.Services
 
         private void SetLongitudeAndLatitudeValues(ResidentialListingRequest listing)
         {
-            if ((listing.IsForLease == "Yes" && string.IsNullOrEmpty(listing.MLSNum)) || string.IsNullOrEmpty(listing.MLSNum))
+            if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
             {
                 this.uploaderClient.WriteTextbox(By.Id("INPUT__146"), listing.Latitude); // Latitude
                 this.uploaderClient.WriteTextbox(By.Id("INPUT__168"), listing.Longitude); // Longitude
