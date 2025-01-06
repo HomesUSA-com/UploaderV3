@@ -11,5 +11,7 @@ namespace Husa.Uploader.Crosscutting.Options
         public MarketSettings Har { get; set; }
 
         public MarketSettings Dfw { get; set; }
+
+        public MarketSettings Amarillo { get; set; }
     }
 }

@@ -59,6 +59,15 @@ namespace Husa.Uploader.Crosscutting.Tests
                     AgentId = "Ben Caballero (0096651)",
                     SupervisorId = "Ben Caballero (0096651)",
                 },
+                Amarillo = new()
+                {
+                    IsEnabled = true,
+                    MarketCode = MarketCode.Amarillo,
+                    LoginUrl = "https://localhost/amarillo-login",
+                    LogoutUrl = "https://localhost/amarillo-logout",
+                    AgentId = "Ben Caballero",
+                    SupervisorId = "Ben Caballero",
+                },
             },
             Services = new()
             {
@@ -68,6 +77,7 @@ namespace Husa.Uploader.Crosscutting.Tests
                 QuicklisterAbor = "https://localhost/quicklister-abor",
                 QuicklisterHar = "https://localhost/quicklister-har",
                 QuicklisterDfw = "https://localhost/quicklister-dfw",
+                QuicklisterAmarillo = "https://localhost/quicklister-amarillo",
                 MigrationService = "https://localhost/migration",
             },
             Uploader = new()

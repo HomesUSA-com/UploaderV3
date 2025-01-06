@@ -135,7 +135,7 @@ namespace Husa.Uploader.Data.Entities
         public string BuilderName { get; set; }
         public int? Beds { get; set; }
         public string Bed1Desc { get; set; }
-        public decimal BathsTotal { get; set; }
+        public int? BathsTotal { get; set; }
         public int? BathsHalf { get; set; }
         public int? BathsFull { get; set; }
         public string AppliancesDesc { get; set; }
