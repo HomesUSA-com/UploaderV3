@@ -11,7 +11,7 @@
         <Company>HomesUSA.com, Inc.</Company>
         <Copyright>Copyright © 2023 HomesUSA.com, Inc. All rights reserved.</Copyright>
         <Product>Builder Force Uploader</Product>
-        <Version>3.21.11</Version>
+        <Version>3.22.0</Version>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://bitbucket.org/homesusa/uploaderv3</RepositoryUrl>
         <PackageTags>Uploader</PackageTags>
