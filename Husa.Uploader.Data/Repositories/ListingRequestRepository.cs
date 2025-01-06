@@ -5,6 +5,7 @@ namespace Husa.Uploader.Data.Repositories
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Abor.Api.Client;
+    using Husa.Quicklister.Amarillo.Api.Client;
     using Husa.Quicklister.CTX.Api.Client;
     using Husa.Quicklister.Dfw.Api.Client;
     using Husa.Quicklister.Extensions.Api.Client.Interfaces;
@@ -29,6 +30,7 @@ namespace Husa.Uploader.Data.Repositories
         private readonly IQuicklisterAborClient quicklisterAborClient;
         private readonly IQuicklisterHarClient quicklisterHarClient;
         private readonly IQuicklisterDfwClient quicklisterDfwClient;
+        private readonly IQuicklisterAmarilloClient quicklisterAmarilloClient;
         private readonly ILogger<ListingRequestRepository> logger;
         private readonly MarketConfiguration marketConfiguration;
         private readonly IServiceSubscriptionClient serviceSubscriptionClient;
@@ -40,6 +42,7 @@ namespace Husa.Uploader.Data.Repositories
             IQuicklisterAborClient quicklisterAborClient,
             IQuicklisterHarClient quicklisterHarClient,
             IQuicklisterDfwClient quicklisterDfwClient,
+            IQuicklisterAmarilloClient quicklisterAmarilloClient,
             IServiceSubscriptionClient serviceSubscriptionClient,
             ILogger<ListingRequestRepository> logger)
         {
@@ -48,6 +51,7 @@ namespace Husa.Uploader.Data.Repositories
             this.quicklisterAborClient = quicklisterAborClient ?? throw new ArgumentNullException(nameof(quicklisterAborClient));
             this.quicklisterHarClient = quicklisterHarClient ?? throw new ArgumentNullException(nameof(quicklisterHarClient));
             this.quicklisterDfwClient = quicklisterDfwClient ?? throw new ArgumentNullException(nameof(quicklisterDfwClient));
+            this.quicklisterAmarilloClient = quicklisterAmarilloClient ?? throw new ArgumentNullException(nameof(quicklisterAmarilloClient));
             this.serviceSubscriptionClient = serviceSubscriptionClient ?? throw new ArgumentNullException(nameof(serviceSubscriptionClient));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.marketConfiguration = applicationOptions?.Value?.MarketInfo ?? throw new ArgumentNullException(nameof(applicationOptions));
@@ -81,6 +85,11 @@ namespace Husa.Uploader.Data.Repositories
                     this.marketConfiguration.Dfw,
                     this.quicklisterDfwClient.ListingSaleRequest,
                     request => new DfwListingRequest(request).CreateFromApiResponse(),
+                    token),
+                this.GetRequestByMarket(
+                    this.marketConfiguration.Amarillo,
+                    this.quicklisterAmarilloClient.ListingSaleRequest,
+                    request => new AmarilloListingRequest(request).CreateFromApiResponse(),
                     token),
             };
 
@@ -136,6 +145,13 @@ namespace Husa.Uploader.Data.Repositories
                         request => new DfwListingRequest(request).CreateFromApiResponse(),
                         requestFieldChange,
                         token);
+                    case MarketCode.Amarillo:
+                        return await this.GetRequestByMarketAndAction(
+                        this.marketConfiguration.Amarillo,
+                        this.quicklisterAmarilloClient.ListingSaleRequest,
+                        request => new AmarilloListingRequest(request).CreateFromApiResponse(),
+                        requestFieldChange,
+                        token);
                     default:
                         throw new NotSupportedException($"The market {marketCode} is not yet supported");
                 }
@@ -171,6 +187,7 @@ namespace Husa.Uploader.Data.Repositories
                 MarketCode.Austin => await GetFromAbor(),
                 MarketCode.Houston => await GetFromHar(),
                 MarketCode.DFW => await GetFromDfw(),
+                MarketCode.Amarillo => await GetFromAmarillo(),
                 _ => throw new NotSupportedException($"The market {marketCode} is not yet supported"),
             };
 
@@ -205,6 +222,12 @@ namespace Husa.Uploader.Data.Repositories
                 var listing = await this.quicklisterDfwClient.SaleListing.GetByIdAsync(residentialListingId, token);
                 return listing.MlsNumber;
             }
+
+            async Task<string> GetFromAmarillo()
+            {
+                var listing = await this.quicklisterAmarilloClient.SaleListing.GetByIdAsync(residentialListingId, token);
+                return listing.MlsNumber;
+            }
         }
 
         private async Task<ResidentialListingRequest> GetRequestById(Guid residentialListingRequestId, MarketCode marketCode, CancellationToken token)
@@ -216,6 +239,7 @@ namespace Husa.Uploader.Data.Repositories
                 MarketCode.Austin => await GetFromAbor(),
                 MarketCode.Houston => await GetFromHar(),
                 MarketCode.DFW => await GetFromDfw(),
+                MarketCode.Amarillo => await GetFromAmarillo(),
                 _ => throw new NotSupportedException($"The market {marketCode} is not yet supported"),
             };
 
@@ -224,36 +248,43 @@ namespace Husa.Uploader.Data.Repositories
             async Task<ResidentialListingRequest> GetFromSabor()
             {
                 var request = await this.quicklisterSaborClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
-                var company = await this.serviceSubscriptionClient.Company.GetCompany(request.SaleProperty.SalePropertyInfo.CompanyId, token);
+                var company = await this.serviceSubscriptionClient.Company.GetCompany(request.SaleProperty.SalePropertyInfo.CompanyId, false, token);
                 return new SaborListingRequest(request).CreateFromApiResponseDetail(company);
             }
 
             async Task<ResidentialListingRequest> GetFromCtx()
             {
                 var request = await this.quicklisterCtxClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
-                var company = await this.serviceSubscriptionClient.Company.GetCompany(request.SaleProperty.SalePropertyInfo.CompanyId, token);
+                var company = await this.serviceSubscriptionClient.Company.GetCompany(request.SaleProperty.SalePropertyInfo.CompanyId, false, token);
                 return new CtxListingRequest(request).CreateFromApiResponseDetail(company);
             }
 
             async Task<ResidentialListingRequest> GetFromAbor()
             {
                 var request = await this.quicklisterAborClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
-                var company = await this.serviceSubscriptionClient.Company.GetCompany(request.SaleProperty.SalePropertyInfo.CompanyId, token);
+                var company = await this.serviceSubscriptionClient.Company.GetCompany(request.SaleProperty.SalePropertyInfo.CompanyId, false, token);
                 return new AborListingRequest(request).CreateFromApiResponseDetail(company);
             }
 
             async Task<ResidentialListingRequest> GetFromHar()
             {
                 var request = await this.quicklisterHarClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
-                var company = await this.serviceSubscriptionClient.Company.GetCompany(request.SaleProperty.SalePropertyInfo.CompanyId, token);
+                var company = await this.serviceSubscriptionClient.Company.GetCompany(request.SaleProperty.SalePropertyInfo.CompanyId, false, token);
                 return new HarListingRequest(request).CreateFromApiResponseDetail(company);
             }
 
             async Task<ResidentialListingRequest> GetFromDfw()
             {
                 var request = await this.quicklisterDfwClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
-                var company = await this.serviceSubscriptionClient.Company.GetCompany(request.SaleProperty.SalePropertyInfo.CompanyId, token);
+                var company = await this.serviceSubscriptionClient.Company.GetCompany(request.SaleProperty.SalePropertyInfo.CompanyId, false, token);
                 return new DfwListingRequest(request).CreateFromApiResponseDetail(company);
+            }
+
+            async Task<ResidentialListingRequest> GetFromAmarillo()
+            {
+                var request = await this.quicklisterAmarilloClient.ListingSaleRequest.GetListRequestSaleByIdAsync(residentialListingRequestId, token);
+                var company = await this.serviceSubscriptionClient.Company.GetCompany(request.SaleProperty.SalePropertyInfo.CompanyId, false, token);
+                return new AmarilloListingRequest(request).CreateFromApiResponseDetail(company);
             }
         }
 

@@ -1,15 +1,15 @@
 namespace Husa.Uploader.Core.Tests
 {
-    using System;
-    using System.Threading.Tasks;
+    using System.Collections.ObjectModel;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Amarillo.Api.Contracts.Response;
+    using Husa.Quicklister.Amarillo.Api.Contracts.Response.ListingRequest.SaleRequest;
+    using Husa.Quicklister.Amarillo.Api.Contracts.Response.SalePropertyDetail;
+    using Husa.Quicklister.Amarillo.Domain.Enums;
+    using Husa.Quicklister.Amarillo.Domain.Enums.Domain;
     using Husa.Quicklister.Extensions.Domain.Enums;
-    using Husa.Quicklister.Sabor.Api.Contracts.Response;
-    using Husa.Quicklister.Sabor.Api.Contracts.Response.ListingRequest.SaleRequest;
-    using Husa.Quicklister.Sabor.Api.Contracts.Response.SalePropertyDetail;
-    using Husa.Quicklister.Sabor.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Enums;
@@ -22,44 +22,65 @@ namespace Husa.Uploader.Core.Tests
     using Moq;
     using OpenQA.Selenium;
     using Xunit;
-    using AddressInfoResponse = Husa.Quicklister.Sabor.Api.Contracts.Response.SalePropertyDetail.AddressInfoResponse;
+    using AmarilloResponse = Husa.Quicklister.Amarillo.Api.Contracts.Response;
 
     [Collection(nameof(ApplicationServicesFixture))]
-    public class SaborUploadServiceTests
+    public class AmarilloUploadServiceTests
     {
         private readonly Mock<IUploaderClient> uploaderClient = new();
         private readonly Mock<IMediaRepository> mediaRepository = new();
         private readonly Mock<IListingRequestRepository> sqlDataLoader = new();
         private readonly Mock<IServiceSubscriptionClient> serviceSubscriptionClient = new();
-        private readonly Mock<ILogger<SaborUploadService>> logger = new();
+        private readonly Mock<ILogger<AmarilloUploadService>> logger = new();
         private readonly Mock<Models.UploadCommandInfo> uploadCommandInfo = new();
         private readonly ApplicationServicesFixture fixture;
 
-        public SaborUploadServiceTests(ApplicationServicesFixture fixture)
+        public AmarilloUploadServiceTests(ApplicationServicesFixture fixture)
         {
             this.fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             this.uploaderClient.SetupAllProperties();
         }
 
         [Fact]
-        public async Task UploadSuccess()
+        public async Task UploadNewListingSuccess()
         {
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
             this.SetUpVirtualTours();
             var company = new Mock<CompanyDetail>().Object;
+            company.Market = MarketCode.Amarillo;
             var listingSale = GetListingRequestDetailResponse();
-            var saborListing = new SaborListingRequest(listingSale).CreateFromApiResponseDetail(company);
-            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).SendKeys(It.IsAny<string>()));
-            this.uploaderClient.SetupGet(x => x.UploadInformation).Returns(this.uploadCommandInfo.Object);
-            this.uploaderClient.Setup(x => x.WaitUntilElementDisappears(
-                It.Is<By>(x => x == By.ClassName("fileupload-progress")),
-                It.IsAny<CancellationToken>())).Returns(true);
+            var amarilloListing = new AmarilloListingRequest(listingSale).CreateFromApiResponseDetail(company);
+            this.SetUpUploaderClient();
+            this.uploaderClient.Setup(x => x.ExecuteScript(It.Is<string>(y => y == "return jQuery('a[id^=remove_button_]').length;"), It.IsAny<bool>())).Returns("0");
 
             // Act
             var sut = this.GetSut();
-            var result = await sut.Upload(saborListing);
+            var result = await sut.Upload(amarilloListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UploadExistingListingSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            this.SetUpVirtualTours();
+            var company = new Mock<CompanyDetail>().Object;
+            company.Market = MarketCode.Amarillo;
+            var listingSale = GetListingRequestDetailResponse();
+            var amarilloListing = new AmarilloListingRequest(listingSale).CreateFromApiResponseDetail(company);
+            amarilloListing.MLSNum = "123-4567";
+            this.SetUpUploaderClient();
+            this.uploaderClient.Setup(x => x.ExecuteScript(It.Is<string>(y => y == "return jQuery('a[id^=remove_button_]').length;"), It.IsAny<bool>())).Returns("0");
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.Upload(amarilloListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
@@ -71,21 +92,15 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
-            var company = new Mock<CompanyDetail>().Object;
-            var listingSale = GetListingRequestDetailResponse();
-            var saborListing = new SaborListingRequest(listingSale).CreateFromApiResponseDetail(company);
-            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
-            this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
-            this.uploaderClient.Setup(x => x.SwitchTo().Frame(It.IsAny<int>())).Returns(new Mock<IWebDriver>().Object);
-            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).SendKeys(It.IsAny<string>()));
-            this.uploaderClient.SetupGet(x => x.UploadInformation).Returns(this.uploadCommandInfo.Object);
-            this.uploaderClient.Setup(x => x.WaitUntilElementDisappears(
-                It.Is<By>(x => x == By.ClassName("fileupload-progress")),
-                It.IsAny<CancellationToken>())).Returns(true);
+            var amarilloListing = new AmarilloListingRequest(new SaleListingRequestDetailResponse())
+            {
+                MLSNum = "123-4567",
+            };
+            this.SetUpUploaderClient();
 
             // Act
             var sut = this.GetSut();
-            var result = await sut.PartialUpload(saborListing);
+            var result = await sut.PartialUpload(amarilloListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
@@ -98,7 +113,7 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act && Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.Upload((SaborListingRequest)null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.Upload(null));
         }
 
         [Fact]
@@ -132,6 +147,17 @@ namespace Husa.Uploader.Core.Tests
         }
 
         [Fact]
+        public Task LogoutSuccess()
+        {
+            this.SetUpUploaderClient();
+            var sut = this.GetSut();
+            var result = sut.Logout();
+
+            Assert.Equal(UploadResult.Success, result);
+            return Task.CompletedTask;
+        }
+
+        [Fact]
         public async Task LoginInOtherElement()
         {
             // Arrange
@@ -155,14 +181,18 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCredentials();
             this.SetUpVirtualTours();
             this.SetUpCompany();
-            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse());
+            this.SetUpUploaderClient();
+            var amarilloListing = new AmarilloListingRequest(new SaleListingRequestDetailResponse())
+            {
+                MLSNum = "123-4567",
+            };
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
             this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
             this.uploaderClient.Setup(x => x.SwitchTo().Frame(It.IsAny<int>())).Returns(new Mock<IWebDriver>().Object);
 
             // Act
             var sut = this.GetSut();
-            var result = await sut.UploadVirtualTour(saborListing);
+            var result = await sut.UploadVirtualTour(amarilloListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
@@ -174,9 +204,13 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
-            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse());
+            this.SetUpUploaderClient();
+            var amarilloListing = new AmarilloListingRequest(new SaleListingRequestDetailResponse())
+            {
+                MLSNum = "123-4567",
+            };
             this.mediaRepository
-                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), MarketCode.Amarillo, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(Array.Empty<ResidentialListingVirtualTour>())
             .Verifiable();
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
@@ -185,7 +219,7 @@ namespace Husa.Uploader.Core.Tests
 
             // Act
             var sut = this.GetSut();
-            var result = await sut.UploadVirtualTour(saborListing);
+            var result = await sut.UploadVirtualTour(amarilloListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
@@ -198,7 +232,7 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act and Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.UploadVirtualTour((SaborListingRequest)null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.UploadVirtualTour(null));
         }
 
         [Fact]
@@ -207,9 +241,9 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
-            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse())
+            var amarilloListing = new AmarilloListingRequest(new SaleListingRequestDetailResponse())
             {
-                MLSNum = "MLSNum",
+                MLSNum = "123-4567",
                 BuildCompletionDate = DateTime.UtcNow,
             };
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
@@ -217,7 +251,7 @@ namespace Husa.Uploader.Core.Tests
 
             // Act
             var sut = this.GetSut();
-            var result = await sut.UpdateCompletionDate(saborListing);
+            var result = await sut.UpdateCompletionDate(amarilloListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
@@ -226,34 +260,62 @@ namespace Husa.Uploader.Core.Tests
         [Fact]
         public async Task UpdateCompletionDateFails()
         {
+            this.SetUpUploaderClient();
+
             // Arrange
             var sut = this.GetSut();
 
             // Act and Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.UpdateCompletionDate((SaborListingRequest)null));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.UpdateCompletionDate(null));
         }
 
-        [Fact]
-        public async Task UpdateStatusSoldSuccess()
+        [Theory]
+        [InlineData("Cancelled")] // UpdateStatus_Cancelled
+        [InlineData("Closed")] // UpdateStatus_Closed
+        [InlineData("Pending")] // UpdateStatus_Pending
+        [InlineData("Under Contract W/Contingency")] // UpdateStatus_Under_Contract_W_Contingency
+        [InlineData("Withdrawn")] // UpdateStatus_Withdrawn
+        public async Task UpdateStatus_Success(string status)
         {
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
-            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse())
+            this.SetUpUploaderClient();
+
+            var amarilloListing = new AmarilloListingRequest(new SaleListingRequestDetailResponse())
             {
-                ListStatus = "SLD",
-                ClosedDate = DateTime.UtcNow,
+                MLSNum = "123-4567",
+                ListStatus = status,
             };
-            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
-            this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
-            this.uploaderClient.Setup(x => x.SwitchTo().Frame(It.IsAny<int>())).Returns(new Mock<IWebDriver>().Object);
 
             // Act
             var sut = this.GetSut();
-            var result = await sut.UpdateStatus(saborListing);
+            var result = await sut.UpdateStatus(amarilloListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task UpdateStatus_Failed()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            this.SetUpUploaderClient();
+
+            var amarilloListing = new AmarilloListingRequest(new SaleListingRequestDetailResponse())
+            {
+                MLSNum = "123-4567",
+                ListStatus = "Anything",
+            };
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.UpdateStatus(amarilloListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Failure, result);
         }
 
         [Fact]
@@ -262,8 +324,10 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
-            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse())
+            this.SetUpUploaderClient();
+            var amarilloListing = new AmarilloListingRequest(new SaleListingRequestDetailResponse())
             {
+                MLSNum = "123-4567",
                 ListPrice = 100,
             };
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
@@ -272,7 +336,7 @@ namespace Husa.Uploader.Core.Tests
 
             // Act
             var sut = this.GetSut();
-            var result = await sut.UpdatePrice(saborListing);
+            var result = await sut.UpdatePrice(amarilloListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
@@ -284,7 +348,11 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
-            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse());
+            this.SetUpUploaderClient();
+            var amarilloListing = new AmarilloListingRequest(new SaleListingRequestDetailResponse())
+            {
+                MLSNum = "123-4567",
+            };
             this.uploaderClient.Setup(x => x.WaitUntilElementDisappears(
                 It.Is<By>(x => x == By.ClassName("fileupload-progress")),
                 It.IsAny<CancellationToken>())).Returns(true);
@@ -294,26 +362,50 @@ namespace Husa.Uploader.Core.Tests
 
             // Act
             var sut = this.GetSut();
-            var result = await sut.UpdateImages(saborListing);
+            var result = await sut.UpdateImages(amarilloListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
         }
 
         [Fact]
-        public async Task EditListingSuccess()
+        public async Task EditExistingListinListingSuccess()
         {
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
-            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse());
+            var amarilloListing = new AmarilloListingRequest(new SaleListingRequestDetailResponse())
+            {
+                MLSNum = "123-4567",
+            };
+            this.SetUpUploaderClient();
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
             this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
             this.uploaderClient.SetupGet(x => x.UploadInformation).Returns(this.uploadCommandInfo.Object);
 
             // Act
             var sut = this.GetSut();
-            var result = await sut.Edit(saborListing);
+            var result = await sut.Edit(amarilloListing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Fact]
+        public async Task EditNewListinListingSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var amarilloListing = new AmarilloListingRequest(new SaleListingRequestDetailResponse());
+            this.SetUpUploaderClient();
+            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
+            this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
+            this.uploaderClient.SetupGet(x => x.UploadInformation).Returns(this.uploadCommandInfo.Object);
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.Edit(amarilloListing);
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
@@ -325,7 +417,8 @@ namespace Husa.Uploader.Core.Tests
             // Arrange
             this.SetUpCredentials();
             this.SetUpCompany();
-
+            this.SetUpUploaderClient();
+            this.uploaderClient.Setup(x => x.ExecuteScript(It.Is<string>(y => y == "return $('.open-house-checkbox .openHouseCheckbox').length;"), It.IsAny<bool>())).Returns("0");
             DateTime startDateMonday = AdjustStartDate(DayOfWeek.Monday, new TimeSpan(14, 0, 0));
             DateTime startDateThursday = AdjustStartDate(DayOfWeek.Thursday, new TimeSpan(10, 0, 0));
 
@@ -350,51 +443,16 @@ namespace Husa.Uploader.Core.Tests
                     Lunch = "N",
                 },
             };
-            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse())
+            var amarilloListing = new AmarilloListingRequest(new SaleListingRequestDetailResponse())
             {
-                MLSNum = "mlsNum",
+                MLSNum = "123-4567",
                 OpenHouse = openHouses,
             };
-            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
-            this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
 
             // Act
             var sut = this.GetSut();
-            var result = await sut.UpdateOpenHouse(saborListing);
+            var result = await sut.UpdateOpenHouse(amarilloListing);
             Assert.Equal(UploadResult.Success, result);
-        }
-
-        [Fact]
-        public void FillOpenHouseInfo_CreatesOpenHouseEntries()
-        {
-            var expectedCount = 2;
-            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse())
-            {
-                MLSNum = "mlsNum",
-            };
-            var openHouseResponses = new List<OpenHouseResponse>
-            {
-                new OpenHouseResponse
-                {
-                    Type = Quicklister.Extensions.Domain.Enums.OpenHouseType.Monday,
-                    StartTime = new TimeSpan(14, 0, 0),
-                    EndTime = new TimeSpan(16, 0, 0),
-                    Lunch = true,
-                    Refreshments = false,
-                },
-                new OpenHouseResponse
-                {
-                    Type = Quicklister.Extensions.Domain.Enums.OpenHouseType.Wednesday,
-                    StartTime = new TimeSpan(10, 0, 0),
-                    EndTime = new TimeSpan(15, 0, 0),
-                    Lunch = false,
-                    Refreshments = true,
-                },
-            };
-
-            saborListing.FillOpenHouseInfo(openHouseResponses, saborListing.OpenHouse);
-
-            Assert.Equal(expectedCount, saborListing.OpenHouse.Count);
         }
 
         [Fact]
@@ -439,34 +497,32 @@ namespace Husa.Uploader.Core.Tests
             }
         }
 
-        private static ListingSaleRequestDetailResponse GetListingRequestDetailResponse()
+        private static SaleListingRequestDetailResponse GetListingRequestDetailResponse()
         {
             var spacesDimensionsInfo = new Mock<SpacesDimensionsResponse>();
-            var addressInfo = new AddressInfoResponse()
+            var addressInfo = new AmarilloResponse.SalePropertyDetail.AddressInfoResponse()
             {
-                City = Quicklister.Sabor.Domain.Enums.Domain.Cities.Abilene,
-                County = Quicklister.Sabor.Domain.Enums.Domain.Counties.Atascosa,
+                City = Quicklister.Amarillo.Domain.Enums.Domain.Cities.Amarillo,
+                County = Quicklister.Amarillo.Domain.Enums.Domain.Counties.Randall,
                 State = States.Texas,
             };
             var propertyInfo = new PropertyInfoResponse()
             {
-                ConstructionStage = Quicklister.Sabor.Domain.Enums.ConstructionStage.Incomplete,
+                ConstructionStage = Quicklister.Amarillo.Domain.Enums.Domain.ConstructionStage.Incomplete,
                 ConstructionCompletionDate = DateTime.Now,
             };
             var featuresInfo = new Mock<FeaturesResponse>();
             var financialInfo = new FinancialResponse()
             {
-                TaxRate = 1000,
-                TaxYear = 2018,
                 BuyersAgentCommission = 10,
                 BuyersAgentCommissionType = Quicklister.Extensions.Domain.Enums.CommissionType.Amount,
             };
             var schoolsInfo = new SchoolsResponse()
             {
-                ElementarySchool = Quicklister.Sabor.Domain.Enums.Domain.ElementarySchool.Adams,
-                HighSchool = Quicklister.Sabor.Domain.Enums.Domain.HighSchool.Johnson,
-                MiddleSchool = Quicklister.Sabor.Domain.Enums.Domain.MiddleSchool.CalallenMiddleSchool,
-                SchoolDistrict = Quicklister.Sabor.Domain.Enums.Domain.SchoolDistrict.AlamoHeightsISD,
+                ElementarySchool = Quicklister.Amarillo.Domain.Enums.Domain.ElementarySchool.Gateway,
+                HighSchool = Quicklister.Amarillo.Domain.Enums.Domain.HighSchool.Amarillo,
+                IntermediateSchool = Quicklister.Amarillo.Domain.Enums.Domain.IntermediateSchool.Other,
+                SchoolDistrict = Quicklister.Amarillo.Domain.Enums.Domain.SchoolDistrict.Amarillo,
             };
             var showingInfo = new Mock<ShowingResponse>();
             var salePropertyInfo = new SalePropertyResponse()
@@ -479,8 +535,7 @@ namespace Husa.Uploader.Core.Tests
             };
             var roomInfo = new RoomResponse()
             {
-                Id = Guid.NewGuid(),
-                Level = Quicklister.Sabor.Domain.Enums.Domain.RoomLevel.MainLevel,
+                Level = Quicklister.Amarillo.Domain.Enums.Domain.RoomLevel.First,
                 RoomType = RoomType.Office,
                 Length = 100,
                 Width = 100,
@@ -501,9 +556,9 @@ namespace Husa.Uploader.Core.Tests
                 },
             };
 
-            var statusFields = new Mock<ListingSaleStatusFieldsResponse>();
+            var statusFields = new Mock<SaleListingStatusFieldsResponse>();
 
-            var listingSale = new ListingSaleRequestDetailResponse()
+            var listingSale = new SaleListingRequestDetailResponse()
             {
                 SaleProperty = saleProperty,
                 ListPrice = 127738,
@@ -515,6 +570,22 @@ namespace Husa.Uploader.Core.Tests
             };
 
             return listingSale;
+        }
+
+        private void SetUpUploaderClient()
+        {
+            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).SendKeys(It.IsAny<string>()));
+            this.uploaderClient.SetupGet(x => x.UploadInformation).Returns(this.uploadCommandInfo.Object);
+            this.uploaderClient.Setup(x => x.WaitUntilElementDisappears(
+                It.Is<By>(x => x == By.ClassName("fileupload-progress")),
+                It.IsAny<CancellationToken>())).Returns(true);
+            this.uploaderClient.Setup(x => x.SwitchTo().Frame(It.IsAny<int>())).Returns(new Mock<IWebDriver>().Object);
+            this.uploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), false).ToString());
+            this.uploaderClient.Setup(x => x.ExecuteScript(It.Is<string>(y => y == "return jQuery('a[id^=remove_button_]').length;"), It.IsAny<bool>())).Returns("0");
+            this.uploaderClient.Setup(x => x.ClickOnElementById(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<bool>()));
+            this.uploaderClient.Setup(x => x.FindElements(It.IsAny<By>(), It.IsAny<bool>())).Returns(new ReadOnlyCollection<IWebElement>(new List<IWebElement>() { new Mock<IWebElement>().Object })).Verifiable();
+            this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
+            this.uploaderClient.Setup(x => x.ScrollToTop());
         }
 
         private void SetUpCredentials()
@@ -529,7 +600,7 @@ namespace Husa.Uploader.Core.Tests
             .Verifiable();
         }
 
-        private void SetUpCompany(string username = "username", string password = "password")
+        private void SetUpCompany(string username = "amt.homesusa", string password = "E$Qz72^dpKC5@H4#^7vm78")
         {
             var company = new CompanyDetail()
             {
@@ -547,12 +618,12 @@ namespace Husa.Uploader.Core.Tests
         private void SetUpVirtualTours()
         {
             this.mediaRepository
-                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), MarketCode.Amarillo, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ResidentialListingVirtualTour[] { GetResidentialListingVirtualTour(), GetResidentialListingVirtualTour() })
             .Verifiable();
         }
 
-        private SaborUploadService GetSut()
+        private AmarilloUploadService GetSut()
             => new(
                 this.uploaderClient.Object,
                 this.fixture.ApplicationOptions,

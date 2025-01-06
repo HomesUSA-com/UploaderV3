@@ -27,6 +27,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             new { Value = MarketCode.Austin, Text = "Austin" },
             new { Value = MarketCode.Houston, Text = "Houston" },
             new { Value = MarketCode.DFW, Text = "Dfw" },
+            new { Value = MarketCode.Amarillo, Text = "Amarillo" },
         };
 
         public static ObservableCollection<dynamic> RequestFieldChanges => new ObservableCollection<dynamic>()

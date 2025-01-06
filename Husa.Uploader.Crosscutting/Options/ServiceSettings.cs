@@ -23,6 +23,9 @@ namespace Husa.Uploader.Crosscutting.Options
         public string QuicklisterDfw { get; set; }
 
         [Required(AllowEmptyStrings = false)]
+        public string QuicklisterAmarillo { get; set; }
+
+        [Required(AllowEmptyStrings = false)]
         public string CompanyServicesManager { get; set; }
 
         [Required(AllowEmptyStrings = false)]
