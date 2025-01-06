@@ -4,6 +4,7 @@ namespace Husa.Uploader.Data.Tests
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Abor.Api.Client;
+    using Husa.Quicklister.Amarillo.Api.Client;
     using Husa.Quicklister.CTX.Api.Client;
     using Husa.Quicklister.Dfw.Api.Client;
     using Husa.Quicklister.Extensions.Api.Contracts.Request.SaleRequest;
@@ -17,6 +18,7 @@ namespace Husa.Uploader.Data.Tests
     using Moq;
     using Xunit;
     using AborResponseContracts = Husa.Quicklister.Abor.Api.Contracts.Response;
+    using AmarilloResponseContracts = Husa.Quicklister.Amarillo.Api.Contracts.Response;
     using CtxResponseContracts = Husa.Quicklister.CTX.Api.Contracts.Response;
     using DfwResponseContracts = Husa.Quicklister.Dfw.Api.Contracts.Response;
     using HarResponseContracts = Husa.Quicklister.Har.Api.Contracts.Response;
@@ -31,6 +33,7 @@ namespace Husa.Uploader.Data.Tests
         private readonly Mock<IQuicklisterAborClient> mockAborClient = new();
         private readonly Mock<IQuicklisterHarClient> mockHarClient = new();
         private readonly Mock<IQuicklisterDfwClient> mockDfwClient = new();
+        private readonly Mock<IQuicklisterAmarilloClient> mockAmarilloClient = new();
         private readonly Mock<IServiceSubscriptionClient> mockServiceSubscriptionClient = new();
         private readonly Mock<ILogger<ListingRequestRepository>> mockLogger = new();
         private readonly ApplicationServicesFixture fixture;
@@ -80,6 +83,13 @@ namespace Husa.Uploader.Data.Tests
                 .Setup(x => x.ListingSaleRequest.GetListRequestAsync(It.IsAny<SaleListingRequestFilter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(dfwResult);
 
+            var amarilloResponse = new AmarilloResponseContracts.ListingRequest.SaleRequest.SaleListingRequestQueryResponse();
+            var amarilloResult = GetListingRequestGridResponse(new[] { amarilloResponse });
+
+            this.mockAmarilloClient
+                .Setup(x => x.ListingSaleRequest.GetListRequestAsync(It.IsAny<SaleListingRequestFilter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(amarilloResult);
+
             var sut = this.GetSut();
 
             // Act
@@ -87,7 +97,7 @@ namespace Husa.Uploader.Data.Tests
 
             // Assert
             Assert.NotEmpty(result);
-            Assert.Equal(5, result.Count());
+            Assert.Equal(6, result.Count());
         }
 
         [Theory]
@@ -96,6 +106,7 @@ namespace Husa.Uploader.Data.Tests
         [InlineData(MarketCode.Austin, RequestFieldChange.ListPrice)]
         [InlineData(MarketCode.CTX, RequestFieldChange.ListPrice)]
         [InlineData(MarketCode.DFW, RequestFieldChange.ListPrice)]
+        [InlineData(MarketCode.Amarillo, RequestFieldChange.ListPrice)]
         public async Task GetListingRequestsByMarketAndAction_ReturnsResidentialListingRequests(MarketCode marketCode, RequestFieldChange requestFieldChange)
         {
             // Arrange
@@ -124,6 +135,11 @@ namespace Husa.Uploader.Data.Tests
             this.mockDfwClient
                 .Setup(x => x.ListingSaleRequest.GetListRequestAsync(It.IsAny<SaleListingRequestFilter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(dfwResult);
+            var amarilloResponse = new AmarilloResponseContracts.ListingRequest.SaleRequest.SaleListingRequestQueryResponse();
+            var amarilloResult = GetListingRequestGridResponse(new[] { amarilloResponse });
+            this.mockAmarilloClient
+                .Setup(x => x.ListingSaleRequest.GetListRequestAsync(It.IsAny<SaleListingRequestFilter>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(amarilloResult);
             var sut = this.GetSut();
             // Act
             var result = await sut.GetListingRequestsByMarketAndAction(marketCode, requestFieldChange);
@@ -138,6 +154,7 @@ namespace Husa.Uploader.Data.Tests
         [InlineData(MarketCode.Austin)]
         [InlineData(MarketCode.CTX)]
         [InlineData(MarketCode.DFW)]
+        [InlineData(MarketCode.Amarillo)]
         public async Task GetListingRequest_ReturnsResidentialListingRequest(MarketCode marketCode)
         {
             // Arrange
@@ -159,6 +176,7 @@ namespace Husa.Uploader.Data.Tests
         [InlineData(MarketCode.Austin)]
         [InlineData(MarketCode.CTX)]
         [InlineData(MarketCode.DFW)]
+        [InlineData(MarketCode.Amarillo)]
         public async Task GetListingMlsNumber_Succeess(MarketCode marketCode)
         {
             // Arrange
@@ -201,6 +219,7 @@ namespace Husa.Uploader.Data.Tests
             this.mockAborClient.Object,
             this.mockHarClient.Object,
             this.mockDfwClient.Object,
+            this.mockAmarilloClient.Object,
             this.mockServiceSubscriptionClient.Object,
             this.mockLogger.Object);
 
@@ -261,6 +280,18 @@ namespace Husa.Uploader.Data.Tests
                         this.mockDfwClient
                             .Setup(x => x.SaleListing.GetByIdAsync(listingId, It.IsAny<CancellationToken>()))
                             .ReturnsAsync(new DfwResponseContracts.SaleListingDetailResponse()
+                            {
+                                Id = listingId,
+                                MlsNumber = mlsNumber,
+                            });
+                        break;
+                    }
+
+                case MarketCode.Amarillo:
+                    {
+                        this.mockAmarilloClient
+                            .Setup(x => x.SaleListing.GetByIdAsync(listingId, It.IsAny<CancellationToken>()))
+                            .ReturnsAsync(new AmarilloResponseContracts.SaleListingDetailResponse()
                             {
                                 Id = listingId,
                                 MlsNumber = mlsNumber,
@@ -443,6 +474,39 @@ namespace Husa.Uploader.Data.Tests
                             StatusFieldsInfo = new(),
                         };
                         this.mockDfwClient
+                            .Setup(x => x.ListingSaleRequest.GetListRequestSaleByIdAsync(requestId, It.IsAny<CancellationToken>()))
+                            .ReturnsAsync(response);
+                        break;
+                    }
+
+                case MarketCode.Amarillo:
+                    {
+                        var response = new AmarilloResponseContracts.ListingRequest.SaleRequest.SaleListingRequestDetailResponse
+                        {
+                            Id = requestId,
+                            ListingSaleId = listingId,
+                            ListPrice = 1234567,
+                            MlsNumber = "fake-mls-num",
+                            SysCreatedOn = requestDate,
+                            SysCreatedBy = userId,
+                            SysModifiedOn = requestDate.AddMonths(1),
+                            SysModifiedBy = userId,
+                            SaleProperty = new()
+                            {
+                                AddressInfo = new(),
+                                FeaturesInfo = new(),
+                                FinancialInfo = new(),
+                                SalePropertyInfo = new(),
+                                PropertyInfo = new(),
+                                SchoolsInfo = new(),
+                                ShowingInfo = new(),
+                                SpacesDimensionsInfo = new(),
+                                OpenHouses = new List<AmarilloResponseContracts.OpenHouseResponse>(),
+                                Rooms = new List<AmarilloResponseContracts.RoomResponse>(),
+                            },
+                            StatusFieldsInfo = new(),
+                        };
+                        this.mockAmarilloClient
                             .Setup(x => x.ListingSaleRequest.GetListRequestSaleByIdAsync(requestId, It.IsAny<CancellationToken>()))
                             .ReturnsAsync(response);
                         break;

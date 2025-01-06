@@ -12,6 +12,7 @@ namespace Husa.Uploader.Desktop.Configuration
     using Husa.MediaService.Client;
     using Husa.Migration.Api.Client;
     using Husa.Quicklister.Abor.Api.Client;
+    using Husa.Quicklister.Amarillo.Api.Client;
     using Husa.Quicklister.CTX.Api.Client;
     using Husa.Quicklister.Dfw.Api.Client;
     using Husa.Quicklister.Har.Api.Client;
@@ -155,6 +156,12 @@ namespace Husa.Uploader.Desktop.Configuration
                 client.BaseAddress = new Uri(options.Services.QuicklisterDfw);
             }).AddHttpMessageHandler<AuthTokenHandler>();
 
+            services.AddHttpClient<IQuicklisterAmarilloClient, QuicklisterAmarilloClient>((provider, client) =>
+            {
+                var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
+                client.BaseAddress = new Uri(options.Services.QuicklisterAmarillo);
+            }).AddHttpMessageHandler<AuthTokenHandler>();
+
             services.AddHttpClient<IServiceSubscriptionClient, ServiceSubscriptionClient>((provider, client) =>
             {
                 var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
@@ -181,6 +188,7 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<ISaborUploadService, SaborUploadService>();
             services.AddTransient<ICtxUploadService, CtxUploadService>();
             services.AddTransient<IAborUploadService, AborUploadService>();
+            services.AddTransient<IAmarilloUploadService, AmarilloUploadService>();
             services.AddTransient<IHarUploadService, HarUploadService>();
             services.AddTransient<IDfwUploadService, DfwUploadService>();
             services.AddSingleton<IBulkUploadFactory, BulkUploadFactory>();

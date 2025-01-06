@@ -139,7 +139,7 @@ namespace Husa.Uploader.Core.Tests
                 },
             };
             this.serviceSubscriptionClient
-                .Setup(x => x.Company.GetCompany(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.Company.GetCompany(It.IsAny<Guid>(), false, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(company);
         }
 

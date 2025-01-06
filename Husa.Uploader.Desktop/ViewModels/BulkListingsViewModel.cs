@@ -114,6 +114,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             "ABOR" => MarketCode.Austin,
             "HAR" => MarketCode.Houston,
             "DFW" => MarketCode.DFW,
+            "AMARILLO" => MarketCode.Amarillo,
             _ => throw new NotSupportedException(nameof(market)),
         };
 
