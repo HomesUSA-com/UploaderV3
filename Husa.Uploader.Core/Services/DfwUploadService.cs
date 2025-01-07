@@ -192,19 +192,19 @@ namespace Husa.Uploader.Core.Services
                     this.FillRoomsInformation(listing as DfwListingRequest); // Single Family
                 }
 
-                /*this.FillFeaturesInformation(listing as DfwListingRequest);
+                this.FillFeaturesInformation(listing as DfwListingRequest);
                 this.FillLotInformation(listing as DfwListingRequest);
                 this.FillUtilitiesInformation(listing as DfwListingRequest);
                 this.FillEnvironmentInformation(listing as DfwListingRequest);
-                this.FillFinancialInformation(listing as DfwListingRequest);*/
+                this.FillFinancialInformation(listing as DfwListingRequest);
                 this.FillAgentOfficeInformation();
-                /*this.FillShowingInformation(listing as DfwListingRequest);
+                this.FillShowingInformation(listing as DfwListingRequest);
                 this.FillRemarksInformation(listing as DfwListingRequest);
 
                 if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
                 {
                     this.FillStatusInformation(listing as DfwListingRequest);
-                }*/
+                }
             }
         }
 
