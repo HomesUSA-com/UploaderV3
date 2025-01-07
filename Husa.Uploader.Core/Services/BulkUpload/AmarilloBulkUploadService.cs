@@ -1,4 +1,4 @@
-﻿namespace Husa.Uploader.Core.Services.BulkUpload
+namespace Husa.Uploader.Core.Services.BulkUpload
 {
     using System.Threading;
     using System.Threading.Tasks;

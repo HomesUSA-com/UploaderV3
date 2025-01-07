@@ -1,4 +1,4 @@
-﻿namespace Husa.Uploader.Data.Entities.MarketRequests
+namespace Husa.Uploader.Data.Entities.MarketRequests
 {
     using System.Collections.Generic;
     using Husa.Extensions.Common;

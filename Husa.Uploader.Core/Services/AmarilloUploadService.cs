@@ -1,4 +1,4 @@
-﻿namespace Husa.Uploader.Core.Services
+namespace Husa.Uploader.Core.Services
 {
     using System;
     using System.Diagnostics.CodeAnalysis;

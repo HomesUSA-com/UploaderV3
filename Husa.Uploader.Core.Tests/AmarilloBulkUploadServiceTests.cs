@@ -1,4 +1,4 @@
-﻿namespace Husa.Uploader.Core.Tests
+namespace Husa.Uploader.Core.Tests
 {
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;

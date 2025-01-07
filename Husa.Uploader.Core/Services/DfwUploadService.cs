@@ -155,11 +155,6 @@ namespace Husa.Uploader.Core.Services
                     NavigateToForm(listing);
                     FillListingDetails(listing);
 
-                    if (listing.IsNewListing)
-                    {
-                        await this.UpdateVirtualTour(listing, cancellationToken);
-                    }
-
                     await this.FillMedia(listing, cancellationToken);
                 }
                 catch (Exception exception)
@@ -592,14 +587,16 @@ namespace Husa.Uploader.Core.Services
             var firstVirtualTour = virtualTours.FirstOrDefault();
             if (firstVirtualTour != null)
             {
-                this.uploaderClient.WriteTextbox(By.Id("Input_341"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+                var uri = firstVirtualTour.GetUnbrandedUrl();
+                this.uploaderClient.WriteTextbox(By.Id("Input_341"), uri); // Virtual Tour URL Unbranded
             }
 
             virtualTours = virtualTours.Skip(1).ToList();
             var secondVirtualTour = virtualTours.FirstOrDefault();
             if (secondVirtualTour != null)
             {
-                this.uploaderClient.WriteTextbox(By.Id("Input_532"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+                var uri = secondVirtualTour.GetUnbrandedUrl();
+                this.uploaderClient.WriteTextbox(By.Id("Input_532"), uri); // Virtual Tour URL Unbranded
             }
         }
 
@@ -643,14 +640,16 @@ namespace Husa.Uploader.Core.Services
             var firstVirtualTour = virtualTours.FirstOrDefault();
             if (firstVirtualTour != null)
             {
-                this.uploaderClient.WriteTextbox(By.Id("Input_697"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+                var uri = firstVirtualTour.GetUnbrandedUrl();
+                this.uploaderClient.WriteTextbox(By.Id("Input_697"), uri); // Virtual Tour URL Unbranded
             }
 
             virtualTours = virtualTours.Skip(1).ToList();
             var secondVirtualTour = virtualTours.FirstOrDefault();
             if (secondVirtualTour != null)
             {
-                this.uploaderClient.WriteTextbox(By.Id("Input_698"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+                var uri = secondVirtualTour.GetUnbrandedUrl();
+                this.uploaderClient.WriteTextbox(By.Id("Input_698"), uri); // Virtual Tour URL Unbranded
             }
         }
 
@@ -1047,6 +1046,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetMultipleCheckboxById("Input_363", listing.CoolSystemDesc, "Cooling", tabName); // Cooling
                 this.uploaderClient.SetSelect(By.Id("Input_364"), listing.HasMudDistrict.BoolToNumericBool(), "MUD District", tabName); // MUD District
                 this.uploaderClient.SetSelect(By.Id("Input_436"), listing.IsSpecialTaxingAuthority.BoolToNumericBool(), "Special Taxing Authority YN", tabName); // Special Taxing Authority YN
+                this.uploaderClient.SetSelect(By.Id("Input_799"), listing.IsPropertyInPID.BoolToNumericBool()); // Public Improvement District YN
             }
             catch (Exception e)
             {
@@ -1094,6 +1094,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_377"), listing.TitleCo); // Title Company-Preferred
             this.uploaderClient.WriteTextbox(By.Id("Input_378"), listing.TitleCoPhone); // Title Company Phone
             this.uploaderClient.WriteTextbox(By.Id("Input_379"), listing.TitleCoLocation); // Title Company Location
+            this.uploaderClient.SetSelect(By.Id("Input_835"), listing.HasAgentBonus.Value.BoolToNumericBool()); // seller concessions
 
             this.uploaderClient.ScrollToTop();
 
@@ -1259,7 +1260,6 @@ namespace Husa.Uploader.Core.Services
         {
             var tabName = "Status";
             this.GoToTab(tabName);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
 
             Thread.Sleep(1000);
 
@@ -1419,6 +1419,8 @@ namespace Husa.Uploader.Core.Services
 
             var index = 0;
             var sortedOpenHouses = listing.OpenHouse.OrderBy(openHouse => openHouse.Date).ToList();
+            this.uploaderClient.ClickOnElement(By.Id("m_lbContinueEdit"));
+            Thread.Sleep(2000);
             foreach (var openHouse in sortedOpenHouses)
             {
                 if (index != 0)
