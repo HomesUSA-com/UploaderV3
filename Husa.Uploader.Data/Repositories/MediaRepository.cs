@@ -189,7 +189,11 @@ namespace Husa.Uploader.Data.Repositories
             var buffer = new byte[8];
             using (var fs = File.OpenRead(filePath))
             {
-                fs.Read(buffer, 0, buffer.Length);
+                var bytesRead = fs.Read(buffer, 0, buffer.Length);
+                if (bytesRead < buffer.Length)
+                {
+                    return string.Empty;
+                }
             }
 
             return (buffer[0], buffer[1], buffer[2], buffer[3]) switch
