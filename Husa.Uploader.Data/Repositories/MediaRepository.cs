@@ -122,12 +122,26 @@ namespace Husa.Uploader.Data.Repositories
                 response.EnsureSuccessStatusCode();
                 media.MediaType = response.Content.Headers.ContentType.MediaType;
 
-                using var contentStream = await response.Content.ReadAsStreamAsync(token);
-                using var imageAsFileStream = File.Create(path: $"{savePath}{media.Extension}");
-                contentStream.Seek(0, SeekOrigin.Begin);
-                await contentStream.CopyToAsync(imageAsFileStream, token);
+                var tempFilePath = $"{savePath}.tmp";
+                using (var contentStream = await response.Content.ReadAsStreamAsync(token))
+                using (var tempFileStream = File.Create(tempFilePath))
+                {
+                    await contentStream.CopyToAsync(tempFileStream, token);
+                }
 
-                return response.Content.Headers.ContentType.MediaType;
+                if (media.MediaType == "application/octet-stream" || string.IsNullOrEmpty(media.Extension))
+                {
+                    media.Extension = GetExtensionFromFileContent(tempFilePath);
+                    if (string.IsNullOrEmpty(media.Extension))
+                    {
+                        throw new InvalidOperationException("Unsupported or unknown file type.");
+                    }
+                }
+
+                var finalFilePath = $"{savePath}{media.Extension}";
+                File.Move(tempFilePath, finalFilePath);
+
+                return media.MediaType;
             }
         }
 
@@ -142,6 +156,13 @@ namespace Husa.Uploader.Data.Repositories
                     media: image,
                     savePath: filePath,
                     token);
+
+                if (image.Extension == ".pdf" || string.IsNullOrEmpty(image.Extension))
+                {
+                    this.logger.LogWarning("The file {filePath} is a PDF and will be skipped.", filePath);
+                    image.IsBrokenLink = true;
+                    return;
+                }
 
                 this.ConvertFilePngToJpg(filePath, image.Extension);
                 image.Extension = ManagedFileExtensions.Jpg;
@@ -161,6 +182,24 @@ namespace Husa.Uploader.Data.Repositories
                 this.logger.LogError(ex, "Failed to create the on-disk file for the image with {imageId} in this {filePath}", image.Id, folder);
                 throw;
             }
+        }
+
+        private static string GetExtensionFromFileContent(string filePath)
+        {
+            var buffer = new byte[8];
+            using (var fs = File.OpenRead(filePath))
+            {
+                fs.Read(buffer, 0, buffer.Length);
+            }
+
+            return (buffer[0], buffer[1], buffer[2], buffer[3]) switch
+            {
+                (0xFF, 0xD8, 0xFF, _) => ".jpg",
+                (0x89, 0x50, 0x4E, 0x47) => ".png",
+                (0x47, 0x49, 0x46, _) => ".gif",
+                (0x25, 0x50, 0x44, 0x46) => ".pdf",
+                _ => string.Empty,
+            };
         }
 
         private static string GetCaption(string title = null, string description = null)

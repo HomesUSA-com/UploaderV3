@@ -128,56 +128,52 @@ namespace Husa.Uploader.Data.Tests
         public async Task PrepareImage_ValidPngImage_ConvertsToJpg()
         {
             // Arrange
-            var folder = Path.GetTempPath();
-            var dummyFilePath = Path.Combine(folder, "dummy.png");
-
-            using (var bitmap = new Bitmap(1282, 853))
-            {
-                using (var graphics = Graphics.FromImage(bitmap))
-                {
-                    graphics.Clear(Color.Blue);
-                }
-
-                bitmap.Save(dummyFilePath, ImageFormat.Png);
-            }
-
-            var media = new ResidentialListingMedia
-            {
-                Id = Guid.NewGuid(),
-                Extension = ".png",
-                MediaUri = new Uri("https://example.com/image.png"),
-                MediaType = "image/png",
-                Data = File.ReadAllBytes(dummyFilePath),
-            };
-
-            var filePath = Path.Combine(folder, media.Id.ToString("N"));
-
-            using (var bitmap = new Bitmap(1282, 853))
-            {
-                bitmap.Save($"{filePath}.png", ImageFormat.Png);
-            }
-
-            var repository = this.GetSut();
-
-            repository.SetMaxDimensions(1280, 853);
-
-            this.httpMessageHandler
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>(
-                    "SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StreamContent(new MemoryStream(File.ReadAllBytes($"{filePath}.png")))
-                    {
-                        Headers = { ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png") },
-                    },
-                });
+            var folder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(folder);
 
             try
             {
+                var dummyFilePath = Path.Combine(folder, "dummy.png");
+
+                using (var bitmap = new Bitmap(1282, 853))
+                {
+                    using (var graphics = Graphics.FromImage(bitmap))
+                    {
+                        graphics.Clear(Color.Blue);
+                    }
+
+                    bitmap.Save(dummyFilePath, ImageFormat.Png);
+                }
+
+                var media = new ResidentialListingMedia
+                {
+                    Id = Guid.NewGuid(),
+                    Extension = ".png",
+                    MediaUri = new Uri("https://example.com/image.png"),
+                    MediaType = "image/png",
+                    Data = File.ReadAllBytes(dummyFilePath),
+                };
+
+                var filePath = Path.Combine(folder, media.Id.ToString("N"));
+
+                var repository = this.GetSut();
+                repository.SetMaxDimensions(1280, 853);
+
+                this.httpMessageHandler
+                    .Protected()
+                    .Setup<Task<HttpResponseMessage>>(
+                        "SendAsync",
+                        ItExpr.IsAny<HttpRequestMessage>(),
+                        ItExpr.IsAny<CancellationToken>())
+                    .ReturnsAsync(new HttpResponseMessage
+                    {
+                        StatusCode = HttpStatusCode.OK,
+                        Content = new StreamContent(new MemoryStream(File.ReadAllBytes(dummyFilePath)))
+                        {
+                            Headers = { ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png") },
+                        },
+                    });
+
                 // Act
                 await repository.PrepareImage(media, MarketCode.SanAntonio, default, folder);
 
@@ -188,19 +184,9 @@ namespace Husa.Uploader.Data.Tests
             }
             finally
             {
-                if (File.Exists(dummyFilePath))
+                if (Directory.Exists(folder))
                 {
-                    File.Delete(dummyFilePath);
-                }
-
-                if (File.Exists($"{filePath}.png"))
-                {
-                    File.Delete($"{filePath}.png");
-                }
-
-                if (File.Exists($"{filePath}{ManagedFileExtensions.Jpg}"))
-                {
-                    File.Delete($"{filePath}{ManagedFileExtensions.Jpg}");
+                    Directory.Delete(folder, true);
                 }
             }
         }
