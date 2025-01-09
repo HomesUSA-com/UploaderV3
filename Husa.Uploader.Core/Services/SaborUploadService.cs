@@ -1477,6 +1477,11 @@ namespace Husa.Uploader.Core.Services
             {
                 Thread.Sleep(500);
                 await this.mediaRepository.PrepareImage(photo, MarketCode.SanAntonio, token, folder);
+                if (photo.IsBrokenLink)
+                {
+                    continue;
+                }
+
                 this.uploaderClient.FindElement(By.Name("files[]")).SendKeys(photo.PathOnDisk);
             }
 

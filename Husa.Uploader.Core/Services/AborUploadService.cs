@@ -1312,10 +1312,15 @@ namespace Husa.Uploader.Core.Services
 
             foreach (var image in media)
             {
-                captionImageId = $"m_rptPhotoRows_ctl{imageRow:D2}_m_rptPhotoCells_ctl{imageCell:D2}_m_ucPhotoCell_m_tbxDescription";
-
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
                 await this.mediaRepository.PrepareImage(image, MarketCode.Austin, cancellationToken, folder);
+
+                if (image.IsBrokenLink)
+                {
+                    continue;
+                }
+
+                captionImageId = $"m_rptPhotoRows_ctl{imageRow:D2}_m_rptPhotoCells_ctl{imageCell:D2}_m_ucPhotoCell_m_tbxDescription";
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_ucImageLoader_m_tblImageLoader"), cancellationToken);
                 this.uploaderClient.FindElement(By.Id("m_ucImageLoader_m_tblImageLoader")).FindElement(By.CssSelector("input[type=file]")).SendKeys(image.PathOnDisk);
                 this.WaitForElementAndThenDoAction(
                         By.Id(captionImageId),
