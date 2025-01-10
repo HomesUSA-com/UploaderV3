@@ -82,6 +82,27 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(UploadResult.Success, result);
         }
 
+        [Theory]
+        [InlineData(RequestFieldChange.PartialUpload)]
+        [InlineData(RequestFieldChange.FullUpload)]
+        [InlineData(RequestFieldChange.ListPrice)]
+        [InlineData(RequestFieldChange.CompletionDate)]
+        [InlineData(RequestFieldChange.ConstructionStage)]
+        public async Task Upload_Without_AutoSaveSuccess(RequestFieldChange requestFieldChange)
+        {
+            // Arrange
+            var sut = this.GetSut();
+            sut.SetRequestFieldChange(requestFieldChange);
+            var bulkListings = this.GetBulkListings();
+            sut.SetBulkListings(bulkListings);
+
+            // Act
+            var result = await sut.Upload_WithAutoSave();
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result);
+        }
+
         private AborBulkUploadService GetSut()
             => new(
                 this.uploaderClient.Object,

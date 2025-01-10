@@ -41,8 +41,10 @@ namespace Husa.Uploader.Core.Tests
             this.uploaderClient.SetupAllProperties();
         }
 
-        [Fact]
-        public async Task UploadSuccess()
+        [Theory]
+        [InlineData("")]
+        [InlineData("12345678")]
+        public async Task UploadSuccess(string mlsNumber)
         {
             // Arrange
             this.SetUpCredentials();
@@ -51,6 +53,7 @@ namespace Husa.Uploader.Core.Tests
             var company = new Mock<CompanyDetail>().Object;
             var listingSale = GetListingRequestDetailResponse();
             var saborListing = new SaborListingRequest(listingSale).CreateFromApiResponseDetail(company);
+            saborListing.MLSNum = mlsNumber;
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).SendKeys(It.IsAny<string>()));
             this.uploaderClient.SetupGet(x => x.UploadInformation).Returns(this.uploadCommandInfo.Object);
             this.uploaderClient.Setup(x => x.WaitUntilElementDisappears(
