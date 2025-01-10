@@ -132,7 +132,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        public Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -189,7 +189,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> PartialUpload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        public Task<UploadResult> PartialUpload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -234,7 +234,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> UpdateCompletionDate(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        public Task<UploadResult> UpdateCompletionDate(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -324,7 +324,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> UpdatePrice(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        public Task<UploadResult> UpdatePrice(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -362,7 +362,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> UpdateStatus(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        public Task<UploadResult> UpdateStatus(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
