@@ -7,7 +7,7 @@
         <Nullable>disable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-        <Authors>HomesUSA.com Dev Team</Authors>
+        <Authors>HomesUSA.com, Dev Team</Authors>
         <Company>HomesUSA.com, Inc.</Company>
         <Copyright>Copyright © 2023 HomesUSA.com, Inc. All rights reserved.</Copyright>
         <Product>Builder Force Uploader</Product>
