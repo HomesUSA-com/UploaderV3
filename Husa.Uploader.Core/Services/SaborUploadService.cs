@@ -1636,7 +1636,7 @@ namespace Husa.Uploader.Core.Services
                     if (element != null)
                     {
                         element.Click();
-                        Thread.Sleep(2000);
+                        this.uploaderClient.AcceptAlertWindow(isElementOptional: true);
                     }
                     else
                     {
@@ -1648,8 +1648,6 @@ namespace Husa.Uploader.Core.Services
                     isDeleteDone = true;
                 }
             }
-
-            this.uploaderClient.ExecuteScript("jQuery('.button.Save').click();");
 
             Thread.Sleep(2000);
         }
