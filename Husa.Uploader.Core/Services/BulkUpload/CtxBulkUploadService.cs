@@ -62,19 +62,19 @@ namespace Husa.Uploader.Core.Services.BulkUpload
 
             foreach (var group in this.BulkListings.GroupBy(item => item.CompanyName))
             {
-                await this.ProcessCompanyGroup(group, cancellationToken);
+                await this.ProcessCompanyGroup(group, cancellationToken, true);
             }
 
             return UploadResult.Success;
         }
 
-        private async Task ProcessCompanyGroup(IGrouping<string, UploadListingItem> group, CancellationToken cancellationToken)
+        private async Task ProcessCompanyGroup(IGrouping<string, UploadListingItem> group, CancellationToken cancellationToken, bool autoSave = false)
         {
             var logInForCompany = true;
 
             foreach (var bulkFullListing in group.Select(bulkListing => bulkListing.FullListing))
             {
-                await this.ProcessListing(bulkFullListing, cancellationToken, logInForCompany);
+                await this.ProcessListing(bulkFullListing, cancellationToken, logInForCompany, autoSave);
                 logInForCompany = false;
                 Thread.Sleep(400);
                 this.uploaderClient.ClickOnElement(By.Id("m_lbSubmit"));
@@ -85,24 +85,24 @@ namespace Husa.Uploader.Core.Services.BulkUpload
             Thread.Sleep(400);
         }
 
-        private async Task ProcessListing(ResidentialListingRequest bulkFullListing, CancellationToken cancellationToken, bool logInForCompany)
+        private async Task ProcessListing(ResidentialListingRequest bulkFullListing, CancellationToken cancellationToken, bool logInForCompany, bool autoSave = false)
         {
             switch (this.RequestFieldChange)
             {
                 case RequestFieldChange.PartialUpload:
-                    await this.uploadService.PartialUpload(bulkFullListing, cancellationToken, logInForCompany);
+                    await this.uploadService.PartialUpload(bulkFullListing, cancellationToken, logInForCompany, autoSave);
                     break;
                 case RequestFieldChange.FullUpload:
-                    await this.uploadService.Upload(bulkFullListing, cancellationToken, logInForCompany);
+                    await this.uploadService.Upload(bulkFullListing, cancellationToken, logInForCompany, autoSave);
                     break;
                 case RequestFieldChange.ListPrice:
-                    await this.uploadService.UpdatePrice(bulkFullListing, cancellationToken, logInForCompany);
+                    await this.uploadService.UpdatePrice(bulkFullListing, cancellationToken, logInForCompany, autoSave);
                     break;
                 case RequestFieldChange.CompletionDate:
                     await this.uploadService.UpdateCompletionDate(bulkFullListing, cancellationToken, logInForCompany);
                     break;
                 case RequestFieldChange.ConstructionStage:
-                    await this.uploadService.UpdateStatus(bulkFullListing, cancellationToken, logInForCompany);
+                    await this.uploadService.UpdateStatus(bulkFullListing, cancellationToken, logInForCompany, autoSave);
                     break;
                 default:
                     throw new NotImplementedException();
