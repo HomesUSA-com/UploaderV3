@@ -6,7 +6,7 @@ namespace Husa.Uploader.Core.Interfaces.ServiceActions
 
     public interface IUpdateStatus
     {
-        Task<UploadResult> UpdateStatus(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true);
+        Task<UploadResult> UpdateStatus(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false);
         Task<UploadResult> UpdateLotStatus(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true);
     }
 }

@@ -6,7 +6,7 @@ namespace Husa.Uploader.Core.Interfaces.ServiceActions
 
     public interface IUpdatePrice
     {
-        Task<UploadResult> UpdatePrice(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true);
+        Task<UploadResult> UpdatePrice(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false);
         Task<UploadResult> UpdateLotPrice(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true);
     }
 }

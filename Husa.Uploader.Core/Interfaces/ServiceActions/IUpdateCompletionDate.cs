@@ -5,6 +5,6 @@ namespace Husa.Uploader.Core.Interfaces.ServiceActions
 
     public interface IUpdateCompletionDate
     {
-        Task<UploadResult> UpdateCompletionDate(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true);
+        Task<UploadResult> UpdateCompletionDate(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false);
     }
 }
