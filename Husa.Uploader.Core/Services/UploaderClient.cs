@@ -3,6 +3,7 @@ namespace Husa.Uploader.Core.Services
     using System;
     using System.Collections.ObjectModel;
     using System.Diagnostics;
+    using System.Threading;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Models;
     using Microsoft.Extensions.Logging;
@@ -141,8 +142,21 @@ namespace Husa.Uploader.Core.Services
             return this.wait.Until(x => this.ExecuteScript(script).Equals(expectedCompletedResult), token);
         }
 
-        public void WaitUntilElementExists(By findBy, TimeSpan waitTime, CancellationToken token = default)
+        public void WaitUntilElementExists(By findBy, TimeSpan waitTime, bool showAlert = false, CancellationToken token = default)
         {
+            if (showAlert)
+            {
+                var output = $"{(int)waitTime.TotalMinutes}";
+                this.ExecuteScript("let head = document.getElementsByTagName(\"head\")[0];let script = document.createElement(\"script\");script.setAttribute(\"src\", \"https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js\");document.body.appendChild(script);");
+                this.ExecuteScript("$(\"head link[rel='stylesheet']\").last().after(\"<link rel='stylesheet' href='https://leadmanager.homesusa.com/css/animate.css' type='text/css'>\");");
+                this.ExecuteScript("$(\"head link[rel='stylesheet']\").last().after(\"<link rel='stylesheet' href='https://leadmanager.homesusa.com/css/igrowl.css' type='text/css'>\");");
+                this.ExecuteScript("$(\"head link[rel='stylesheet']\").last().after(\"<link rel='stylesheet' href='https://leadmanager.homesusa.com/css/fonts/feather.css' type='text/css'>\");");
+                this.ExecuteScript("$(\"head\").append('<script src=\"https://leadmanager.homesusa.com/Scripts/igrowl.js\"></script>')");
+                Thread.Sleep(2000);
+                string time = "function startTimer(duration, display) {var timer = duration, minutes, seconds; window.setInterval(function () {minutes = parseInt(timer / 60, 10);seconds = parseInt(timer % 60, 10);minutes = minutes < 10 ? \"0\" + minutes : minutes;seconds = seconds < 10 ? \"0\" + seconds : seconds;display.textContent = minutes + \":\" + seconds;if (--timer < 0) {timer = duration;}}, 1000);}";
+                this.ExecuteScript(" " + time + "  $.iGrowl({type: 'error',title: 'HomesUSA - Bulk Uploader',message: 'The process will continue after you save this listing, within " + output + " minutes. <div id=\"time\" style=\"font-weight: bold\"></div>',delay: 0,small: false,placement:{ x: 'right', y: 'top'}, offset: {x: 30,y: 50},animShow: 'fadeInDown',animHide: 'bounceOutUp'}); var totalMinutes = 60 * " + output + ",display = document.getElementById('time'); startTimer(totalMinutes, display);");
+            }
+
             this.logger.LogInformation("Waiting for the element '{by}' to exist", findBy.ToString());
             var customWait = new WebDriverWait(this.driver, waitTime);
             customWait.Until(driver => driver.FindElement(findBy), token);

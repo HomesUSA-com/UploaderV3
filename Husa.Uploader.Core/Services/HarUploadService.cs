@@ -132,7 +132,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        public Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -191,11 +191,17 @@ namespace Husa.Uploader.Core.Services
                     return UploadResult.Failure;
                 }
 
+                if (autoSave)
+                {
+                    this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
+                    Thread.Sleep(400);
+                }
+
                 return UploadResult.Success;
             }
         }
 
-        public Task<UploadResult> PartialUpload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        public Task<UploadResult> PartialUpload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -239,11 +245,17 @@ namespace Husa.Uploader.Core.Services
                     return UploadResult.Failure;
                 }
 
+                if (autoSave)
+                {
+                    this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
+                    Thread.Sleep(400);
+                }
+
                 return UploadResult.Success;
             }
         }
 
-        public Task<UploadResult> UpdateCompletionDate(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        public Task<UploadResult> UpdateCompletionDate(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -278,6 +290,12 @@ namespace Husa.Uploader.Core.Services
                 {
                     this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
                     return UploadResult.Failure;
+                }
+
+                if (autoSave)
+                {
+                    this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
+                    Thread.Sleep(400);
                 }
 
                 return UploadResult.Success;
@@ -322,7 +340,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> UpdatePrice(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        public Task<UploadResult> UpdatePrice(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -356,11 +374,17 @@ namespace Husa.Uploader.Core.Services
                     return UploadResult.Failure;
                 }
 
+                if (autoSave)
+                {
+                    this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
+                    Thread.Sleep(400);
+                }
+
                 return UploadResult.Success;
             }
         }
 
-        public Task<UploadResult> UpdateStatus(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        public Task<UploadResult> UpdateStatus(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -416,6 +440,12 @@ namespace Husa.Uploader.Core.Services
                 {
                     this.logger.LogError(exception, "Failure uploading the listing {requestId}", listing.ResidentialListingRequestID);
                     return UploadResult.Failure;
+                }
+
+                if (autoSave)
+                {
+                    this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
+                    Thread.Sleep(400);
                 }
 
                 return UploadResult.Success;
