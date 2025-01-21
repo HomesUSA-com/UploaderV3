@@ -150,9 +150,8 @@ namespace Husa.Uploader.Core.Services
                 if (logIn)
                 {
                     await this.Login(listing.CompanyId);
+                    Thread.Sleep(5000);
                 }
-
-                Thread.Sleep(5000);
 
                 try
                 {
@@ -207,9 +206,8 @@ namespace Husa.Uploader.Core.Services
                 if (logIn)
                 {
                     await this.Login(listing.CompanyId);
+                    Thread.Sleep(5000);
                 }
-
-                Thread.Sleep(5000);
 
                 try
                 {
@@ -293,7 +291,7 @@ namespace Husa.Uploader.Core.Services
                 if (logIn)
                 {
                     await this.Login(listing.CompanyId);
-                    Thread.Sleep(1000);
+                    Thread.Sleep(5000);
                 }
 
                 try
@@ -341,6 +339,7 @@ namespace Husa.Uploader.Core.Services
                 if (logIn)
                 {
                     await this.Login(listing.CompanyId);
+                    Thread.Sleep(5000);
                 }
 
                 try
@@ -379,6 +378,7 @@ namespace Husa.Uploader.Core.Services
                 if (logIn)
                 {
                     await this.Login(listing.CompanyId);
+                    Thread.Sleep(5000);
                 }
 
                 try

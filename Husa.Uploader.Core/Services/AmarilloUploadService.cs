@@ -141,9 +141,8 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
+                        Thread.Sleep(1000);
                     }
-
-                    Thread.Sleep(2000);
 
                     if (listing.IsNewListing)
                     {
@@ -188,9 +187,8 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
+                        Thread.Sleep(1000);
                     }
-
-                    Thread.Sleep(2000);
 
                     this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
                     this.GoToTabById("listing-information");
@@ -223,6 +221,7 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
+                        Thread.Sleep(1000);
                     }
 
                     this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
