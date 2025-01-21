@@ -1507,6 +1507,11 @@ namespace Husa.Uploader.Core.Services
             {
                 Thread.Sleep(500);
                 await this.mediaRepository.PrepareImage(photo, MarketCode.SanAntonio, token, folder);
+                if (photo.IsBrokenLink)
+                {
+                    continue;
+                }
+
                 this.uploaderClient.FindElement(By.Name("files[]")).SendKeys(photo.PathOnDisk);
             }
 
@@ -1661,7 +1666,7 @@ namespace Husa.Uploader.Core.Services
                     if (element != null)
                     {
                         element.Click();
-                        Thread.Sleep(2000);
+                        this.uploaderClient.AcceptAlertWindow(isElementOptional: true);
                     }
                     else
                     {
@@ -1673,8 +1678,6 @@ namespace Husa.Uploader.Core.Services
                     isDeleteDone = true;
                 }
             }
-
-            this.uploaderClient.ExecuteScript("jQuery('.button.Save').click();");
 
             Thread.Sleep(2000);
         }
