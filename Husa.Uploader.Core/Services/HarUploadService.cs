@@ -148,15 +148,15 @@ namespace Husa.Uploader.Core.Services
 
                 this.logger.LogInformation("Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-                if (logIn)
-                {
-                    await this.Login(listing.CompanyId);
-                }
-
-                Thread.Sleep(2000);
 
                 try
                 {
+                    if (logIn)
+                    {
+                        await this.Login(listing.CompanyId);
+                        Thread.Sleep(1000);
+                    }
+
                     var housingType = listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>();
 
                     if (listing.IsNewListing)
@@ -184,17 +184,17 @@ namespace Husa.Uploader.Core.Services
                     }
 
                     await this.FillMedia(listing, cancellationToken);
+
+                    if (autoSave)
+                    {
+                        this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
+                        Thread.Sleep(400);
+                    }
                 }
                 catch (Exception exception)
                 {
                     this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
                     return UploadResult.Failure;
-                }
-
-                if (autoSave)
-                {
-                    this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
-                    Thread.Sleep(400);
                 }
 
                 return UploadResult.Success;
@@ -217,15 +217,15 @@ namespace Husa.Uploader.Core.Services
 
                 this.logger.LogInformation("Partial Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-                if (logIn)
-                {
-                    await this.Login(listing.CompanyId);
-                }
-
-                Thread.Sleep(2000);
 
                 try
                 {
+                    if (logIn)
+                    {
+                        await this.Login(listing.CompanyId);
+                        Thread.Sleep(1000);
+                    }
+
                     var housingType = listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>();
 
                     this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
@@ -238,17 +238,17 @@ namespace Husa.Uploader.Core.Services
                     this.FillFinancialInformation(listing as HarListingRequest, housingType);
                     this.FillShowingInformation(listing);
                     this.FillRemarks(listing as HarListingRequest, housingType);
+
+                    if (autoSave)
+                    {
+                        this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
+                        Thread.Sleep(400);
+                    }
                 }
                 catch (Exception exception)
                 {
                     this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
                     return UploadResult.Failure;
-                }
-
-                if (autoSave)
-                {
-                    this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
-                    Thread.Sleep(400);
                 }
 
                 return UploadResult.Success;
@@ -269,13 +269,14 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Updating CompletionDate for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
-                if (logIn)
-                {
-                    await this.Login(listing.CompanyId);
-                }
-
                 try
                 {
+                    if (logIn)
+                    {
+                        await this.Login(listing.CompanyId);
+                        Thread.Sleep(1000);
+                    }
+
                     var housingType = listing.HousingTypeDesc.ToEnumFromEnumMember<HousingType>();
                     this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
 
@@ -285,17 +286,17 @@ namespace Husa.Uploader.Core.Services
 
                     this.GoToRemarksTab(housingType);
                     this.UpdatePublicRemarksInRemarksTab(listing);
+
+                    if (autoSave)
+                    {
+                        this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
+                        Thread.Sleep(400);
+                    }
                 }
                 catch (Exception exception)
                 {
                     this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
                     return UploadResult.Failure;
-                }
-
-                if (autoSave)
-                {
-                    this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
-                    Thread.Sleep(400);
                 }
 
                 return UploadResult.Success;
@@ -315,13 +316,14 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Updating media for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
-                if (logIn)
-                {
-                    await this.Login(listing.CompanyId);
-                }
-
                 try
                 {
+                    if (logIn)
+                    {
+                        await this.Login(listing.CompanyId);
+                        Thread.Sleep(1000);
+                    }
+
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     // Enter Manage Photos
@@ -354,30 +356,30 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Updating the price of the listing {requestId} to {listPrice}.", listing.ResidentialListingRequestID, listing.ListPrice);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
-                if (logIn)
-                {
-                    await this.Login(listing.CompanyId);
-                    Thread.Sleep(1000);
-                }
-
                 try
                 {
+                    if (logIn)
+                    {
+                        await this.Login(listing.CompanyId);
+                        Thread.Sleep(1000);
+                    }
+
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Price Change"), cancellationToken);
                     this.uploaderClient.ClickOnElement(By.LinkText("Price Change"));
                     this.uploaderClient.WriteTextbox(By.Id("Input_9"), listing.ListPrice); // List Price
+
+                    if (autoSave)
+                    {
+                        this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
+                        Thread.Sleep(400);
+                    }
                 }
                 catch (Exception exception)
                 {
                     this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
                     return UploadResult.Failure;
-                }
-
-                if (autoSave)
-                {
-                    this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
-                    Thread.Sleep(400);
                 }
 
                 return UploadResult.Success;
@@ -398,14 +400,14 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Editing the status information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
 
-                if (logIn)
-                {
-                    await this.Login(listing.CompanyId);
-                    Thread.Sleep(1000);
-                }
-
                 try
                 {
+                    if (logIn)
+                    {
+                        await this.Login(listing.CompanyId);
+                        Thread.Sleep(1000);
+                    }
+
                     this.NavigateToQuickEdit(listing.MLSNum);
                     Thread.Sleep(1000);
 
@@ -435,17 +437,17 @@ namespace Husa.Uploader.Core.Services
                         default:
                             throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for Houston Listing with Id '{listing.ResidentialListingID}'");
                     }
+
+                    if (autoSave)
+                    {
+                        this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
+                        Thread.Sleep(400);
+                    }
                 }
                 catch (Exception exception)
                 {
                     this.logger.LogError(exception, "Failure uploading the listing {requestId}", listing.ResidentialListingRequestID);
                     return UploadResult.Failure;
-                }
-
-                if (autoSave)
-                {
-                    this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
-                    Thread.Sleep(400);
                 }
 
                 return UploadResult.Success;

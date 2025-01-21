@@ -369,32 +369,33 @@ namespace Husa.Uploader.Core.Services
             {
                 this.logger.LogInformation("Updating the price of the listing {RequestId} to {ListPrice}.", listing.ResidentialListingRequestID, listing.ListPrice);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-                if (logIn)
-                {
-                    await this.Login(listing.CompanyId);
-                }
-
-                Thread.Sleep(1000);
 
                 try
                 {
+                    if (logIn)
+                    {
+                        await this.Login(listing.CompanyId);
+                    }
+
+                    Thread.Sleep(1000);
+
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Price Change"), cancellationToken);
                     this.uploaderClient.ClickOnElement(By.LinkText("Price Change"));
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_77"), cancellationToken);
                     this.uploaderClient.WriteTextbox(By.Id("Input_77"), listing.ListPrice); // List Price
+
+                    if (autoSave)
+                    {
+                        this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
+                        Thread.Sleep(400);
+                    }
                 }
                 catch (Exception exception)
                 {
                     this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
                     return UploadResult.Failure;
-                }
-
-                if (autoSave)
-                {
-                    this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
-                    Thread.Sleep(400);
                 }
 
                 return UploadResult.Success;

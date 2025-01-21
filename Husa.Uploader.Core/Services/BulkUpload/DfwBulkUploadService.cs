@@ -8,7 +8,6 @@ namespace Husa.Uploader.Core.Services.BulkUpload
     using Husa.Uploader.Core.Interfaces.BulkUpload;
     using Husa.Uploader.Data.Entities;
     using Microsoft.Extensions.Logging;
-    using OpenQA.Selenium;
 
     public class DfwBulkUploadService : IDfwBulkUploadService
     {
@@ -76,9 +75,6 @@ namespace Husa.Uploader.Core.Services.BulkUpload
             {
                 await this.ProcessListing(bulkFullListing, cancellationToken, logInForCompany, autoSave);
                 logInForCompany = false;
-                Thread.Sleep(400);
-
-                this.uploaderClient.ClickOnElement(By.Id("m_lbSubmit"));
                 Thread.Sleep(400);
             }
 
