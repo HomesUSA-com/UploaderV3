@@ -985,7 +985,7 @@ namespace Husa.Uploader.Core.Services
             {
                 foreach (var process in Process.GetProcessesByName("chromedriver"))
                 {
-                    process.Kill();
+                    process.Kill(true);
                 }
             }
             catch
