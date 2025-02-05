@@ -1,4 +1,4 @@
-namespace Husa.Uploader.Core.Tests
+﻿namespace Husa.Uploader.Core.Tests
 {
     using System.Collections.ObjectModel;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
