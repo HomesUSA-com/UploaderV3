@@ -3,6 +3,7 @@
         <UserSecretsId>a8887609-deb9-4f36-9432-a1c0ab421045</UserSecretsId>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="Husa.Quicklister.Abor.Api.Client" Version="2.15.2" />
         <PackageReference Include="Serilog" Version="3.1.1" />
         <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
         <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
