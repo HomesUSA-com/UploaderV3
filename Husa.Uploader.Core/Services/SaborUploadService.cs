@@ -721,7 +721,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch
                 {
-                    Thread.Sleep(3000);
+                    break;
                 }
             }
         }
