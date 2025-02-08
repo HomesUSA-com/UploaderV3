@@ -713,7 +713,6 @@ namespace Husa.Uploader.Core.Services
                         if (!bool.Parse(nextButtonDisabled))
                         {
                             this.uploaderClient.ExecuteScript("return jQuery('ul.pagination > li:eq(" + nextButtonIndex + ") > a').click();", isScriptOptional: true);
-                            mlsFound = false;
                         }
                     }
 
