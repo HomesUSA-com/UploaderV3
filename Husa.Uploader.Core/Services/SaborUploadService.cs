@@ -701,7 +701,6 @@ namespace Husa.Uploader.Core.Services
                     var result = this.uploaderClient.ExecuteScript("return jQuery('.dctable-cell > a:contains(\"" + mlsnum + "\")').length;").ToString();
                     if (result != "0")
                     {
-                        mlsFound = true;
                         break;
                     }
 
