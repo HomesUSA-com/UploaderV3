@@ -701,7 +701,6 @@ namespace Husa.Uploader.Core.Services
                     var result = this.uploaderClient.ExecuteScript("return jQuery('.dctable-cell > a:contains(\"" + mlsnum + "\")').length;").ToString();
                     if (result != "0")
                     {
-                        mlsFound = true;
                         break;
                     }
 
@@ -713,7 +712,6 @@ namespace Husa.Uploader.Core.Services
                         if (!bool.Parse(nextButtonDisabled))
                         {
                             this.uploaderClient.ExecuteScript("return jQuery('ul.pagination > li:eq(" + nextButtonIndex + ") > a').click();", isScriptOptional: true);
-                            mlsFound = false;
                         }
                     }
 
@@ -721,7 +719,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch
                 {
-                    Thread.Sleep(3000);
+                    break;
                 }
             }
         }
