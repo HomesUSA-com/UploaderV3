@@ -67,7 +67,9 @@ namespace Husa.Uploader.Core.Services
             var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
 
             this.uploaderClient.NavigateToUrl(marketInfo.LogoutUrl);
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
+
+            this.uploaderClient.ExecuteScript(" jQuery('#ketch-consent-banner').find('button:first').click(); ");
 
             // Connect to the login page
             var loginButtonId = "login_btn";
@@ -80,7 +82,7 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(1000);
             this.uploaderClient.ClickOnElementById(loginButtonId);
 
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
             try
             {
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("RedirectingPopup"));
@@ -92,7 +94,7 @@ namespace Husa.Uploader.Core.Services
             }
 
             this.uploaderClient.NavigateToUrl(LandingPageURL);
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
 
             return LoginResult.Logged;
         }
