@@ -85,8 +85,8 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(2000);
             try
             {
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("RedirectingPopup"));
-                Thread.Sleep(4000);
+                this.uploaderClient.ClickOnElementById("back-to-nexturl");
+                Thread.Sleep(3000);
             }
             catch
             {
