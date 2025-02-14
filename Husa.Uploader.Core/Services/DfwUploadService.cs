@@ -27,7 +27,6 @@ namespace Husa.Uploader.Core.Services
         private const string LandingPageURL = "https://matrix.ntreis.net/";
         private const string EditUrl = "https://ntrdd.mlsmatrix.com/Matrix/Input";
         private const string NavigateToUrlNewListing = "https://ntrdd.mlsmatrix.com/Matrix/Input";
-        private const int ListDateSold = 4;
         private readonly IUploaderClient uploaderClient;
         private readonly IMediaRepository mediaRepository;
         private readonly IServiceSubscriptionClient serviceSubscriptionClient;
@@ -737,10 +736,10 @@ namespace Husa.Uploader.Core.Services
                             listDate = DateTime.Now;
                             break;
                         case "PND":
-                            listDate = DateTime.Now.AddDays(-2);
+                            listDate = DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
                             break;
                         case "SLD":
-                            listDate = DateTime.Now.AddDays(ListDateSold);
+                            listDate = DateTime.Now.AddDays((int)ListingDaysOffset.SOLD);
                             break;
                     }
 

@@ -664,11 +664,11 @@ namespace Husa.Uploader.Core.Services
                     DateTime listDate = DateTime.Now;
                     if (listing.ListStatus == "P" || listing.ListStatus == "PO")
                     {
-                        listDate = DateTime.Now.AddDays(-2);
+                        listDate = DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
                     }
                     else if (listing.ListStatus == "S")
                     {
-                        listDate = DateTime.Now.AddDays(-4);
+                        listDate = DateTime.Now.AddDays((int)ListingDaysOffset.SOLD);
                     }
 
                     this.uploaderClient.WriteTextbox(By.Id("Input_129"), listDate.ToShortDateString()); // List Date

@@ -1393,11 +1393,11 @@ namespace Husa.Uploader.Core.Services
                 var listDate = DateTime.Now;
                 if (listing.ListStatus.ToLower() == "pnd")
                 {
-                    listDate = listDate.AddDays(-2);
+                    listDate = listDate.AddDays((int)ListingDaysOffset.PENDING);
                 }
                 else if (listing.ListStatus.ToLower() == "sld")
                 {
-                    listDate = listDate.AddDays(-this.options.ListDateSold);
+                    listDate = listDate.AddDays((int)ListingDaysOffset.SOLD);
                 }
 
                 var now = listDate.ToString("MM/dd/yyyy");

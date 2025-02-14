@@ -880,13 +880,15 @@ namespace Husa.Uploader.Core.Services
                     case MarketStatuses.Active:
                         return DateTime.Now;
                     case MarketStatuses.Pending:
+                        return DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
                     case MarketStatuses.OptionPending:
+                        return DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
                     case MarketStatuses.PendingContinueToShow:
-                        return DateTime.Now.AddDays(-2);
+                        return DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
                     case MarketStatuses.Terminated:
                     case MarketStatuses.Expired:
                     case MarketStatuses.Sold:
-                        return DateTime.Now.AddDays(-4);
+                        return DateTime.Now.AddDays((int)ListingDaysOffset.SOLD);
                     default:
                         return null;
                 }
