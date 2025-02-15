@@ -1408,23 +1408,6 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WriteTextbox(By.Name("EXPDATE"), listing.ExpiredDate.Value.Date.ToString("MM/dd/yyyy"), isElementOptional: true); // Expiration Date
             }
 
-            ////if (this.uploaderClient.UploadInformation.IsNewListing)
-            ////{
-            ////    var listDate = DateTime.Now;
-            ////    if (listing.ListStatus.ToLower() == "pnd")
-            ////    {
-            ////        listDate = listDate.AddDays((int)ListingDaysOffset.PENDING);
-            ////    }
-            ////    else if (listing.ListStatus.ToLower() == "sld")
-            ////    {
-            ////        listDate = listDate.AddDays((int)ListingDaysOffset.SOLD);
-            ////    }
-
-            ////    var now = listDate.ToString("MM/dd/yyyy");
-            ////    this.uploaderClient.WriteTextbox(By.Name("LSTDATE"), now); // List Date
-            ////    this.uploaderClient.WriteTextbox(By.Name("EXPDATE"), listing.ExpiredDate.Value.Date.ToString("MM/dd/yyyy")); // Expiration Date
-            ////}
-
             this.FillListDate(listing);
 
             this.uploaderClient.WriteTextbox(By.Name("PROPSDTRMS"), listing.ProposedTerms); // Proposed Terms
