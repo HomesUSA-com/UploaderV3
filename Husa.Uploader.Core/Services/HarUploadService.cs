@@ -716,6 +716,36 @@ namespace Husa.Uploader.Core.Services
             throw new NotImplementedException();
         }
 
+        public void FillListDate(ResidentialListingRequest listing)
+        {
+            var listDate = GetNewListingDate(listing.ListStatus);
+            if (listDate.HasValue)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_183"), listDate.Value.ToShortDateString());  // List Date
+            }
+
+            DateTime? GetNewListingDate(string listStatus)
+            {
+                switch (listStatus.ToEnumFromEnumMember<MarketStatuses>())
+                {
+                    case MarketStatuses.Active:
+                        return DateTime.Now;
+                    case MarketStatuses.Pending:
+                        return DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
+                    case MarketStatuses.OptionPending:
+                        return DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
+                    case MarketStatuses.PendingContinueToShow:
+                        return DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
+                    case MarketStatuses.Terminated:
+                    case MarketStatuses.Expired:
+                    case MarketStatuses.Sold:
+                        return DateTime.Now.AddDays((int)ListingDaysOffset.SOLD);
+                    default:
+                        return null;
+                }
+            }
+        }
+
         private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
             var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.Houston, cancellationToken);
@@ -862,35 +892,10 @@ namespace Husa.Uploader.Core.Services
             {
                 if (listing.IsNewListing)
                 {
-                    var listDate = GetNewListingDate(listing.ListStatus);
-                    if (listDate.HasValue)
-                    {
-                        this.uploaderClient.WriteTextbox(By.Id("Input_183"), listDate.Value.ToShortDateString());  // List Date
-                    }
+                    this.FillListDate(listing);
 
                     var expirationDate = listing.ExpiredDate.HasValue ? listing.ExpiredDate.Value : (listing.SysCreatedOn ?? DateTime.Today).AddYears(1);
                     this.uploaderClient.WriteTextbox(By.Id("Input_184"), expirationDate.ToShortDateString()); // Expiration Date
-                }
-            }
-
-            DateTime? GetNewListingDate(string listStatus)
-            {
-                switch (listStatus.ToEnumFromEnumMember<MarketStatuses>())
-                {
-                    case MarketStatuses.Active:
-                        return DateTime.Now;
-                    case MarketStatuses.Pending:
-                        return DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
-                    case MarketStatuses.OptionPending:
-                        return DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
-                    case MarketStatuses.PendingContinueToShow:
-                        return DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
-                    case MarketStatuses.Terminated:
-                    case MarketStatuses.Expired:
-                    case MarketStatuses.Sold:
-                        return DateTime.Now.AddDays((int)ListingDaysOffset.SOLD);
-                    default:
-                        return null;
                 }
             }
 

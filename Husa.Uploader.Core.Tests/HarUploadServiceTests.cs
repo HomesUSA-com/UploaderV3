@@ -12,6 +12,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Quicklister.Har.Domain.Enums.Domain;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
+    using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.LotListing;
@@ -406,6 +407,41 @@ namespace Husa.Uploader.Core.Tests
 
             // Act && Assert
             await Assert.ThrowsAsync<NotImplementedException>(async () => await this.GetSut().UpdateLotPrice(lotListingRequest.Object));
+        }
+
+        [Theory]
+        [InlineData("ACT", ListingDaysOffset.ACTIVE)]
+        [InlineData("PEND", ListingDaysOffset.PENDING)]
+        [InlineData("OP", ListingDaysOffset.PENDING)]
+        [InlineData("PSHO", ListingDaysOffset.PENDING)]
+        [InlineData("CLOSD", ListingDaysOffset.SOLD)]
+        public void FillListDate_WhenCalledWithStatus_ShouldSetCorrectDate(string status, ListingDaysOffset offset)
+        {
+            // Arrange
+            var fixedDate = DateTime.Now;
+            var expectedDate = fixedDate.AddDays((int)offset).Date;
+
+            var listingSale = GetListingRequestDetailResponse(true);
+            var company = new Mock<CompanyDetail>().Object;
+            var harListing = new HarListingRequest(listingSale).CreateFromApiResponseDetail(company);
+            harListing.ListStatus = status;
+
+            this.uploaderClient
+                .Setup(x => x.WriteTextbox(
+                    It.IsAny<By>(),
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()));
+
+            var sut = this.GetSut();
+
+            // Act
+            sut.FillListDate(harListing);
+
+            // Assert
+            this.uploaderClient.Verify(x => x.WriteTextbox(By.Id("Input_183"), expectedDate.ToShortDateString(), false, false, false, false), Times.Once);
         }
 
         protected override LotListingRequest GetLotListingRequest(bool isNewListing = true)

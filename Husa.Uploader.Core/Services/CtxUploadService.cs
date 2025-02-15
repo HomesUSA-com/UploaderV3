@@ -553,6 +553,24 @@ namespace Husa.Uploader.Core.Services
             throw new NotImplementedException();
         }
 
+        public void FillListDate(ResidentialListingRequest listing)
+        {
+            if (listing.IsNewListing)
+            {
+                DateTime listDate = DateTime.Now;
+                if (listing.ListStatus == "P" || listing.ListStatus == "PO")
+                {
+                    listDate = DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
+                }
+                else if (listing.ListStatus == "S")
+                {
+                    listDate = DateTime.Now.AddDays((int)ListingDaysOffset.SOLD);
+                }
+
+                this.uploaderClient.WriteTextbox(By.Id("Input_129"), listDate.ToShortDateString()); // List Date
+            }
+        }
+
         private void NavigateToNewPropertyInput()
         {
             this.uploaderClient.NavigateToUrl("https://matrix.ctxmls.com/Matrix/Input");
@@ -659,20 +677,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetSelect(By.Id("Input_545"), listing.ListType, fieldLabel: "Listing Type", tabName);
                 this.uploaderClient.SetSelect(By.Id("Input_539"), listing.Category, "Property Sub Type", tabName); // Property Sub Type
 
-                if (listing.IsNewListing)
-                {
-                    DateTime listDate = DateTime.Now;
-                    if (listing.ListStatus == "P" || listing.ListStatus == "PO")
-                    {
-                        listDate = DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
-                    }
-                    else if (listing.ListStatus == "S")
-                    {
-                        listDate = DateTime.Now.AddDays((int)ListingDaysOffset.SOLD);
-                    }
-
-                    this.uploaderClient.WriteTextbox(By.Id("Input_129"), listDate.ToShortDateString()); // List Date
-                }
+                this.FillListDate(listing);
 
                 if (listing.ListDate != null)
                 {

@@ -4,5 +4,6 @@ namespace Husa.Uploader.Core.Services.Common
     {
         SOLD = -4,
         PENDING = -2,
+        ACTIVE = 0,
     }
 }

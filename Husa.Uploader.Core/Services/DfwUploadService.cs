@@ -608,6 +608,32 @@ namespace Husa.Uploader.Core.Services
             throw new NotImplementedException();
         }
 
+        public void FillListDate(DfwListingRequest listing)
+        {
+            if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
+            {
+                var listDate = DateTime.Now;
+                switch (listing.ListStatus)
+                {
+                    case "ACT":
+                    case "AC":
+                    case "AKO":
+                    case "AOC":
+                    case "CSN":
+                        listDate = DateTime.Now;
+                        break;
+                    case "PND":
+                        listDate = DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
+                        break;
+                    case "SLD":
+                        listDate = DateTime.Now.AddDays((int)ListingDaysOffset.SOLD);
+                        break;
+                }
+
+                this.uploaderClient.WriteTextbox(By.Id("Input_80"), listDate.Date.ToShortDateString()); // List Date
+            }
+        }
+
         private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
             var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.DFW, cancellationToken);
@@ -723,28 +749,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetSelect(By.Id("Input_381"), value: "NO"); // Will Subdivide
                 this.uploaderClient.SetMultipleCheckboxById("Input_228", listing.ConstructionDesc); // Construction Material
 
-                if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
-                {
-                    var listDate = DateTime.Now;
-                    switch (listing.ListStatus)
-                    {
-                        case "ACT":
-                        case "AC":
-                        case "AKO":
-                        case "AOC":
-                        case "CSN":
-                            listDate = DateTime.Now;
-                            break;
-                        case "PND":
-                            listDate = DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
-                            break;
-                        case "SLD":
-                            listDate = DateTime.Now.AddDays((int)ListingDaysOffset.SOLD);
-                            break;
-                    }
-
-                    this.uploaderClient.WriteTextbox(By.Id("Input_80"), listDate.Date.ToShortDateString()); // List Date
-                }
+                this.FillListDate(listing);
 
                 this.uploaderClient.WriteTextbox(By.Id("Input_81"), DateTime.Today.AddYears(1).ToShortDateString()); // Expire Date
                 this.uploaderClient.WriteTextbox(By.Id("Input_235"), string.IsNullOrWhiteSpace(listing.TaxID) ? "NA" : listing.TaxID); // Parcel Id
