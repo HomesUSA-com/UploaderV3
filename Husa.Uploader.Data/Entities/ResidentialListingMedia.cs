@@ -79,6 +79,11 @@ namespace Husa.Uploader.Data.Entities
                 return ManagedFileExtensions.Jpg;
             }
 
+            if (IsJpeg(data))
+            {
+                return ManagedFileExtensions.Jpeg;
+            }
+
             if (IsGif(data))
             {
                 return ManagedFileExtensions.Gif;
@@ -92,5 +97,7 @@ namespace Husa.Uploader.Data.Entities
         private static bool IsJpg(byte[] bytes) => bytes != null && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF;
 
         private static bool IsGif(byte[] bytes) => bytes != null && bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46;
+
+        private static bool IsJpeg(byte[] bytes) => bytes != null && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF && (bytes[3] == 0xE0 || bytes[3] == 0xE1 || bytes[3] == 0xE2 || bytes[3] == 0xE3 || bytes[3] == 0xE8 || bytes[3] == 0xE9 || bytes[3] == 0xEE);
     }
 }

@@ -65,18 +65,7 @@ namespace Husa.Uploader.Data.Repositories
                 count++;
             }
 
-            switch (market)
-            {
-                case MarketCode.CTX:
-                    this.SetMaxDimensions(1024, 768);
-                    break;
-                case MarketCode.SanAntonio:
-                    this.SetMaxDimensions(1280, 853);
-                    break;
-                default:
-                    this.SetMaxDimensions(2048, 1536);
-                    break;
-            }
+            this.SetMaxDimensions(1920, 1080); // HRP-7557
 
             return result.Where(m => !m.IsBrokenLink).OrderBy(m => m.Order);
         }
@@ -145,7 +134,7 @@ namespace Husa.Uploader.Data.Repositories
             }
         }
 
-        public void ConvertFilePngToJpg(string pathFile, string actualExt) => this.ConvertImageFormat(pathFile, actualExt, ManagedFileExtensions.Jpg);
+        public void ConvertFilePngToJpg(string pathFile, string actualExt) => this.ConvertImageFormat(pathFile, actualExt, ManagedFileExtensions.Jpeg);
 
         public async Task PrepareImage(ResidentialListingMedia image, MarketCode marketName, CancellationToken token, string folder)
         {
@@ -165,7 +154,7 @@ namespace Husa.Uploader.Data.Repositories
                 }
 
                 this.ConvertFilePngToJpg(filePath, image.Extension);
-                image.Extension = ManagedFileExtensions.Jpg;
+                image.Extension = ManagedFileExtensions.Jpeg;
 
                 image.PathOnDisk = $"{filePath}{image.Extension}";
                 var modifiedImage = this.ChangeSize(filePath, image);
@@ -198,7 +187,7 @@ namespace Husa.Uploader.Data.Repositories
 
             return (buffer[0], buffer[1], buffer[2], buffer[3]) switch
             {
-                (0xFF, 0xD8, 0xFF, _) => ".jpg",
+                (0xFF, 0xD8, 0xFF, _) => ".jpeg", // Changed to ".jpeg", supports .jpg under this format.
                 (0x89, 0x50, 0x4E, 0x47) => ".png",
                 (0x47, 0x49, 0x46, _) => ".gif",
                 (0x25, 0x50, 0x44, 0x46) => ".pdf",
@@ -266,23 +255,23 @@ namespace Husa.Uploader.Data.Repositories
 
                     using (var resizedImage = new Bitmap(newImage, newImageWidth, newImageHeight))
                     {
-                        resizedImage.Save($"{pathFile}{ManagedFileExtensions.Jpg}", ImageFormat.Jpeg);
-                        img.Extension = ManagedFileExtensions.Jpg;
-                        img.PathOnDisk = $"{pathFile}{ManagedFileExtensions.Jpg}";
+                        resizedImage.Save($"{pathFile}{ManagedFileExtensions.Jpeg}", ImageFormat.Jpeg);
+                        img.Extension = ManagedFileExtensions.Jpeg;
+                        img.PathOnDisk = $"{pathFile}{ManagedFileExtensions.Jpeg}";
                     }
                 }
             }
 
             GC.WaitForPendingFinalizers();
 
-            var destinationFilePath = $"{pathFile}{ManagedFileExtensions.Jpg}";
+            var destinationFilePath = $"{pathFile}{ManagedFileExtensions.Jpeg}";
             if (File.Exists(destinationFilePath))
             {
                 File.Delete(destinationFilePath);
             }
 
             File.Move(newFileName + img.Extension, destinationFilePath);
-            img.Extension = ManagedFileExtensions.Jpg;
+            img.Extension = ManagedFileExtensions.Jpeg;
             img.PathOnDisk = destinationFilePath;
 
             if (File.Exists(newFileName + img.Extension))
