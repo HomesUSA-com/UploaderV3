@@ -130,7 +130,7 @@ namespace Husa.Uploader.Core.Tests
             {
                 new()
                 {
-                    Caption = "test.jpg",
+                    Caption = "test.jpeg",
                 },
                 new()
                 {
@@ -186,7 +186,7 @@ namespace Husa.Uploader.Core.Tests
             var listingImages = new List<ResidentialListingMedia>();
             for (int i = 0; i < 5; i++)
             {
-                listingImages.Add(new ResidentialListingMedia { Caption = $"Image{i}.jpg", PathOnDisk = $"/path/to/image{i}.jpg" });
+                listingImages.Add(new ResidentialListingMedia { Caption = $"Image{i}.jpeg", PathOnDisk = $"/path/to/image{i}.jpeg" });
             }
 
             this.mediaRepository

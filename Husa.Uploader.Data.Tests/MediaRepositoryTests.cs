@@ -178,8 +178,8 @@ namespace Husa.Uploader.Data.Tests
                 await repository.PrepareImage(media, MarketCode.SanAntonio, default, folder);
 
                 // Assert
-                Assert.Equal(ManagedFileExtensions.Jpg, media.Extension);
-                Assert.Equal($"{filePath}{ManagedFileExtensions.Jpg}", media.PathOnDisk);
+                Assert.Equal(ManagedFileExtensions.Jpeg, media.Extension);
+                Assert.Equal($"{filePath}{ManagedFileExtensions.Jpeg}", media.PathOnDisk);
                 Assert.True(File.Exists(media.PathOnDisk));
             }
             finally
@@ -318,8 +318,8 @@ namespace Husa.Uploader.Data.Tests
                 await repository.PrepareImage(media, MarketCode.SanAntonio, default, folder);
 
                 // Assert
-                Assert.Equal(ManagedFileExtensions.Jpg, media.Extension);
-                Assert.True(File.Exists($"{filePath}{ManagedFileExtensions.Jpg}"), "Fallback mechanism did not produce the output file.");
+                Assert.Equal(ManagedFileExtensions.Jpeg, media.Extension);
+                Assert.True(File.Exists($"{filePath}{ManagedFileExtensions.Jpeg}"), "Fallback mechanism did not produce the output file.");
             }
             finally
             {
@@ -333,9 +333,9 @@ namespace Husa.Uploader.Data.Tests
                     File.Delete($"{filePath}.png");
                 }
 
-                if (File.Exists($"{filePath}{ManagedFileExtensions.Jpg}"))
+                if (File.Exists($"{filePath}{ManagedFileExtensions.Jpeg}"))
                 {
-                    File.Delete($"{filePath}{ManagedFileExtensions.Jpg}");
+                    File.Delete($"{filePath}{ManagedFileExtensions.Jpeg}");
                 }
             }
         }
@@ -345,6 +345,7 @@ namespace Husa.Uploader.Data.Tests
         [InlineData(".bmp", "image/bmp")]
         [InlineData(".gif", "image/gif")]
         [InlineData(".jpg", "image/jpeg")]
+        [InlineData(".jpeg", "image/jpeg")]
         [InlineData(".webp", "image/webp")]
         public async Task PrepareImage_HandlesDifferentFormats_ConvertsToJpg(string extension, string mimeType)
         {
@@ -364,7 +365,7 @@ namespace Husa.Uploader.Data.Tests
                     ".png" => ImageFormat.Png,
                     ".bmp" => ImageFormat.Bmp,
                     ".gif" => ImageFormat.Gif,
-                    ".jpg" => ImageFormat.Jpeg,
+                    ".jpg" or ".jpeg" => ImageFormat.Jpeg,
                     ".webp" => ImageFormat.Png,
                     _ => throw new NotSupportedException($"Format {extension} is not supported in test setup."),
                 };
@@ -406,8 +407,8 @@ namespace Husa.Uploader.Data.Tests
                 await repository.PrepareImage(media, MarketCode.SanAntonio, default, folder);
 
                 // Assert
-                Assert.Equal(ManagedFileExtensions.Jpg, media.Extension);
-                Assert.True(File.Exists($"{filePath}{ManagedFileExtensions.Jpg}"), $"Failed to generate JPG for format {extension}");
+                Assert.Equal(ManagedFileExtensions.Jpeg, media.Extension);
+                Assert.True(File.Exists($"{filePath}{ManagedFileExtensions.Jpeg}"), $"Failed to generate JPG for format {extension}");
             }
             finally
             {
@@ -416,9 +417,9 @@ namespace Husa.Uploader.Data.Tests
                     File.Delete(dummyFilePath);
                 }
 
-                if (File.Exists($"{filePath}{ManagedFileExtensions.Jpg}"))
+                if (File.Exists($"{filePath}{ManagedFileExtensions.Jpeg}"))
                 {
-                    File.Delete($"{filePath}{ManagedFileExtensions.Jpg}");
+                    File.Delete($"{filePath}{ManagedFileExtensions.Jpeg}");
                 }
             }
         }
