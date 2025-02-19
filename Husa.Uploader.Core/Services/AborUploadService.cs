@@ -281,7 +281,7 @@ namespace Husa.Uploader.Core.Services
 
                     this.uploaderClient.ScrollToTop();
                     this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
-                    this.UpdatePublicRemarksInRemarksTab(listing);
+                    this.UpdatePublicRemarksInRemarksTab(listing as AborListingRequest);
 
                     if (autoSave)
                     {
