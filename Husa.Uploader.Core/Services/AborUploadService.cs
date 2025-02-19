@@ -281,7 +281,7 @@ namespace Husa.Uploader.Core.Services
 
                     this.uploaderClient.ScrollToTop();
                     this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
-                    this.UpdatePublicRemarksInRemarksTab(listing);
+                    this.UpdatePublicRemarksInRemarksTab(listing as AborListingRequest);
 
                     if (autoSave)
                     {
@@ -1281,7 +1281,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_225", listing.YearBuiltDesc); // Year Built Description
         }
 
-        private void UpdatePublicRemarksInRemarksTab(ResidentialListingRequest listing)
+        private void UpdatePublicRemarksInRemarksTab(AborListingRequest listing)
         {
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_322"));
             var remarks = listing.GetPublicRemarks();
@@ -1290,7 +1290,7 @@ namespace Husa.Uploader.Core.Services
             var privateRemarks = $"{agentRemarks}. {privateRemarks2}";
             this.uploaderClient.WriteTextbox(By.Id("Input_321"), privateRemarks);
             this.uploaderClient.WriteTextbox(By.Id("Input_322"), remarks); // Internet / Remarks / Desc. of Property
-            this.uploaderClient.WriteTextbox(By.Id("Input_323"), privateRemarks2); // Syndication Remarks
+            this.uploaderClient.WriteTextbox(By.Id("Input_323"), remarks); // Syndication Remarks
         }
 
         private void SetLongitudeAndLatitudeValues(ResidentialListingRequest listing)
