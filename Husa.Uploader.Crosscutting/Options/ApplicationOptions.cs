@@ -37,5 +37,8 @@ namespace Husa.Uploader.Crosscutting.Options
 
         [Required]
         public FeatureFlags FeatureFlags { get; set; }
+
+        [Required]
+        public ShowingTimeSettings ShowingTime { get; set; }
     }
 }

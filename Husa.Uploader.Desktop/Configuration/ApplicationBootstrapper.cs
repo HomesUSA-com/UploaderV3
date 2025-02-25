@@ -197,6 +197,7 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<IHarBulkUploadService, HarBulkUploadService>();
             services.AddTransient<ICtxBulkUploadService, CtxBulkUploadService>();
             services.AddTransient<IAborBulkUploadService, AborBulkUploadService>();
+            services.AddTransient<IShowingTimeUploadService, ShowingTimeUploadService>();
 
             return services;
 
