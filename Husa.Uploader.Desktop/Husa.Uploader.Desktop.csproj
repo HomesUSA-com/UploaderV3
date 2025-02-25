@@ -90,11 +90,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Husa.Uploader.Core\Husa.Uploader.Core.csproj" />
-        <ProjectReference Include="..\Husa.Uploader.Data\Husa.Uploader.Data.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
         <Resource Include="Media\dark-logo.png">
             <CopyToOutputDirectory>Never</CopyToOutputDirectory>
         </Resource>
@@ -132,6 +127,11 @@
         <Content Include="ChromeForTesting\**\*">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Husa.Uploader.Core\Husa.Uploader.Core.csproj" />
+      <ProjectReference Include="..\Husa.Uploader.Data\Husa.Uploader.Data.csproj" />
     </ItemGroup>
 
 </Project>

@@ -78,6 +78,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 SysModifiedBy = this.listingDetailResponse.SysModifiedBy,
                 ExpiredDate = this.listingDetailResponse.ExpirationDate,
                 RemarksFormatFromCompany = company?.MlsInfo?.RemarksForCompletedHomes,
+                ShowingTime = this.listingDetailResponse.ShowingTime,
             };
 
             FillSalePropertyInfo(this.listingDetailResponse.SaleProperty.SalePropertyInfo);

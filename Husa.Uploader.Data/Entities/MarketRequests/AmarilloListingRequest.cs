@@ -124,6 +124,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 ExpiredDate = this.listingDetailResponse.ExpirationDate,
                 SellerBuyerCost = this.SellerBuyerCost,
                 RemarksFormatFromCompany = company?.MlsInfo?.RemarksForCompletedHomes,
+                ShowingTime = this.listingDetailResponse.ShowingTime,
             };
 
             FillSalePropertyInfo(this.listingDetailResponse.SaleProperty.SalePropertyInfo);

@@ -3,6 +3,7 @@ namespace Husa.Uploader.Data.Entities
     using System.Collections.Generic;
     using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Extensions.Api.Contracts.Models.ShowingTime;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities.MarketRequests;
@@ -883,6 +884,8 @@ namespace Husa.Uploader.Data.Entities
 
         public List<OpenHouseRequest> OpenHouse { get; set; }
 
+        public ShowingTimeFullInfo ShowingTime { get; set; }
+
         public abstract BuiltStatus BuiltStatus { get; }
 
         public abstract ResidentialListingRequest CreateFromApiResponse();
@@ -915,6 +918,7 @@ namespace Husa.Uploader.Data.Entities
                 WorkingBy = worker,
                 WorkingStatus = workingStatus,
                 WorkingSourceAction = workingSourceAction,
+                ShowingTime = this.ShowingTime,
             };
 
         public virtual string GetAgentRemarksMessage()

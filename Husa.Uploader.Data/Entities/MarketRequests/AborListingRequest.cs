@@ -91,6 +91,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 ExpectedActiveDate = DateTime.Now.ToString("MM/dd/yy"),
                 ExpiredDate = this.listingDetailResponse.ExpirationDate,
                 RemarksFormatFromCompany = company?.MlsInfo?.RemarksForCompletedHomes,
+                ShowingTime = this.listingDetailResponse.ShowingTime,
             };
 
             FillSalePropertyInfo(this.listingDetailResponse.SaleProperty.SalePropertyInfo);
