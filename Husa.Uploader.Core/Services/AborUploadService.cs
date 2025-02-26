@@ -164,6 +164,7 @@ namespace Husa.Uploader.Core.Services
                     {
                         this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
                         this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
+                        this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
                     }
 
                     listing.Longitude = newLongitude;
@@ -277,7 +278,7 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                    Thread.Sleep(1000);
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
 
                     this.uploaderClient.ScrollToTop();
                     this.uploaderClient.ClickOnElement(By.LinkText("General"));
@@ -327,9 +328,11 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
 
                     // Enter Manage Photos
                     this.uploaderClient.FindElementById("InputForm_nav-photos").Click();
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
                     Thread.Sleep(2000);
                     this.uploaderClient.FindElementById("InputForm_photos_actionsButton").Click();
                     this.uploaderClient.FindElementById("InputForm_photos_selectAll").Click();
@@ -590,7 +593,7 @@ namespace Husa.Uploader.Core.Services
                 this.NavigateToQuickEdit(listing.MLSNum);
 
                 this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                Thread.Sleep(1000);
+                this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
 
                 this.uploaderClient.ClickOnElementById("toc_InputForm_section_38"); // click in tab Listing Information
                 Thread.Sleep(400);
