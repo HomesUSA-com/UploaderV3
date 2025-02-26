@@ -383,8 +383,8 @@ namespace Husa.Uploader.Core.Services
 
                     Thread.Sleep(2000);
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(1)').click()");
+                    Thread.Sleep(2000);
                     this.uploaderClient.ExecuteScript("$('#accordionActionMenu > button:eq(1)').click()");
-                    Thread.Sleep(1000);
 
                     // Listing Information
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_77"));
@@ -432,6 +432,7 @@ namespace Husa.Uploader.Core.Services
 
                     Thread.Sleep(2000);
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(1)').click()");
+                    Thread.Sleep(2000);
                     string buttonText = GetButtonTextForStatus(listing.ListStatus);
                     this.uploaderClient.ExecuteScript($"$('button[data-mtx-track-prop-item=\"{buttonText}\"]').click()");
                     Thread.Sleep(1000);
@@ -726,6 +727,7 @@ namespace Husa.Uploader.Core.Services
 
                     Thread.Sleep(2000);
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(1)').click()");
+                    Thread.Sleep(2000);
                     string buttonText = GetButtonTextForStatus(listing.ListStatus);
                     this.uploaderClient.ExecuteScript($"$('button[data-mtx-track-prop-item=\"{buttonText}\"]').click()");
                     Thread.Sleep(1000);
