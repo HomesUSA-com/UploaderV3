@@ -1382,7 +1382,15 @@ namespace Husa.Uploader.Desktop.ViewModels
             try
             {
                 this.logger.LogInformation("Starting the requested upload operation");
+                var oldLatitude = this.SelectedListingRequest.FullListing.Latitude;
+                var oldLongitude = this.SelectedListingRequest.FullListing.Longitude;
                 await this.SetFullRequestInformation();
+                if (this.SelectedListingRequest.FullListing.UpdateGeocodes)
+                {
+                    this.selectedListingRequest.FullListing.Latitude = oldLatitude;
+                    this.selectedListingRequest.FullListing.Longitude = oldLongitude;
+                }
+
                 var listing = this.SelectedListingRequest.FullListing;
                 var token = this.cancellationTokenSource.Token;
                 return await Task.Run(() => action(listing, token));
