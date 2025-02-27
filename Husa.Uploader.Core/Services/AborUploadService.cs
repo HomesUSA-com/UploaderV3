@@ -1356,19 +1356,20 @@ namespace Husa.Uploader.Core.Services
 
         private void FillShowingInformation(ResidentialListingRequest listing)
         {
-            this.uploaderClient.ClickOnElement(By.LinkText("Showing"));
-            Thread.Sleep(100);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_301"));
+            this.uploaderClient.ClickOnElementById("toc_InputForm_section_38"); // Showing
 
-            this.uploaderClient.SetSelect(By.Id("Input_301"), "VCNT"); // Occupant
+            Thread.Sleep(100);
+
+            this.SetSelect("Input_301", "VCNT"); // Occupant
+            this.SetMultipleCheckboxById("Input_305", listing.Showing); // Showing Requirements
             this.uploaderClient.WriteTextbox(By.Name("Input_302"), listing.OwnerName); // Owner Name
-            this.uploaderClient.SetMultipleCheckboxById("Input_305", listing.Showing); // Showing Requirements
-            this.uploaderClient.SetSelect(By.Id("Input_651"), listing.LockboxTypeDesc ?? "None"); // Lockbox Type
+            this.SetSelect("Input_651", listing.LockboxTypeDesc ?? "None"); // Lockbox Type
             this.uploaderClient.WriteTextbox(By.Name("Input_312"), listing.LockboxLocDesc, true); // Lockbox Serial Number
-            this.uploaderClient.SetMultipleCheckboxById("Input_720", "OWN"); // Showing Contact Type
+            this.SetMultipleCheckboxById("Input_720", "OWN"); // Showing Contact Type
             this.uploaderClient.WriteTextbox(By.Name("Input_310"), listing.OwnerName);
             this.uploaderClient.WriteTextbox(By.Name("Input_311"), listing.AgentListApptPhone, true); // Showing Contact Phone
             this.uploaderClient.WriteTextbox(By.Name("Input_406"), listing.OtherPhone, true);  // Showing Service Phone
+            this.uploaderClient.WriteTextbox(By.Name("Input_308"), listing.LockboxTypeDesc == "SRMRKS" ? "See Remarks" : "NA", true);  // Lockbox Location
             this.uploaderClient.WriteTextbox(By.Name("Input_313"), listing.ShowingInstructions); // Showing Instructions
         }
 
