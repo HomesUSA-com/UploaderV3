@@ -511,15 +511,15 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WriteTextbox(By.Name("Input_85"), listing.ClosedDate.Value.ToShortDateString());
 
                 //// Property Condition at Closing
-                ////this.uploaderClient.SetSelect(By.Id("Input_524"), value: "EXCL");
-                this.uploaderClient.WriteTextbox(By.Name("Input_84"), listing.SoldPrice);
+                this.SetSelect(fieldName: "Input_524", value: "EXCL");
+                this.uploaderClient.WriteTextbox(By.Name("Input_84"), listing.SoldPrice?.ToString("F0"));
                 this.uploaderClient.WriteTextbox(By.Name("Input_526"), "None");
 
                 var hasContingency = listing.HasContingencyInfo.BoolToNumericBool();
                 this.uploaderClient.ExecuteScript($"$('button[data-mtrx-ternary=\"{hasContingency}\"]').click()");
                 this.uploaderClient.WriteTextbox(By.Name("Input_517"), listing.SellConcess);
                 ////Buyer Financing (max 3)
-                ////this.uploaderClient.SetMultipleCheckboxById("Input_525", listing.SoldTerms, "Buyer Financing", " ");
+                this.SetMultipleCheckboxById("Input_525", listing.SoldTerms);
                 this.uploaderClient.WriteTextbox(By.Name("Input_519"), "0");
                 HandleAgentInfoAsync(listing);
             }
