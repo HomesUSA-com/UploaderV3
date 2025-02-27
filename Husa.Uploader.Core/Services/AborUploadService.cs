@@ -934,12 +934,14 @@ namespace Husa.Uploader.Core.Services
         private void NavigateToNewPropertyInput()
         {
             this.uploaderClient.NavigateToUrl("https://matrix.abor.com/Matrix/AddEdit");
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Add new"));
-            this.uploaderClient.ClickOnElement(By.LinkText("Add new"));
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"));
-            this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.PartialLinkText("Start with a blank Property"));
-            this.uploaderClient.ClickOnElement(By.PartialLinkText("Start with a blank Property"));
+            this.uploaderClient.ClickOnElement(By.Id("Input_CmdAddBtn")); // "Add button"
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//button[contains(text(), 'Residential Input Form')]"));
+            this.uploaderClient.ClickOnElement(By.XPath("//button[contains(text(), 'Residential Input Form')]"));
+            Thread.Sleep(2000);
+            this.uploaderClient.ScrollDown(1000);
+            this.uploaderClient.ClickOnElement(By.Id("btnSkip")); // Skip to blank input form
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//input[@value='Start Blank Form']"));
+            this.uploaderClient.ClickOnElement(By.XPath("//input[@value='Start Blank Form']"));
 
             Thread.Sleep(1000);
         }
@@ -969,13 +971,113 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("InputForm_toc_nav"), cancellationToken);
         }
 
-        private void SetSelectOption(string fieldName, string values)
+        private void SetSelect(string fieldName, string value)
         {
-            //// cleaning the current value selected   td[name="tcol1"]
-            this.uploaderClient.ExecuteScript(script: $"$('div[id^=\"selected_{fieldName}\"] > span > span.badge > a').click()", true);
+            string inputXPath = $"//input[starts-with(@id, 'filter_{fieldName}')]";
+            var filterInputElement = this.uploaderClient.FindElement(By.XPath(inputXPath), shouldWait: true);
+            if (filterInputElement == null)
+            {
+                return;
+            }
 
-            object elementName = this.uploaderClient.ExecuteScript($" $('[id=\"selected_Input_179_48460\"]'); ");
-            this.uploaderClient.ExecuteScript(script: $"mtrxCheckboxListAsDropdown.DropdownItemClicked('{fieldName}', '{values}, {elementName.ToString()}', false);");
+            filterInputElement.Click();
+            Thread.Sleep(400);
+
+            string actualFilterId = filterInputElement.GetAttribute("id");
+            string baseId = actualFilterId.Replace("filter_", string.Empty);
+            string dropdownListId = "listbox_select_" + baseId;
+
+            var waitTime = 5000;
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            bool dropdownVisible = false;
+            while (stopwatch.ElapsedMilliseconds < waitTime)
+            {
+                var dropdown = this.uploaderClient.FindElement(By.Id(dropdownListId));
+                if (dropdown.Displayed)
+                {
+                    dropdownVisible = true;
+                    break;
+                }
+
+                Thread.Sleep(200);
+            }
+
+            if (!dropdownVisible)
+            {
+                return;
+            }
+
+            string optionXPath = $"//ul[@id='{dropdownListId}']/li[@data-mtrx-listbox-item-value='{value}']";
+            var optionElement = this.uploaderClient.FindElement(By.XPath(optionXPath), shouldWait: true);
+            if (optionElement == null)
+            {
+                return;
+            }
+
+            this.uploaderClient.ExecuteScript("arguments[0].scrollIntoView(true);", args: optionElement);
+            Thread.Sleep(200);
+
+            optionElement.Click();
+            this.uploaderClient.ScrollDown(250);
+        }
+
+        private void SetMultipleCheckboxById(string filterInputId, string csvValues)
+        {
+            if (string.IsNullOrWhiteSpace(csvValues))
+            {
+                return;
+            }
+
+            var filterInputElement = this.uploaderClient.FindElement(
+                By.XPath($"//input[starts-with(@id, 'filter_{filterInputId}')]"),
+                shouldWait: true);
+
+            if (filterInputElement == null)
+            {
+                return;
+            }
+
+            filterInputElement.Click();
+            Thread.Sleep(400);
+
+            string actualFilterId = filterInputElement.GetAttribute("id");
+
+            string baseId = actualFilterId.Replace("filter_", string.Empty);
+
+            string dropdownListId = "listbox_select_" + baseId;
+
+            var splitValues = csvValues.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var val in splitValues)
+            {
+                string trimmedValue = val.Trim();
+                try
+                {
+                    var liElement = this.uploaderClient.FindElement(
+                        By.XPath($"//ul[@id='{dropdownListId}']/li[starts-with(@data-mtrx-listbox-item-value, '{trimmedValue}')]"),
+                        shouldWait: true);
+                    if (liElement != null)
+                    {
+                        this.uploaderClient.ExecuteScript("arguments[0].scrollIntoView(true);", args: liElement);
+                        Thread.Sleep(200);
+
+                        var checkbox = liElement.FindElement(By.CssSelector("input[type='checkbox']"));
+                        if (!checkbox.Selected)
+                        {
+                            checkbox.Click();
+                            Thread.Sleep(200);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError($"Error to select value '{trimmedValue}': {ex.Message}");
+                }
+            }
+
+            Thread.Sleep(500);
+            this.uploaderClient.ExecuteScript("document.activeElement.blur();");
+            Thread.Sleep(500);
+            this.uploaderClient.ScrollDown(250);
         }
 
         private void FillListingInformation(ResidentialListingRequest listing, bool isNotPartialFill = true)
@@ -989,13 +1091,8 @@ namespace Husa.Uploader.Core.Services
 
             if (isNotPartialFill)
             {
-                this.SetSelectOption("Input_179_", "EA");
-                //// listbox_select_Input_179_18177
-                this.uploaderClient.SetSelect(By.Id("Input_179"), "EA"); // List Agreement Type
-                this.uploaderClient.SetSelect(By.Id("Input_341"), "LIMIT"); // Listing Service
-                this.uploaderClient.SetMultipleCheckboxById("Input_180", "STANDARD"); // Special Listing Conditions
-                this.uploaderClient.SetSelect(By.Id("Input_181"), "A"); // List Agreement Document
-
+                this.SetSelect("Input_179", "EA"); // List Agreement Type
+                this.SetSelect("Input_341", "LIMIT"); // Listing Service
                 if (listing.ListDate.HasValue)
                 {
                     this.uploaderClient.WriteTextbox(By.Name("Input_83"), listing.ListDate.Value.AddYears(1).ToShortDateString()); // Expiration Date
@@ -1004,39 +1101,44 @@ namespace Husa.Uploader.Core.Services
                 {
                     this.uploaderClient.WriteTextbox(By.Name("Input_83"), DateTime.Now.AddYears(1).ToShortDateString()); // Expiration Date
                 }
+
+                this.SetMultipleCheckboxById("Input_180", "STANDARD"); // Special Listing Conditions
+
+                this.SetSelect("Input_181", "A"); // List Agreement Document*/
             }
 
             // Location Information
-            this.uploaderClient.WriteTextbox(By.Name("Input_197"), listing.Legal); // Tax Legal Description
-            this.SetLongitudeAndLatitudeValues(listing);
-
             if (isNotPartialFill)
             {
                 this.uploaderClient.WriteTextbox(By.Name("Input_183"), listing.StreetNum); // Street #
                 this.uploaderClient.WriteTextbox(By.Name("Input_185"), listing.StreetName); // Street Name
-                this.uploaderClient.SetSelect(By.Id("Input_186"), listing.StreetType); // Street Type (NM)
+                this.SetSelect("Input_186", listing.StreetType); // Street Type (NM)
                 this.uploaderClient.WriteTextbox(By.Name("Input_190"), !string.IsNullOrEmpty(listing.UnitNum) ? listing.UnitNum : string.Empty); // Unit # (NM)
-                this.uploaderClient.SetSelect(By.Id("Input_191"), listing.County); // County
-                this.uploaderClient.SetSelectIfExist(By.Id("Input_192"), listing.CityCode); // City
-                this.uploaderClient.SetSelect(By.Id("Input_193"), listing.State); // State
-                this.uploaderClient.SetSelect(By.Id("Input_399"), "US"); // Country
+                this.SetSelect("Input_191", listing.County); // County
+                this.SetSelect("Input_192", listing.CityCode); // City
+                this.SetSelect("Input_193", listing.State); // State
+                this.SetSelect("Input_399", "US"); // Country
                 this.uploaderClient.WriteTextbox(By.Name("Input_194"), listing.Zip); // ZIP Code
                 this.uploaderClient.WriteTextbox(By.Name("Input_196"), listing.Subdivision); // Subdivision
                 this.uploaderClient.WriteTextbox(By.Name("Input_199"), listing.OtherFees); // Tax Lot
                 this.uploaderClient.WriteTextbox(By.Name("Input_201"), listing.TaxID); // Parcel ID
-                this.uploaderClient.SetSelect(By.Id("Input_202"), "0"); // Additional Parcels Y/N
-
-                this.uploaderClient.ScrollDown(1000);
-                this.uploaderClient.FillFieldSingleOption("Input_204", listing.MLSArea); // MLS Area
-                this.uploaderClient.SetMultipleCheckboxById("Input_343", listing.FemaFloodPlain); // FEMA 100 Yr Flood Plain
-                this.uploaderClient.SetSelect(By.Id("Input_206"), "N"); // ETJ
+                this.uploaderClient.ClickOnElement(By.CssSelector("button[data-mtx-track-prop-val=\"false\"]")); // Additional Parcels Y/N
+                Thread.Sleep(800);
+                this.uploaderClient.ScrollDown(400);
+                this.SetSelect("Input_204", listing.MLSArea); // MLS Area
+                this.SetMultipleCheckboxById("Input_343", listing.FemaFloodPlain); // FEMA 100 Yr Flood Plain
+                this.SetSelect("Input_206", "N"); // ETJ
             }
 
+            this.uploaderClient.WriteTextbox(By.Name("Input_197"), listing.Legal); // Tax Legal Description
+
             // School Information
-            this.uploaderClient.SetSelectIfExist(By.Id("Input_207"), listing.SchoolDistrict); // School District
-            this.uploaderClient.SetSelectIfExist(By.Id("Input_209"), listing.SchoolName1); // School District/Elementary A
-            this.uploaderClient.SetSelectIfExist(By.Id("Input_210"), listing.SchoolName2); // School District/Middle / Intermediate School
-            this.uploaderClient.SetSelectIfExist(By.Id("Input_211"), listing.HighSchool); // School District/9 Grade / High School
+            Thread.Sleep(3000);
+            this.uploaderClient.ScrollDown(1000);
+            this.SetSelect("Input_207", listing.SchoolDistrict); // School District
+            this.SetSelect("Input_209", listing.SchoolName1); // School District/Elementary A
+            this.SetSelect("Input_210", listing.SchoolName2); // School District/Middle / Intermediate School
+            this.SetSelect("Input_211", listing.HighSchool); // School District/9 Grade / High School
             this.uploaderClient.WriteTextbox(By.Name("Input_212"), listing.SchoolName4); // Elementary Other
             this.uploaderClient.WriteTextbox(By.Name("Input_213"), listing.SchoolName5); // Middle or Junior Other
             this.uploaderClient.WriteTextbox(By.Name("Input_214"), listing.SchoolName6); // High School Other
