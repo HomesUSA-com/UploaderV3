@@ -178,7 +178,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillListingInformation(listing);
                     this.FillGeneralInformation(listing);
                     this.FillAdditionalInformation(listing as AborListingRequest);
-                    this.FillRoomInformation(listing);
+                    ////this.FillRoomInformation(listing);
                     this.FillDocumentsAndUtilities(listing as AborListingRequest);
                     this.FillGreenEnergyInformation();
                     this.FillFinancialInformation(listing as AborListingRequest);
@@ -1165,29 +1165,23 @@ namespace Husa.Uploader.Core.Services
 
         private void FillDocumentsAndUtilities(AborListingRequest listing)
         {
-            string tabName = "Documents & Utilities";
-            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
+            this.uploaderClient.ClickOnElementById("toc_InputForm_section_36"); // Documents and Utilities
 
-            this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // click in tab DocumentsAndUtilities
-            Thread.Sleep(100);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_271"));
-            this.uploaderClient.SetMultipleCheckboxById("Input_271", listing.Disclosures, "Disclosures", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_272", listing.Documents, "Documents Available", tabName);
-            this.uploaderClient.ScrollToTop();
-            this.uploaderClient.SetMultipleCheckboxById("Input_273", listing.HeatSystemDesc, "Heating", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_274", listing.CoolSystemDesc, "Cooling", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_275", listing.GreenWaterConservation, "Water Source", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_276", listing.WaterDesc, "Sewer", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_278", listing.UtilitiesDesc, "Utilities", tabName);
+            this.SetMultipleCheckboxById("Input_271", listing.Disclosures); // Disclosures
+            this.SetMultipleCheckboxById("Input_278", listing.UtilitiesDesc); // utilities
+            this.SetMultipleCheckboxById("Input_272", listing.Documents); // Documents Available
+            this.SetMultipleCheckboxById("Input_273", listing.HeatSystemDesc); // Heating
+            this.SetMultipleCheckboxById("Input_274", listing.CoolSystemDesc); // Cooling
+            this.SetMultipleCheckboxById("Input_275", listing.GreenWaterConservation); // Water Source
+            this.SetMultipleCheckboxById("Input_276", listing.WaterDesc); // Sewer
         }
 
         private void FillGreenEnergyInformation()
         {
-            this.uploaderClient.ClickOnElement(By.LinkText("Green Energy"));
+            this.uploaderClient.ClickOnElementById("toc_InputForm_section_110"); // Green Energy
             Thread.Sleep(100);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_280"));
-            this.uploaderClient.SetMultipleCheckboxById("Input_280", "NONE"); // Green Energy Efficient
-            this.uploaderClient.SetMultipleCheckboxById("Input_281", "None"); // Green Sustainability
+            this.SetMultipleCheckboxById("Input_280", "NONE"); // Green Energy Efficient
+            this.SetMultipleCheckboxById("Input_281", "None"); // Green Sustainability
         }
 
         private void FillGeneralInformation(ResidentialListingRequest listing, bool isNotPartialFill = true)
@@ -1245,48 +1239,36 @@ namespace Husa.Uploader.Core.Services
 
         private void FillAdditionalInformation(AborListingRequest listing)
         {
-            var tabName = "Additional";
             const string masterBedroom = "MSTRBED";
             const string mainLevelRoom = "MAIN";
-            this.uploaderClient.ClickOnElement(By.LinkText(tabName));
-            Thread.Sleep(800);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
+            this.uploaderClient.ClickOnElement(By.XPath("//li[@id='toc_InputForm_section_11']")); // Tab Aditional
             var hasPrimaryBedroomOnMain = listing.Rooms.Exists(room => room.RoomType == masterBedroom && room.Level == mainLevelRoom);
             if (hasPrimaryBedroomOnMain)
             {
                 listing.InteriorDesc = "MSTDW," + listing.InteriorDesc;
             }
 
-            this.uploaderClient.SetMultipleCheckboxById("Input_257", listing.InteriorDesc, "Interior Features", tabName); // Interior Features (12)
-            this.uploaderClient.ScrollToTop();
-            this.uploaderClient.SetMultipleCheckboxById("Input_264", listing.ExteriorDesc, "Exterior Features", tabName); // Exterior Features (12)
-            this.uploaderClient.ScrollToTop();
-            this.uploaderClient.SetMultipleCheckboxById("Input_256", listing.AppliancesDesc, "Appliances / Equipment", tabName); // Appliances / Equipment (12)
-            this.uploaderClient.ScrollToTop();
-            this.uploaderClient.SetMultipleCheckboxById("Input_267", listing.WindowCoverings, "Window Features", tabName); // Window Features
-            this.uploaderClient.SetMultipleCheckboxById("Input_266", listing.SecurityDesc, "Security Features", tabName); // Security Features
-            this.uploaderClient.ScrollDown(200);
-            this.uploaderClient.SetMultipleCheckboxById("Input_258", "None", "Accessibility Features", tabName); // Accessibility Features
-            this.uploaderClient.SetMultipleCheckboxById("Input_265", listing.PatioAndPorchFeatures, "Patio and Porch Features", tabName); // Patio and Porch Features
-            this.uploaderClient.SetMultipleCheckboxById("Input_255", listing.LaundryLocDesc, "Laundry Location", tabName); // Laundry Location (3)
-            this.uploaderClient.SetMultipleCheckboxById("Input_262", "None", "Private Pool Features (On Property)", tabName); // Private Pool Features (On Property)
+            this.SetMultipleCheckboxById("Input_257", listing.InteriorDesc); // Interior Features (12)
+            this.SetMultipleCheckboxById("Input_265", listing.PatioAndPorchFeatures); // Patio and Porch Features
             this.uploaderClient.WriteTextbox(By.Name("Input_259"), listing.NumberFireplaces); // # of Fireplaces
-            this.uploaderClient.SetMultipleCheckboxById("Input_249", "None", "Horse Amenities", tabName); // Horse Amenities
-            this.uploaderClient.SetMultipleCheckboxById("Input_260", listing.FireplaceDesc, "Fireplace Description", tabName); // Fireplace Description (3)
-            this.uploaderClient.SetMultipleCheckboxById("Input_261", listing.FenceDesc, "Fencing", tabName); // Fencing (4)
-
-            this.uploaderClient.ScrollToTop();
-            this.uploaderClient.ScrollDown(200);
-            this.uploaderClient.SetMultipleCheckboxById("Input_269", "NONE", "Other Structures", tabName); // Other Structures
-            this.uploaderClient.SetMultipleCheckboxById("Input_251", listing.GuestAccommodationsDesc, "Guest Accommodations", tabName); // Guest Accommodations
-
+            this.SetMultipleCheckboxById("Input_260", listing.FireplaceDesc); // Fireplace Description (3)
+            this.SetMultipleCheckboxById("Input_264", listing.ExteriorDesc); // Exterior Features (12)
+            this.SetMultipleCheckboxById("Input_258", "None"); // Accessibility Features
+            this.SetMultipleCheckboxById("Input_249", "None"); // Horse Amenities
+            this.SetMultipleCheckboxById("Input_269", "NONE"); // Other Structures
+            this.SetMultipleCheckboxById("Input_256", listing.AppliancesDesc); // Appliances / Equipment (12)
+            this.SetMultipleCheckboxById("Input_262", "None"); // Private Pool Features (On Property)
+            this.SetMultipleCheckboxById("Input_251", listing.GuestAccommodationsDesc); // Guest Accommodations
+            this.SetMultipleCheckboxById("Input_267", listing.WindowCoverings); // Window Features
+            this.SetMultipleCheckboxById("Input_266", listing.SecurityDesc); // Security Features
+            this.SetMultipleCheckboxById("Input_255", listing.LaundryLocDesc); // Laundry Location (3)
+            this.SetMultipleCheckboxById("Input_261", listing.FenceDesc); // Fencing (4)
             this.uploaderClient.WriteTextbox(By.Name("Input_252"), listing.NumGuestBeds); // # Guest Beds
             this.uploaderClient.WriteTextbox(By.Name("Input_253"), listing.NumGuestFullBaths); // # Guest Full Baths
             this.uploaderClient.WriteTextbox(By.Name("Input_254"), listing.NumGuestHalfBaths); // # Guest Half Baths
 
-            this.uploaderClient.ScrollToTop();
             this.uploaderClient.ScrollDown(400);
-            this.uploaderClient.SetMultipleCheckboxById("Input_268", listing.CommonFeatures, "Community Features", tabName); // Community Features
+            this.SetMultipleCheckboxById("Input_268", listing.CommonFeatures); // Community Features
         }
 
         private void FillRoomInformation(ResidentialListingRequest listing)
