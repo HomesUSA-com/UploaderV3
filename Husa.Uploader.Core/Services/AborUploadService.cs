@@ -1323,34 +1323,35 @@ namespace Husa.Uploader.Core.Services
 
         private void FillFinancialInformation(AborListingRequest listing)
         {
-            this.uploaderClient.ClickOnElement(By.LinkText("Financial"));
-            Thread.Sleep(200);
-            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
-
-            this.uploaderClient.SetSelect(By.Id("Input_282"), listing.HasHoa ? "1" : "0"); // Association YN
+            this.uploaderClient.ClickOnElementById("toc_InputForm_section_37"); // Financial
+            string valueToSelect = listing.HasHoa ? "true" : "false";
+            this.uploaderClient.ClickOnElement(By.CssSelector($"button[data-mtx-track-prop-id=\"Input_282\"][data-mtx-track-prop-val=\"{valueToSelect}\"]")); // Association YN
 
             if (listing.HasHoa)
             {
                 this.uploaderClient.WriteTextbox(By.Name("Input_283"), listing.AssocName, true); // HOA Name
                 this.uploaderClient.WriteTextbox(By.Name("Input_285"), listing.AssocFee, true); // HOA Fee
-                this.uploaderClient.SetSelect(By.Id("Input_286"), listing.HOA, true); // Association Requirement
-                this.uploaderClient.SetSelect(By.Id("Input_287"), listing.AssocFeeFrequency, true); // HOA Frequency
+                this.SetSelect("Input_286", listing.HOA); // Association Requirement
+                this.SetSelect("Input_287", listing.AssocFeeFrequency); // HOA Frequency
                 this.uploaderClient.WriteTextbox(By.Name("Input_288"), listing.AssocTransferFee, true); // HOA Transfer Fee
-                this.uploaderClient.SetMultipleCheckboxById("Input_290", listing.AssocFeeIncludes); // HOA Fees Include (5)
+                this.SetMultipleCheckboxById("Input_290", listing.AssocFeeIncludes); // HOA Fees Include (5)
             }
 
-            this.uploaderClient.SetMultipleCheckboxById("Input_291", listing.FinancingProposed); // Acceptable Financing (5)
+            this.SetMultipleCheckboxById("Input_291", listing.FinancingProposed); // Acceptable Financing (5)
             this.uploaderClient.WriteTextbox(By.Name("Input_296"), "0"); // Estimated Taxes ($)
             this.uploaderClient.WriteTextbox(By.Name("Input_297"), listing.TaxYear); // Tax Year
 
-            this.uploaderClient.WriteTextbox(By.Name("Input_294"), listing.TaxRate); // Tax Rate
             this.uploaderClient.WriteTextbox(By.Name("Input_293"), "0", true); // Tax Assessed Value
-            this.uploaderClient.SetMultipleCheckboxById("Input_295", "None"); // Buyer Incentive
-            this.uploaderClient.SetMultipleCheckboxById("Input_298", listing.ExemptionsDesc); // Tax Exemptions
+            this.uploaderClient.WriteTextbox(By.Name("Input_294"), listing.TaxRate); // Tax Rate
             this.uploaderClient.WriteTextbox(By.Name("Input_728"), listing.TitleCo); // Preferred Title Company
-            this.uploaderClient.ScrollDown(400);
-            this.uploaderClient.SetMultipleCheckboxById("Input_299", "Funding"); // Possession
+            this.SetMultipleCheckboxById("Input_295", "None"); // Buyer Incentive
+            this.SetMultipleCheckboxById("Input_298", listing.ExemptionsDesc); // Tax Exemptions
+            this.SetMultipleCheckboxById("Input_299", "Funding"); // Possession
             this.uploaderClient.SetSelect(By.Id("Input_779"), (bool)listing.HasAgentBonus ? "1" : "0"); // Seller Contributions YN
+
+            string hasSellerContributionsYN = (bool)listing.HasAgentBonus ? "true" : "false";
+            this.uploaderClient.ClickOnElement(By.CssSelector($"button[data-mtx-track-prop-id=\"Input_779\"][data-mtx-track-prop-val=\"{hasSellerContributionsYN}\"]"));
+            this.uploaderClient.ClickOnElement(By.CssSelector($"button[data-mtx-track-prop-id=\"Input_353\"][data-mtx-track-prop-val=\"false\"]"));
         }
 
         private void FillShowingInformation(ResidentialListingRequest listing)
