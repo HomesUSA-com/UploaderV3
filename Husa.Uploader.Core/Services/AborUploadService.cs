@@ -1178,11 +1178,10 @@ namespace Husa.Uploader.Core.Services
 
         private void FillGreenEnergyInformation()
         {
-            this.uploaderClient.ClickOnElement(By.LinkText("Green Energy"));
+            this.uploaderClient.ClickOnElementById("toc_InputForm_section_110"); // Green Energy
             Thread.Sleep(100);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_280"));
-            this.uploaderClient.SetMultipleCheckboxById("Input_280", "NONE"); // Green Energy Efficient
-            this.uploaderClient.SetMultipleCheckboxById("Input_281", "None"); // Green Sustainability
+            this.SetMultipleCheckboxById("Input_280", "NONE"); // Green Energy Efficient
+            this.SetMultipleCheckboxById("Input_281", "None"); // Green Sustainability
         }
 
         private void FillGeneralInformation(ResidentialListingRequest listing, bool isNotPartialFill = true)
