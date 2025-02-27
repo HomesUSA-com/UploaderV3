@@ -125,7 +125,13 @@ namespace Husa.Uploader.Core.Services
                 }
                 else
                 {
-                    this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
+                    this.NavigateToQuickEdit(listing.MLSNum);
+
+                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+
+                    this.uploaderClient.ClickOnElementById("toc_InputForm_section_9"); // click in tab Listing Information
+                    Thread.Sleep(400);
                 }
 
                 return UploadResult.Success;
@@ -636,7 +642,13 @@ namespace Husa.Uploader.Core.Services
 
                 try
                 {
-                    this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
+                    this.NavigateToQuickEdit(listing.MLSNum);
+
+                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+
+                    this.uploaderClient.ClickOnElementById("toc_InputForm_section_9"); // click in tab Listing Information
+                    Thread.Sleep(400);
                 }
                 catch (Exception exception)
                 {
