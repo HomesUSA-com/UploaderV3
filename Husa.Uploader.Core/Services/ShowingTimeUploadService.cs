@@ -3,6 +3,7 @@ namespace Husa.Uploader.Core.Services
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Extensions.Api.Contracts.Models.ShowingTime;
@@ -10,25 +11,24 @@ namespace Husa.Uploader.Core.Services
     using Husa.Quicklister.Extensions.Domain.Enums.ShowingTime;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Crosscutting.Enums;
-    using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
     using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Options;
     using OpenQA.Selenium;
 
     public class ShowingTimeUploadService : IShowingTimeUploadService
     {
         private const string UrlBase = "https://apptcenter.showingtime.com";
-        private readonly ShowingTimeSettings settings;
         private readonly IUploaderClient uploaderClient;
         private readonly ILogger<ShowingTimeUploadService> logger;
+        private readonly IServiceSubscriptionClient serviceSubscriptionClient;
 
         public ShowingTimeUploadService(
             IUploaderClient uploaderClient,
-            IOptions<ApplicationOptions> options,
+            IServiceSubscriptionClient serviceSubscriptionClient,
             ILogger<ShowingTimeUploadService> logger)
         {
-            this.settings = options?.Value.ShowingTime ?? throw new ArgumentNullException(nameof(options));
+            this.serviceSubscriptionClient = serviceSubscriptionClient ??
+                throw new ArgumentNullException(nameof(serviceSubscriptionClient));
             this.uploaderClient = uploaderClient ?? throw new ArgumentNullException(nameof(uploaderClient));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -41,15 +41,16 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.CloseDriver();
         }
 
-        public Task<LoginResult> Login(CancellationToken cancellationToken = default) => Task.Factory.StartNew(
+        public Task<LoginResult> Login(Guid companyId, CancellationToken cancellationToken = default) => Task.Factory.StartNew(
             () =>
         {
             this.logger.LogDebug("Starting login");
+            var credentials = this.serviceSubscriptionClient.Company.GetShowingTimeInfo(companyId, cancellationToken).Result;
             this.uploaderClient.NavigateToUrl(this.AbsoluteUrl("Account/Login"));
             this.uploaderClient.WaitForElementToBeVisible(By.ClassName("ui-accordion-header"), TimeSpan.FromMilliseconds(300));
-            this.uploaderClient.WriteTextbox(By.Id("UserName"), this.settings.Credentials.Username);
-            this.uploaderClient.WriteTextbox(By.Id("Password"), this.settings.Credentials.Password);
-            Thread.Sleep(200);
+            this.uploaderClient.WriteTextbox(By.Id("UserName"), credentials.Username);
+            this.uploaderClient.WriteTextbox(By.Id("Password"), credentials.Password);
+            Task.Delay(200).Wait();
             this.uploaderClient.ClickOnElement(By.XPath("//button[@class='button login']"));
             this.uploaderClient.ClickOnElement(By.XPath("//div[@class='ui-dialog-buttonset']/button[2]"));
             this.logger.LogDebug("login");
@@ -435,7 +436,7 @@ namespace Husa.Uploader.Core.Services
         public async Task<UploadResult> Upload(ResidentialListingRequest request, bool logIn = true, CancellationToken cancellationToken = default)
         {
             if (request?.ShowingTime is null || request.MLSNum is null
-                || (logIn && (await this.Login(cancellationToken)) != LoginResult.Logged)
+                || (logIn && (await this.Login(request.CompanyId, cancellationToken)) != LoginResult.Logged)
                 || !await this.FindListing(request.MLSNum, cancellationToken))
             {
                 return UploadResult.Failure;
