@@ -345,7 +345,9 @@ namespace Husa.Uploader.Core.Services
                     Thread.Sleep(1000);
                     this.uploaderClient.FindElementById("InputForm_photos_actionsButton").Click();
                     this.uploaderClient.FindElementById("InputForm_photos_deleteSelected").Click();
-                    this.uploaderClient.AcceptAlertWindow();
+                    this.uploaderClient.AcceptAlertWindow(isElementOptional: true);
+                    Thread.Sleep(2000);
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputForm_photos_addPhotoBtn"));
                     this.uploaderClient.FindElementById("InputForm_photos_addPhotoBtn").Click();
 
                     await this.ProcessImages(listing, cancellationToken);
@@ -1526,6 +1528,7 @@ namespace Husa.Uploader.Core.Services
                 imageRow++;
 
                 this.uploaderClient.ScrollDown(200);
+                Thread.Sleep(400);
             }
         }
 
