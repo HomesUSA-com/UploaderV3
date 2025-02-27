@@ -10,7 +10,7 @@ namespace Husa.Uploader.Core.Interfaces
     public interface IShowingTimeUploadService
     {
         MarketCode CurrentMarket { get; }
-        Task<LoginResult> Login(CancellationToken cancellationToken = default);
+        Task<LoginResult> Login(Guid companyId, CancellationToken cancellationToken = default);
         Task<bool> FindListing(string mlsNumber, CancellationToken cancellationToken = default);
         Task NavigateToListing(string listingId, CancellationToken cancellationToken = default);
         Task SetAppointmentCenter(CancellationToken cancellationToken);
