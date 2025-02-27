@@ -178,7 +178,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillListingInformation(listing);
                     this.FillGeneralInformation(listing);
                     this.FillAdditionalInformation(listing as AborListingRequest);
-                    this.FillRoomInformation(listing);
+                    ////this.FillRoomInformation(listing);
                     this.FillDocumentsAndUtilities(listing as AborListingRequest);
                     this.FillGreenEnergyInformation();
                     this.FillFinancialInformation(listing as AborListingRequest);
@@ -1165,20 +1165,15 @@ namespace Husa.Uploader.Core.Services
 
         private void FillDocumentsAndUtilities(AborListingRequest listing)
         {
-            string tabName = "Documents & Utilities";
-            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
+            this.uploaderClient.ClickOnElementById("toc_InputForm_section_36"); // Documents and Utilities
 
-            this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // click in tab DocumentsAndUtilities
-            Thread.Sleep(100);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_271"));
-            this.uploaderClient.SetMultipleCheckboxById("Input_271", listing.Disclosures, "Disclosures", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_272", listing.Documents, "Documents Available", tabName);
-            this.uploaderClient.ScrollToTop();
-            this.uploaderClient.SetMultipleCheckboxById("Input_273", listing.HeatSystemDesc, "Heating", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_274", listing.CoolSystemDesc, "Cooling", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_275", listing.GreenWaterConservation, "Water Source", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_276", listing.WaterDesc, "Sewer", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_278", listing.UtilitiesDesc, "Utilities", tabName);
+            this.SetMultipleCheckboxById("Input_271", listing.Disclosures); // Disclosures
+            this.SetMultipleCheckboxById("Input_278", listing.UtilitiesDesc); // utilities
+            this.SetMultipleCheckboxById("Input_272", listing.Documents); // Documents Available
+            this.SetMultipleCheckboxById("Input_273", listing.HeatSystemDesc); // Heating
+            this.SetMultipleCheckboxById("Input_274", listing.CoolSystemDesc); // Cooling
+            this.SetMultipleCheckboxById("Input_275", listing.GreenWaterConservation); // Water Source
+            this.SetMultipleCheckboxById("Input_276", listing.WaterDesc); // Sewer
         }
 
         private void FillGreenEnergyInformation()
