@@ -169,7 +169,7 @@ namespace Husa.Uploader.Core.Services
 
                     listing.Longitude = newLongitude;
                     listing.Latitude = newLatitude;
-                    ////this.FillListingInformation(listing);
+                    this.FillListingInformation(listing);
                     this.FillGeneralInformation(listing);
                     this.FillAdditionalInformation(listing as AborListingRequest);
                     this.FillRoomInformation(listing);
