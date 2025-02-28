@@ -1888,7 +1888,7 @@ namespace Husa.Uploader.Core.Services
 
         private void UpdateLotPublicRemarksInRemarksTab(LotListingRequest listing)
         {
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_322"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_322"));
             var remarks = listing.GetPublicRemarks();
             this.uploaderClient.WriteTextbox(By.Name("Input_321"), listing.GetAgentRemarksMessage());
             this.uploaderClient.WriteTextbox(By.Name("Input_322"), remarks); // Internet / Remarks / Desc. of Property
