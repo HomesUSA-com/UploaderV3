@@ -1078,31 +1078,34 @@ namespace Husa.Uploader.Core.Services
             }
 
             Thread.Sleep(400);
-            var splitValues = csvValues.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var val in splitValues)
+            if (csvValues != null)
             {
-                string trimmedValue = val.Trim();
-                try
+                var splitValues = csvValues.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var val in splitValues)
                 {
-                    var liElement = this.uploaderClient.FindElement(
-                        By.XPath($"//ul[@id='{dropdownListId}']/li[starts-with(@data-mtrx-listbox-item-value, '{trimmedValue}')]"),
-                        shouldWait: true);
-                    if (liElement != null)
+                    string trimmedValue = val.Trim();
+                    try
                     {
-                        this.uploaderClient.ExecuteScript("arguments[0].scrollIntoView(true);", args: liElement);
-                        Thread.Sleep(200);
-
-                        var checkbox = liElement.FindElement(By.CssSelector("input[type='checkbox']"));
-                        if (!checkbox.Selected)
+                        var liElement = this.uploaderClient.FindElement(
+                            By.XPath($"//ul[@id='{dropdownListId}']/li[starts-with(@data-mtrx-listbox-item-value, '{trimmedValue}')]"),
+                            shouldWait: true);
+                        if (liElement != null)
                         {
-                            checkbox.Click();
+                            this.uploaderClient.ExecuteScript("arguments[0].scrollIntoView(true);", args: liElement);
                             Thread.Sleep(200);
+
+                            var checkbox = liElement.FindElement(By.CssSelector("input[type='checkbox']"));
+                            if (!checkbox.Selected)
+                            {
+                                checkbox.Click();
+                                Thread.Sleep(200);
+                            }
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    this.logger.LogError("Error to select value {trimmedValue}: {ex}", trimmedValue, ex.Message);
+                    catch (Exception ex)
+                    {
+                        this.logger.LogError("Error to select value {trimmedValue}: {ex}", trimmedValue, ex.Message);
+                    }
                 }
             }
 
