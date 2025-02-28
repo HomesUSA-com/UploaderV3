@@ -1488,9 +1488,9 @@ namespace Husa.Uploader.Core.Services
             string agentRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
             string privateRemarks2 = listing.AgentPrivateRemarks2 ?? string.Empty;
             var privateRemarks = $"{agentRemarks}. {privateRemarks2}";
-            this.uploaderClient.WriteTextbox(By.Name("Input_321"), privateRemarks);
-            this.uploaderClient.WriteTextbox(By.Name("Input_322"), remarks); // Internet / Remarks / Desc. of Property
-            this.uploaderClient.WriteTextbox(By.Name("Input_323"), remarks); // Syndication Remarks
+            this.WriteTextbox("Input_321", privateRemarks);
+            this.WriteTextbox("Input_322", remarks); // Internet / Remarks / Desc. of Property
+            this.WriteTextbox("Input_323", remarks); // Syndication Remarks
         }
 
         private void SetLongitudeAndLatitudeValues(ResidentialListingRequest listing)
