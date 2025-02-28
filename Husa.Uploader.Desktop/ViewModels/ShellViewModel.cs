@@ -261,7 +261,7 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         public bool IsReadyListing => this.CurrentEntity == Entity.Listing && this.State == UploaderState.Ready && this.SelectedListingRequest != null;
         public bool ShowListingActions => this.IsReadyListing || this.IsSucceededAndReady;
-        public bool ShowShowingTimeActions => !this.IsReadyLot && this.SelectedListingRequest != null;
+        public bool ShowShowingTimeActions => !this.IsReadyLot && (this.SelectedListingRequest?.UseShowingTime ?? false);
         public bool IsSucceededAndReady => this.CurrentEntity == Entity.Listing && this.State == UploaderState.SucceededAndReady && this.SelectedListingRequest != null;
         public bool ShowPanelAction => this.IsReadyListing || this.IsReadyLot || this.IsSucceededAndReady || this.UploadSucceeded || this.UploadFailed || this.ShowCancelButton || this.ShowShowingTimeActions;
 
