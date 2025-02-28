@@ -1375,9 +1375,8 @@ namespace Husa.Uploader.Core.Services
 
         private void FillAgentOfficeInformation()
         {
-            this.uploaderClient.ClickOnElement(By.LinkText("Agent/Office"));
+            this.uploaderClient.ClickOnElementById("toc_InputForm_section_12"); // Agent
             Thread.Sleep(100);
-            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
         }
 
         private void FillRemarks(AborListingRequest listing)
