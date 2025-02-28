@@ -286,12 +286,7 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
                     this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
 
-                    this.uploaderClient.ScrollToTop();
-                    this.uploaderClient.ClickOnElement(By.LinkText("General"));
                     this.UpdateYearBuiltDescriptionInGeneralTab(listing);
-
-                    this.uploaderClient.ScrollToTop();
-                    this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
                     this.UpdatePublicRemarksInRemarksTab(listing as AborListingRequest);
 
                     if (autoSave)
@@ -575,7 +570,10 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Updating VirtualTour for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
-                this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
+
+                this.NavigateToQuickEdit(listing.MLSNum);
+                this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
+                this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
 
                 await this.UpdateVirtualTour(listing, cancellationToken);
 
@@ -600,19 +598,16 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(2000);
                 this.NavigateToQuickEdit(listing.MLSNum);
 
-                this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
-
-                this.uploaderClient.ClickOnElementById("toc_InputForm_section_38"); // click in tab Listing Information
-                Thread.Sleep(400);
-
-                // Enter OpenHouse
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Open Houses Input Form"), cancellationToken);
-                this.uploaderClient.ClickOnElement(By.LinkText("Open Houses Input Form"));
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_tdValidate"), cancellationToken);
+                Thread.Sleep(2000);
+                this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(1)').click()");
                 Thread.Sleep(2000);
 
-                this.CleanOpenHouse(cancellationToken);
+                // Enter OpenHouse
+                string buttonText = "Open Houses Input Form";
+                this.uploaderClient.ExecuteScript($"$('button[data-mtx-track-prop-item=\"{buttonText}\"]').click()");
+                this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+
+                this.CleanOpenHouse();
 
                 if (listing.EnableOpenHouse)
                 {
@@ -925,16 +920,15 @@ namespace Husa.Uploader.Core.Services
 
         private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
+            this.uploaderClient.ClickOnElementById("toc_InputForm_section_13"); // click in tab Remarks/Tours/Internet
+            Thread.Sleep(400);
+
             var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.Austin, cancellationToken);
 
             if (!virtualTours.Any())
             {
                 return;
             }
-
-            this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
-            Thread.Sleep(200);
-            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"));
 
             var firstVirtualTour = virtualTours.FirstOrDefault();
             if (firstVirtualTour != null)
@@ -1476,21 +1470,27 @@ namespace Husa.Uploader.Core.Services
 
         private void UpdateYearBuiltDescriptionInGeneralTab(ResidentialListingRequest listing)
         {
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_218"));
+            this.uploaderClient.ClickOnElementById("toc_InputForm_section_10"); // click in tab General
+            Thread.Sleep(400);
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_218"));
             this.uploaderClient.WriteTextbox(By.Name("Input_218"), listing.YearBuilt); // Year Built
-            this.uploaderClient.SetMultipleCheckboxById("Input_225", listing.YearBuiltDesc); // Year Built Description
+            this.SetMultipleCheckboxById("Input_225", listing.YearBuiltDesc); // Year Built Description
         }
 
         private void UpdatePublicRemarksInRemarksTab(AborListingRequest listing)
         {
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_322"));
+            this.uploaderClient.ClickOnElementById("toc_InputForm_section_13"); // click in tab Listing Information
+            Thread.Sleep(400);
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_322"));
             var remarks = listing.GetPublicRemarks();
             string agentRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
             string privateRemarks2 = listing.AgentPrivateRemarks2 ?? string.Empty;
             var privateRemarks = $"{agentRemarks}. {privateRemarks2}";
-            this.WriteTextbox("Input_321", privateRemarks);
-            this.WriteTextbox("Input_322", remarks); // Internet / Remarks / Desc. of Property
-            this.WriteTextbox("Input_323", remarks); // Syndication Remarks
+            this.uploaderClient.WriteTextbox(By.Name("Input_321"), privateRemarks);
+            this.uploaderClient.WriteTextbox(By.Name("Input_322"), remarks); // Internet / Remarks / Desc. of Property
+            this.uploaderClient.WriteTextbox(By.Name("Input_323"), remarks); // Syndication Remarks
         }
 
         private void SetLongitudeAndLatitudeValues(ResidentialListingRequest listing)
