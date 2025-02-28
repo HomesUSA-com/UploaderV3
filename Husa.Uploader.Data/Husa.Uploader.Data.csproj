@@ -14,7 +14,7 @@
         <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="2.12.2" />
         <PackageReference Include="Husa.Quicklister.Extensions.Api.Client" Version="1.14.0" />
         <PackageReference Include="Husa.Quicklister.Har.Api.Client" Version="2.12.2" />
-        <PackageReference Include="Husa.Quicklister.Dfw.Api.Client" Version="0.16.2" />
+        <PackageReference Include="Husa.Quicklister.Dfw.Api.Client" Version="0.16.3" />
         <PackageReference Include="Husa.Quicklister.Sabor.Api.Client" Version="2.13.2" />
         <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.2.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
