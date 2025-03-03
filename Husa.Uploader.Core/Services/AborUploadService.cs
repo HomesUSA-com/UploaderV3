@@ -169,8 +169,6 @@ namespace Husa.Uploader.Core.Services
                     else
                     {
                         this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
-                        this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                        this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
                     }
 
                     listing.Longitude = newLongitude;
@@ -981,7 +979,9 @@ namespace Husa.Uploader.Core.Services
         private void NavigateToEditResidentialForm(string mlsNumber, CancellationToken cancellationToken)
         {
             this.NavigateToQuickEdit(mlsNumber);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("InputForm_toc_nav"), cancellationToken);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ListResultsView"), cancellationToken);
+            this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(0)').click()");
+            Thread.Sleep(2000);
         }
 
         private void SetSelect(string fieldName, string value)
