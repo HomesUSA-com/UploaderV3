@@ -1015,56 +1015,6 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(200);
             }
 
-            if (!dropdownVisible)
-            {
-                return;
-            }
-
-            string optionXPath = $"//ul[@id='{dropdownListId}']/li[@data-mtrx-listbox-item-value='{value}']";
-            var optionElement = this.uploaderClient.FindElement(By.XPath(optionXPath), shouldWait: true);
-            if (optionElement == null)
-            {
-                return;
-            }
-
-            this.uploaderClient.ExecuteScript("arguments[0].scrollIntoView(true);", args: optionElement);
-            Thread.Sleep(200);
-
-            optionElement.Click();
-            this.uploaderClient.ScrollDown(250);
-        }
-
-        private void SetSelect(string fieldName, string value)
-        {
-            string inputXPath = $"//input[starts-with(@id, 'filter_{fieldName}')]";
-            var filterInputElement = this.uploaderClient.FindElement(By.XPath(inputXPath), shouldWait: true);
-            if (filterInputElement == null)
-            {
-                return;
-            }
-
-            filterInputElement.Click();
-            Thread.Sleep(400);
-
-            string actualFilterId = filterInputElement.GetAttribute("id");
-            string baseId = actualFilterId.Replace("filter_", string.Empty);
-            string dropdownListId = "listbox_select_" + baseId;
-
-            var waitTime = 5000;
-            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-            bool dropdownVisible = false;
-            while (stopwatch.ElapsedMilliseconds < waitTime)
-            {
-                var dropdown = this.uploaderClient.FindElement(By.Id(dropdownListId));
-                if (dropdown.Displayed)
-                {
-                    dropdownVisible = true;
-                    break;
-                }
-
-                Thread.Sleep(200);
-            }
-
             if (!dropdownVisible || (value == string.Empty || value == null))
             {
                 this.uploaderClient.ExecuteScript("document.activeElement.blur();");
