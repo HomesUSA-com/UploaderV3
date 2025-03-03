@@ -66,12 +66,15 @@ namespace Husa.Uploader.Core.Services
 
             var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
 
-            this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
+            this.uploaderClient.NavigateToUrl(marketInfo.LogoutUrl);
             Thread.Sleep(2000);
-            this.uploaderClient.ScrollDown(400);
+
+            this.uploaderClient.ExecuteScript(" jQuery('#ketch-consent-banner').find('button:first').click(); ");
 
             // Connect to the login page
             var loginButtonId = "login_btn";
+            this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
+            Thread.Sleep(1000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id(loginButtonId));
 
             this.uploaderClient.WriteTextbox(By.Id("username"), credentials[LoginCredentials.Username]);

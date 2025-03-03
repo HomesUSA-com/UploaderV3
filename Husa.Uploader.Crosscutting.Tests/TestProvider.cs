@@ -88,6 +88,14 @@ namespace Husa.Uploader.Crosscutting.Tests
                     UserProfilePreferences = new List<UserProfilePreference>(),
                 },
             },
+            ShowingTime = new()
+            {
+                Credentials = new()
+                {
+                    Username = "username",
+                    Password = "password",
+                },
+            },
         };
     }
 }
