@@ -1202,10 +1202,6 @@ namespace Husa.Uploader.Core.Services
             // School Information
             Thread.Sleep(3000);
             this.uploaderClient.ScrollDown(1000);
-            this.SetSelect("Input_207", listing.SchoolDistrict); // School District
-            this.SetSelect("Input_209", listing.SchoolName1); // School District/Elementary A
-            this.SetSelect("Input_210", listing.SchoolName2); // School District/Middle / Intermediate School
-            this.SetSelect("Input_211", listing.HighSchool); // School District/9 Grade / High School
             this.WriteTextbox("Input_212", listing.SchoolName4); // Elementary Other
             this.WriteTextbox("Input_213", listing.SchoolName5); // Middle or Junior Other
             this.WriteTextbox("Input_214", listing.SchoolName6); // High School Other
