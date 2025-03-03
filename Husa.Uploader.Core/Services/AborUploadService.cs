@@ -1444,7 +1444,7 @@ namespace Husa.Uploader.Core.Services
                     ClickOnElement(By.CssSelector($"button[data-mtx-track-prop-id=\"Input_331\"][data-mtx-track-prop-val=\"true\"]")); // Internet Consumer Comment
                 this.uploaderClient.
                     ClickOnElement(By.CssSelector($"button[data-mtx-track-prop-id=\"Input_332\"][data-mtx-track-prop-val=\"true\"]")); // Internet Address Display
-                this.SetMultipleCheckboxById("Input_333", "APT"); // Listing Will Appear On (4)
+                this.SetMultipleCheckboxById("Input_333", "AHS,HAR,LISTHUB,REALTOR"); // Listing Will Appear On (4)
             }
         }
 
