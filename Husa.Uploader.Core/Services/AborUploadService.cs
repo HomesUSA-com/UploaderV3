@@ -169,8 +169,6 @@ namespace Husa.Uploader.Core.Services
                     else
                     {
                         this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
-                        this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                        this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
                     }
 
                     listing.Longitude = newLongitude;
@@ -981,7 +979,9 @@ namespace Husa.Uploader.Core.Services
         private void NavigateToEditResidentialForm(string mlsNumber, CancellationToken cancellationToken)
         {
             this.NavigateToQuickEdit(mlsNumber);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("InputForm_toc_nav"), cancellationToken);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ListResultsView"), cancellationToken);
+            this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(0)').click()");
+            Thread.Sleep(2000);
         }
 
         private void SetSelect(string fieldName, string value)
@@ -1198,8 +1198,6 @@ namespace Husa.Uploader.Core.Services
             }
 
             this.WriteTextbox("Input_197", listing.Legal); // Tax Legal Description
-
-            this.uploaderClient.WriteTextbox(By.Name("Input_197"), listing.Legal); // Tax Legal Description
 
             // School Information
             Thread.Sleep(3000);
@@ -1446,7 +1444,7 @@ namespace Husa.Uploader.Core.Services
                     ClickOnElement(By.CssSelector($"button[data-mtx-track-prop-id=\"Input_331\"][data-mtx-track-prop-val=\"true\"]")); // Internet Consumer Comment
                 this.uploaderClient.
                     ClickOnElement(By.CssSelector($"button[data-mtx-track-prop-id=\"Input_332\"][data-mtx-track-prop-val=\"true\"]")); // Internet Address Display
-                this.SetMultipleCheckboxById("Input_333", "APT"); // Listing Will Appear On (4)
+                this.SetMultipleCheckboxById("Input_333", "AHS,HAR,LISTHUB,REALTOR"); // Listing Will Appear On (4)
             }
         }
 
@@ -1613,6 +1611,14 @@ namespace Husa.Uploader.Core.Services
 
         private void AddOpenHouses(ResidentialListingRequest listing)
         {
+            string inputXPath = "//div[substring(@id, string-length(@id) - string-length('_accordion') + 1) = '_accordion']";
+            var filterInputElement = this.uploaderClient.FindElement(By.XPath(inputXPath), shouldWait: true);
+            if (filterInputElement == null)
+            {
+                return;
+            }
+
+            var fullyqualifiedNameField = filterInputElement.GetAttribute("id")?.Replace("_accordion", string.Empty);
             var index = 0;
             Thread.Sleep(1000);
             var sortedOpenHouses = listing.OpenHouse.OrderBy(openHouse => openHouse.Date).ToList();
@@ -1621,35 +1627,37 @@ namespace Husa.Uploader.Core.Services
                 if (index != 0)
                 {
                     this.uploaderClient.ScrollDown();
-                    this.uploaderClient.ClickOnElementById(elementId: $"_Input_168_more");
+                    this.uploaderClient.ClickOnElementById(elementId: $"addBlankRow_{fullyqualifiedNameField}");
                     Thread.Sleep(1000);
                 }
 
-                // Date
-                this.uploaderClient.WriteTextbox(By.Name($"_Input_168__REPEAT{index}_162"), entry: openHouse.Date);
-
-                // From Time
-                this.uploaderClient.WriteTextbox(By.Name($"_Input_168__REPEAT{index}_TextBox_163"), entry: openHouse.StartTime.To12Format());
-                var fromTimeTT = openHouse.StartTime.Hours >= 12 ? 1 : 0;
-                this.uploaderClient.ClickOnElementById($"_Input_168__REPEAT{index}_RadioButtonList_163_{fromTimeTT}", shouldWait: true, waitTime: 5);
-
-                // To Time
-                this.uploaderClient.WriteTextbox(By.Name($"_Input_168__REPEAT{index}_TextBox_164"), entry: openHouse.EndTime.To12Format());
-                var endTimeTT = openHouse.EndTime.Hours >= 12 ? 1 : 0;
-                this.uploaderClient.ClickOnElementById($"_Input_168__REPEAT{index}_RadioButtonList_164_{endTimeTT}", shouldWait: true, waitTime: 5);
-
                 // Active Status
-                this.uploaderClient.SetSelect(By.Id($"_Input_168__REPEAT{index}_165"), value: "ACT");
+                this.SetSelect($"_{fullyqualifiedNameField}__REPEAT{index}_165", value: "ACT");
 
                 // Open House Type
                 var type = openHouse.Type.ToString().ToUpperInvariant();
-                this.uploaderClient.SetSelect(By.Id($"_Input_168__REPEAT{index}_161"), value: type);
+                this.SetSelect($"_{fullyqualifiedNameField}__REPEAT{index}_161", value: type);
 
                 // Refreshments
-                this.uploaderClient.SetMultipleCheckboxById($"_Input_168__REPEAT{index}_652", openHouse.Refreshments);
+                this.SetMultipleCheckboxById($"_{fullyqualifiedNameField}__REPEAT{index}_652", openHouse.Refreshments);
+
+                // Date
+                this.uploaderClient.WriteTextbox(By.Name($"_{fullyqualifiedNameField}__REPEAT{index}_162"), openHouse.Date);
+
+                // From Time
+                this.uploaderClient.ExecuteScript(script: $"jQuery('input[id^=timeBox__{fullyqualifiedNameField}__REPEAT{index}_163]').removeAttr('readonly');");
+                var fromTimeTT = openHouse.StartTime.Hours >= 12 ? " PM" : " AM";
+                var fromTime = openHouse.StartTime.To12Format() + fromTimeTT;
+                this.uploaderClient.WriteTextbox(By.Name($"timeBox__{fullyqualifiedNameField}__REPEAT{index}_163"), fromTime);
+
+                // To Time
+                this.uploaderClient.ExecuteScript(script: $"jQuery('input[id^=timeBox__{fullyqualifiedNameField}__REPEAT{index}_164]').removeAttr('readonly');");
+                var endTimeTT = openHouse.EndTime.Hours >= 12 ? " PM" : " AM";
+                var toTime = openHouse.StartTime.To12Format() + endTimeTT;
+                this.WriteTextbox($"timeBox__{fullyqualifiedNameField}__REPEAT{index}_164", toTime);
 
                 // Comments
-                this.uploaderClient.WriteTextbox(By.Name($"_Input_168__REPEAT{index}_167"), entry: openHouse.Comments);
+                this.WriteTextbox($"_{fullyqualifiedNameField}__REPEAT{index}_167", openHouse.Comments);
 
                 index++;
             }
