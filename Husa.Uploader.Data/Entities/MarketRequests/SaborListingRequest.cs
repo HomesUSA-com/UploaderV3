@@ -249,6 +249,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.RealtorContactEmail = showingInfo.RealtorContactEmail;
                 residentialListingRequest.Directions = showingInfo.Directions;
                 residentialListingRequest.AgentPrivateRemarks = showingInfo.AgentPrivateRemarks;
+                residentialListingRequest.AgentPrivateRemarksAdditional = showingInfo.AgentPrivateRemarksAdditional;
                 residentialListingRequest.EnableOpenHouse = showingInfo.EnableOpenHouses;
             }
 

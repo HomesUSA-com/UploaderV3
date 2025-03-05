@@ -11,16 +11,13 @@ namespace Husa.Uploader.Core.Services
     using Husa.Quicklister.Extensions.Domain.Enums.ShowingTime;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Crosscutting.Enums;
-    using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
     using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Options;
     using OpenQA.Selenium;
 
     public class ShowingTimeUploadService : IShowingTimeUploadService
     {
         private const string UrlBase = "https://apptcenter.showingtime.com";
-        private readonly ShowingTimeSettings settings;
         private readonly IUploaderClient uploaderClient;
         private readonly ILogger<ShowingTimeUploadService> logger;
         private readonly IServiceSubscriptionClient serviceSubscriptionClient;

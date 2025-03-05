@@ -1339,8 +1339,11 @@ namespace Husa.Uploader.Core.Services
 
         private void UpdatePrivateRemarksInRemarksTab(DfwListingRequest listing)
         {
+            string baseRemarks = listing.GetAgentRemarksMessage(listing.YearBuiltDesc) ?? string.Empty;
+            string additionalRemarks = listing.AgentPrivateRemarksAdditional ?? string.Empty;
+            var agentRemarks = $"{baseRemarks}. {additionalRemarks}";
             this.uploaderClient.WriteTextbox(By.Id("Input_265"), string.Empty);
-            this.uploaderClient.WriteTextbox(By.Id("Input_265"), listing.GetAgentRemarksMessage(listing.YearBuiltDesc));
+            this.uploaderClient.WriteTextbox(By.Id("Input_265"), agentRemarks);
         }
 
         private void UpdatePublicRemarksInRemarksTab(ResidentialListingRequest listing)

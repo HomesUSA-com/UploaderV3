@@ -16,14 +16,12 @@ namespace Husa.Uploader.Core.Tests
     [Collection(nameof(ApplicationServicesFixture))]
     public class ShowingTimeUploadServiceTests
     {
-        private readonly ApplicationServicesFixture fixture;
         private readonly Mock<IUploaderClient> uploaderClient = new();
         private readonly Mock<ILogger<ShowingTimeUploadService>> logger = new();
         private readonly Mock<IServiceSubscriptionClient> serviceSubscriptionClient = new();
 
-        public ShowingTimeUploadServiceTests(ApplicationServicesFixture fixture)
+        public ShowingTimeUploadServiceTests()
         {
-            this.fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             this.uploaderClient.SetupAllProperties();
             this.Sut = new(
                 this.uploaderClient.Object,

@@ -275,6 +275,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.Showing = showingInfo.Showing.ToStringFromEnumMembers();
                 residentialListingRequest.Directions = showingInfo.Directions;
                 residentialListingRequest.AgentPrivateRemarks = showingInfo.AgentPrivateRemarks;
+                residentialListingRequest.AgentPrivateRemarksAdditional = showingInfo.AgentPrivateRemarksAdditional;
                 residentialListingRequest.PublicRemarks = showingInfo.PublicRemarks;
                 residentialListingRequest.HasAgentBonus = showingInfo.HasAgentBonus;
                 residentialListingRequest.HasBonusWithAmount = showingInfo.HasBonusWithAmount;

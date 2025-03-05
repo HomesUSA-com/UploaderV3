@@ -1484,7 +1484,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_322"));
             var remarks = listing.GetPublicRemarks();
             string agentRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
-            string privateRemarks2 = listing.AgentPrivateRemarks2 ?? string.Empty;
+            string privateRemarks2 = listing.AgentPrivateRemarksAdditional ?? string.Empty;
             var privateRemarks = $"{agentRemarks}. {privateRemarks2}";
             this.WriteTextbox("Input_321", privateRemarks);
             this.WriteTextbox("Input_322", remarks); // Internet / Remarks / Desc. of Property

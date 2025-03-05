@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
-        <PackageReference Include="Husa.Extensions.Common" Version="4.1.10" />
         <PackageReference Include="Husa.Migration.Api.Client" Version="2.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
