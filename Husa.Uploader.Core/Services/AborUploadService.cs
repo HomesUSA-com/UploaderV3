@@ -176,7 +176,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillListingInformation(listing);
                     this.FillGeneralInformation(listing);
                     this.FillAdditionalInformation(listing as AborListingRequest);
-                    ////this.FillRoomInformation(listing);
+                    this.FillRoomInformation(listing);
                     this.FillDocumentsAndUtilities(listing as AborListingRequest);
                     this.FillGreenEnergyInformation();
                     this.FillFinancialInformation(listing as AborListingRequest);
@@ -504,7 +504,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WriteTextbox(By.Name("Input_85"), listing.ClosedDate.Value.ToShortDateString());
 
                 //// Property Condition at Closing
-                this.SetSelect(fieldName: "Input_524", value: "EXCL");
+                this.SetSelect("Input_524", value: "EXCL");
                 this.uploaderClient.WriteTextbox(By.Name("Input_84"), listing.SoldPrice?.ToString("F0"));
                 this.uploaderClient.WriteTextbox(By.Name("Input_526"), "None");
 
@@ -984,9 +984,23 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(2000);
         }
 
-        private void SetSelect(string fieldName, string value)
+        private string GetInputPath(string fieldName, string inputType = "input")
         {
-            string inputXPath = $"//input[starts-with(@id, 'filter_{fieldName}')]";
+            var parts = fieldName.Split(new string[] { "___" }, StringSplitOptions.None);
+            if (parts.Length >= 2)
+            {
+                return $"//{inputType}[starts-with(@id, '{parts[0]}') and contains(@id, '{parts[1]}')]";
+            }
+            else
+            {
+                return $"//{inputType}[starts-with(@id, '{parts[0]}')]";
+            }
+        }
+
+        private void SetSelect(string inputId, string value)
+        {
+            inputId = $"filter_{inputId}";
+            string inputXPath = this.GetInputPath(inputId);
             var filterInputElement = this.uploaderClient.FindElement(By.XPath(inputXPath), shouldWait: true);
             if (filterInputElement == null)
             {
@@ -1038,11 +1052,11 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ScrollDown(250);
         }
 
-        private void SetMultipleCheckboxById(string filterInputId, string csvValues)
+        private void SetMultipleCheckboxById(string inputId, string csvValues)
         {
-            var filterInputElement = this.uploaderClient.FindElement(
-                By.XPath($"//input[starts-with(@id, 'filter_{filterInputId}')]"),
-                shouldWait: true);
+            inputId = $"filter_{inputId}";
+            string inputXPath = this.GetInputPath(inputId);
+            var filterInputElement = this.uploaderClient.FindElement(By.XPath(inputXPath), shouldWait: true);
 
             if (filterInputElement == null)
             {
@@ -1115,11 +1129,12 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ScrollDown(250);
         }
 
-        private void WriteTextbox(string inputName, string value)
+        private void WriteTextbox(string inputName, string value, string inputType = "input")
         {
+            string inputXPath = this.GetInputPath(inputName, inputType);
             try
             {
-                var inputElement = this.uploaderClient.FindElement(By.Name(inputName), shouldWait: true);
+                var inputElement = this.uploaderClient.FindElement(By.XPath(inputXPath), shouldWait: true);
                 if (inputElement == null)
                 {
                     return;
@@ -1197,7 +1212,7 @@ namespace Husa.Uploader.Core.Services
                 this.SetSelect("Input_206", "N"); // ETJ
             }
 
-            this.WriteTextbox("Input_197", listing.Legal); // Tax Legal Description
+            this.WriteTextbox("Input_197", listing.Legal, inputType: "textarea"); // Tax Legal Description
 
             // School Information
             Thread.Sleep(3000);
@@ -1317,52 +1332,67 @@ namespace Husa.Uploader.Core.Services
 
         private void FillRoomInformation(ResidentialListingRequest listing)
         {
-            string tabName = "Rooms";
-            this.NavigateToTab(tabName);
+            this.uploaderClient.ClickOnElementById("toc_InputForm_section_52"); // Room
+            Thread.Sleep(1000);
+            this.uploaderClient.ExecuteScript("document.querySelector('[data-mtrx-uifc-field-name=\"RoomType\"]').scrollIntoView({ behavior: 'smooth', block: 'center' });");
+            Thread.Sleep(1000);
+
+            int indexInput = 0;
+            int nRoomsToDelete = 0;
+            int nRoomsUploaded = 0;
 
             if (!listing.IsNewListing)
             {
-                int index = 0;
-                this.uploaderClient.ExecuteScript("jQuery(document).scrollTop(0);");
+                var deleteButtons = this.uploaderClient.FindElements(By.XPath("//button[contains(@onclick, 'mtrxSubForm.DeleteRow') and contains(@onclick, 'Input_761')]"));
 
-                while (this.uploaderClient.FindElements(By.LinkText("Delete")) != null &&
-                    this.uploaderClient.FindElements(By.LinkText("Delete")).Count > 1)
+                nRoomsToDelete = deleteButtons.Count - 1;
+
+                for (int i = 0; i < nRoomsToDelete; i++)
                 {
-                    try
-                    {
-                        this.uploaderClient.ClickOnElement(By.LinkText("Delete"));
-                        Thread.Sleep(400);
-                    }
-                    catch
-                    {
-                        this.uploaderClient.ClickOnElement(By.Id("m_rpPageList_ctl02_lbPageLink"));
-                        this.uploaderClient.ExecuteScript("Subforms['s_349'].deleteRow('_Input_349__del_REPEAT" + index + "_');");
-                        Thread.Sleep(400);
-                    }
+                    deleteButtons[i].Click();
+                    indexInput++;
                 }
 
-                this.NavigateToTab(tabName);
+                indexInput = Math.Max(0, nRoomsToDelete - 1);
+
+                Thread.Sleep(1000);
+
+                this.uploaderClient.ClickOnElement(By.XPath("//button[starts-with(@id, 'addBlankRow_Input_761')]"));
+                this.uploaderClient.ExecuteScript("document.activeElement.blur();");
+                Thread.Sleep(500);
             }
 
-            var i = 0;
             foreach (var room in listing.Rooms)
             {
-                if (i > 0)
+                this.SetSelect($"_Input_761___REPEAT{indexInput}_345", room.RoomType);
+                this.uploaderClient.ResetImplicitWait();
+                this.SetSelect($"_Input_761___REPEAT{indexInput}_346", room.Level);
+                this.SetMultipleCheckboxById($"_Input_761___REPEAT{indexInput}_347", room.Features);
+                this.WriteTextbox($"_Input_761___REPEAT{indexInput}_648", room.Description, inputType: "textarea");
+                nRoomsUploaded++;
+                if (nRoomsUploaded < listing.Rooms.Count)
                 {
-                    this.uploaderClient.ClickOnElement(By.Id("_Input_349_more"));
+                    this.uploaderClient.ClickOnElement(By.XPath("//button[starts-with(@id, 'addBlankRow_Input_761')]"));
                     this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(400));
                 }
 
-                var roomType = $"_Input_349__REPEAT{i}_345";
-                this.uploaderClient.SetSelect(By.Id($"_Input_349__REPEAT{i}_345"), room.RoomType, "Room Type", tabName);
-                this.uploaderClient.ResetImplicitWait();
-                this.uploaderClient.SetSelect(By.Id($"_Input_349__REPEAT{i}_346"), room.Level, "Level", tabName, isElementOptional: true);
-                this.uploaderClient.SetMultipleCheckboxById($"_Input_349__REPEAT{i}_347", room.Features);
-                this.uploaderClient.WriteTextbox(By.Name($"_Input_349__REPEAT{i}_648"), room.Description, true);
+                if (indexInput > 0 && nRoomsToDelete > 0)
+                {
+                    indexInput--;
+                }
+                else
+                {
+                    if (nRoomsToDelete > 0)
+                    {
+                        indexInput = nRoomsToDelete;
+                        nRoomsToDelete = 0;
+                    }
 
-                this.uploaderClient.ScrollDownToElementHTML(roomType);
-                i++;
+                    indexInput++;
+                }
             }
+
+            Thread.Sleep(500);
         }
 
         private void FillFinancialInformation(AborListingRequest listing)
@@ -1413,8 +1443,8 @@ namespace Husa.Uploader.Core.Services
             this.WriteTextbox("Input_310", listing.OwnerName);
             this.WriteTextbox("Input_311", listing.AgentListApptPhone); // Showing Contact Phone
             this.WriteTextbox("Input_406", listing.OtherPhone);  // Showing Service Phone
-            this.WriteTextbox("Input_308", listing.LockboxTypeDesc == "SRMRKS" ? "See Remarks" : "NA");  // Lockbox Location
-            this.WriteTextbox("Input_313", listing.ShowingInstructions); // Showing Instructions
+            this.WriteTextbox("Input_308", listing.LockboxTypeDesc == "SRMRKS" ? "See Remarks" : "NA", inputType: "textarea");  // Lockbox Location
+            this.WriteTextbox("Input_313", listing.ShowingInstructions, inputType: "textarea"); // Showing Instructions
         }
 
         private void FillAgentOfficeInformation()
@@ -1428,7 +1458,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_13"); // Remarks
             Thread.Sleep(100);
 
-            this.WriteTextbox("Input_320", listing.Directions); // Directions
+            this.WriteTextbox("Input_320", listing.Directions, inputType: "textarea"); // Directions
             this.uploaderClient.ScrollDown(200);
 
             this.UpdatePublicRemarksInRemarksTab(listing);
@@ -1486,9 +1516,9 @@ namespace Husa.Uploader.Core.Services
             string agentRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
             string privateRemarks2 = listing.AgentPrivateRemarks2 ?? string.Empty;
             var privateRemarks = $"{agentRemarks}. {privateRemarks2}";
-            this.WriteTextbox("Input_321", privateRemarks);
-            this.WriteTextbox("Input_322", remarks); // Internet / Remarks / Desc. of Property
-            this.WriteTextbox("Input_323", remarks); // Syndication Remarks
+            this.WriteTextbox("Input_321", privateRemarks, inputType: "textarea");
+            this.WriteTextbox("Input_322", remarks, inputType: "textarea"); // Internet / Remarks / Desc. of Property
+            this.WriteTextbox("Input_323", remarks, inputType: "textarea"); // Syndication Remarks
         }
 
         private void SetLongitudeAndLatitudeValues(ResidentialListingRequest listing)
