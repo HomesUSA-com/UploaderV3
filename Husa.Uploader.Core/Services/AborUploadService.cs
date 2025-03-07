@@ -508,8 +508,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WriteTextbox(By.Name("Input_84"), listing.SoldPrice?.ToString("F0"));
                 this.uploaderClient.WriteTextbox(By.Name("Input_526"), "None");
 
-                var hasContingency = listing.HasContingencyInfo.BoolToNumericBool();
-                this.uploaderClient.ExecuteScript($"$('button[data-mtrx-ternary=\"{hasContingency}\"]').click()");
+                this.SelectToggleButton("Input_655", listing.HasContingencyInfo); // Property Sale Contingency
                 this.uploaderClient.WriteTextbox(By.Name("Input_517"), listing.SellConcess);
                 ////Buyer Financing (max 3)
                 this.SetMultipleCheckboxById("Input_525", listing.SoldTerms);
@@ -1162,6 +1161,17 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
+        private void SelectToggleButton(string inputId, bool shouldSelect)
+        {
+            string valueToSelect = shouldSelect ? "true" : "false";
+            var button = this.uploaderClient.FindElement(By.CssSelector($"button[data-mtx-track-prop-id=\"{inputId}\"][data-mtx-track-prop-val=\"{valueToSelect}\"]"));
+
+            if (button != null && button.GetAttribute("aria-selected") != "true")
+            {
+                button.Click();
+            }
+        }
+
         private void FillListingInformation(ResidentialListingRequest listing, bool isNotPartialFill = true)
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_9"); // click in tab Listing Information
@@ -1204,7 +1214,7 @@ namespace Husa.Uploader.Core.Services
                 this.WriteTextbox("Input_196", listing.Subdivision); // Subdivision
                 this.WriteTextbox("Input_199", listing.OtherFees); // Tax Lot
                 this.WriteTextbox("Input_201", listing.TaxID); // Parcel ID
-                this.uploaderClient.ClickOnElement(By.CssSelector("button[data-mtx-track-prop-val=\"false\"]")); // Additional Parcels Y/N
+                this.SelectToggleButton("Input_202", false); // Additional Parcels Y/N)
                 Thread.Sleep(800);
                 this.uploaderClient.ScrollDown(400);
                 this.SetSelect("Input_204", listing.MLSArea); // MLS Area
@@ -1398,8 +1408,7 @@ namespace Husa.Uploader.Core.Services
         private void FillFinancialInformation(AborListingRequest listing)
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_37"); // Financial
-            string valueToSelect = listing.HasHoa ? "true" : "false";
-            this.uploaderClient.ClickOnElement(By.CssSelector($"button[data-mtx-track-prop-id=\"Input_282\"][data-mtx-track-prop-val=\"{valueToSelect}\"]")); // Association YN
+            this.SelectToggleButton("Input_282", listing.HasHoa); // Association YN
 
             if (listing.HasHoa)
             {
@@ -1421,11 +1430,8 @@ namespace Husa.Uploader.Core.Services
             this.SetMultipleCheckboxById("Input_295", "None"); // Buyer Incentive
             this.SetMultipleCheckboxById("Input_298", listing.ExemptionsDesc); // Tax Exemptions
             this.SetMultipleCheckboxById("Input_299", "Funding"); // Possession
-            this.uploaderClient.SetSelect(By.Id("Input_779"), (bool)listing.HasAgentBonus ? "1" : "0"); // Seller Contributions YN
-
-            string hasSellerContributionsYN = (bool)listing.HasAgentBonus ? "true" : "false";
-            this.uploaderClient.ClickOnElement(By.CssSelector($"button[data-mtx-track-prop-id=\"Input_779\"][data-mtx-track-prop-val=\"{hasSellerContributionsYN}\"]"));
-            this.uploaderClient.ClickOnElement(By.CssSelector($"button[data-mtx-track-prop-id=\"Input_353\"][data-mtx-track-prop-val=\"false\"]"));
+            this.SelectToggleButton("Input_779", (bool)listing.HasAgentBonus); // Seller Contributions YN
+            this.SelectToggleButton("Input_353", false); // Intermediary YN
         }
 
         private void FillShowingInformation(ResidentialListingRequest listing)
@@ -1465,15 +1471,11 @@ namespace Husa.Uploader.Core.Services
 
             if (listing.IsNewListing)
             {
-                this.uploaderClient.ClickOnElement(By.CssSelector($"button[data-mtx-track-prop-id=\"Input_329\"][data-mtx-track-prop-val=\"true\"]")); // Internet
-
+                this.SelectToggleButton("Input_329", true);
                 this.uploaderClient.ScrollDown();
-                this.uploaderClient.
-                    ClickOnElement(By.CssSelector($"button[data-mtx-track-prop-id=\"Input_330\"][data-mtx-track-prop-val=\"true\"]")); // // Internet Automated Valuation Display
-                this.uploaderClient.
-                    ClickOnElement(By.CssSelector($"button[data-mtx-track-prop-id=\"Input_331\"][data-mtx-track-prop-val=\"true\"]")); // Internet Consumer Comment
-                this.uploaderClient.
-                    ClickOnElement(By.CssSelector($"button[data-mtx-track-prop-id=\"Input_332\"][data-mtx-track-prop-val=\"true\"]")); // Internet Address Display
+                this.SelectToggleButton("Input_330", true); // Internet Automated Valuation Display
+                this.SelectToggleButton("Input_331", true); // Internet Consumer Comment
+                this.SelectToggleButton("Input_332", true); // Internet Address Display
                 this.SetMultipleCheckboxById("Input_333", "AHS,HAR,LISTHUB,REALTOR"); // Listing Will Appear On (4)
             }
         }
