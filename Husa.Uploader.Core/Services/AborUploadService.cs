@@ -1471,7 +1471,7 @@ namespace Husa.Uploader.Core.Services
 
             if (listing.IsNewListing)
             {
-                this.SelectToggleButton("Input_329", true);
+                this.SelectToggleButton("Input_329", true); // Internet
                 this.uploaderClient.ScrollDown();
                 this.SelectToggleButton("Input_330", true); // Internet Automated Valuation Display
                 this.SelectToggleButton("Input_331", true); // Internet Consumer Comment
