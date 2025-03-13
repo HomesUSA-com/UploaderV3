@@ -28,18 +28,8 @@ namespace Husa.Uploader.Desktop.ViewModels
                     return;
                 }
 
-                if (this.IsValidCoordinate(value))
-                {
-                    this.latitude = value;
-                    this.State = UiState.Fields; // Si es válido, quitar error
-                }
-                else
-                {
-                    this.State = UiState.Error; // Mostrar error si no cumple
-                }
-
+                this.latitude = value;
                 this.OnPropertyChanged();
-                this.OnPropertyChanged(nameof(this.CanContinue));
             }
         }
 
@@ -53,18 +43,8 @@ namespace Husa.Uploader.Desktop.ViewModels
                     return;
                 }
 
-                if (this.IsValidCoordinate(value))
-                {
-                    this.longitude = value;
-                    this.State = UiState.Fields;
-                }
-                else
-                {
-                    this.State = UiState.Error;
-                }
-
+                this.longitude = value;
                 this.OnPropertyChanged();
-                this.OnPropertyChanged(nameof(this.CanContinue));
             }
         }
 
@@ -88,7 +68,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        private bool CanContinue => this.IsValidCoordinate(this.Latitude) && this.IsValidCoordinate(this.Longitude);
+        private bool CanContinue => decimal.TryParse(this.Latitude, out _) && decimal.TryParse(this.Longitude, out _);
 
         private UiState State
         {
@@ -126,17 +106,5 @@ namespace Husa.Uploader.Desktop.ViewModels
         public LocationInfo GetLocationInfo() => decimal.TryParse(this.latitude, out var lat) && decimal.TryParse(this.longitude, out var lon) ?
             new(lat, lon) :
             new();
-        private bool IsValidCoordinate(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return false;
-            }
-
-            // Expresión regular para validar formato: número con hasta 8 decimales
-            string pattern = @"^-?\d+(\.\d{1,8})?$";
-
-            return System.Text.RegularExpressions.Regex.IsMatch(value, pattern);
-        }
     }
 }

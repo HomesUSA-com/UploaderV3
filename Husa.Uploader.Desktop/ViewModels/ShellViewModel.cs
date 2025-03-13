@@ -102,8 +102,6 @@ namespace Husa.Uploader.Desktop.ViewModels
         private ICommand startLotImageUpdateCommand;
         private ICommand startLotPriceUpdateCommand;
 
-        private ICommand startShowingTimeUploadCommand;
-
         public ShellViewModel(
             IOptions<ApplicationOptions> options,
             IListingRequestRepository sqlDataLoader,
@@ -261,9 +259,8 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         public bool IsReadyListing => this.CurrentEntity == Entity.Listing && this.State == UploaderState.Ready && this.SelectedListingRequest != null;
         public bool ShowListingActions => this.IsReadyListing || this.IsSucceededAndReady;
-        public bool ShowShowingTimeActions => !this.IsReadyLot && (this.SelectedListingRequest?.UseShowingTime ?? false);
         public bool IsSucceededAndReady => this.CurrentEntity == Entity.Listing && this.State == UploaderState.SucceededAndReady && this.SelectedListingRequest != null;
-        public bool ShowPanelAction => this.IsReadyListing || this.IsReadyLot || this.IsSucceededAndReady || this.UploadSucceeded || this.UploadFailed || this.ShowCancelButton || this.ShowShowingTimeActions;
+        public bool ShowPanelAction => this.IsReadyListing || this.IsReadyLot || this.IsSucceededAndReady || this.UploadSucceeded || this.UploadFailed || this.ShowCancelButton;
 
         public bool IsReadyLot => this.CurrentEntity == Entity.Lot && this.State == UploaderState.Ready && this.SelectedListingRequest != null;
         public bool ShowLotActions => this.IsReadyLot || this.IsLotSucceededAndReady;
@@ -627,15 +624,6 @@ namespace Husa.Uploader.Desktop.ViewModels
             {
                 this.startLotImageUpdateCommand ??= new RelayAsyncCommand(param => this.StartLotImageUpdate(), param => this.CanStartLotImageUpdate);
                 return this.startLotImageUpdateCommand;
-            }
-        }
-
-        public ICommand StartShowingTimeUploadCommand
-        {
-            get
-            {
-                this.startShowingTimeUploadCommand ??= new RelayAsyncCommand(param => this.StartShowingTimeUpload(), param => true);
-                return this.startShowingTimeUploadCommand;
             }
         }
 
@@ -1394,15 +1382,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             try
             {
                 this.logger.LogInformation("Starting the requested upload operation");
-                var oldLatitude = this.SelectedListingRequest.FullListing.Latitude;
-                var oldLongitude = this.SelectedListingRequest.FullListing.Longitude;
                 await this.SetFullRequestInformation();
-                if (this.SelectedListingRequest.FullListing.UpdateGeocodes)
-                {
-                    this.selectedListingRequest.FullListing.Latitude = oldLatitude;
-                    this.selectedListingRequest.FullListing.Longitude = oldLongitude;
-                }
-
                 var listing = this.SelectedListingRequest.FullListing;
                 var token = this.cancellationTokenSource.Token;
                 return await Task.Run(() => action(listing, token));
@@ -1543,15 +1523,6 @@ namespace Husa.Uploader.Desktop.ViewModels
                 opType: UploadType.InserOrUpdate,
                 action: (listing, cancellationToken) => uploader.Upload(listing, cancellationToken, logIn: true),
                 sourceAction: this.SourceAction);
-        }
-
-        private async Task StartShowingTimeUpload()
-        {
-            this.ShowCancelButton = true;
-            var uploader = this.uploadFactory.ShowingTimeUploaderFactory();
-            this.cancellationTokenSource = new CancellationTokenSource();
-            await this.SetFullRequestInformation();
-            await uploader.Upload(this.selectedListingRequest?.FullListing);
         }
 
         private async Task StartStatusUpdate()
