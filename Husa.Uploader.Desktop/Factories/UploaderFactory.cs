@@ -73,6 +73,9 @@ namespace Husa.Uploader.Desktop.Factories
             }
         }
 
+        public IShowingTimeUploadService ShowingTimeUploaderFactory() =>
+            this.serviceProvider.GetRequiredService<IShowingTimeUploadService>();
+
         private static bool IsAssignableFrom<TService, T>()
             where TService : IUploadListing
         {
