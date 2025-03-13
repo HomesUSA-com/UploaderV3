@@ -490,6 +490,50 @@
                                             </StackPanel>
                                         </GroupBox>
                                     </StackPanel>
+                                    <StackPanel Visibility="{Binding ShowShowingTimeActions, Converter={StaticResource BooleanToVisibilityConverter }}">
+                                        <GroupBox Header="Showing Time Actions" Margin="5,5,5,0" >
+                                            <GroupBox.Style>
+                                                <Style TargetType="{x:Type GroupBox}">
+                                                    <Style.BasedOn>
+                                                        <Style TargetType="{x:Type GroupBox}">
+                                                            <Setter Property="Background" Value="Transparent"/>
+                                                            <Setter Property="Foreground" Value="{Binding (TextElement.Foreground), RelativeSource={RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type FrameworkElement}}}"/>
+                                                            <Setter Property="Padding" Value="9"/>
+                                                            <Setter Property="BorderThickness" Value="1"/>
+                                                            <Setter Property="SnapsToDevicePixels" Value="True"/>
+                                                            <Setter Property="materialDesign:ShadowAssist.ShadowDepth" Value="Depth0"/>
+                                                            <Setter Property="materialDesign:ColorZoneAssist.Mode" Value="PrimaryMid"/>
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="{x:Type GroupBox}">
+                                                                        <Grid>
+                                                                            <Border BorderBrush="#FF1B3861" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}"/>
+                                                                            <DockPanel Background="#FF1B3861">
+                                                                                <materialDesign:ColorZone x:Name="PART_ColorZone" DockPanel.Dock="Top" Mode="{Binding (materialDesign:ColorZoneAssist.Mode), RelativeSource={RelativeSource TemplatedParent}}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" materialDesign:ShadowAssist.ShadowEdges="{Binding (materialDesign:ShadowAssist.ShadowEdges), RelativeSource={RelativeSource TemplatedParent}}" UseLayoutRounding="True">
+                                                                                    <materialDesign:ColorZone.Effect>
+                                                                                        <Binding Path="(materialDesign:ShadowAssist.ShadowDepth)" RelativeSource="{RelativeSource TemplatedParent}">
+                                                                                            <Binding.Converter>
+                                                                                                <materialDesign:ShadowConverter/>
+                                                                                            </Binding.Converter>
+                                                                                        </Binding>
+                                                                                    </materialDesign:ColorZone.Effect>
+                                                                                    <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{TemplateBinding Header}" ContentStringFormat="{TemplateBinding HeaderStringFormat}" ContentSource="Header" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                                                                </materialDesign:ColorZone>
+                                                                                <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" Margin="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                                                            </DockPanel>
+                                                                        </Grid>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Style>
+                                                    </Style.BasedOn>
+                                                </Style>
+                                            </GroupBox.Style>
+                                            <StackPanel>
+                                                <Button Name="StartShowingTimeUpload" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartShowingTimeUploadCommand}">Upload</Button>
+                                            </StackPanel>
+                                        </GroupBox>
+                                    </StackPanel>
                                 </StackPanel>
 
                                 <StackPanel Margin="10,0" Visibility="{Binding UploadSucceeded, Converter={StaticResource BooleanToVisibilityConverter }}">

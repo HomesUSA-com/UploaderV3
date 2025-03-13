@@ -377,7 +377,7 @@ namespace Husa.Uploader.Core.Tests
             {
                 new()
                 {
-                    Caption = "test.jpg",
+                    Caption = "test.jpeg",
                 },
                 new()
                 {
