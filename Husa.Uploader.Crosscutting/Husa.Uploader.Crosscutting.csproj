@@ -4,7 +4,7 @@
         <PackageReference Include="Husa.Extensions.Common" Version="4.1.11" />
         <PackageReference Include="Husa.Quicklister.Abor.Api.Client" Version="2.17.4" />
         <PackageReference Include="Husa.Quicklister.Amarillo.Api.Client" Version="1.6.2" />
-        <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="2.12.3" />
+        <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="2.13.0-dev002" />
 	</ItemGroup>
 
 </Project>

@@ -10,12 +10,12 @@
         <PackageReference Include="Husa.Extensions.Media" Version="4.0.5" />
         <PackageReference Include="Husa.MediaService.Client" Version="2.2.0" />
         <PackageReference Include="Husa.Quicklister.Abor.Api.Client" Version="2.17.4" />
-        <PackageReference Include="Husa.Quicklister.Amarillo.Api.Client" Version="1.5.0-dev003" />
-        <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="2.13.0-dev001" />
+        <PackageReference Include="Husa.Quicklister.Amarillo.Api.Client" Version="1.6.2" />
+        <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="2.13.0-dev002" />
         <PackageReference Include="Husa.Quicklister.Extensions.Api.Client" Version="1.14.2" />
-        <PackageReference Include="Husa.Quicklister.Har.Api.Client" Version="2.13.0-dev002" />
-        <PackageReference Include="Husa.Quicklister.Dfw.Api.Client" Version="0.17.0-dev001" />
-        <PackageReference Include="Husa.Quicklister.Sabor.Api.Client" Version="2.14.0-dev001" />
+        <PackageReference Include="Husa.Quicklister.Har.Api.Client" Version="2.13.0-dev003" />
+        <PackageReference Include="Husa.Quicklister.Dfw.Api.Client" Version="0.17.0-dev002" />
+        <PackageReference Include="Husa.Quicklister.Sabor.Api.Client" Version="2.14.0-dev002" />
         <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.2.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
         <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
