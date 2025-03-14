@@ -11,6 +11,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
+    using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
@@ -223,6 +224,39 @@ namespace Husa.Uploader.Core.Tests
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Theory]
+        [InlineData("P", ListingDaysOffset.PENDING)]
+        [InlineData("PO", ListingDaysOffset.PENDING)]
+        [InlineData("S", ListingDaysOffset.SOLD)]
+        public void FillListDate_WhenNewListingWithStatus_ShouldSetCorrectDate(string status, ListingDaysOffset offset)
+        {
+            // Arrange
+            var fixedDate = DateTime.Now;
+            var expectedDate = fixedDate.AddDays((int)offset).Date;
+
+            var listingSale = GetListingRequestDetailResponse(true);
+            var company = new Mock<CompanyDetail>().Object;
+            var ctxListing = new CtxListingRequest(listingSale).CreateFromApiResponseDetail(company);
+            ctxListing.ListStatus = status;
+
+            this.uploaderClient
+                .Setup(x => x.WriteTextbox(
+                    It.IsAny<By>(),
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()));
+
+            var sut = this.GetSut();
+
+            // Act
+            sut.FillListDate(ctxListing);
+
+            // Assert
+            this.uploaderClient.Verify(x => x.WriteTextbox(By.Id("Input_129"), expectedDate.ToShortDateString(), false, false, false, false), Times.Once);
         }
 
         [Fact]
