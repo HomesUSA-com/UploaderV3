@@ -138,7 +138,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.State = addressInfo.State.GetEnumDescription();
                 residentialListingRequest.StateCode = addressInfo.State.ToStringFromEnumMember();
                 residentialListingRequest.Zip = addressInfo.ZipCode;
-                residentialListingRequest.County = addressInfo.County.ToStringFromEnumMember();
+                residentialListingRequest.County = addressInfo.County?.ToStringFromEnumMember();
                 residentialListingRequest.LotNum = addressInfo.LotNum;
                 residentialListingRequest.Block = addressInfo.Block;
                 residentialListingRequest.Subdivision = addressInfo.Subdivision;
