@@ -32,6 +32,7 @@ namespace Husa.Uploader.Data.Entities
         public LotListingRequest FullLotListing { get; set; }
         public ShowingTimeFullInfo ShowingTime { get; set; }
         public bool FullListingConfigured { get; protected set; }
+        public bool UseShowingTime { get; set; }
 
         public void SetMlsNumber(string mlsNumber)
         {

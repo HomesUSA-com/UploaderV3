@@ -879,6 +879,7 @@ namespace Husa.Uploader.Data.Entities
         public string FemaFloodPlain { get; set; }
         public string WithdrawalReason { get; set; }
         public string IsWithdrawalListingAgreement { get; set; }
+        public bool UseShowingTime { get; set; }
 
         public List<ResidentialListingRequestRoom> Rooms { get; set; }
 
@@ -919,6 +920,7 @@ namespace Husa.Uploader.Data.Entities
                 WorkingStatus = workingStatus,
                 WorkingSourceAction = workingSourceAction,
                 ShowingTime = this.ShowingTime,
+                UseShowingTime = this.UseShowingTime,
             };
 
         public virtual string GetAgentRemarksMessage()

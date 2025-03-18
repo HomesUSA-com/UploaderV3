@@ -102,6 +102,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             SysCreatedBy = this.listingResponse.SysCreatedBy,
             EnableOpenHouse = this.listingResponse.EnableOpenHouse,
             UpdateGeocodes = this.listingResponse.UpdateGeocodes,
+            UseShowingTime = this.listingResponse.UseShowingTime,
         };
 
         public override ResidentialListingRequest CreateFromApiResponseDetail(CompanyServicesManager.Api.Contracts.Response.CompanyDetail company)

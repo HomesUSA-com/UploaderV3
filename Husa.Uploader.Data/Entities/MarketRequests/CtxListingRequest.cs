@@ -69,6 +69,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             AllowPendingList = this.listingResponse.ShowOpenHousesPending,
             EnableOpenHouse = this.listingResponse.EnableOpenHouses,
             UpdateGeocodes = this.listingResponse.UpdateGeocodes,
+            UseShowingTime = this.listingResponse.UseShowingTime,
         };
 
         public override ResidentialListingRequest CreateFromApiResponseDetail(CompanyServicesManager.Api.Contracts.Response.CompanyDetail company)

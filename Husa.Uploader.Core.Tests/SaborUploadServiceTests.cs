@@ -12,6 +12,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Quicklister.Sabor.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
+    using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities;
@@ -320,6 +321,44 @@ namespace Husa.Uploader.Core.Tests
 
             // Assert
             Assert.Equal(UploadResult.Success, result);
+        }
+
+        [Theory]
+        [InlineData("pnd", ListingDaysOffset.PENDING)]
+        [InlineData("sld", ListingDaysOffset.SOLD)]
+        public void FillListDate_WhenNewListingWithStatus_ShouldSetCorrectDates(string status, ListingDaysOffset offset)
+        {
+            // Arrange
+            var fixedDate = DateTime.Now;
+            var expectedDate = fixedDate.AddDays((int)offset);
+
+            var uploadInformationMock = new Mock<Models.UploadCommandInfo>();
+            uploadInformationMock.Object.IsNewListing = true;
+            this.uploaderClient.Setup(x => x.UploadInformation).Returns(uploadInformationMock.Object);
+
+            var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse())
+            {
+                ListStatus = status,
+                ExpiredDate = fixedDate.AddMonths(6),
+            };
+
+            this.uploaderClient
+                .Setup(x => x.WriteTextbox(
+                    It.IsAny<By>(),
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()));
+
+            var sut = this.GetSut();
+
+            // Act
+            sut.FillListDate(saborListing);
+
+            // Assert
+            this.uploaderClient.Verify(x => x.WriteTextbox(By.Name("LSTDATE"), expectedDate.ToString("MM/dd/yyyy"), false, false, false, false), Times.Once);
+            this.uploaderClient.Verify(x => x.WriteTextbox(By.Name("EXPDATE"), saborListing.ExpiredDate.Value.Date.ToString("MM/dd/yyyy"), false, false, false, false), Times.Once);
         }
 
         [Fact]
