@@ -12,7 +12,7 @@
         <PackageReference Include="Husa.Quicklister.Abor.Api.Client" Version="2.17.4" />
         <PackageReference Include="Husa.Quicklister.Amarillo.Api.Client" Version="1.6.2" />
         <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="2.12.3" />
-        <PackageReference Include="Husa.Quicklister.Extensions.Api.Client" Version="1.14.2" />
+        <PackageReference Include="Husa.Quicklister.Extensions.Api.Client" Version="1.14.3" />
         <PackageReference Include="Husa.Quicklister.Har.Api.Client" Version="2.12.5" />
         <PackageReference Include="Husa.Quicklister.Dfw.Api.Client" Version="0.16.4" />
         <PackageReference Include="Husa.Quicklister.Sabor.Api.Client" Version="2.13.3" />
