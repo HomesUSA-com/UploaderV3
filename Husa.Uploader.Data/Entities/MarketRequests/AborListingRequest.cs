@@ -70,6 +70,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             SysCreatedBy = this.listingResponse.SysCreatedBy,
             EnableOpenHouse = this.listingResponse.EnableOpenHouse,
             UpdateGeocodes = this.listingResponse.UpdateGeocodes,
+            UseShowingTime = this.listingResponse.UseShowingTime,
         };
 
         public override ResidentialListingRequest CreateFromApiResponseDetail(CompanyServicesManager.Api.Contracts.Response.CompanyDetail company)
@@ -91,6 +92,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 ExpectedActiveDate = DateTime.Now.ToString("MM/dd/yy"),
                 ExpiredDate = this.listingDetailResponse.ExpirationDate,
                 RemarksFormatFromCompany = company?.MlsInfo?.RemarksForCompletedHomes,
+                ShowingTime = this.listingDetailResponse.ShowingTime,
             };
 
             FillSalePropertyInfo(this.listingDetailResponse.SaleProperty.SalePropertyInfo);

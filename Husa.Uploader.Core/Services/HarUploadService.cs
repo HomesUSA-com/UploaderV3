@@ -66,12 +66,15 @@ namespace Husa.Uploader.Core.Services
 
             var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
 
-            this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
+            this.uploaderClient.NavigateToUrl(marketInfo.LogoutUrl);
             Thread.Sleep(2000);
-            this.uploaderClient.ScrollDown(400);
+
+            this.uploaderClient.ExecuteScript(" jQuery('#ketch-consent-banner').find('button:first').click(); ");
 
             // Connect to the login page
             var loginButtonId = "login_btn";
+            this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
+            Thread.Sleep(1000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id(loginButtonId));
 
             this.uploaderClient.WriteTextbox(By.Id("username"), credentials[LoginCredentials.Username]);
@@ -713,6 +716,36 @@ namespace Husa.Uploader.Core.Services
             throw new NotImplementedException();
         }
 
+        public void FillListDate(ResidentialListingRequest listing)
+        {
+            var listDate = GetNewListingDate(listing.ListStatus);
+            if (listDate.HasValue)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_183"), listDate.Value.ToShortDateString());  // List Date
+            }
+
+            DateTime? GetNewListingDate(string listStatus)
+            {
+                switch (listStatus.ToEnumFromEnumMember<MarketStatuses>())
+                {
+                    case MarketStatuses.Active:
+                        return DateTime.Now;
+                    case MarketStatuses.Pending:
+                        return DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
+                    case MarketStatuses.OptionPending:
+                        return DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
+                    case MarketStatuses.PendingContinueToShow:
+                        return DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
+                    case MarketStatuses.Terminated:
+                    case MarketStatuses.Expired:
+                    case MarketStatuses.Sold:
+                        return DateTime.Now.AddDays((int)ListingDaysOffset.SOLD);
+                    default:
+                        return null;
+                }
+            }
+        }
+
         private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
             var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.Houston, cancellationToken);
@@ -859,33 +892,10 @@ namespace Husa.Uploader.Core.Services
             {
                 if (listing.IsNewListing)
                 {
-                    var listDate = GetNewListingDate(listing.ListStatus);
-                    if (listDate.HasValue)
-                    {
-                        this.uploaderClient.WriteTextbox(By.Id("Input_183"), listDate.Value.ToShortDateString());  // List Date
-                    }
+                    this.FillListDate(listing);
 
                     var expirationDate = listing.ExpiredDate.HasValue ? listing.ExpiredDate.Value : (listing.SysCreatedOn ?? DateTime.Today).AddYears(1);
                     this.uploaderClient.WriteTextbox(By.Id("Input_184"), expirationDate.ToShortDateString()); // Expiration Date
-                }
-            }
-
-            DateTime? GetNewListingDate(string listStatus)
-            {
-                switch (listStatus.ToEnumFromEnumMember<MarketStatuses>())
-                {
-                    case MarketStatuses.Active:
-                        return DateTime.Now;
-                    case MarketStatuses.Pending:
-                    case MarketStatuses.OptionPending:
-                    case MarketStatuses.PendingContinueToShow:
-                        return DateTime.Now.AddDays(-2);
-                    case MarketStatuses.Terminated:
-                    case MarketStatuses.Expired:
-                    case MarketStatuses.Sold:
-                        return DateTime.Now.AddDays(-4);
-                    default:
-                        return null;
                 }
             }
 
