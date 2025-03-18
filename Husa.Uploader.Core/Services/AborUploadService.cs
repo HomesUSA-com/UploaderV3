@@ -1516,8 +1516,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_322"));
             var remarks = listing.GetPublicRemarks();
             string agentRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
-            string privateRemarks2 = listing.AgentPrivateRemarks2 ?? string.Empty;
-            var privateRemarks = $"{agentRemarks}. {privateRemarks2}";
+            var privateRemarks = $"{agentRemarks}.";
             this.WriteTextbox("Input_321", privateRemarks, inputType: "textarea");
             this.WriteTextbox("Input_322", remarks, inputType: "textarea"); // Internet / Remarks / Desc. of Property
             this.WriteTextbox("Input_323", remarks, inputType: "textarea"); // Syndication Remarks

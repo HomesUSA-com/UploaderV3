@@ -1441,14 +1441,16 @@ namespace Husa.Uploader.Core.Services
             {
                 this.ClickNextButton();
 
-                var message = listing.GetAgentRemarksMessage();
+                string baseRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
+                string additionalRemarks = listing.AgentPrivateRemarksAdditional ?? string.Empty;
+                var agentRemarks = $"{baseRemarks}. {additionalRemarks}";
 
                 Thread.Sleep(2000);
 
                 this.uploaderClient.WriteTextbox(By.Name("AGTRMRKS"), entry: string.Empty);
                 this.uploaderClient.WriteTextbox(
                     findBy: By.Name("AGTRMRKS"),
-                    entry: message,
+                    entry: agentRemarks,
                     isElementOptional: true); // Agent Confidential Rmrks
             }
 
