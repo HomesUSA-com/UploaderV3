@@ -1020,14 +1020,14 @@ namespace Husa.Uploader.Data.Entities
             }
 
             var remarkOptions = this.RemarkOptions();
-            var remarkDate = this.BuildCompletionDate?.ToString(remarkOptions["SD"].Item2);
+            var remarkDate = this.BuildCompletionDate?.ToString(remarkOptions[this.RemarksFormatFromCompany].Item2);
             var remarkInfo = remarkDate is null ? null : string.Format(remarkOptions["SD"].Item1, remarkDate);
 
             switch (this.BuiltStatus)
             {
                 case BuiltStatus.ToBeBuilt:
                     builtNote += remarkInfo.IsNullOrEmpty() ? string.Empty
-                        : $"{remarkInfo} completion ~ ";
+                        : $"{remarkDate} completion! ~ ";
 
                     break;
 
@@ -1040,7 +1040,7 @@ namespace Husa.Uploader.Data.Entities
                 case BuiltStatus.WithCompletion:
                     if (remarkInfo is not null)
                     {
-                        builtNote += $"{remarkInfo} completion! ~ ";
+                        builtNote += $"{remarkDate} completion! ~ ";
                     }
 
                     break;
@@ -1079,7 +1079,7 @@ namespace Husa.Uploader.Data.Entities
         {
             return new Dictionary<string, Tuple<string, string>>
             {
-                { "GEN", new Tuple<string, string>("Ready Now!", null) },
+                { "GEN", new Tuple<string, string>("Ready Now!", "MMM yyyy") },
                 { "SD", new Tuple<string, string>("Const. Completed {0}", "MMM dd yyyy") },
             };
         }
