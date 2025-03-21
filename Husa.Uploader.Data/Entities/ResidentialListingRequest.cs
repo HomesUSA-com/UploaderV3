@@ -623,6 +623,8 @@ namespace Husa.Uploader.Data.Entities
 
         public string AgentPrivateRemarks { get; set; }
 
+        public string AgentPrivateRemarksAdditional { get; set; }
+
         public string SMARTFEATURESAPP { get; set; }
 
         public string ProposedTerms { get; set; }
@@ -842,8 +844,6 @@ namespace Husa.Uploader.Data.Entities
         public string ManagementCompany { get; set; }
 
         public string SecondAgentMarketUniqueId { get; set; }
-
-        public string AgentPrivateRemarks2 { get; set; }
 
         public string Bed6Location { get; set; }
 

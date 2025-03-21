@@ -1305,8 +1305,11 @@ namespace Husa.Uploader.Core.Services
         private void UpdatePublicRemarksInRemarksTab(ResidentialListingRequest listing)
         {
             var remarks = listing.GetPublicRemarks();
+            string baseRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
+            string additionalRemarks = listing.AgentPrivateRemarksAdditional ?? string.Empty;
+            var agentRemarks = $"{baseRemarks}. {additionalRemarks}";
             this.uploaderClient.WriteTextbox(By.Id("Input_135"), remarks, true); // Public Remarks
-            this.uploaderClient.WriteTextbox(By.Id("Input_137"), listing.GetAgentRemarksMessage(), true); // Agent Remarks
+            this.uploaderClient.WriteTextbox(By.Id("Input_137"), agentRemarks, true); // Agent Remarks
         }
 
         private void SetLongitudeAndLatitudeValues(ResidentialListingRequest listing)
