@@ -73,7 +73,6 @@ namespace Husa.Uploader.Core.Services
 
             // Connect to the login page
             var loginButtonId = "login_btn";
-
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
             Thread.Sleep(1000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id(loginButtonId));
