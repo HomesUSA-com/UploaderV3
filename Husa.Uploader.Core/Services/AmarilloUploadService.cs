@@ -35,6 +35,7 @@ namespace Husa.Uploader.Core.Services
         private const string HalfBathFieldLabel = "1/2 Baths";
         private const string ThreeQuaterBathFieldLabel = "3/4 Baths";
         private const string FullBathFieldLabel = "Full Baths";
+        private const string OPTIONVALUENO = "N";
         private readonly IUploaderClient uploaderClient;
         private readonly IMediaRepository mediaRepository;
         private readonly IServiceSubscriptionClient serviceSubscriptionClient;
@@ -410,9 +411,16 @@ namespace Husa.Uploader.Core.Services
 
                 this.uploaderClient.WriteTextbox(By.Id("withdraw_date"), listing.WithdrawnDate?.ToShortDateString()); // Withdrawal Date
 
-                var marketInfo = this.options.MarketInfo.Amarillo;
-                var listingMember = marketInfo.AgentId;
-                this.FillDropDownWithAutocomplete(listingMember, "me_tech_id");  // Listing Member
+                if (listing.HasBuyerAgent)
+                {
+                    var marketInfo = this.options.MarketInfo.Amarillo;
+                    var listingMember = marketInfo.AgentId;
+                    this.FillDropDownWithAutocomplete(listingMember, "me_tech_id");  // Listing Member
+                }
+                else
+                {
+                    this.FillDropDownWithAutocomplete("Non-Member, Non-Agent (Non-member) of Non-MLS", "me_tech_id");
+                }
 
                 this.uploaderClient.WriteTextbox(By.Id("status_change_date"), DateTime.Now.ToShortDateString()); // Withdrawn Date
             }
@@ -552,11 +560,19 @@ namespace Husa.Uploader.Core.Services
 
         private void FillMainFields(ResidentialListingRequest listing)
         {
-            this.uploaderClient.SetSelect(By.Id("userdefined17"), "N"); // To Be Auctioned
+            this.uploaderClient.SetSelect(By.Id("userdefined17"), OPTIONVALUENO); // To Be Auctioned
             this.uploaderClient.SetSelect(By.Id("userdefined14"), listing.IsNewConstruction.BoolToYesNoBool().ToTitleCase()); // New Construction
             this.uploaderClient.WaitUntilElementExists(By.Id("userdefined34"));
+
+            if (!listing.IsNewListing)
+            {
+                this.uploaderClient.SetSelect(By.Id("ud_c1_08"), OPTIONVALUENO); // Photo include Virtual or Digital Renderings
+            }
+
+            this.uploaderClient.SetSelect(By.Id("ud_c1_05"), OPTIONVALUENO); // Photo are Virtually Staged
+
             this.uploaderClient.WriteTextbox(By.Id("userdefined34"), listing.Excludes); // Exclusions
-            this.uploaderClient.SetSelect(By.Id("userdefined51"), "N"); // Fixture Lease(s)?
+            this.uploaderClient.SetSelect(By.Id("userdefined51"), OPTIONVALUENO); // Fixture Lease(s)?
             this.uploaderClient.SetSelect(By.Id("style"), listing.HousingStyleDesc); // Style
 
             this.uploaderClient.SetSelect(By.Id("userdefined10"), (listing as AmarilloListingRequest).Zone); // Zone
