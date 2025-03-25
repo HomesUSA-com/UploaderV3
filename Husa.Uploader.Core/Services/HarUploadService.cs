@@ -80,9 +80,9 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("username"), credentials[LoginCredentials.Username]);
             this.uploaderClient.WriteTextbox(By.Id("password"), credentials[LoginCredentials.Password]);
             Thread.Sleep(1000);
-            this.uploaderClient.ClickOnElementById(loginButtonId);
+            this.uploaderClient.ExecuteScript($"jQuery('#{loginButtonId}').click();");
 
-            Thread.Sleep(2000);
+            Thread.Sleep(5000);
             try
             {
                 this.uploaderClient.ClickOnElementById("back-to-nexturl");
@@ -94,7 +94,7 @@ namespace Husa.Uploader.Core.Services
             }
 
             this.uploaderClient.NavigateToUrl(LandingPageURL);
-            Thread.Sleep(2000);
+            Thread.Sleep(3000);
 
             return LoginResult.Logged;
         }
