@@ -41,6 +41,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
             this.OpenHouse = new List<OpenHouseRequest>();
         }
 
+        public bool DoNotIncludeInfoInPublicRemarks { get; set; }
+
         public override MarketCode MarketCode => MarketCode.Austin;
         public override BuiltStatus BuiltStatus => this.YearBuiltDesc switch
         {
@@ -92,6 +94,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 ExpectedActiveDate = DateTime.Now.ToString("MM/dd/yy"),
                 ExpiredDate = this.listingDetailResponse.ExpirationDate,
                 RemarksFormatFromCompany = company?.MlsInfo?.RemarksForCompletedHomes,
+                DoNotIncludeInfoInPublicRemarks = company?.MlsInfo?.IncludeMls ?? true,
                 ShowingTime = this.listingDetailResponse.ShowingTime,
             };
 
