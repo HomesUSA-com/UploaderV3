@@ -1522,9 +1522,7 @@ namespace Husa.Uploader.Core.Services
             }
 
             string agentRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
-            string privateRemarks2 = listing.AgentPrivateRemarks2 ?? string.Empty;
-            var privateRemarks = agentRemarks + ". " + privateRemarks2;
-            this.WriteTextbox("Input_321", privateRemarks, inputType: "textarea");
+            this.WriteTextbox("Input_321", agentRemarks, inputType: "textarea");
         }
 
         private void SetLongitudeAndLatitudeValues(ResidentialListingRequest listing)
