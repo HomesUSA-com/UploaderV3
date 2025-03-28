@@ -75,7 +75,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private string lastUpdated;
         private bool loadFailed;
         private bool updateAvailable;
-
+        private bool hasFinishedUpdating;
         private UploadListingItem selectedListingRequest;
         private ObservableCollection<UploadListingItem> listingRequests;
 
@@ -103,6 +103,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private ICommand startLotPriceUpdateCommand;
 
         private ICommand startShowingTimeUploadCommand;
+        private ICommand startRefreshListingsCommand;
 
         public ShellViewModel(
             IOptions<ApplicationOptions> options,
@@ -268,6 +269,16 @@ namespace Husa.Uploader.Desktop.ViewModels
         public bool IsReadyLot => this.CurrentEntity == Entity.Lot && this.State == UploaderState.Ready && this.SelectedListingRequest != null;
         public bool ShowLotActions => this.IsReadyLot || this.IsLotSucceededAndReady;
         public bool IsLotSucceededAndReady => this.CurrentEntity == Entity.Lot && this.State == UploaderState.SucceededAndReady && this.SelectedListingRequest != null;
+
+        public bool HasFinishedUpdating
+        {
+            get => this.hasFinishedUpdating;
+            set
+            {
+                this.hasFinishedUpdating = value;
+                this.OnPropertyChanged();
+            }
+        }
 
         public string UserName
         {
@@ -639,6 +650,15 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
+        public ICommand StartRefreshListingsCommand
+        {
+            get
+            {
+                this.startRefreshListingsCommand ??= new RelayAsyncCommand(param => this.LoadData(this.CurrentEntity), param => true);
+                return this.startRefreshListingsCommand;
+            }
+        }
+
         public bool CanStartEdit => this.SelectedListingRequest != null &&
             this.CurrentEntity == Entity.Listing &&
             !this.SelectedListingRequest.FullListing.IsNewListing &&
@@ -885,6 +905,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private async Task LoadData(Entity entity)
         {
             this.LastUpdated = $"Updating {entity} data...";
+            this.HasFinishedUpdating = false;
             switch (entity)
             {
                 case Entity.Listing:
@@ -904,6 +925,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                         this.Refresh();
                     }
 
+                    this.HasFinishedUpdating = true;
                     break;
                 case Entity.Lot:
                     try
@@ -922,6 +944,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                         this.Refresh();
                     }
 
+                    this.HasFinishedUpdating = false;
                     break;
             }
         }

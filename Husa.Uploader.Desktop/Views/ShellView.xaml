@@ -218,6 +218,9 @@
                         </Grid>
                         <TextBlock Grid.Row="2" Grid.Column="0" Foreground="#FFFFFF" Name="LastUpdated" Background="#555555" Height="30" VerticalAlignment="Bottom" Padding="5,5,0,0" Margin="5,20,10,0" Text="{Binding LastUpdated, UpdateSourceTrigger=PropertyChanged}" />
                         <StackPanel Grid.Row="2" Grid.Column="2"  Orientation="Horizontal" HorizontalAlignment="Right">
+                            <!--<Button VerticalAlignment="Bottom" Name="RefreshListings" Command="{Binding StartRefreshListingsCommand}" IsEnabled="{Binding HasFinishedUpdating}">
+                                <materialDesign:PackIcon Kind="Refresh" VerticalAlignment="Center" Width="15" Height="20" Foreground="#FFFFFF" Margin="0 0 0 0 " Padding=" 0 0 0 0 "/>
+                            </Button>-->
                             <TextBlock VerticalAlignment="Bottom" HorizontalAlignment="Left" Foreground="#FFFFFF" x:Name="ApplicationBuildDate" Background="#555555" Padding="10,5,0,0" Height="29" Margin="0,0,0,0" Text="{Binding ApplicationBuildDate}">
                                 <Run Text="Version: "/>
                             </TextBlock>
@@ -565,6 +568,9 @@
                         </StackPanel>
                         <StackPanel VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Right">
                             <TextBlock x:Name="UserFullName" Text="{Binding UserFullName}" VerticalAlignment="Center" FontSize="18" Margin="10" Foreground="#FF1B3861" Width="371" TextAlignment="Right" Padding="0,0,25,0"/>
+                            <Button VerticalAlignment="Center" Name="RefreshListings" Command="{Binding StartRefreshListingsCommand}" IsEnabled="{Binding HasFinishedUpdating}" Background="#FF1B3861" BorderBrush="#FF1B3861">
+                                <materialDesign:PackIcon Kind="Refresh" VerticalAlignment="Center" Width="15" Height="20" Foreground="#FFFFFF" Margin="0 0 0 0 " Padding=" 0 0 0 0 "/>
+                            </Button>
                             <materialDesign:PopupBox HorizontalAlignment="Right" PlacementMode="BottomAndAlignRightEdges" StaysOpen="False" >
                                 <StackPanel Width="180" >
                                     <ListView ScrollViewer.HorizontalScrollBarVisibility="Hidden">
