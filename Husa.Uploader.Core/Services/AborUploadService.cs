@@ -128,7 +128,7 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
 
                     this.uploaderClient.ClickOnElementById("toc_InputForm_section_9"); // click in tab Listing Information
                     Thread.Sleep(400);
@@ -282,7 +282,7 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
 
                     this.UpdateYearBuiltDescriptionInGeneralTab(listing);
                     this.UpdatePublicRemarksInRemarksTab(listing as AborListingRequest);
@@ -327,11 +327,11 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
 
                     // Enter Manage Photos
                     this.uploaderClient.FindElementById("InputForm_nav-photos").Click();
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
                     Thread.Sleep(2000);
                     this.uploaderClient.FindElementById("InputForm_photos_actionsButton").Click();
                     this.uploaderClient.FindElementById("InputForm_photos_selectAll").Click();
@@ -340,7 +340,7 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.FindElementById("InputForm_photos_deleteSelected").Click();
                     this.uploaderClient.AcceptAlertWindow(isElementOptional: true);
                     Thread.Sleep(2000);
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputForm_photos_addPhotoBtn"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputForm_photos_addPhotoBtn"), cancellationToken);
                     this.uploaderClient.FindElementById("InputForm_photos_addPhotoBtn").Click();
 
                     await this.ProcessImages(listing, cancellationToken);
@@ -570,7 +570,7 @@ namespace Husa.Uploader.Core.Services
 
                 this.NavigateToQuickEdit(listing.MLSNum);
                 this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
 
                 await this.UpdateVirtualTour(listing, cancellationToken);
 
@@ -602,7 +602,7 @@ namespace Husa.Uploader.Core.Services
                 // Enter OpenHouse
                 string buttonText = "Open Houses Input Form";
                 this.uploaderClient.ExecuteScript($"$('button[data-mtx-track-prop-item=\"{buttonText}\"]').click()");
-                this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
 
                 this.CleanOpenHouse();
 
@@ -639,7 +639,7 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
 
                     this.uploaderClient.ClickOnElementById("toc_InputForm_section_9"); // click in tab Listing Information
                     Thread.Sleep(400);
@@ -940,11 +940,11 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
 
                     // Enter Manage Photos
                     this.uploaderClient.FindElementById("InputForm_nav-photos").Click();
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
                     Thread.Sleep(2000);
                     this.uploaderClient.FindElementById("InputForm_photos_actionsButton").Click();
                     this.uploaderClient.FindElementById("InputForm_photos_selectAll").Click();
@@ -953,7 +953,7 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.FindElementById("InputForm_photos_deleteSelected").Click();
                     this.uploaderClient.AcceptAlertWindow(isElementOptional: true);
                     Thread.Sleep(2000);
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputForm_photos_addPhotoBtn"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputForm_photos_addPhotoBtn"), cancellationToken);
                     this.uploaderClient.FindElementById("InputForm_photos_addPhotoBtn").Click();
 
                     await this.ProcessLotImages(listing, cancellationToken);
