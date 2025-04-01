@@ -1567,7 +1567,9 @@ namespace Husa.Uploader.Core.Services
                 this.WriteTextbox("Input_323", remarks, inputType: "textarea"); // Syndication Remarks
             }
 
-            string agentRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
+            string baseAgentRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
+            string additionalRemarks = listing.AgentPrivateRemarksAdditional ?? string.Empty;
+            var agentRemarks = $"{baseAgentRemarks}. {additionalRemarks}";
             this.WriteTextbox("Input_321", agentRemarks, inputType: "textarea");
         }
 
