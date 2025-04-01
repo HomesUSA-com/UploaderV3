@@ -128,7 +128,7 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
 
                     this.uploaderClient.ClickOnElementById("toc_InputForm_section_9"); // click in tab Listing Information
                     Thread.Sleep(400);
@@ -282,7 +282,7 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
 
                     this.UpdateYearBuiltDescriptionInGeneralTab(listing);
                     this.UpdatePublicRemarksInRemarksTab(listing as AborListingRequest);
@@ -327,11 +327,11 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
 
                     // Enter Manage Photos
                     this.uploaderClient.FindElementById("InputForm_nav-photos").Click();
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
                     Thread.Sleep(2000);
                     this.uploaderClient.FindElementById("InputForm_photos_actionsButton").Click();
                     this.uploaderClient.FindElementById("InputForm_photos_selectAll").Click();
@@ -340,7 +340,7 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.FindElementById("InputForm_photos_deleteSelected").Click();
                     this.uploaderClient.AcceptAlertWindow(isElementOptional: true);
                     Thread.Sleep(2000);
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputForm_photos_addPhotoBtn"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputForm_photos_addPhotoBtn"), cancellationToken);
                     this.uploaderClient.FindElementById("InputForm_photos_addPhotoBtn").Click();
 
                     await this.ProcessImages(listing, cancellationToken);
@@ -570,7 +570,7 @@ namespace Husa.Uploader.Core.Services
 
                 this.NavigateToQuickEdit(listing.MLSNum);
                 this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
 
                 await this.UpdateVirtualTour(listing, cancellationToken);
 
@@ -602,7 +602,7 @@ namespace Husa.Uploader.Core.Services
                 // Enter OpenHouse
                 string buttonText = "Open Houses Input Form";
                 this.uploaderClient.ExecuteScript($"$('button[data-mtx-track-prop-item=\"{buttonText}\"]').click()");
-                this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
 
                 this.CleanOpenHouse();
 
@@ -639,7 +639,7 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
 
                     this.uploaderClient.ClickOnElementById("toc_InputForm_section_9"); // click in tab Listing Information
                     Thread.Sleep(400);
@@ -700,23 +700,7 @@ namespace Husa.Uploader.Core.Services
 
                     if (listing.IsNewListing)
                     {
-                        var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.LotListingRequestID, market: MarketCode.Austin, cancellationToken);
-
-                        if (virtualTours.Any())
-                        {
-                            var firstVirtualTour = virtualTours.FirstOrDefault();
-                            if (firstVirtualTour != null)
-                            {
-                                this.uploaderClient.WriteTextbox(By.Name("Input_325"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
-                            }
-
-                            virtualTours = virtualTours.Skip(1).ToList();
-                            var secondVirtualTour = virtualTours.FirstOrDefault();
-                            if (secondVirtualTour != null)
-                            {
-                                this.uploaderClient.WriteTextbox(By.Name("Input_324"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
-                            }
-                        }
+                        await this.FillLotVirtualTour(listing, cancellationToken);
                     }
 
                     await this.FillLotMedia(listing, cancellationToken);
@@ -940,11 +924,11 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
 
                     // Enter Manage Photos
                     this.uploaderClient.FindElementById("InputForm_nav-photos").Click();
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
                     Thread.Sleep(2000);
                     this.uploaderClient.FindElementById("InputForm_photos_actionsButton").Click();
                     this.uploaderClient.FindElementById("InputForm_photos_selectAll").Click();
@@ -953,7 +937,7 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.FindElementById("InputForm_photos_deleteSelected").Click();
                     this.uploaderClient.AcceptAlertWindow(isElementOptional: true);
                     Thread.Sleep(2000);
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputForm_photos_addPhotoBtn"));
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputForm_photos_addPhotoBtn"), cancellationToken);
                     this.uploaderClient.FindElementById("InputForm_photos_addPhotoBtn").Click();
 
                     await this.ProcessLotImages(listing, cancellationToken);
@@ -1584,41 +1568,6 @@ namespace Husa.Uploader.Core.Services
             this.WriteTextbox("Input_321", agentRemarks, inputType: "textarea");
         }
 
-        private void SetLongitudeAndLatitudeValues(ResidentialListingRequest listing)
-        {
-            if (!listing.IsNewListing)
-            {
-                this.logger.LogInformation("Skipping configuration of latitude and longitude for listing {address} because it already has an mls number", $"{listing.StreetNum} {listing.StreetName}");
-                return;
-            }
-
-            if (listing.UpdateGeocodes)
-            {
-                this.uploaderClient.WriteTextbox(By.Name("INPUT__146"), value: listing.Latitude); // Latitude
-                this.uploaderClient.WriteTextbox(By.Name("INPUT__168"), value: listing.Longitude); // Longitude
-            }
-            else
-            {
-                var getLatLongFromAddress = "Get Lat/Long from address";
-                if (this.uploaderClient.FindElements(By.LinkText(getLatLongFromAddress))?.Any() == true)
-                {
-                    this.uploaderClient.ClickOnElement(By.LinkText(getLatLongFromAddress));
-                    Thread.Sleep(1000);
-                }
-            }
-        }
-
-        private void DeleteAllImages()
-        {
-            if (this.uploaderClient.FindElements(By.Id("cbxCheckAll"))?.Any() == true)
-            {
-                this.uploaderClient.ClickOnElement(By.Id("cbxCheckAll"));
-                this.uploaderClient.ClickOnElement(By.Id("m_lbDeleteChecked"));
-                Thread.Sleep(1000);
-                this.uploaderClient.AcceptAlertWindow();
-            }
-        }
-
         [SuppressMessage("SonarLint", "S2583", Justification = "Ignored due to suspected false positive")]
         private async Task ProcessImages(ResidentialListingRequest listing, CancellationToken cancellationToken)
         {
@@ -1944,6 +1893,27 @@ namespace Husa.Uploader.Core.Services
             this.UpdateLotPublicRemarksInRemarksTab(listing);
         }
 
+        private async Task FillLotVirtualTour(LotListingRequest listing, CancellationToken cancellationToken = default)
+        {
+            var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.LotListingRequestID, market: MarketCode.Austin, cancellationToken);
+
+            if (virtualTours.Any())
+            {
+                var firstVirtualTour = virtualTours.FirstOrDefault();
+                if (firstVirtualTour != null)
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("Input_325"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+                }
+
+                virtualTours = virtualTours.Skip(1).ToList();
+                var secondVirtualTour = virtualTours.FirstOrDefault();
+                if (secondVirtualTour != null)
+                {
+                    this.uploaderClient.WriteTextbox(By.Name("Input_324"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
+                }
+            }
+        }
+
         private void SetLotLongitudeAndLatitudeValues(LotListingRequest listing)
         {
             if (!listing.IsNewListing)
@@ -2035,33 +2005,6 @@ namespace Husa.Uploader.Core.Services
 
                 this.uploaderClient.ScrollDown(200);
                 Thread.Sleep(400);
-            }
-        }
-
-        private async Task UpdateLotVirtualTour(LotListingRequest listing, CancellationToken cancellationToken = default)
-        {
-            var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.LotListingRequestID, market: MarketCode.Austin, cancellationToken);
-
-            if (!virtualTours.Any())
-            {
-                return;
-            }
-
-            this.uploaderClient.ClickOnElement(By.LinkText("Remarks/Tours/Internet"));
-            Thread.Sleep(200);
-            this.uploaderClient.WaitUntilElementExists(By.Id("ctl02_m_divFooterContainer"), cancellationToken);
-
-            var firstVirtualTour = virtualTours.FirstOrDefault();
-            if (firstVirtualTour != null)
-            {
-                this.uploaderClient.WriteTextbox(By.Name("Input_324"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
-            }
-
-            virtualTours = virtualTours.Skip(1).ToList();
-            var secondVirtualTour = virtualTours.FirstOrDefault();
-            if (secondVirtualTour != null)
-            {
-                this.uploaderClient.WriteTextbox(By.Name("Input_325"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
             }
         }
     }
