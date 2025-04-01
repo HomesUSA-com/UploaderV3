@@ -19,4 +19,8 @@
 	  <ProjectReference Include="..\Husa.Uploader.Data\Husa.Uploader.Data.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Services\ShowingTime\" />
+	</ItemGroup>
+
 </Project>
