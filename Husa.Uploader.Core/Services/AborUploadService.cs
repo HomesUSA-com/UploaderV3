@@ -921,6 +921,9 @@ namespace Husa.Uploader.Core.Services
 
                 try
                 {
+                    await this.Login(listing.CompanyId);
+                    Thread.Sleep(1000);
+
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
@@ -1942,6 +1945,7 @@ namespace Husa.Uploader.Core.Services
         {
             var remarks = listing.GetPublicRemarks();
             this.WriteTextbox("Input_321", listing.GetAgentRemarksMessage());
+            this.uploaderClient.ScrollDown(2000);
             this.WriteTextbox("Input_322", remarks); // Internet / Remarks / Desc. of Property
             this.WriteTextbox("Input_323", remarks); // Syndication Remarks
         }
