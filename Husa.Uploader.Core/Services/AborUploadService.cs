@@ -1700,7 +1700,7 @@ namespace Husa.Uploader.Core.Services
                 // To Time
                 this.uploaderClient.ExecuteScript(script: $"jQuery('input[id^=timeBox__{fullyqualifiedNameField}__REPEAT{index}_164]').removeAttr('readonly');");
                 var endTimeTT = openHouse.EndTime.Hours >= 12 ? " PM" : " AM";
-                var toTime = openHouse.StartTime.To12Format() + endTimeTT;
+                var toTime = openHouse.EndTime.To12Format() + endTimeTT;
                 this.WriteTextbox($"timeBox__{fullyqualifiedNameField}__REPEAT{index}_164", toTime);
 
                 // Comments
