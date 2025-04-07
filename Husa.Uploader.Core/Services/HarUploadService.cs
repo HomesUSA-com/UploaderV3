@@ -1176,7 +1176,14 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.SetMultipleCheckboxById("Input_280", listing.FinancingProposed);  // Financing Considered
             this.FindAndSetMultipleCheckboxById(new[] { "Input_494", "Input_273", "Input_476" }, listing.Disclosures);  // Disclosures
-            if (listing.AgentBonusAmountType.Equals("$") && !string.IsNullOrEmpty(listing.AgentBonusAmount))
+
+            bool hasAgentBonus = listing.HasAgentBonus ?? false;
+            bool hasBonusWithAmount = listing.HasBonusWithAmount;
+            if (!hasAgentBonus || !hasBonusWithAmount)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_723"), null); // Seller May Concessions
+            }
+            else if (listing.AgentBonusAmountType.Equals("$") && !string.IsNullOrEmpty(listing.AgentBonusAmount))
             {
                     this.uploaderClient.WriteTextbox(By.Id("Input_723"), listing.AgentBonusAmount); // Seller May Concessions
             }
