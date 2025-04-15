@@ -1231,9 +1231,6 @@ namespace Husa.Uploader.Core.Services
             this.GoToRemarksTab(housingType);
 
             this.UpdatePublicRemarksInRemarksTab(listing);
-
-            this.uploaderClient.WriteTextbox(By.Id("Input_137"), string.Empty);
-            this.uploaderClient.WriteTextbox(By.Id("Input_137"), listing.GetAgentRemarksMessage(), true); // Agent Remarks
         }
 
         private void GoToRemarksTab(HousingType housingType)
@@ -1313,7 +1310,7 @@ namespace Husa.Uploader.Core.Services
             var remarks = listing.GetPublicRemarks();
             string baseRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
             string additionalRemarks = listing.AgentPrivateRemarksAdditional ?? string.Empty;
-            var agentRemarks = $"{baseRemarks}. {additionalRemarks}";
+            var agentRemarks = $"{baseRemarks} {additionalRemarks}";
             this.uploaderClient.WriteTextbox(By.Id("Input_135"), remarks, true); // Public Remarks
             this.uploaderClient.WriteTextbox(By.Id("Input_137"), agentRemarks, true); // Agent Remarks
         }
