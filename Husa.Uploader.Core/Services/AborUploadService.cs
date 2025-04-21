@@ -1669,6 +1669,7 @@ namespace Husa.Uploader.Core.Services
             var index = 0;
             Thread.Sleep(1000);
             var sortedOpenHouses = listing.OpenHouse.OrderBy(openHouse => openHouse.Date).ToList();
+            var type = "PUBLIC";
             foreach (var openHouse in sortedOpenHouses)
             {
                 if (index != 0)
@@ -1682,7 +1683,6 @@ namespace Husa.Uploader.Core.Services
                 this.SetSelect($"_{fullyqualifiedNameField}__REPEAT{index}_165", value: "ACT");
 
                 // Open House Type
-                var type = openHouse.Type.ToString().ToUpperInvariant();
                 this.SetSelect($"_{fullyqualifiedNameField}__REPEAT{index}_161", value: type);
 
                 // Refreshments
