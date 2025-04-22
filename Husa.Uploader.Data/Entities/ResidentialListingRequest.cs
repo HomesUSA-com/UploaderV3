@@ -295,6 +295,7 @@ namespace Husa.Uploader.Data.Entities
         public string OtherRoom1Level { get; set; }
         public int? OtherRoom1Length { get; set; }
         public string MortgageCoSold { get; set; }
+        public string TitleCoSold { get; set; }
         public string MFinancing { get; set; }
         public int? LivingRoom3Width { get; set; }
         public string LivingRoom3Level { get; set; }
