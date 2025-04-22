@@ -84,16 +84,6 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ExecuteScript(" $('.tour-backdrop').remove();$('#step-0').remove();");
 
             Thread.Sleep(1000);
-            try
-            {
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("RedirectingPopup"));
-                Thread.Sleep(4000);
-            }
-            catch (Exception e)
-            {
-                this.logger.LogInformation(e, "The redirect popup was not displayed in the login screen., {Message}", e.Message);
-            }
-
             this.uploaderClient.NavigateToUrl(LandingPageURL);
             Thread.Sleep(1000);
 
@@ -454,7 +444,7 @@ namespace Husa.Uploader.Core.Services
                             this.uploaderClient.SetSelect(By.Id("Input_496"), listing.SoldTerms); // Buyer Financing
                             this.uploaderClient.ScrollDownPosition(100);
                             this.uploaderClient.WriteTextbox(By.Id("Input_467"), listing.MortgageCoSold); // Mortgage Company
-                            this.uploaderClient.WriteTextbox(By.Id("Input_468"), listing.TitleCo); // Closing Title Company
+                            this.uploaderClient.WriteTextbox(By.Id("Input_468"), listing.TitleCoSold); // Closing Title Company
 
                             this.uploaderClient.SetSelect(By.Id("Input_234"), listing.SqFtSource); // Living Area Source
                             this.uploaderClient.SetSelect(By.Id("Input_496"), listing.MFinancing); // Buyer Financing

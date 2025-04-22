@@ -184,6 +184,7 @@ namespace Husa.Uploader.Core.Tests
             dfwListing.ContingencyInfo = "This is a test for the contengency info field";
             dfwListing.HasContingencyInfo = false;
             dfwListing.SqFtTotal = 10;
+            dfwListing.TitleCoSold = "title test";
             var sut = this.GetSut();
 
             // Act
