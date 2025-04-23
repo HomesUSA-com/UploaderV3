@@ -343,6 +343,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.AgentMarketUniqueId = statusInfo.AgentMarketUniqueId;
                 residentialListingRequest.SecondAgentMarketUniqueId = statusInfo.SecondAgentMarketUniqueId;
                 residentialListingRequest.HasBuyerAgent = statusInfo.HasBuyerAgent;
+                residentialListingRequest.TitleCoSold = statusInfo.TitleCompany;
             }
 
             void FillRoomsInfo(IEnumerable<RoomResponse> rooms)
