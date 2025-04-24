@@ -453,10 +453,8 @@ namespace Husa.Uploader.Core.Services
                                                                                                    //// 1st Interest Rate
                             this.uploaderClient.SetSelect(By.Id("Input_624"), listing.HasBuyerAgent.BoolToNumericBool());  // Buyers/SubAgent
                             this.uploaderClient.SetSelect(By.Id("Input_625"), listing.HasSecondBuyerAgent.BoolToNumericBool());  // Buyers/SubAgent2
-                            this.uploaderClient.WriteTextbox(By.Id("Input_141_displayValue"), listing.SellingAgentLicenseNum ?? "99999999"); // Buyers/SubAgent ID
-                            this.uploaderClient.ExecuteScript(" document.getElementById('Input_141_Refresh').value='1';RefreshToSamePage(); ");
-                            this.uploaderClient.WriteTextbox(By.Id("Input_145_displayValue"), listing.SecondAgentMarketUniqueId); // Buyers/SubAgent 2 ID
-                            this.uploaderClient.ExecuteScript(" document.getElementById('Input_145_Refresh').value='1';RefreshToSamePage(); ");
+                            this.uploaderClient.WriteTextbox(By.Id("filter_Input_141"), listing.AgentMarketUniqueId ?? "99999999"); // Buyers/SubAgent ID
+                            this.uploaderClient.WriteTextbox(By.Id("filter_Input_145"), listing.SecondAgentMarketUniqueId); // Buyers/SubAgent 2 ID
                             break;
                         case "PND":
                             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_94"));

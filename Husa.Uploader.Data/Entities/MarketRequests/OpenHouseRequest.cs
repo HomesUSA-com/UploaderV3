@@ -13,5 +13,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
         public string Refreshments { get; set; }
         public string Lunch { get; set; }
         public string VirtualOpenHouseUrl { get; set; }
+        public int Order { get; set; }
     }
 }
