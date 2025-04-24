@@ -84,16 +84,6 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ExecuteScript(" $('.tour-backdrop').remove();$('#step-0').remove();");
 
             Thread.Sleep(1000);
-            try
-            {
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("RedirectingPopup"));
-                Thread.Sleep(4000);
-            }
-            catch (Exception e)
-            {
-                this.logger.LogInformation(e, "The redirect popup was not displayed in the login screen., {Message}", e.Message);
-            }
-
             this.uploaderClient.NavigateToUrl(LandingPageURL);
             Thread.Sleep(1000);
 
@@ -454,7 +444,7 @@ namespace Husa.Uploader.Core.Services
                             this.uploaderClient.SetSelect(By.Id("Input_496"), listing.SoldTerms); // Buyer Financing
                             this.uploaderClient.ScrollDownPosition(100);
                             this.uploaderClient.WriteTextbox(By.Id("Input_467"), listing.MortgageCoSold); // Mortgage Company
-                            this.uploaderClient.WriteTextbox(By.Id("Input_468"), listing.TitleCo); // Closing Title Company
+                            this.uploaderClient.WriteTextbox(By.Id("Input_468"), listing.TitleCoSold); // Closing Title Company
 
                             this.uploaderClient.SetSelect(By.Id("Input_234"), listing.SqFtSource); // Living Area Source
                             this.uploaderClient.SetSelect(By.Id("Input_496"), listing.MFinancing); // Buyer Financing
@@ -463,10 +453,8 @@ namespace Husa.Uploader.Core.Services
                                                                                                    //// 1st Interest Rate
                             this.uploaderClient.SetSelect(By.Id("Input_624"), listing.HasBuyerAgent.BoolToNumericBool());  // Buyers/SubAgent
                             this.uploaderClient.SetSelect(By.Id("Input_625"), listing.HasSecondBuyerAgent.BoolToNumericBool());  // Buyers/SubAgent2
-                            this.uploaderClient.WriteTextbox(By.Id("Input_141_displayValue"), listing.SellingAgentLicenseNum ?? "99999999"); // Buyers/SubAgent ID
-                            this.uploaderClient.ExecuteScript(" document.getElementById('Input_141_Refresh').value='1';RefreshToSamePage(); ");
-                            this.uploaderClient.WriteTextbox(By.Id("Input_145_displayValue"), listing.SecondAgentMarketUniqueId); // Buyers/SubAgent 2 ID
-                            this.uploaderClient.ExecuteScript(" document.getElementById('Input_145_Refresh').value='1';RefreshToSamePage(); ");
+                            this.uploaderClient.WriteTextbox(By.Id("filter_Input_141"), listing.AgentMarketUniqueId ?? "99999999"); // Buyers/SubAgent ID
+                            this.uploaderClient.WriteTextbox(By.Id("filter_Input_145"), listing.SecondAgentMarketUniqueId); // Buyers/SubAgent 2 ID
                             break;
                         case "PND":
                             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_94"));

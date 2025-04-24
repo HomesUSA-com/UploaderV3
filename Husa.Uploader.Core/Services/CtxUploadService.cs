@@ -1051,7 +1051,7 @@ namespace Husa.Uploader.Core.Services
         {
             var index = 0;
             Thread.Sleep(1000);
-            foreach (var openHouse in listing.OpenHouse)
+            foreach (var openHouse in listing.OpenHouse.OrderBy(x => x.Order).ThenBy(x => x.StartTime))
             {
                 if (index != 0)
                 {

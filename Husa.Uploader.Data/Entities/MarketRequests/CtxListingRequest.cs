@@ -350,6 +350,9 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
 
                 foreach (var openHouse in openHouses)
                 {
+                    var today = (short)DateTime.Now.DayOfWeek;
+                    var day = (short)Enum.Parse<DayOfWeek>(openHouse.Type.ToStringFromEnumMember());
+                    var diff = day - today;
                     this.OpenHouse.Add(new()
                     {
                         Date = OpenHouseExtensions.GetNextWeekday(DateTime.Today, Enum.Parse<DayOfWeek>(openHouse.Type.ToString(), ignoreCase: true)),
@@ -358,6 +361,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                         Active = true,
                         Comments = OpenHouseExtensions.GetComments(openHouse.Refreshments, openHouse.Lunch),
                         Type = OpenHouseType.Public,
+                        Order = diff >= 0 ? diff : 7 + diff,
                     });
                 }
 
