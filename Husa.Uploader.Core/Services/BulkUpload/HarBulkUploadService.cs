@@ -61,7 +61,7 @@ namespace Husa.Uploader.Core.Services.BulkUpload
 
             foreach (var group in this.BulkListings.GroupBy(item => item.CompanyName))
             {
-                await this.ProcessCompanyGroup(group, cancellationToken, false);
+                await this.ProcessCompanyGroup(group, cancellationToken, true);
             }
 
             return UploadResult.Success;
