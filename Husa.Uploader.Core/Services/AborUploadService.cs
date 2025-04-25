@@ -396,7 +396,7 @@ namespace Husa.Uploader.Core.Services
 
                     if (autoSave)
                     {
-                        this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
+                        this.uploaderClient.WaitUntilElementExists(By.Id("InputCompleted_divInputCompleted"), new TimeSpan(0, 5, 0), true, cancellationToken);
                         Thread.Sleep(400);
                     }
                 }
