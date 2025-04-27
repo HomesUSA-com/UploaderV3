@@ -134,4 +134,8 @@
       <ProjectReference Include="..\Husa.Uploader.Data\Husa.Uploader.Data.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Page Remove="Views\ErrorsView.xaml" />
+    </ItemGroup>
+
 </Project>
