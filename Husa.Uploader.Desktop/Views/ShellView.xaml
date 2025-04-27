@@ -547,7 +547,8 @@
                                     <Button Name="ReportProblem" Margin="5,5,5,0" Width="261" Command="{Binding ReportProblemCommand}">Report a problem</Button>
                                 </StackPanel>
                                 <StackPanel Visibility="{Binding UploadFailed, Converter={StaticResource BooleanToVisibilityConverter }}">
-                                    <TextBlock Foreground="Red" TextAlignment="Center" FontWeight="Black" TextWrapping="WrapWithOverflow" Margin="40,5,39,5">The upload failed.</TextBlock>
+                                    <TextBlock Foreground="Red" TextAlignment="Center" FontWeight="Black" TextWrapping="WrapWithOverflow" Margin="40,5,39,5">The upload was failed.</TextBlock>
+                                    <Button x:Name="ShowLogError" Margin="5,5,5,0" Content="Notify the DevTeam" Width="261" Command="{Binding ShowLogErrorCommand}"/>
                                     <Button x:Name="ReportFailure" Margin="5,5,5,0" Content="Notify the DevTeam" Width="261" Command="{Binding ReportProblemCommand}"/>
                                 </StackPanel>
                             </StackPanel>
