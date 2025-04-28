@@ -260,7 +260,6 @@ namespace Husa.Uploader.Core.Services
                     return response;
                 }
 
-                UploaderResponse response = new UploaderResponse();
                 response.UploadResult = UploadResult.Success;
                 return response;
             }
@@ -579,6 +578,8 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploaderResponse> UploadOpenHouse()
             {
+                UploaderResponse response = new UploaderResponse();
+
                 this.logger.LogInformation("Editing the information of Open House for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
