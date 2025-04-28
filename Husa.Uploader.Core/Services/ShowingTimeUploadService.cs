@@ -10,6 +10,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums.ShowingTime;
     using Husa.Uploader.Core.Interfaces;
+    using Husa.Uploader.Core.Models;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Data.Entities;
     using Microsoft.Extensions.Logging;
@@ -59,7 +60,7 @@ namespace Husa.Uploader.Core.Services
         },
             cancellationToken);
 
-        public UploadResult Logout()
+        public UploaderResponse Logout()
         {
             throw new NotImplementedException();
         }
@@ -433,13 +434,16 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public async Task<UploadResult> Upload(ResidentialListingRequest request, bool logIn = true, CancellationToken cancellationToken = default)
+        public async Task<UploaderResponse> Upload(ResidentialListingRequest request, bool logIn = true, CancellationToken cancellationToken = default)
         {
+            UploaderResponse response = new UploaderResponse();
+            response.UploadInformation = null;
             if (request?.ShowingTime is null || request.MLSNum is null
                 || (logIn && (await this.Login(request.CompanyId, cancellationToken)) != LoginResult.Logged)
                 || !await this.FindListing(request.MLSNum, cancellationToken))
             {
-                return UploadResult.Failure;
+                response.UploadResult = UploadResult.Failure;
+                return response;
             }
 
             await this.SetAppointmentCenter(cancellationToken);
@@ -449,7 +453,8 @@ namespace Husa.Uploader.Core.Services
             await this.SetAdditionalInstructions(request.ShowingTime.AdditionalInstructions, cancellationToken);
             await this.SetContacts(request.ShowingTime.Contacts, cancellationToken);
 
-            return UploadResult.Success;
+            response.UploadResult = UploadResult.Success;
+            return response;
         }
 
         public Task<bool> FindListing(string mlsNumber, CancellationToken cancellationToken = default) =>

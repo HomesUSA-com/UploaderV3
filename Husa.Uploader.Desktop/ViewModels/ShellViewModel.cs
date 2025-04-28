@@ -15,6 +15,7 @@ namespace Husa.Uploader.Desktop.ViewModels
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.ServiceActions;
+    using Husa.Uploader.Core.Models;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Models;
@@ -1341,8 +1342,10 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        private async Task Start(UploadType opType, Func<ResidentialListingRequest, CancellationToken, Task<UploadResult>> action, string sourceAction)
+        private async Task Start(UploadType opType, Func<ResidentialListingRequest, CancellationToken, Task<UploaderResponse>> action, string sourceAction)
         {
+            UploaderResponse response = new UploaderResponse();
+
             var listing = this.SelectedListingRequest.FullListing;
             this.ShowCancelButton = true;
             var entityID = Guid.Empty;
@@ -1370,13 +1373,14 @@ namespace Husa.Uploader.Desktop.ViewModels
                 await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(listing.ResidentialListingRequestID, this.State, this.SourceAction));
 
                 // 2. Execute de action
-                var response = await this.RunAction(action);
+                response = await this.RunAction(action);
                 this.HandleUploadExecutionResult(response);
             }
             catch (Exception exception)
             {
                 this.logger.LogError(exception, "Failed when processing the user request.");
-                this.HandleUploadExecutionResult(response: UploadResult.Failure);
+                response.UploadResult = UploadResult.Failure;
+                this.HandleUploadExecutionResult(response);
             }
             finally
             {
@@ -1412,8 +1416,8 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        private async Task<UploadResult> RunAction(
-            Func<ResidentialListingRequest, CancellationToken, Task<UploadResult>> action)
+        private async Task<UploaderResponse> RunAction(
+            Func<ResidentialListingRequest, CancellationToken, Task<UploaderResponse>> action)
         {
             this.cancellationTokenSource = new CancellationTokenSource();
             try
@@ -1435,9 +1439,11 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        private async Task<UploadResult> RunLotAction(
-            Func<LotListingRequest, CancellationToken, Task<UploadResult>> action)
+        private async Task<UploaderResponse> RunLotAction(
+            Func<LotListingRequest, CancellationToken, Task<UploaderResponse>> action)
         {
+            UploaderResponse response = new UploaderResponse();
+
             this.cancellationTokenSource = new CancellationTokenSource();
             try
             {
@@ -1445,21 +1451,25 @@ namespace Husa.Uploader.Desktop.ViewModels
                 await this.SetFullLotRequestInformation();
                 var listing = this.SelectedListingRequest.FullLotListing;
                 var token = this.cancellationTokenSource.Token;
-                return await Task.Run(() => action(listing, token));
+                response = await Task.Run(() => action(listing, token));
             }
             catch (OperationCanceledException)
             {
-                return this.CatchCanceledException();
+                response = this.CatchCanceledException();
             }
             finally
             {
                 this.cancellationTokenSource.Dispose();
                 this.cancellationTokenSource = null;
             }
+
+            return response;
         }
 
-        private async Task StartLot(UploadType opType, Func<LotListingRequest, CancellationToken, Task<UploadResult>> action, string sourceAction)
+        private async Task StartLot(UploadType opType, Func<LotListingRequest, CancellationToken, Task<UploaderResponse>> action, string sourceAction)
         {
+            UploaderResponse response = new UploaderResponse();
+
             var listing = this.SelectedListingRequest.FullLotListing;
             this.ShowCancelButton = true;
             var entityID = Guid.Empty;
@@ -1478,13 +1488,14 @@ namespace Husa.Uploader.Desktop.ViewModels
                 await this.RefreshWorkersOnTable(this.UserFullName, responseItem: new(listing.LotListingRequestID, this.State, this.SourceAction));
 
                 // 2. Execute de action
-                var response = await this.RunLotAction(action);
+                response = await this.RunLotAction(action);
                 this.HandleUploadExecutionResult(response);
             }
             catch (Exception exception)
             {
                 this.logger.LogError(exception, "Failed when processing the user request.");
-                this.HandleUploadExecutionResult(response: UploadResult.Failure);
+                response.UploadResult = UploadResult.Failure;
+                this.HandleUploadExecutionResult(response);
             }
             finally
             {
@@ -1520,12 +1531,14 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        private UploadResult CatchCanceledException()
+        private UploaderResponse CatchCanceledException()
         {
             this.State = UploaderState.Cancelled;
             this.uploadFactory.Uploader.Logout();
             this.uploadFactory.CloseDriver();
-            return UploadResult.Failure;
+            UploaderResponse response = new UploaderResponse();
+            response.UploadResult = UploadResult.Failure;
+            return response;
         }
 
         private async Task StartEdit()
@@ -1801,9 +1814,9 @@ namespace Husa.Uploader.Desktop.ViewModels
             return new();
         }
 
-        private void HandleUploadExecutionResult(UploadResult response)
+        private void HandleUploadExecutionResult(UploaderResponse response)
         {
-            this.UploadResult = response;
+            this.UploadResult = response.UploadResult;
             if (this.UploadResult == UploadResult.Failure)
             {
                 this.ShowCancelButton = false;

@@ -12,6 +12,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Quicklister.Dfw.Domain.Enums.Domain;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
+    using Husa.Uploader.Core.Models;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Extensions;
@@ -55,6 +56,8 @@ namespace Husa.Uploader.Core.Tests
         public async Task UploadWithExistingListing()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpConfigs();
 
             var request = this.GetResidentialListingRequest(false);
@@ -64,13 +67,15 @@ namespace Husa.Uploader.Core.Tests
             var result = await sut.Upload(request);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
         public async Task PartialUploadWithExistingListing()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpConfigs();
 
             var request = this.GetResidentialListingRequest(false);
@@ -80,7 +85,7 @@ namespace Husa.Uploader.Core.Tests
             var result = await sut.PartialUpload(request);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Theory]
@@ -100,11 +105,13 @@ namespace Husa.Uploader.Core.Tests
             request.TaxID = "200";
 
             // Act
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             var sut = this.GetSut();
             var result = await sut.Upload(request);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Theory]
@@ -124,11 +131,13 @@ namespace Husa.Uploader.Core.Tests
             request.TaxID = "200";
 
             // Act
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             var sut = this.GetSut();
             var result = await sut.Upload(request);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Theory]
@@ -153,11 +162,13 @@ namespace Husa.Uploader.Core.Tests
             request.IsForLease = "Yes";
 
             // Act
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             var sut = this.GetSut();
             var result = await sut.Upload(request);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Theory]
@@ -188,16 +199,20 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             var result = await sut.UpdateStatus(dfwListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
         public async Task UpdateStatus_InvalidStatusFail()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Failure;
             this.SetUpCredentials();
             this.SetUpCompany();
             var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
@@ -212,13 +227,15 @@ namespace Husa.Uploader.Core.Tests
             var result = await sut.UpdateStatus(dfwListing);
 
             // Assert
-            Assert.Equal(UploadResult.Failure, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
         public async Task FillCompletionDate_Fail()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpCredentials();
             this.SetUpCompany();
             var request = this.GetEmptyListingRequest();
@@ -230,7 +247,7 @@ namespace Husa.Uploader.Core.Tests
             var result = await sut.UpdateCompletionDate(request);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
             this.uploaderClient.Verify(client => client.WriteTextbox(By.Id("Input_301"), "12/31/2023", false, true, false, false), Times.Never);
             this.uploaderClient.Verify(client => client.WriteTextbox(By.Id("Input_249"), string.Empty, true, true, false, false), Times.Never);
         }
@@ -239,6 +256,8 @@ namespace Husa.Uploader.Core.Tests
         public async Task UpdateStatus_CancelledSuccess()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpCredentials();
             this.SetUpCompany();
             var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse());
@@ -249,13 +268,15 @@ namespace Husa.Uploader.Core.Tests
             var result = await sut.UpdateStatus(dfwListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
         public async Task AddOpenHouseNoOpenHousesSuccess()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpCredentials();
             this.SetUpCompany();
             var openHouses = new List<OpenHouseRequest>();
@@ -270,7 +291,7 @@ namespace Husa.Uploader.Core.Tests
             var result = await sut.UpdateOpenHouse(dfwListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
@@ -317,11 +338,13 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             var result = await sut.UpdateOpenHouse(dfwListing);
             this.uploaderClient.Verify(client => client.ScrollDown(It.IsAny<int>()), Times.AtLeastOnce);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Theory]
@@ -370,11 +393,13 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             var result = await sut.UpdateOpenHouse(dfwListing);
             this.uploaderClient.Verify(client => client.ScrollDown(It.IsAny<int>()), Times.AtLeastOnce);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
@@ -449,11 +474,13 @@ namespace Husa.Uploader.Core.Tests
                 .Setup(x => x.FindElement(It.IsAny<By>(), false, false).FindElement(It.IsAny<By>()).SendKeys(It.IsAny<string>()));
 
             // Act
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             var sut = this.GetSut();
             var result = await sut.UpdateImages(request);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
@@ -469,11 +496,13 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpConfigs(dfwListing, setUpVirtualTours: true);
 
             // Act
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             var sut = this.GetSut();
             var result = await sut.UploadVirtualTour(dfwListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]

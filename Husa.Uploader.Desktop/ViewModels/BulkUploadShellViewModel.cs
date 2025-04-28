@@ -8,6 +8,7 @@ namespace Husa.Uploader.Desktop.ViewModels
     using Husa.Extensions.Common.Exceptions;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces.ServiceActions;
+    using Husa.Uploader.Core.Models;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Desktop.Commands;
@@ -35,21 +36,23 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        private async Task StartBulk(Func<CancellationToken, Task<UploadResult>> action)
+        private async Task StartBulk(Func<CancellationToken, Task<UploaderResponse>> action)
         {
+            UploaderResponse response = new UploaderResponse();
+
             this.ShowCancelButton = true;
             try
             {
                 this.signalRConnectionTriesError = 0;
                 this.State = UploaderState.UploadInProgress;
                 // 2. Execute de action
-                var response = await this.RunBulkAction(action);
+                response = await this.RunBulkAction(action);
                 this.HandleUploadExecutionResult(response);
             }
             catch (Exception exception)
             {
                 this.logger.LogError(exception, "Failed when processing the user request.");
-                this.HandleUploadExecutionResult(response: UploadResult.Failure);
+                this.HandleUploadExecutionResult(response);
             }
             finally
             {
@@ -64,7 +67,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        private async Task<UploadResult> RunBulkAction(Func<CancellationToken, Task<UploadResult>> action)
+        private async Task<UploaderResponse> RunBulkAction(Func<CancellationToken, Task<UploaderResponse>> action)
         {
             this.cancellationTokenSource = new CancellationTokenSource();
             try
