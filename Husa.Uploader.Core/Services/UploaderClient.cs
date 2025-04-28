@@ -12,6 +12,7 @@ namespace Husa.Uploader.Core.Services
 
     public class UploaderClient : IUploaderClient, IDisposable
     {
+        private const string UNKNOW = "UNKNOW";
         private readonly IWebDriver driver;
         private readonly WebDriverWait wait;
         private readonly IJavaScriptExecutor internalJSScript;
@@ -78,7 +79,9 @@ namespace Husa.Uploader.Core.Services
             }
             catch (NoAlertPresentException noAlertPresentException)
             {
-                this.logger.LogError(noAlertPresentException, "Unable to accept the alert window the request, the element was not found.");
+                string friendlyErrorMessage = "Unable to accept the alert window the request, the element was not found.";
+                this.logger.LogError(noAlertPresentException, friendlyErrorMessage);
+                this.UploadInformation.AddError("AcceptAlertWindow", UNKNOW, UNKNOW, friendlyErrorMessage, noAlertPresentException.Message);
                 isAlertPresent = false;
                 if (!isElementOptional)
                 {
@@ -100,12 +103,16 @@ namespace Husa.Uploader.Core.Services
                     var element = driver.FindElement(findBy);
                     return element != null && element.Displayed;
                 }
-                catch (NoSuchElementException)
+                catch (NoSuchElementException exception)
                 {
+                    string friendlyErrorMessage = "An element is not found.";
+                    this.UploadInformation.AddError("WaitForElementToBeVisible", findBy.ToString(), UNKNOW, friendlyErrorMessage, exception.Message);
                     return false;
                 }
-                catch (StaleElementReferenceException)
+                catch (StaleElementReferenceException exception)
                 {
+                    string friendlyErrorMessage = "A reference to an element is no longer valid";
+                    this.UploadInformation.AddError("WaitForElementToBeVisible", findBy.ToString(), UNKNOW, friendlyErrorMessage, exception.Message);
                     return false;
                 }
             });
@@ -202,7 +209,9 @@ namespace Husa.Uploader.Core.Services
             }
             catch (Exception exception) when (exception is NoSuchElementException || exception is StaleElementReferenceException)
             {
-                this.logger.LogDebug(exception, "Skipping exception because is expected for element {findBy}", findBy);
+                string friendlyErrorMessage = string.Format($"Skipping exception because is expected for element {findBy}", findBy);
+                this.logger.LogDebug(exception, friendlyErrorMessage);
+                this.UploadInformation.AddError("WaitForElementToBeVisible", findBy.ToString(), UNKNOW, friendlyErrorMessage, exception.Message);
                 return false;
             }
         }
@@ -223,7 +232,10 @@ namespace Husa.Uploader.Core.Services
             {
                 if (!isElementOptional)
                 {
-                    this.logger.LogWarning(ex, "The non-optional element with locator: {by} was not found when processing the request {requestId}.", findBy, this.UploadInformation.RequestId);
+                    string requestId = this.UploadInformation.RequestId.ToString();
+                    string friendlyErrorMessage = string.Format($"The non-optional element with locator: {findBy} was not found when processing the request {requestId}.", findBy, requestId);
+                    this.logger.LogWarning(ex, friendlyErrorMessage);
+                    this.UploadInformation.AddError("WaitForElementToBeVisible", findBy.ToString(), UNKNOW, friendlyErrorMessage, ex.Message);
                     throw;
                 }
             }
@@ -280,7 +292,9 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Clicking on element by '{findBy}'", findBy);
                 if (!this.FindElements(findBy).Any())
                 {
-                    this.logger.LogInformation("Element by '{by}' not found", findBy.ToString());
+                    string friendlyErrorMessage = string.Format($"Element by '{findBy}' not found", findBy.ToString());
+                    this.logger.LogInformation(friendlyErrorMessage);
+                    this.UploadInformation.AddError("ClickOnElement", findBy.ToString(), UNKNOW, friendlyErrorMessage, null);
                     return;
                 }
 
@@ -296,7 +310,9 @@ namespace Husa.Uploader.Core.Services
                       exception.InnerException is NoSuchElementException ||
                       exception is ElementNotVisibleException)
             {
-                this.logger.LogWarning(exception, "Element by '{by}' was not found or is not visible", findBy.ToString());
+                string friendlyErrorMessage = string.Format($"Element by '{findBy}' was not found or is not visible", findBy.ToString());
+                this.logger.LogWarning(exception, friendlyErrorMessage);
+                this.UploadInformation.AddError("ClickOnElement", findBy.ToString(), UNKNOW, friendlyErrorMessage, exception.Message);
                 if (!isElementOptional)
                 {
                     throw;
@@ -306,11 +322,15 @@ namespace Husa.Uploader.Core.Services
             {
                 if (!isSecondAttemp)
                 {
-                    this.logger.LogWarning(staleElementException, "Stale reference while trying to click element {by} while processing the request.", findBy);
+                    string friendlyErrorMessageSecondAttemp = string.Format($"Stale reference while trying to click element {findBy} while processing the request.", findBy);
+                    this.logger.LogWarning(staleElementException, friendlyErrorMessageSecondAttemp);
+                    this.UploadInformation.AddError("WaitForElementToBeVisible", findBy.ToString(), UNKNOW, friendlyErrorMessageSecondAttemp, staleElementException.Message);
                     this.ClickOnElement(findBy, shouldWait: false, waitTime: 0, isElementOptional, isSecondAttemp: true);
                 }
 
-                this.logger.LogError(staleElementException, "Repeated Stale reference while trying to click element {by} while processing the request.", findBy);
+                string friendlyErrorMessage = string.Format($"Repeated Stale reference while trying to click element {findBy} while processing the request.", findBy);
+                this.logger.LogError(staleElementException, friendlyErrorMessage);
+                this.UploadInformation.AddError("WaitForElementToBeVisible", findBy.ToString(), UNKNOW, friendlyErrorMessage, staleElementException.Message);
                 throw;
             }
         }
@@ -335,13 +355,17 @@ namespace Husa.Uploader.Core.Services
             var element = this.FindElement(findBy, isElementOptional: isElementOptional);
             if (isElementOptional && element is null)
             {
-                this.logger.LogInformation("Textbox {by} not found, skipping process.", findBy);
+                string friendlyErrorMessage = string.Format($"Textbox {findBy} not found, skipping process.", findBy);
+                this.logger.LogInformation(friendlyErrorMessage);
+                this.UploadInformation.AddError("WriteTextbox", findBy.ToString(), UNKNOW, friendlyErrorMessage, null);
                 return;
             }
 
             if (string.IsNullOrEmpty(entry))
             {
-                this.logger.LogInformation("Tried to write a null value to textbox with locator: {by} when processing the request.", findBy);
+                string friendlyErrorMessage = string.Format($"Tried to write a null value to textbox with locator: {findBy} when processing the request.", findBy);
+                this.logger.LogInformation(friendlyErrorMessage);
+                this.UploadInformation.AddError("WriteTextbox", findBy.ToString(), UNKNOW, friendlyErrorMessage, null);
                 element.Clear();
                 return;
             }
@@ -354,7 +378,9 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (InvalidElementStateException ex)
                 {
-                    this.logger.LogError(ex, "The element with locator: {by} was in an invalid state when processing the request.", findBy);
+                    string friendlyErrorMessage = string.Format($"The element with locator: {findBy} was in an invalid state when processing the request.", findBy);
+                    this.logger.LogError(ex, friendlyErrorMessage);
+                    this.UploadInformation.AddError("WriteTextbox", findBy.ToString(), UNKNOW, friendlyErrorMessage, ex.Message);
                     return;
                 }
 
@@ -381,11 +407,15 @@ namespace Husa.Uploader.Core.Services
             {
                 if (!isSecondAttemp)
                 {
-                    this.logger.LogWarning(staleElementException, "Stale reference while trying to write textbox {by} while processing request.", findBy);
+                    string friendlyErrorMessageSecondAttemp = string.Format($"Stale reference while trying to write textbox {findBy} while processing request.", findBy);
+                    this.UploadInformation.AddError("WriteTextbox", findBy.ToString(), UNKNOW, friendlyErrorMessageSecondAttemp, staleElementException.Message);
+                    this.logger.LogWarning(staleElementException, friendlyErrorMessageSecondAttemp);
                     this.WriteTextbox(findBy, entry, isElementOptional, handleAlerts, doNotClear, isSecondAttemp: true);
                 }
 
-                this.logger.LogError(staleElementException, "Repeated Stale reference while trying to  write textbox {by} while processing request.", findBy);
+                string friendlyErrorMessage = string.Format($"Repeated Stale reference while trying to  write textbox {findBy} while processing request.", findBy);
+                this.logger.LogError(staleElementException, friendlyErrorMessage);
+                this.UploadInformation.AddError("WriteTextbox", findBy.ToString(), UNKNOW, friendlyErrorMessage, staleElementException.Message);
                 throw;
             }
 
@@ -421,11 +451,15 @@ namespace Husa.Uploader.Core.Services
             }
             catch (NoSuchElementException ex)
             {
-                this.logger.LogWarning(ex, "Tried to select a non-existing {value} in Select with locator: {by}.", value, findBy);
+                string friendlyErrorMessage = string.Format($"Tried to select a non-existing {value} in Select with locator: {findBy}.", value, findBy);
+                this.logger.LogWarning(ex, friendlyErrorMessage);
+                this.UploadInformation.AddError("SetSelect", findBy.ToString(), UNKNOW, friendlyErrorMessage, ex.Message);
             }
             catch (Exception exception) when (exception is NoSuchElementException || exception is UnexpectedTagNameException)
             {
-                this.logger.LogWarning(exception, "Failed when trying to select a non-existing value in Select or to transform an element into a Select with locator: {by} when processing the request.", findBy);
+                string friendlyErrorMessage = string.Format($"Failed when trying to select a non-existing value in Select or to transform an element into a Select with locator: {findBy} when processing the request.", findBy);
+                this.logger.LogWarning(exception, friendlyErrorMessage);
+                this.UploadInformation.AddError("SetSelect", findBy.ToString(), UNKNOW, friendlyErrorMessage, exception.Message);
                 if (!isElementOptional)
                 {
                     throw;
@@ -509,7 +543,10 @@ namespace Husa.Uploader.Core.Services
             {
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    this.logger.LogWarning("Tried to select a null value in Select with locator: {by} when processing the request {requestId}.", findBy, this.UploadInformation.RequestId);
+                    string requestId = this.UploadInformation.RequestId.ToString();
+                    string friendlyErrorMessage = string.Format($"Tried to select a null value in Select with locator: {findBy} when processing the request {requestId}.", findBy, requestId);
+                    this.logger.LogWarning(friendlyErrorMessage);
+                    this.UploadInformation.AddError("SetSelectByText", findBy.ToString(), UNKNOW, friendlyErrorMessage, null);
                     return;
                 }
 
@@ -593,7 +630,10 @@ namespace Husa.Uploader.Core.Services
             {
                 if (string.IsNullOrWhiteSpace(csvValues))
                 {
-                    this.logger.LogWarning("Tried to select a null value in Select with locator: {by} when processing the request {requestId}.", findBy, this.UploadInformation.RequestId);
+                    string requestId = this.UploadInformation.RequestId.ToString();
+                    string friendlyErrorMessage = string.Format($"Tried to select a null value in Select with locator: {findBy} when processing the request {requestId}.", findBy, requestId);
+                    this.logger.LogWarning(friendlyErrorMessage);
+                    this.UploadInformation.AddError("SetMultiSelect", findBy.ToString(), UNKNOW, friendlyErrorMessage, null);
                     return;
                 }
 
@@ -613,7 +653,10 @@ namespace Husa.Uploader.Core.Services
                     }
                     catch (NoSuchElementException exception)
                     {
-                        this.logger.LogWarning(exception, "Tried to select a non-existing value in Select with locator: {by} when processing request {requestId}.", findBy, this.UploadInformation.RequestId);
+                        string requestId = this.UploadInformation.RequestId.ToString();
+                        string friendlyErrorMessage = string.Format($"Tried to select a non-existing value in Select with locator: {findBy} when processing request {requestId}.", findBy, requestId);
+                        this.logger.LogWarning(exception, friendlyErrorMessage);
+                        this.UploadInformation.AddError("SetMultiSelect", findBy.ToString(), UNKNOW, friendlyErrorMessage, null);
                     }
                 }
             }
@@ -627,7 +670,11 @@ namespace Husa.Uploader.Core.Services
         {
             if (string.IsNullOrWhiteSpace(csvValues))
             {
-                this.logger.LogWarning("Tried to use a null value in MultiCheckbox with locator: {id} when processing request {requestId}.", id, this.UploadInformation.RequestId);
+                string requestId = this.UploadInformation.RequestId.ToString();
+                string errorMessage = string.Format($"Tried to use a null value in MultiCheckbox with locator: {id} when processing request {requestId}.", id, requestId);
+                this.logger.LogWarning(errorMessage);
+
+                this.UploadInformation.AddError(id, UNKNOW, UNKNOW, errorMessage, null);
                 return;
             }
 
@@ -707,8 +754,11 @@ namespace Husa.Uploader.Core.Services
             {
                 if (string.IsNullOrWhiteSpace(csvValues))
                 {
-                    this.logger.LogWarning("Tried to use a null value in MultiCheckbox with locator: {id} when processing Request with {ResidentialListingRequestId}.", id, this.UploadInformation.RequestId);
+                    string requestId = this.UploadInformation.RequestId.ToString();
+                    string errorMessage = string.Format($"Tried to use a null value in MultiCheckbox with locator: {id} when processing Request with {requestId}.", id, requestId);
+                    this.logger.LogWarning(errorMessage);
                     this.ExecuteScript(" jQuery('input[id^=" + id + "]').each( function () { jQuery(this).prop('checked', false) }); ");
+                    this.UploadInformation.AddError(id, fieldLabel, fieldSection, errorMessage, null);
                     return;
                 }
 
@@ -789,6 +839,8 @@ namespace Husa.Uploader.Core.Services
                         this.ExecuteScript(script: "jQuery('#" + id + " [value=\"" + value + "\"]').attr('selected', 'selected');", isScriptOptional: true);
                         this.UploadInformation.UploaderErrors.Add(new UploaderError(id, fieldLabel, fieldSection, friendlyErrorMessage, errorMessage: string.Empty));
                         this.logger.LogError(exception, "Error when processing the request {requestId}.", this.UploadInformation.RequestId);
+
+                        this.UploadInformation.AddError(id, UNKNOW, UNKNOW, friendlyErrorMessage, exception.Message);
                     }
                 }
             }
@@ -818,7 +870,10 @@ namespace Husa.Uploader.Core.Services
             }
             catch (NoSuchElementException exception)
             {
-                this.logger.LogWarning(exception, "The non-optional element with locator: {by} was not found when processing the request {requestId}.", findBy, this.UploadInformation.RequestId);
+                string requestId = this.UploadInformation.RequestId.ToString();
+                string friendlyErrorMessage = string.Format($"The non-optional element with locator: {findBy} was not found when processing the request {requestId}.", findBy, requestId);
+                this.logger.LogWarning(exception, friendlyErrorMessage);
+                this.UploadInformation.AddError(findBy.ToString(), UNKNOW, UNKNOW, friendlyErrorMessage, exception.Message);
                 if (!isElementOptional)
                 {
                     throw;
@@ -831,7 +886,10 @@ namespace Husa.Uploader.Core.Services
             var element = this.FindElement(findBy, isElementOptional: isOptional);
             if (element == null)
             {
-                this.logger.LogWarning("The optional element was not found with locator: {by} when processing the request {requestId}.", findBy, this.UploadInformation.RequestId);
+                string requestId = this.UploadInformation.RequestId.ToString();
+                string friendlyErrorMessage = string.Format($"The optional element was not found with locator: {findBy} when processing the request {requestId}.", findBy, requestId);
+                this.logger.LogWarning(friendlyErrorMessage);
+                this.UploadInformation.AddError(findBy.ToString(), UNKNOW, UNKNOW, friendlyErrorMessage, null);
                 return;
             }
 
@@ -848,7 +906,9 @@ namespace Husa.Uploader.Core.Services
             {
                 if (!isElementOptional)
                 {
-                    this.logger.LogWarning(ex, "The non-optional element with locator: {by} was not found when processing the request.", findBy);
+                    string friendlyErrorMessage = string.Format($"The non-optional element with locator: {findBy} was not found when processing the request.", findBy);
+                    this.logger.LogWarning(ex, friendlyErrorMessage);
+                    this.UploadInformation.AddError(findBy.ToString(), UNKNOW, UNKNOW, friendlyErrorMessage, ex.Message);
                     throw;
                 }
             }
@@ -907,7 +967,10 @@ namespace Husa.Uploader.Core.Services
             {
                 if (!isScriptOptional)
                 {
-                    this.logger.LogWarning(exception, "The non-optional script '{script}' executed failed while processing the request {requestId}.", script, this.UploadInformation.RequestId);
+                    string requestId = this.UploadInformation.RequestId.ToString();
+                    string friendlyErrorMessage = string.Format($"The non-optional script '{script}' executed failed while processing the request {requestId}.", script, requestId);
+                    this.logger.LogWarning(exception, friendlyErrorMessage);
+                    this.UploadInformation.AddError("ExecuteScriptAsync", UNKNOW, UNKNOW, friendlyErrorMessage, exception.Message);
                     throw;
                 }
             }
@@ -926,7 +989,10 @@ namespace Husa.Uploader.Core.Services
             {
                 if (!isScriptOptional)
                 {
-                    this.logger.LogWarning(exception, "The non-optional script '{script}' executed failed while processing the request {requestId}.", script, this.UploadInformation.RequestId);
+                    string requestId = this.UploadInformation.RequestId.ToString();
+                    string friendlyErrorMessage = string.Format($"The non-optional script '{script}' executed failed while processing the request {requestId}.", script, this.UploadInformation.RequestId);
+                    this.logger.LogWarning(exception, friendlyErrorMessage);
+                    this.UploadInformation.AddError("ExecuteScript", UNKNOW, UNKNOW, friendlyErrorMessage, exception.Message);
                     throw;
                 }
             }
@@ -957,7 +1023,9 @@ namespace Husa.Uploader.Core.Services
             }
             catch (NoSuchElementException noSuchElementException)
             {
-                this.logger.LogWarning(noSuchElementException, "The frame with locator: {frame} was not found when processing the request.", frame);
+                string friendlyErrorMessage = string.Format($"The frame with locator: {frame} was not found when processing the request.", frame);
+                this.logger.LogWarning(noSuchElementException, friendlyErrorMessage);
+                this.UploadInformation.AddError(frame, UNKNOW, UNKNOW, friendlyErrorMessage, noSuchElementException.Message);
             }
         }
 

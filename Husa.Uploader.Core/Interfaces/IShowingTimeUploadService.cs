@@ -2,8 +2,8 @@ namespace Husa.Uploader.Core.Interfaces
 {
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Extensions.Api.Contracts.Models.ShowingTime;
-    using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums.ShowingTime;
+    using Husa.Uploader.Core.Models;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Data.Entities;
 
@@ -25,7 +25,7 @@ namespace Husa.Uploader.Core.Interfaces
         Task SetContactNotificationSection(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default);
         Task SetContact(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default);
         Task SetContacts(IEnumerable<ContactDetailInfo> contacts, CancellationToken cancellationToken);
-        Task<UploadResult> Upload(ResidentialListingRequest request, bool logIn = true, CancellationToken cancellationToken = default);
+        Task<UploaderResponse> Upload(ResidentialListingRequest request, bool logIn = true, CancellationToken cancellationToken = default);
         void CancelOperation();
     }
 }

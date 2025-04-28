@@ -2,6 +2,7 @@ namespace Husa.Uploader.Core.Interfaces.ServiceActions
 {
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
+    using Husa.Uploader.Core.Models;
     using Husa.Uploader.Data.Entities;
 
     public interface IBulkUploadListings
@@ -10,11 +11,11 @@ namespace Husa.Uploader.Core.Interfaces.ServiceActions
 
         RequestFieldChange RequestFieldChange { get; set; }
 
-        Task<UploadResult> Upload(CancellationToken cancellationToken = default);
+        Task<UploaderResponse> Upload(CancellationToken cancellationToken = default);
 
         void CancelOperation();
 
-        UploadResult Logout();
+        UploaderResponse Logout();
 
         void SetRequestFieldChange(RequestFieldChange requestFieldChange);
 
