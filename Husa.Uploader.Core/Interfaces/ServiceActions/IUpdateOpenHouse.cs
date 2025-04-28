@@ -1,10 +1,10 @@
 namespace Husa.Uploader.Core.Interfaces.ServiceActions
 {
-    using Husa.Quicklister.Extensions.Domain.Enums;
+    using Husa.Uploader.Core.Models;
     using Husa.Uploader.Data.Entities;
 
     public interface IUpdateOpenHouse
     {
-        Task<UploadResult> UpdateOpenHouse(ResidentialListingRequest listing, CancellationToken cancellationToken = default);
+        Task<UploaderResponse> UpdateOpenHouse(ResidentialListingRequest listing, CancellationToken cancellationToken = default);
     }
 }

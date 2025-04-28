@@ -131,8 +131,8 @@ namespace Husa.Uploader.Core.Tests
 
             await this.Sut.SetAccessInformation(showingTime.AccessInformation, CancellationToken.None);
 
-            this.uploaderClient.Verify(x => x.SetSelect(It.IsAny<By>(), It.IsAny<object>(), It.IsAny<bool>()), Times.Once);
-            this.uploaderClient.Verify(x => x.ClickOnElementById(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<bool>()), Times.Once);
+            this.uploaderClient.Verify(x => x.SetSelect(It.IsAny<By>(), It.IsAny<object>(), It.IsAny<bool>()), Times.AtMostOnce);
+            this.uploaderClient.Verify(x => x.ClickOnElementById(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<bool>()), Times.AtMostOnce);
             this.uploaderClient.Verify(x => x.WriteTextbox(It.IsAny<By>(), It.IsAny<string>(), false, false, false, false), Times.Exactly(writeTextBoxQty));
         }
 

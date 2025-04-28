@@ -6,6 +6,7 @@ namespace Husa.Uploader.Core.Services.BulkUpload
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.BulkUpload;
+    using Husa.Uploader.Core.Models;
     using Husa.Uploader.Data.Entities;
     using Microsoft.Extensions.Logging;
 
@@ -37,7 +38,7 @@ namespace Husa.Uploader.Core.Services.BulkUpload
             this.uploaderClient.CloseDriver();
         }
 
-        public UploadResult Logout()
+        public UploaderResponse Logout()
         {
             throw new NotImplementedException();
         }
@@ -52,11 +53,14 @@ namespace Husa.Uploader.Core.Services.BulkUpload
             this.BulkListings = bulkListings;
         }
 
-        public async Task<UploadResult> Upload(CancellationToken cancellationToken = default)
+        public async Task<UploaderResponse> Upload(CancellationToken cancellationToken = default)
         {
+            UploaderResponse response = new UploaderResponse();
             if (this.BulkListings == null)
             {
-                return UploadResult.Failure;
+                response.UploadResult = UploadResult.Failure;
+                response.UploadInformation = this.uploaderClient.UploadInformation;
+                return response;
             }
 
             foreach (var group in this.BulkListings.GroupBy(item => item.CompanyName))
@@ -64,7 +68,7 @@ namespace Husa.Uploader.Core.Services.BulkUpload
                 await this.ProcessCompanyGroup(group, cancellationToken, true);
             }
 
-            return UploadResult.Success;
+            return response;
         }
 
         private async Task ProcessCompanyGroup(IGrouping<string, UploadListingItem> group, CancellationToken cancellationToken, bool autoSave = false)

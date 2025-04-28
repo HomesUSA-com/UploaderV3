@@ -11,6 +11,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Quicklister.Har.Domain.Enums.Domain;
     using Husa.Uploader.Core.Interfaces;
+    using Husa.Uploader.Core.Models;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Extensions;
@@ -46,6 +47,8 @@ namespace Husa.Uploader.Core.Tests
         public async Task UploadWithExistingListing()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpConfigs();
 
             var request = this.GetResidentialListingRequest(false);
@@ -55,13 +58,15 @@ namespace Husa.Uploader.Core.Tests
             var result = await sut.Upload(request);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
         public async Task PartialUploadWithExistingListing()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpConfigs();
 
             var request = this.GetResidentialListingRequest(false);
@@ -71,7 +76,7 @@ namespace Husa.Uploader.Core.Tests
             var result = await sut.PartialUpload(request);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Theory]
@@ -82,6 +87,8 @@ namespace Husa.Uploader.Core.Tests
         public async Task UploadByHousingType_ReturnSuccess(HousingType housingType)
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpConfigs();
 
             var request = this.GetResidentialListingRequest();
@@ -95,7 +102,7 @@ namespace Husa.Uploader.Core.Tests
             var result = await sut.Upload(request);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Theory]
@@ -104,6 +111,8 @@ namespace Husa.Uploader.Core.Tests
         public async Task SetGeocodesSuccess(bool updateGeocodes)
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpConfigs();
             var request = this.GetResidentialListingRequest();
             request.UpdateGeocodes = updateGeocodes;
@@ -115,7 +124,7 @@ namespace Husa.Uploader.Core.Tests
             var result = await sut.Upload(request);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
@@ -133,16 +142,20 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             var result = await sut.UpdateStatus(harListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
         public async Task UpdateStatus_ClosedSuccess()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpCredentials();
             this.SetUpCompany();
             var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
@@ -155,13 +168,15 @@ namespace Husa.Uploader.Core.Tests
             var result = await sut.UpdateStatus(harListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
         public async Task UpdateStatus_TerminatedSuccess()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpCredentials();
             this.SetUpCompany();
             var harListing = new HarListingRequest(new HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse());
@@ -174,7 +189,7 @@ namespace Husa.Uploader.Core.Tests
             var result = await sut.UpdateStatus(harListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
@@ -194,10 +209,12 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             var result = await sut.UpdateStatus(harListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
@@ -219,10 +236,12 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             var result = await sut.UpdateStatus(harListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
@@ -240,10 +259,12 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             var result = await sut.UpdateStatus(harListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
@@ -258,10 +279,12 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             var result = await sut.UpdateStatus(harListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
@@ -276,10 +299,12 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Failure;
             var result = await sut.UpdateCompletionDate(request);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
             this.uploaderClient.Verify(client => client.WriteTextbox(By.Id("Input_301"), "12/31/2023", false, true, false, false), Times.Never);
             this.uploaderClient.Verify(client => client.WriteTextbox(By.Id("Input_249"), string.Empty, true, true, false, false), Times.Never);
         }
@@ -326,11 +351,13 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             var result = await sut.UpdateOpenHouse(harListing);
             this.uploaderClient.Verify(client => client.ScrollDown(It.IsAny<int>()), Times.AtLeastOnce);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
@@ -392,11 +419,13 @@ namespace Husa.Uploader.Core.Tests
                 .Setup(x => x.FindElement(It.IsAny<By>(), false, false).FindElement(It.IsAny<By>()).SendKeys(It.IsAny<string>()));
 
             // Act
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             var sut = this.GetSut();
             var result = await sut.UpdateImages(request);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]

@@ -21,6 +21,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private ICommand finishCommand;
         private ICommand closeCommand;
         private ICommand reportCommand;
+        private ICommand showLogCommand;
 
         public MlsIssueReportViewModel(ILogger<MlsIssueReportViewModel> logger)
         {
@@ -62,6 +63,15 @@ namespace Husa.Uploader.Desktop.ViewModels
             {
                 this.reportCommand ??= new RelayCommand(param => this.Report(), param => true);
                 return this.reportCommand;
+            }
+        }
+
+        public ICommand ShowLogCommand
+        {
+            get
+            {
+                this.showLogCommand ??= new RelayCommand(param => this.Report(), param => true);
+                return this.showLogCommand;
             }
         }
 

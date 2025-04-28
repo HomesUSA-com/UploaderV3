@@ -11,6 +11,7 @@
     using Husa.Quicklister.Amarillo.Domain.Enums.Domain;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
+    using Husa.Uploader.Core.Models;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
@@ -45,6 +46,8 @@
         public async Task UploadNewListingSuccess()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpCredentials();
             this.SetUpCompany();
             this.SetUpVirtualTours();
@@ -60,13 +63,15 @@
             var result = await sut.Upload(amarilloListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
         public async Task UploadExistingListingSuccess()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpCredentials();
             this.SetUpCompany();
             this.SetUpVirtualTours();
@@ -83,13 +88,15 @@
             var result = await sut.Upload(amarilloListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
         public async Task PartialUploadWithExistingListing()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpCredentials();
             this.SetUpCompany();
             var amarilloListing = new AmarilloListingRequest(new SaleListingRequestDetailResponse())
@@ -103,7 +110,7 @@
             var result = await sut.PartialUpload(amarilloListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
@@ -149,11 +156,13 @@
         [Fact]
         public Task LogoutSuccess()
         {
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpUploaderClient();
             var sut = this.GetSut();
             var result = sut.Logout();
 
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
             return Task.CompletedTask;
         }
 
@@ -178,6 +187,8 @@
         public async Task UploadVirtualTourSuccess()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpCredentials();
             this.SetUpVirtualTours();
             this.SetUpCompany();
@@ -195,13 +206,15 @@
             var result = await sut.UploadVirtualTour(amarilloListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
         public async Task UploadVirtualTourNoVirtualToursSuccess()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpCredentials();
             this.SetUpCompany();
             this.SetUpUploaderClient();
@@ -222,7 +235,7 @@
             var result = await sut.UploadVirtualTour(amarilloListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
@@ -239,6 +252,8 @@
         public async Task UpdateCompletionDateSuccess()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpCredentials();
             this.SetUpCompany();
             var amarilloListing = new AmarilloListingRequest(new SaleListingRequestDetailResponse())
@@ -254,7 +269,7 @@
             var result = await sut.UpdateCompletionDate(amarilloListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
@@ -278,6 +293,8 @@
         public async Task UpdateStatus_Success(string status)
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpCredentials();
             this.SetUpCompany();
             this.SetUpUploaderClient();
@@ -293,13 +310,15 @@
             var result = await sut.UpdateStatus(amarilloListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
         public async Task UpdateStatus_Failed()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Failure;
             this.SetUpCredentials();
             this.SetUpCompany();
             this.SetUpUploaderClient();
@@ -315,13 +334,15 @@
             var result = await sut.UpdateStatus(amarilloListing);
 
             // Assert
-            Assert.Equal(UploadResult.Failure, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
         public async Task UpdatePriceSuccess()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpCredentials();
             this.SetUpCompany();
             this.SetUpUploaderClient();
@@ -339,13 +360,15 @@
             var result = await sut.UpdatePrice(amarilloListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
         public async Task UpdateImagesSuccess()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpCredentials();
             this.SetUpCompany();
             this.SetUpUploaderClient();
@@ -365,13 +388,15 @@
             var result = await sut.UpdateImages(amarilloListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
         public async Task EditExistingListinListingSuccess()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpCredentials();
             this.SetUpCompany();
             var amarilloListing = new AmarilloListingRequest(new SaleListingRequestDetailResponse())
@@ -388,13 +413,15 @@
             var result = await sut.Edit(amarilloListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
         public async Task EditNewListinListingSuccess()
         {
             // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             this.SetUpCredentials();
             this.SetUpCompany();
             var amarilloListing = new AmarilloListingRequest(new SaleListingRequestDetailResponse());
@@ -408,7 +435,7 @@
             var result = await sut.Edit(amarilloListing);
 
             // Assert
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
@@ -450,9 +477,11 @@
             };
 
             // Act
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
             var sut = this.GetSut();
             var result = await sut.UpdateOpenHouse(amarilloListing);
-            Assert.Equal(UploadResult.Success, result);
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
         }
 
         [Fact]
