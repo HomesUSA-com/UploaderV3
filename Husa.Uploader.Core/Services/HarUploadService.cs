@@ -10,6 +10,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Quicklister.Har.Domain.Enums;
     using Husa.Quicklister.Har.Domain.Enums.Domain;
     using Husa.Uploader.Core.Interfaces;
+    using Husa.Uploader.Core.Models;
     using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
@@ -99,13 +100,15 @@ namespace Husa.Uploader.Core.Services
             return LoginResult.Logged;
         }
 
-        public UploadResult Logout()
+        public UploaderResponse Logout()
         {
             this.uploaderClient.NavigateToUrl(this.options.MarketInfo.Har.LogoutUrl);
-            return UploadResult.Success;
+            UploaderResponse response = new UploaderResponse();
+            response.UploadResult = UploadResult.Success;
+            return response;
         }
 
-        public Task<UploadResult> Edit(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploaderResponse> Edit(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
             if (listing is null)
             {
@@ -114,8 +117,10 @@ namespace Husa.Uploader.Core.Services
 
             return EditListing();
 
-            async Task<UploadResult> EditListing()
+            async Task<UploaderResponse> EditListing()
             {
+                UploaderResponse response = new UploaderResponse();
+
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
@@ -130,11 +135,12 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
                 }
 
-                return UploadResult.Success;
+                response.UploadResult = UploadResult.Success;
+                return response;
             }
         }
 
-        public Task<UploadResult> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
+        public Task<UploaderResponse> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -143,8 +149,9 @@ namespace Husa.Uploader.Core.Services
 
             return UploadListing(logIn);
 
-            async Task<UploadResult> UploadListing(bool logIn)
+            async Task<UploaderResponse> UploadListing(bool logIn)
             {
+                UploaderResponse response = new UploaderResponse();
                 var newLatitude = listing.Latitude;
                 var newLongitude = listing.Longitude;
 
@@ -196,14 +203,17 @@ namespace Husa.Uploader.Core.Services
                 catch (Exception exception)
                 {
                     this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
-                    return UploadResult.Failure;
+                    response.UploadResult = UploadResult.Failure;
+                    response.UploadInformation = this.uploaderClient.UploadInformation;
+                    return response;
                 }
 
-                return UploadResult.Success;
+                response.UploadResult = UploadResult.Success;
+                return response;
             }
         }
 
-        public Task<UploadResult> PartialUpload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
+        public Task<UploaderResponse> PartialUpload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -212,8 +222,10 @@ namespace Husa.Uploader.Core.Services
 
             return UploadListing(logIn);
 
-            async Task<UploadResult> UploadListing(bool logIn)
+            async Task<UploaderResponse> UploadListing(bool logIn)
             {
+                UploaderResponse response = new UploaderResponse();
+
                 var newLatitude = listing.Latitude;
                 var newLongitude = listing.Longitude;
 
@@ -250,14 +262,17 @@ namespace Husa.Uploader.Core.Services
                 catch (Exception exception)
                 {
                     this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
-                    return UploadResult.Failure;
+                    response.UploadResult = UploadResult.Failure;
+                    response.UploadInformation = this.uploaderClient.UploadInformation;
+                    return response;
                 }
 
-                return UploadResult.Success;
+                response.UploadResult = UploadResult.Success;
+                return response;
             }
         }
 
-        public Task<UploadResult> UpdateCompletionDate(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
+        public Task<UploaderResponse> UpdateCompletionDate(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -266,8 +281,10 @@ namespace Husa.Uploader.Core.Services
 
             return UpdateListingCompletionDate(logIn);
 
-            async Task<UploadResult> UpdateListingCompletionDate(bool logIn)
+            async Task<UploaderResponse> UpdateListingCompletionDate(bool logIn)
             {
+                UploaderResponse response = new UploaderResponse();
+
                 this.logger.LogInformation("Updating CompletionDate for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
@@ -298,14 +315,17 @@ namespace Husa.Uploader.Core.Services
                 catch (Exception exception)
                 {
                     this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
-                    return UploadResult.Failure;
+                    response.UploadResult = UploadResult.Failure;
+                    response.UploadInformation = this.uploaderClient.UploadInformation;
+                    return response;
                 }
 
-                return UploadResult.Success;
+                response.UploadResult = UploadResult.Success;
+                return response;
             }
         }
 
-        public Task<UploadResult> UpdateImages(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
+        public Task<UploaderResponse> UpdateImages(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
         {
             if (listing is null)
             {
@@ -313,8 +333,10 @@ namespace Husa.Uploader.Core.Services
             }
 
             return UpdateListingImages();
-            async Task<UploadResult> UpdateListingImages()
+            async Task<UploaderResponse> UpdateListingImages()
             {
+                UploaderResponse response = new UploaderResponse();
+
                 this.logger.LogInformation("Updating media for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
@@ -337,14 +359,17 @@ namespace Husa.Uploader.Core.Services
                 catch (Exception exception)
                 {
                     this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
-                    return UploadResult.Failure;
+                    response.UploadResult = UploadResult.Failure;
+                    response.UploadInformation = this.uploaderClient.UploadInformation;
+                    return response;
                 }
 
-                return UploadResult.Success;
+                response.UploadResult = UploadResult.Success;
+                return response;
             }
         }
 
-        public Task<UploadResult> UpdatePrice(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
+        public Task<UploaderResponse> UpdatePrice(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -353,8 +378,10 @@ namespace Husa.Uploader.Core.Services
 
             return UpdateListingPrice(logIn);
 
-            async Task<UploadResult> UpdateListingPrice(bool logIn)
+            async Task<UploaderResponse> UpdateListingPrice(bool logIn)
             {
+                UploaderResponse response = new UploaderResponse();
+
                 this.logger.LogInformation("Updating the price of the listing {requestId} to {listPrice}.", listing.ResidentialListingRequestID, listing.ListPrice);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
@@ -381,14 +408,17 @@ namespace Husa.Uploader.Core.Services
                 catch (Exception exception)
                 {
                     this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
-                    return UploadResult.Failure;
+                    response.UploadResult = UploadResult.Failure;
+                    response.UploadInformation = this.uploaderClient.UploadInformation;
+                    return response;
                 }
 
-                return UploadResult.Success;
+                response.UploadResult = UploadResult.Success;
+                return response;
             }
         }
 
-        public Task<UploadResult> UpdateStatus(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
+        public Task<UploaderResponse> UpdateStatus(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -397,8 +427,10 @@ namespace Husa.Uploader.Core.Services
 
             return UpdateListingStatus(logIn);
 
-            async Task<UploadResult> UpdateListingStatus(bool logIn)
+            async Task<UploaderResponse> UpdateListingStatus(bool logIn)
             {
+                UploaderResponse response = new UploaderResponse();
+
                 this.logger.LogInformation("Editing the status information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
 
@@ -449,10 +481,13 @@ namespace Husa.Uploader.Core.Services
                 catch (Exception exception)
                 {
                     this.logger.LogError(exception, "Failure uploading the listing {requestId}", listing.ResidentialListingRequestID);
-                    return UploadResult.Failure;
+                    response.UploadResult = UploadResult.Failure;
+                    response.UploadInformation = this.uploaderClient.UploadInformation;
+                    return response;
                 }
 
-                return UploadResult.Success;
+                response.UploadResult = UploadResult.Success;
+                return response;
             }
 
             void HandleClosedStatus(ResidentialListingRequest listing)
@@ -630,7 +665,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploadResult> UploadVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploaderResponse> UploadVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
             if (listing is null)
             {
@@ -639,7 +674,7 @@ namespace Husa.Uploader.Core.Services
 
             return UploadListingVirtualTour();
 
-            async Task<UploadResult> UploadListingVirtualTour()
+            async Task<UploaderResponse> UploadListingVirtualTour()
             {
                 this.logger.LogInformation("Updating VirtualTour for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
@@ -652,11 +687,13 @@ namespace Husa.Uploader.Core.Services
 
                 await this.UpdateVirtualTourLinks(listing, cancellationToken);
 
-                return UploadResult.Success;
+                UploaderResponse response = new UploaderResponse();
+                response.UploadResult = UploadResult.Success;
+                return response;
             }
         }
 
-        public Task<UploadResult> UpdateOpenHouse(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploaderResponse> UpdateOpenHouse(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
             if (listing is null)
             {
@@ -665,8 +702,10 @@ namespace Husa.Uploader.Core.Services
 
             return UploadOpenHouse();
 
-            async Task<UploadResult> UploadOpenHouse()
+            async Task<UploaderResponse> UploadOpenHouse()
             {
+                UploaderResponse response = new UploaderResponse();
+
                 this.logger.LogInformation("Editing the information of Open House for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
@@ -687,31 +726,32 @@ namespace Husa.Uploader.Core.Services
                     this.AddOpenHouses(listing);
                 }
 
-                return UploadResult.Success;
+                response.UploadResult = UploadResult.Success;
+                return response;
             }
         }
 
-        public Task<UploadResult> UploadLot(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        public Task<UploaderResponse> UploadLot(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             throw new NotImplementedException();
         }
 
-        public Task<UploadResult> UpdateLotStatus(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        public Task<UploaderResponse> UpdateLotStatus(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             throw new NotImplementedException();
         }
 
-        public Task<UploadResult> UpdateLotImages(LotListingRequest listing, CancellationToken cancellationToken = default)
+        public Task<UploaderResponse> UpdateLotImages(LotListingRequest listing, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public Task<UploadResult> UpdateLotPrice(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        public Task<UploaderResponse> UpdateLotPrice(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             throw new NotImplementedException();
         }
 
-        public Task<UploadResult> EditLot(LotListingRequest listing, CancellationToken cancellationToken, bool logIn)
+        public Task<UploaderResponse> EditLot(LotListingRequest listing, CancellationToken cancellationToken, bool logIn)
         {
             throw new NotImplementedException();
         }
