@@ -1283,6 +1283,14 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_9"); // click in tab Listing Information
             Thread.Sleep(400);
 
+            var viewFullFormToggle = this.uploaderClient.FindElement(By.Id("InputForm_full-form-view-toggle"));
+            if (!viewFullFormToggle.Selected)
+            {
+                viewFullFormToggle.Click();
+            }
+
+            Thread.Sleep(500);
+
             // Listing Information
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_77"));
             this.uploaderClient.WriteTextbox(By.Name("Input_77"), listing.ListPrice); // List Price
