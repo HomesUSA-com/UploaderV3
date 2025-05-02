@@ -1310,7 +1310,7 @@ namespace Husa.Uploader.Core.Services
 
                 this.SetMultipleCheckboxById("Input_180", "STANDARD"); // Special Listing Conditions
 
-                this.SetSelect("Input_181", "A"); // List Agreement Document*/
+                this.SetSelect("Input_181", "OT"); // List Agreement Document*/
             }
 
             // Location Information
