@@ -1225,7 +1225,7 @@ namespace Husa.Uploader.Core.Services
                 }
             }
 
-            Thread.Sleep(500);
+            //////Thread.Sleep(500);
             this.uploaderClient.ExecuteScript("document.activeElement.blur();");
             this.uploaderClient.ScrollDown(250);
         }
@@ -1251,7 +1251,7 @@ namespace Husa.Uploader.Core.Services
 
                 this.uploaderClient.ExecuteScript("document.activeElement.blur();", false);
                 this.uploaderClient.ExecuteScript("document.body.click();", false);
-                Thread.Sleep(500);
+                //////Thread.Sleep(500);
             }
             catch (NoSuchElementException ex)
             {
@@ -1284,8 +1284,6 @@ namespace Husa.Uploader.Core.Services
             {
                 viewFullFormToggle.Click();
             }
-
-            Thread.Sleep(500);
 
             // Listing Information
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_77"));
@@ -1321,7 +1319,7 @@ namespace Husa.Uploader.Core.Services
                 this.WriteTextbox("Input_201", listing.TaxID); // Parcel ID
                 this.SelectToggleButton("Input_202", false); // Additional Parcels Y/N)
                 this.uploaderClient.ScrollDown(600);
-                this.SetSelect("Input_204", listing.MLSArea); // MLS Area
+                //////this.SetSelect("Input_204", listing.MLSArea); // MLS Area
                 this.SetMultipleCheckboxById("Input_343", listing.FemaFloodPlain); // FEMA 100 Yr Flood Plain
                 this.SetSelect("Input_206", "N"); // ETJ
             }
@@ -1351,7 +1349,7 @@ namespace Husa.Uploader.Core.Services
         private void FillGreenEnergyInformation()
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_110"); // Green Energy
-            Thread.Sleep(100);
+
             this.SetMultipleCheckboxById("Input_280", "NONE"); // Green Energy Efficient
             this.SetMultipleCheckboxById("Input_281", "None"); // Green Sustainability
         }
@@ -1413,7 +1411,6 @@ namespace Husa.Uploader.Core.Services
         {
             const string masterBedroom = "MSTRBED";
             const string mainLevelRoom = "MAIN";
-            ////this.uploaderClient.ClickOnElement(By.XPath("//li[@id='toc_InputForm_section_11']")); // Tab Aditional
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_11");
             var hasPrimaryBedroomOnMain = listing.Rooms.Exists(room => room.RoomType == masterBedroom && room.Level == mainLevelRoom);
             if (hasPrimaryBedroomOnMain)
@@ -1472,7 +1469,7 @@ namespace Husa.Uploader.Core.Services
 
                 this.uploaderClient.ClickOnElement(By.XPath("//button[starts-with(@id, 'addBlankRow_Input_761')]"));
                 this.uploaderClient.ExecuteScript("document.activeElement.blur();");
-                Thread.Sleep(500);
+                ////Thread.Sleep(500);
             }
 
             foreach (var room in listing.Rooms)
@@ -1504,8 +1501,6 @@ namespace Husa.Uploader.Core.Services
                     indexInput++;
                 }
             }
-
-            Thread.Sleep(500);
         }
 
         private void FillFinancialInformation(AborListingRequest listing)
@@ -1541,8 +1536,6 @@ namespace Husa.Uploader.Core.Services
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_38"); // Showing
 
-            Thread.Sleep(100);
-
             this.SetSelect("Input_301", "VCNT"); // Occupant
             this.SetMultipleCheckboxById("Input_305", listing.Showing); // Showing Requirements
             this.WriteTextbox("Input_302", listing.OwnerName); // Owner Name
@@ -1559,19 +1552,16 @@ namespace Husa.Uploader.Core.Services
         private void FillAgentOfficeInformation()
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_12"); // Agent
-            Thread.Sleep(100);
         }
 
         private void FillLotAgentOfficeInformation()
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_84"); // Agent/Office
-            Thread.Sleep(100);
         }
 
         private void FillRemarks(AborListingRequest listing)
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_13"); // Remarks
-            Thread.Sleep(100);
 
             this.WriteTextbox("Input_320", listing.Directions, inputType: "textarea"); // Directions
             this.uploaderClient.ScrollDown(200);
@@ -1610,7 +1600,6 @@ namespace Husa.Uploader.Core.Services
         private void UpdateYearBuiltDescriptionInGeneralTab(ResidentialListingRequest listing)
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_10"); // click in tab General
-            Thread.Sleep(400);
 
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_218"));
             this.uploaderClient.WriteTextbox(By.Name("Input_218"), listing.YearBuilt); // Year Built
@@ -1620,7 +1609,6 @@ namespace Husa.Uploader.Core.Services
         private void UpdatePublicRemarksInRemarksTab(AborListingRequest listing)
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_13"); // click in tab Listing Information
-            Thread.Sleep(400);
 
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_322"));
             if (!listing.DoNotIncludeInfoInPublicRemarks)
