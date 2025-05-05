@@ -1225,7 +1225,6 @@ namespace Husa.Uploader.Core.Services
                 }
             }
 
-            //////Thread.Sleep(500);
             this.uploaderClient.ExecuteScript("document.activeElement.blur();");
             this.uploaderClient.ScrollDown(250);
         }
@@ -1251,7 +1250,6 @@ namespace Husa.Uploader.Core.Services
 
                 this.uploaderClient.ExecuteScript("document.activeElement.blur();", false);
                 this.uploaderClient.ExecuteScript("document.body.click();", false);
-                //////Thread.Sleep(500);
             }
             catch (NoSuchElementException ex)
             {
@@ -1319,7 +1317,7 @@ namespace Husa.Uploader.Core.Services
                 this.WriteTextbox("Input_201", listing.TaxID); // Parcel ID
                 this.SelectToggleButton("Input_202", false); // Additional Parcels Y/N)
                 this.uploaderClient.ScrollDown(600);
-                //////this.SetSelect("Input_204", listing.MLSArea); // MLS Area
+                this.SetSelect("Input_204", listing.MLSArea); // MLS Area
                 this.SetMultipleCheckboxById("Input_343", listing.FemaFloodPlain); // FEMA 100 Yr Flood Plain
                 this.SetSelect("Input_206", "N"); // ETJ
             }
@@ -1469,7 +1467,6 @@ namespace Husa.Uploader.Core.Services
 
                 this.uploaderClient.ClickOnElement(By.XPath("//button[starts-with(@id, 'addBlankRow_Input_761')]"));
                 this.uploaderClient.ExecuteScript("document.activeElement.blur();");
-                ////Thread.Sleep(500);
             }
 
             foreach (var room in listing.Rooms)
