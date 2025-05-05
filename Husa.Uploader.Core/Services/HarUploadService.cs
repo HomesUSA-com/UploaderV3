@@ -733,7 +733,44 @@ namespace Husa.Uploader.Core.Services
 
         public Task<UploaderResponse> UploadLot(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
-            throw new NotImplementedException();
+            if (listing is null)
+            {
+                throw new ArgumentNullException(nameof(listing));
+            }
+
+            return UploadListing(logIn);
+
+            async Task<UploaderResponse> UploadListing(bool logIn)
+            {
+                UploaderResponse response = new UploaderResponse();
+
+                this.logger.LogInformation("Uploading the information for the listing {requestId}", listing.LotListingRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.LotListingRequestID, listing.IsNewListing);
+
+                try
+                {
+                    if (logIn)
+                    {
+                        await this.Login(listing.CompanyId);
+                        Thread.Sleep(1000);
+                    }
+
+                    if (listing.IsNewListing)
+                    {
+                        this.NavigateToNewPropertyInput();
+                    }
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lot {requestId}", listing.LotListingRequestID);
+                    response.UploadResult = UploadResult.Failure;
+                    response.UploadInformation = this.uploaderClient.UploadInformation;
+                    return response;
+                }
+
+                response.UploadResult = UploadResult.Success;
+                return response;
+            }
         }
 
         public Task<UploaderResponse> UpdateLotStatus(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
@@ -811,7 +848,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        private void NavigateToNewPropertyInput(HousingType? housingType)
+        private void NavigateToNewPropertyInput(HousingType? housingType = null)
         {
             this.uploaderClient.NavigateToUrl("https://matrix.harmls.com/Matrix/AddEdit/MatrixAddEdit");
             this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Add new"));
@@ -830,6 +867,9 @@ namespace Husa.Uploader.Core.Services
                     break;
                 case HousingType.MultiFamily:
                     WaitAndClick("Multi-Family Add/Edit");
+                    break;
+                default:
+                    WaitAndClick("Lots Add/Edit");
                     break;
             }
 
@@ -1013,14 +1053,13 @@ namespace Husa.Uploader.Core.Services
             {
                 if (isNotPartialFill)
                 {
-                    var hasWasherDryerConnection = listing.WasherConnections?.Length > 0;
                     this.uploaderClient.SetSelect(By.Id("Input_700"), "BUILD"); // SqFt Source
                     this.uploaderClient.WriteTextbox(By.Id("Input_485"), listing.NumStories); // Number of Building Stories
                     this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.NumStories); // Number of Unit Stories
                     this.uploaderClient.SetMultipleCheckboxById("Input_702", listing.HousingStyleDesc);  // Style
                     this.uploaderClient.SetMultipleCheckboxById("Input_475", listing.WaterDesc); // Water/Sewer Description
-                    this.uploaderClient.SetSelect(By.Id("Input_496"), hasWasherDryerConnection.BoolToNumericBool()); // washer Dryer Connection
-                    this.uploaderClient.SetMultipleCheckboxById("Input_369", listing.WasherConnections.ReplaceStringValues("ELDRY", "ELCDR")); // Appliances
+                    this.uploaderClient.SetSelect(By.Id("Input_496"), listing.WasherDryerConnection.BoolToNumericBool()); // washer Dryer Connection
+                    this.uploaderClient.SetMultipleCheckboxById("Input_369", listing.Appliances); // Appliances
                     this.uploaderClient.SetSelect(By.Id("Input_265"), "0"); // Pool - Area (1, 0)
                 }
             }

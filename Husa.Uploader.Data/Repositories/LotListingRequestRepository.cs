@@ -4,15 +4,12 @@ namespace Husa.Uploader.Data.Repositories
     using System.Linq.Expressions;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Abor.Api.Client;
-    using Husa.Quicklister.CTX.Api.Client;
-    using Husa.Quicklister.Dfw.Api.Client;
     using Husa.Quicklister.Extensions.Api.Client.Interfaces;
     using Husa.Quicklister.Extensions.Api.Contracts.Request.SaleRequest;
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ListingRequest;
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Quicklister.Har.Api.Client;
-    using Husa.Quicklister.Sabor.Api.Client;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests.LotRequest;
@@ -23,28 +20,19 @@ namespace Husa.Uploader.Data.Repositories
 
     public class LotListingRequestRepository : ILotListingRequestRepository
     {
-        private readonly IQuicklisterSaborClient quicklisterSaborClient;
-        private readonly IQuicklisterCtxClient quicklisterCtxClient;
         private readonly IQuicklisterAborClient quicklisterAborClient;
         private readonly IQuicklisterHarClient quicklisterHarClient;
-        private readonly IQuicklisterDfwClient quicklisterDfwClient;
         private readonly ILogger<LotListingRequestRepository> logger;
         private readonly MarketConfiguration marketConfiguration;
 
         public LotListingRequestRepository(
             IOptions<ApplicationOptions> applicationOptions,
-            IQuicklisterSaborClient quicklisterSaborClient,
-            IQuicklisterCtxClient quicklisterCtxClient,
             IQuicklisterAborClient quicklisterAborClient,
             IQuicklisterHarClient quicklisterHarClient,
-            IQuicklisterDfwClient quicklisterDfwClient,
             ILogger<LotListingRequestRepository> logger)
         {
-            this.quicklisterSaborClient = quicklisterSaborClient ?? throw new ArgumentNullException(nameof(quicklisterSaborClient));
-            this.quicklisterCtxClient = quicklisterCtxClient ?? throw new ArgumentNullException(nameof(quicklisterCtxClient));
             this.quicklisterAborClient = quicklisterAborClient ?? throw new ArgumentNullException(nameof(quicklisterAborClient));
             this.quicklisterHarClient = quicklisterHarClient ?? throw new ArgumentNullException(nameof(quicklisterHarClient));
-            this.quicklisterDfwClient = quicklisterDfwClient ?? throw new ArgumentNullException(nameof(quicklisterDfwClient));
 
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.marketConfiguration = applicationOptions?.Value?.MarketInfo ?? throw new ArgumentNullException(nameof(applicationOptions));
@@ -58,6 +46,11 @@ namespace Husa.Uploader.Data.Repositories
                     this.marketConfiguration.Abor,
                     this.quicklisterAborClient.ListingLotRequest,
                     request => new AborLotListingRequest(request).CreateFromApiResponse(),
+                    token),
+                this.GetRequestByMarket(
+                    this.marketConfiguration.Har,
+                    this.quicklisterHarClient.ListingLotRequest,
+                    request => new HarLotListingRequest(request).CreateFromApiResponse(),
                     token),
             };
 
@@ -108,27 +101,12 @@ namespace Husa.Uploader.Data.Repositories
         {
             var mlsNumber = marketCode switch
             {
-                MarketCode.SanAntonio => await GetFromSabor(),
-                MarketCode.CTX => await GetFromCtx(),
                 MarketCode.Austin => await GetFromAbor(),
                 MarketCode.Houston => await GetFromHar(),
-                MarketCode.DFW => await GetFromDfw(),
                 _ => throw new NotSupportedException($"The market {marketCode} is not yet supported"),
             };
 
             return mlsNumber;
-
-            async Task<string> GetFromSabor()
-            {
-                var listing = await this.quicklisterSaborClient.SaleListing.GetByIdAsync(lotListingId, token);
-                return listing.MlsNumber;
-            }
-
-            async Task<string> GetFromCtx()
-            {
-                var listing = await this.quicklisterCtxClient.SaleListing.GetByIdAsync(lotListingId, token);
-                return listing.MlsNumber;
-            }
 
             async Task<string> GetFromAbor()
             {
@@ -141,12 +119,6 @@ namespace Husa.Uploader.Data.Repositories
                 var listing = await this.quicklisterHarClient.SaleListing.GetByIdAsync(lotListingId, token);
                 return listing.MlsNumber;
             }
-
-            async Task<string> GetFromDfw()
-            {
-                var listing = await this.quicklisterDfwClient.SaleListing.GetByIdAsync(lotListingId, token);
-                return listing.MlsNumber;
-            }
         }
 
         private async Task<LotListingRequest> GetRequestById(Guid lotListingRequestId, MarketCode marketCode, CancellationToken token)
@@ -154,6 +126,7 @@ namespace Husa.Uploader.Data.Repositories
             LotListingRequest listingRequest = marketCode switch
             {
                 MarketCode.Austin => await GetLotFromAbor(),
+                MarketCode.Houston => await GetLotFromHar(),
                 _ => throw new NotSupportedException($"The market {marketCode} is not yet supported for Lot Listings."),
             };
 
@@ -163,6 +136,12 @@ namespace Husa.Uploader.Data.Repositories
             {
                 var request = await this.quicklisterAborClient.ListingLotRequest.GetListRequestSaleByIdAsync(lotListingRequestId, token);
                 return new AborLotListingRequest(request).CreateFromApiResponseDetail();
+            }
+
+            async Task<LotListingRequest> GetLotFromHar()
+            {
+                var request = await this.quicklisterHarClient.ListingLotRequest.GetListRequestSaleByIdAsync(lotListingRequestId, token);
+                return new HarLotListingRequest(request).CreateFromApiResponseDetail();
             }
         }
 
@@ -182,38 +161,6 @@ namespace Husa.Uploader.Data.Repositories
                 {
                     RequestState = QuicklisterStatus.Pending,
                     IsPrint = true,
-                };
-
-                var requests = await requestClient.GetListRequestAsync(
-                    saleListingRequestFilter,
-                    token);
-
-                if (requests.Data.Any())
-                {
-                    return requests.Data.AsQueryable().Select(projection).ToList();
-                }
-            }
-
-            return new List<LotListingRequest>();
-        }
-
-        private async Task<IEnumerable<LotListingRequest>> GetRequestByMarketAndAction<TSaleListingRequestResponse, TListingRequestDetailResponse>(
-            MarketSettings marketSettings,
-            ISaleListingRequest<TSaleListingRequestResponse, TListingRequestDetailResponse> requestClient,
-            Expression<Func<TSaleListingRequestResponse, LotListingRequest>> projection,
-            RequestFieldChange requestFieldChange,
-            CancellationToken token = default)
-            where TSaleListingRequestResponse : class, ISaleListingRequestResponse
-            where TListingRequestDetailResponse : IListingRequestDetailResponse
-        {
-            if (marketSettings.IsEnabled)
-            {
-                this.logger.LogInformation("Getting all pending requests for {MarketCode} and for action {requestFieldChange}.", marketSettings.MarketCode, requestFieldChange);
-
-                var saleListingRequestFilter = new SaleListingRequestFilter()
-                {
-                    RequestState = QuicklisterStatus.Pending,
-                    RequestFieldChange = requestFieldChange,
                 };
 
                 var requests = await requestClient.GetListRequestAsync(
