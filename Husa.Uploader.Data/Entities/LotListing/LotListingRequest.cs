@@ -44,6 +44,7 @@ namespace Husa.Uploader.Data.Entities.LotListing
 
         public int ListPrice { get; set; }
         public DateTime? ListDate { get; set; }
+        public string TypeOfContract { get; set; }
 
         // Lot Schools
         public string SchoolDistrict { get; set; }
@@ -56,6 +57,8 @@ namespace Husa.Uploader.Data.Entities.LotListing
 
         // Lot Address
         public string UnitNumber { get; set; }
+        public int? LotNumber { get; set; }
+        public string StDirection { get; set; }
 
         // Lot Property
         public string MlsArea { get; set; }
@@ -79,9 +82,18 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public string TaxBlock { get; set; }
         public string LotDimension { get; set; }
         public string LotSize { get; set; }
+        public string LotSizeSrc { get; set; }
         public bool UpdateGeocodes { get; set; }
         public int? AlsoListedAs { get; set; }
         public bool BuilderRestrictions { get; set; }
+        public string Acreage { get; set; }
+        public int? FrontDimensions { get; set; }
+        public int? BackDimensions { get; set; }
+        public int? LeftDimensions { get; set; }
+        public int? RightDimensions { get; set; }
+        public string HasMasterPlannedCommunity { get; set; }
+        public string MasterPlannedCommunity { get; set; }
+        public string LegalSubdivision { get; set; }
 
         // Lot Features
         public string RestrictionsDescription { get; set; }
@@ -151,6 +163,7 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public string SecondAgentMarketUniqueId { get; set; }
         public string SoldTerms { get; set; }
         public string SellConcess { get; set; }
+        public string LotListType { get; set; }
         public abstract LotListingRequest CreateFromApiResponse();
 
         public abstract LotListingRequest CreateFromApiResponseDetail();

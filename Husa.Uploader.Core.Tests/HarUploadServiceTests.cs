@@ -18,6 +18,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
+    using Husa.Uploader.Data.Entities.MarketRequests.LotRequest;
     using Microsoft.Extensions.Logging;
     using Moq;
     using OpenQA.Selenium;
@@ -56,6 +57,24 @@ namespace Husa.Uploader.Core.Tests
             // Act
             var sut = this.GetSut();
             var result = await sut.Upload(request);
+
+            // Assert
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
+        }
+
+        [Fact]
+        public async Task UploadNewLotListing()
+        {
+            // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
+            this.SetUpConfigs();
+
+            var request = this.GetLotListingRequest(false);
+
+            // Act
+            var sut = this.GetSut();
+            var result = await sut.UploadLot(request);
 
             // Assert
             Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
@@ -467,15 +486,10 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act
-            sut.FillListDate(harListing);
+            sut.FillListDate(harListing.ListStatus);
 
             // Assert
             this.uploaderClient.Verify(x => x.WriteTextbox(By.Id("Input_183"), expectedDate.ToShortDateString(), false, false, false, false), Times.Once);
-        }
-
-        protected override LotListingRequest GetLotListingRequest(bool isNewListing = true)
-        {
-            throw new NotImplementedException();
         }
 
         protected override HarUploadService GetSut()
@@ -494,6 +508,12 @@ namespace Husa.Uploader.Core.Tests
             var listingSale = GetListingRequestDetailResponse(isNewListing);
             var company = new Mock<CompanyDetail>().Object;
             return new HarListingRequest(listingSale).CreateFromApiResponseDetail(company);
+        }
+
+        protected override LotListingRequest GetLotListingRequest(bool isNewListing = true)
+        {
+            var listingSale = GetLotListingRequestDetailResponse(isNewListing);
+            return new HarLotListingRequest(listingSale).CreateFromApiResponseDetail();
         }
 
         private static HarResponse.ListingRequest.SaleRequest.ListingSaleRequestDetailResponse GetListingRequestDetailResponse(bool isNewListing)
@@ -590,6 +610,53 @@ namespace Husa.Uploader.Core.Tests
             listingSale.SaleProperty.OpenHouses = openHouses;
 
             return listingSale;
+        }
+
+        private static HarResponse.ListingRequest.LotRequest.LotListingRequestDetailResponse GetLotListingRequestDetailResponse(bool isNewListing)
+        {
+            var addressInfo = new Mock<HarResponse.LotListing.LotAddressResponse>();
+            var propertyInfo = new HarResponse.LotListing.LotPropertyResponse()
+            {
+                IsPlannedCommunity = true,
+                PlannedCommunity = PlannedCommunity.Tavola,
+                LegalSubdivision = LegalSubdivision.AlcornBend,
+                TaxId = "100",
+                UpdateGeocodes = true,
+            };
+            var featuresInfo = new HarResponse.LotListing.LotFeaturesResponse()
+            {
+                GolfCourseName = GolfCourseName.AprilSoundCountryClub,
+            };
+            var financialInfo = new HarResponse.LotListing.LotFinancialResponse()
+            {
+                HasBonusWithAmount = true,
+                BuyersAgentCommissionType = CommissionType.Amount,
+                AgentBonusAmountType = CommissionType.Percent,
+            };
+            var schoolsInfo = new Mock<HarResponse.SchoolsResponse>();
+            var showingInfo = new HarResponse.LotListing.LotShowingResponse()
+            {
+                Directions = "this is a test",
+                ContactPhone = "8888888888",
+            };
+            var statusFields = new Mock<HarResponse.ListingSaleStatusFieldsResponse>();
+
+            var lotListing = new HarResponse.ListingRequest.LotRequest.LotListingRequestDetailResponse()
+            {
+                ListPrice = 127738,
+                StatusFieldsInfo = statusFields.Object,
+                MlsNumber = isNewListing ? null : "mlsNumber",
+                AddressInfo = addressInfo.Object,
+                PropertyInfo = propertyInfo,
+                FeaturesInfo = featuresInfo,
+                FinancialInfo = financialInfo,
+                SchoolsInfo = schoolsInfo.Object,
+                ShowingInfo = showingInfo,
+                OwnerName = "OwnerName",
+                CompanyId = Guid.NewGuid(),
+            };
+
+            return lotListing;
         }
     }
 }

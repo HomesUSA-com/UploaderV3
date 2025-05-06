@@ -759,6 +759,8 @@ namespace Husa.Uploader.Core.Services
                     {
                         this.NavigateToNewPropertyInput();
                     }
+
+                    this.FillLotListingInformation(listing);
                 }
                 catch (Exception exception)
                 {
@@ -793,9 +795,9 @@ namespace Husa.Uploader.Core.Services
             throw new NotImplementedException();
         }
 
-        public void FillListDate(ResidentialListingRequest listing)
+        public void FillListDate(string listStatus)
         {
-            var listDate = GetNewListingDate(listing.ListStatus);
+            var listDate = GetNewListingDate(listStatus);
             if (listDate.HasValue)
             {
                 this.uploaderClient.WriteTextbox(By.Id("Input_183"), listDate.Value.ToShortDateString());  // List Date
@@ -972,7 +974,7 @@ namespace Husa.Uploader.Core.Services
             {
                 if (listing.IsNewListing)
                 {
-                    this.FillListDate(listing);
+                    this.FillListDate(listing.ListStatus);
 
                     var expirationDate = listing.ExpiredDate.HasValue ? listing.ExpiredDate.Value : (listing.SysCreatedOn ?? DateTime.Today).AddYears(1);
                     this.uploaderClient.WriteTextbox(By.Id("Input_184"), expirationDate.ToShortDateString()); // Expiration Date
@@ -1264,7 +1266,7 @@ namespace Husa.Uploader.Core.Services
             }
             else if (listing.AgentBonusAmountType.Equals("$") && !string.IsNullOrEmpty(listing.AgentBonusAmount))
             {
-                    this.uploaderClient.WriteTextbox(By.Id("Input_723"), listing.AgentBonusAmount); // Seller May Concessions
+                this.uploaderClient.WriteTextbox(By.Id("Input_723"), listing.AgentBonusAmount); // Seller May Concessions
             }
 
             this.uploaderClient.SetSelect(By.Id("Input_674"), listing.IsActiveCommunity.BoolToNumericBool()); // 55+ Active Community
@@ -1561,6 +1563,30 @@ namespace Husa.Uploader.Core.Services
 
                 index++;
             }
+        }
+
+        private void FillLotListingInformation(LotListingRequest listing)
+        {
+            this.GoToTab("Listing Information");
+            this.uploaderClient.SetSelect(By.Id("Input_181"), listing.LotListType); // List Type
+            this.uploaderClient.WriteTextbox(By.Id("Input_182"), listing.ListPrice); // List Price
+            this.FillListDate(listing.ListStatus); // list Date
+            this.uploaderClient.WriteTextbox(By.Id("Input_184"), listing.ExpiredDate); // Expired Date
+            this.uploaderClient.SetSelect(By.Id("Input_424"), "RESAL"); // type of contract
+            this.uploaderClient.WriteTextbox(By.Id("Input_156"), listing.StreetNum); // Street Number
+            this.uploaderClient.SetSelect(By.Id("Input_157"), listing.StDirection); // St Direction
+            this.uploaderClient.WriteTextbox(By.Id("Input_158"), listing.StreetName); // Street Name
+            this.uploaderClient.SetSelect(By.Id("Input_159"), listing.StreetType, isElementOptional: true); // Street Type
+            this.uploaderClient.WriteTextbox(By.Id("Input_425"), listing.LotNumber); // Lot #
+            this.uploaderClient.FillFieldSingleOption("Input_161", listing.City);
+            this.uploaderClient.SetSelect(By.Id("Input_162"), listing.State); // State
+            this.uploaderClient.WriteTextbox(By.Id("Input_163"), listing.Zip); // Zip Code
+            this.uploaderClient.SetSelect(By.Id("Input_164"), listing.County); // County
+            this.uploaderClient.WriteTextbox(By.Id("Input_165"), listing.Subdivision); // Subdivision
+            this.uploaderClient.WriteTextbox(By.Id("Input_302"), listing.LegalDescription); // Legal Description
+            this.uploaderClient.WriteTextbox(By.Id("Input_320"), listing.LegalSubdivision); // Legal Subdivision
+            this.uploaderClient.SetSelect(By.Id("Input_172"), listing.HasMasterPlannedCommunity); // Master Planned Community Y/N
+            this.uploaderClient.FillFieldSingleOption("Input_173", listing.MasterPlannedCommunity); // Master Planned Community Name
         }
 
         private void NavigateToTab(string tabName)

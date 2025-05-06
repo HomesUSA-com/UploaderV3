@@ -3,6 +3,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Har.Api.Contracts.Response.ListingRequest.LotRequest;
+    using Husa.Quicklister.Har.Api.Contracts.Response.LotListing;
+    using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities.LotListing;
 
     public class HarLotListingRequest : LotListingRequest
@@ -66,6 +68,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
             };
 
             FillLotPropertyInfo(this.listingDetailResponse);
+            FillAddressInfo(this.listingDetailResponse.AddressInfo);
+            FillPropertyInfo(this.listingDetailResponse.PropertyInfo);
 
             return lotListingRequest;
 
@@ -80,6 +84,42 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.CompanyName = lotListingRequestDetailResponse.OwnerName;
                 lotListingRequest.OwnerName = lotListingRequestDetailResponse.OwnerName;
                 lotListingRequest.CompanyId = lotListingRequestDetailResponse.CompanyId;
+            }
+
+            void FillAddressInfo(LotAddressResponse addressInfo)
+            {
+                if (addressInfo is null)
+                {
+                    throw new ArgumentNullException(nameof(addressInfo));
+                }
+
+                lotListingRequest.StreetNum = addressInfo.StreetNumber;
+                lotListingRequest.StreetName = addressInfo.StreetName;
+                lotListingRequest.City = addressInfo.City.GetEnumDescription();
+                lotListingRequest.CityCode = addressInfo.City.ToStringFromEnumMember();
+                lotListingRequest.State = addressInfo.State.ToStringFromEnumMember();
+                lotListingRequest.Zip = addressInfo.ZipCode;
+                lotListingRequest.County = addressInfo.County?.ToStringFromEnumMember();
+                lotListingRequest.StreetType = addressInfo.StreetType?.ToStringFromEnumMember();
+                lotListingRequest.LotNumber = addressInfo.LotNumber;
+                lotListingRequest.Subdivision = addressInfo.Subdivision;
+                lotListingRequest.StDirection = addressInfo.StreetDirPrefix?.ToStringFromEnumMember();
+            }
+
+            void FillPropertyInfo(LotPropertyResponse propertyInfo)
+            {
+                if (propertyInfo is null)
+                {
+                    throw new ArgumentNullException(nameof(propertyInfo));
+                }
+
+                lotListingRequest.LegalDescription = propertyInfo.LegalDescription;
+                lotListingRequest.TaxId = propertyInfo.TaxId;
+                lotListingRequest.Acreage = propertyInfo.Acreage?.ToStringFromEnumMember();
+                lotListingRequest.HasMasterPlannedCommunity = propertyInfo.IsPlannedCommunity.BoolToNumericBool();
+                lotListingRequest.MasterPlannedCommunity = propertyInfo.PlannedCommunity?.GetEnumDescription();
+                lotListingRequest.LegalSubdivision = propertyInfo.LegalSubdivision?.GetEnumDescription();
+                lotListingRequest.LotListType = propertyInfo.LotListType?.ToStringFromEnumMember();
             }
         }
     }
