@@ -50,5 +50,7 @@ namespace Husa.Uploader.Crosscutting.Extensions
 
             return stringValue.Replace(valueToReplace, replacementValue);
         }
+
+        public static string BooleanToStringYN(this bool condition) => condition ? "YES" : "NO";
     }
 }
