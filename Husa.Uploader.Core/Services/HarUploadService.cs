@@ -1013,14 +1013,13 @@ namespace Husa.Uploader.Core.Services
             {
                 if (isNotPartialFill)
                 {
-                    var hasWasherDryerConnection = listing.WasherConnections?.Length > 0;
                     this.uploaderClient.SetSelect(By.Id("Input_700"), "BUILD"); // SqFt Source
                     this.uploaderClient.WriteTextbox(By.Id("Input_485"), listing.NumStories); // Number of Building Stories
                     this.uploaderClient.WriteTextbox(By.Id("Input_242"), listing.NumStories); // Number of Unit Stories
                     this.uploaderClient.SetMultipleCheckboxById("Input_702", listing.HousingStyleDesc);  // Style
                     this.uploaderClient.SetMultipleCheckboxById("Input_475", listing.WaterDesc); // Water/Sewer Description
-                    this.uploaderClient.SetSelect(By.Id("Input_496"), hasWasherDryerConnection.BoolToNumericBool()); // washer Dryer Connection
-                    this.uploaderClient.SetMultipleCheckboxById("Input_369", listing.WasherConnections.ReplaceStringValues("ELDRY", "ELCDR")); // Appliances
+                    this.uploaderClient.SetSelect(By.Id("Input_496"), listing.WasherDryerConnection.BoolToNumericBool()); // washer Dryer Connection
+                    this.uploaderClient.SetMultipleCheckboxById("Input_369", listing.Appliances); // Appliances
                     this.uploaderClient.SetSelect(By.Id("Input_265"), "0"); // Pool - Area (1, 0)
                 }
             }

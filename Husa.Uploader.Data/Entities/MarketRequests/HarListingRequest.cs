@@ -52,6 +52,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
         public bool HasUtilitiesDescription { get; set; }
         public bool HasOtherFees { get; set; }
         public string WasherConnections { get; set; }
+        public bool WasherDryerConnection { get; set; }
+        public string Appliances { get; set; }
 
         public override MarketCode MarketCode => MarketCode.Houston;
         public override BuiltStatus BuiltStatus => this.YearBuiltDesc switch
@@ -244,6 +246,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.AccessInstructionsDesc = featuresInfo.AccessInstructions.ToStringFromEnumMembers();
                 residentialListingRequest.RangeDesc = featuresInfo.RangeDescription.ToStringFromEnumMembers();
                 residentialListingRequest.WasherConnections = featuresInfo.WasherConnections.ToStringFromEnumMembers();
+                residentialListingRequest.WasherDryerConnection = featuresInfo.WasherDryerConnection;
+                residentialListingRequest.Appliances = featuresInfo.Appliances.ToStringFromEnumMembers();
 
                 residentialListingRequest.IsActiveCommunity = featuresInfo.IsActiveCommunity;
             }
