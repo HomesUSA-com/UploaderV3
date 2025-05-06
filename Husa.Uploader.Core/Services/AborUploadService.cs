@@ -1119,7 +1119,7 @@ namespace Husa.Uploader.Core.Services
             string baseId = actualFilterId.Replace("filter_", string.Empty);
             string dropdownListId = "listbox_select_" + baseId;
 
-            var waitTime = 5000;
+            var waitTime = 100;
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             bool dropdownVisible = false;
             while (stopwatch.ElapsedMilliseconds < waitTime)
@@ -1168,7 +1168,7 @@ namespace Husa.Uploader.Core.Services
                 return;
             }
 
-            Thread.Sleep(400);
+            Thread.Sleep(200);
             filterInputElement.Click();
 
             string actualFilterId = filterInputElement.GetAttribute("id");
@@ -1183,7 +1183,6 @@ namespace Husa.Uploader.Core.Services
                 foreach (var checkbox in selectedCheckboxes)
                 {
                     checkbox.Click();
-                    Thread.Sleep(200);
                 }
             }
             catch (Exception ex)
@@ -1196,7 +1195,6 @@ namespace Husa.Uploader.Core.Services
                 filterInputElement.Click();
             }
 
-            Thread.Sleep(400);
             if (csvValues != null)
             {
                 var splitValues = csvValues.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
@@ -1217,7 +1215,6 @@ namespace Husa.Uploader.Core.Services
                             if (!checkbox.Selected)
                             {
                                 checkbox.Click();
-                                Thread.Sleep(200);
                             }
                         }
                     }
@@ -1228,9 +1225,7 @@ namespace Husa.Uploader.Core.Services
                 }
             }
 
-            Thread.Sleep(500);
             this.uploaderClient.ExecuteScript("document.activeElement.blur();");
-            Thread.Sleep(500);
             this.uploaderClient.ScrollDown(250);
         }
 
@@ -1255,7 +1250,6 @@ namespace Husa.Uploader.Core.Services
 
                 this.uploaderClient.ExecuteScript("document.activeElement.blur();", false);
                 this.uploaderClient.ExecuteScript("document.body.click();", false);
-                Thread.Sleep(500);
             }
             catch (NoSuchElementException ex)
             {
@@ -1289,8 +1283,6 @@ namespace Husa.Uploader.Core.Services
                 viewFullFormToggle.Click();
             }
 
-            Thread.Sleep(500);
-
             // Listing Information
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_77"));
             this.uploaderClient.WriteTextbox(By.Name("Input_77"), listing.ListPrice); // List Price
@@ -1311,11 +1303,6 @@ namespace Husa.Uploader.Core.Services
                 this.SetMultipleCheckboxById("Input_180", "STANDARD"); // Special Listing Conditions
 
                 this.SetSelect("Input_181", "OT"); // List Agreement Document*/
-            }
-
-            // Location Information
-            if (isNotPartialFill)
-            {
                 this.WriteTextbox("Input_183", listing.StreetNum); // Street #
                 this.WriteTextbox("Input_185", listing.StreetName); // Street Name
                 this.SetSelect("Input_186", listing.StreetType); // Street Type (NM)
@@ -1329,8 +1316,7 @@ namespace Husa.Uploader.Core.Services
                 this.WriteTextbox("Input_199", listing.OtherFees); // Tax Lot
                 this.WriteTextbox("Input_201", listing.TaxID); // Parcel ID
                 this.SelectToggleButton("Input_202", false); // Additional Parcels Y/N)
-                Thread.Sleep(800);
-                this.uploaderClient.ScrollDown(400);
+                this.uploaderClient.ScrollDown(600);
                 this.SetSelect("Input_204", listing.MLSArea); // MLS Area
                 this.SetMultipleCheckboxById("Input_343", listing.FemaFloodPlain); // FEMA 100 Yr Flood Plain
                 this.SetSelect("Input_206", "N"); // ETJ
@@ -1339,7 +1325,6 @@ namespace Husa.Uploader.Core.Services
             this.WriteTextbox("Input_197", listing.Legal, inputType: "textarea"); // Tax Legal Description
 
             // School Information
-            Thread.Sleep(3000);
             this.uploaderClient.ScrollDown(1000);
             this.WriteTextbox("Input_212", listing.SchoolName4); // Elementary Other
             this.WriteTextbox("Input_213", listing.SchoolName5); // Middle or Junior Other
@@ -1362,7 +1347,7 @@ namespace Husa.Uploader.Core.Services
         private void FillGreenEnergyInformation()
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_110"); // Green Energy
-            Thread.Sleep(100);
+
             this.SetMultipleCheckboxById("Input_280", "NONE"); // Green Energy Efficient
             this.SetMultipleCheckboxById("Input_281", "None"); // Green Sustainability
         }
@@ -1424,7 +1409,7 @@ namespace Husa.Uploader.Core.Services
         {
             const string masterBedroom = "MSTRBED";
             const string mainLevelRoom = "MAIN";
-            this.uploaderClient.ClickOnElement(By.XPath("//li[@id='toc_InputForm_section_11']")); // Tab Aditional
+            this.uploaderClient.ClickOnElementById("toc_InputForm_section_11");
             var hasPrimaryBedroomOnMain = listing.Rooms.Exists(room => room.RoomType == masterBedroom && room.Level == mainLevelRoom);
             if (hasPrimaryBedroomOnMain)
             {
@@ -1457,7 +1442,6 @@ namespace Husa.Uploader.Core.Services
         private void FillRoomInformation(ResidentialListingRequest listing)
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_52"); // Room
-            Thread.Sleep(1000);
             this.uploaderClient.ExecuteScript("document.querySelector('[data-mtrx-uifc-field-name=\"RoomType\"]').scrollIntoView({ behavior: 'smooth', block: 'center' });");
             Thread.Sleep(1000);
 
@@ -1479,11 +1463,10 @@ namespace Husa.Uploader.Core.Services
 
                 indexInput = Math.Max(0, nRoomsToDelete - 1);
 
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
 
                 this.uploaderClient.ClickOnElement(By.XPath("//button[starts-with(@id, 'addBlankRow_Input_761')]"));
                 this.uploaderClient.ExecuteScript("document.activeElement.blur();");
-                Thread.Sleep(500);
             }
 
             foreach (var room in listing.Rooms)
@@ -1515,8 +1498,6 @@ namespace Husa.Uploader.Core.Services
                     indexInput++;
                 }
             }
-
-            Thread.Sleep(500);
         }
 
         private void FillFinancialInformation(AborListingRequest listing)
@@ -1537,7 +1518,7 @@ namespace Husa.Uploader.Core.Services
             this.SetMultipleCheckboxById("Input_291", listing.FinancingProposed); // Acceptable Financing (5)
             this.WriteTextbox("Input_296", "0"); // Estimated Taxes ($)
             this.WriteTextbox("Input_297", listing.TaxYear); // Tax Year
-
+            this.uploaderClient.ScrollDown();
             this.WriteTextbox("Input_293", "0"); // Tax Assessed Value
             this.WriteTextbox("Input_294", listing.TaxRate); // Tax Rate
             this.WriteTextbox("Input_728", listing.TitleCo); // Preferred Title Company
@@ -1551,8 +1532,6 @@ namespace Husa.Uploader.Core.Services
         private void FillShowingInformation(ResidentialListingRequest listing)
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_38"); // Showing
-
-            Thread.Sleep(100);
 
             this.SetSelect("Input_301", "VCNT"); // Occupant
             this.SetMultipleCheckboxById("Input_305", listing.Showing); // Showing Requirements
@@ -1570,19 +1549,16 @@ namespace Husa.Uploader.Core.Services
         private void FillAgentOfficeInformation()
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_12"); // Agent
-            Thread.Sleep(100);
         }
 
         private void FillLotAgentOfficeInformation()
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_84"); // Agent/Office
-            Thread.Sleep(100);
         }
 
         private void FillRemarks(AborListingRequest listing)
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_13"); // Remarks
-            Thread.Sleep(100);
 
             this.WriteTextbox("Input_320", listing.Directions, inputType: "textarea"); // Directions
             this.uploaderClient.ScrollDown(200);
@@ -1621,7 +1597,6 @@ namespace Husa.Uploader.Core.Services
         private void UpdateYearBuiltDescriptionInGeneralTab(ResidentialListingRequest listing)
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_10"); // click in tab General
-            Thread.Sleep(400);
 
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_218"));
             this.uploaderClient.WriteTextbox(By.Name("Input_218"), listing.YearBuilt); // Year Built
@@ -1631,7 +1606,6 @@ namespace Husa.Uploader.Core.Services
         private void UpdatePublicRemarksInRemarksTab(AborListingRequest listing)
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_13"); // click in tab Listing Information
-            Thread.Sleep(400);
 
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_322"));
             if (!listing.DoNotIncludeInfoInPublicRemarks)
