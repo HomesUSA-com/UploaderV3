@@ -761,6 +761,7 @@ namespace Husa.Uploader.Core.Services
                     }
 
                     this.FillLotListingInformation(listing);
+                    this.FillLotInformation(listing);
                 }
                 catch (Exception exception)
                 {
@@ -1587,6 +1588,37 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_320"), listing.LegalSubdivision); // Legal Subdivision
             this.uploaderClient.SetSelect(By.Id("Input_172"), listing.HasMasterPlannedCommunity); // Master Planned Community Y/N
             this.uploaderClient.FillFieldSingleOption("Input_173", listing.MasterPlannedCommunity); // Master Planned Community Name
+        }
+
+        private void FillLotInformation(LotListingRequest listing)
+        {
+            this.GoToTab("Lot Information");
+            this.uploaderClient.WriteTextbox(By.Id("Input_173"), listing.LotSize); // Lot Size
+            this.uploaderClient.SetSelect(By.Id("Input_173"), listing.LotSizeSrc); // Lot Source
+            this.uploaderClient.WriteTextbox(By.Id("Input_173"), listing.Acres); // Acres
+            this.uploaderClient.SetSelect(By.Id("Input_173"), listing.Acreage); // Acreage
+            this.uploaderClient.WriteTextbox(By.Id("Input_173"), listing.FrontDimensions); // Front Dimensions
+            this.uploaderClient.WriteTextbox(By.Id("Input_173"), listing.BackDimensions); // Back Dimensions
+            this.uploaderClient.WriteTextbox(By.Id("Input_173"), listing.LeftDimensions); // Left Dimensions
+            this.uploaderClient.WriteTextbox(By.Id("Input_173"), listing.RightDimensions); // Right Dimensions
+            this.uploaderClient.SetSelect(By.Id("Input_173"), listing.HasDevelopedCommunity.BoolToYesNoBool()); // Developed Community
+            this.uploaderClient.SetSelect(By.Id("Input_173"), listing.HasTennis.BoolToYesNoBool()); // Tennis
+            this.uploaderClient.SetSelect(By.Id("Input_173"), listing.HasPool.BoolToYesNoBool()); // Pool-Area
+            this.uploaderClient.SetSelect(By.Id("Input_173"), listing.UtilitiesDescription); // Utility Description
+            this.uploaderClient.SetSelect(By.Id("Input_173"), listing.ElectricServices); // Electric Services
+            this.uploaderClient.SetSelect(By.Id("Input_173"), listing.GasServices); // Gas Services
+            this.uploaderClient.SetSelect(By.Id("Input_173"), listing.CableServices); // Cable Services
+            this.uploaderClient.SetSelect(By.Id("Input_173"), listing.PhoneServices); // Phone Services
+            this.uploaderClient.FillFieldSingleOption("Input_173", listing.GolfDescription); // Golf Description
+            this.uploaderClient.SetSelect(By.Id("Input_173"), listing.HasSubdivisionLake.BoolToNumericBool()); // Subdivision Lake
+            this.uploaderClient.SetMultipleCheckboxById("Input_173", listing.LotUse); // Lot Use
+            this.uploaderClient.SetMultipleCheckboxById("Input_173", listing.LotDescription); // Lot Description
+            this.uploaderClient.SetMultipleCheckboxById("Input_173", listing.LotImprovements); // Lot Improvements
+            this.uploaderClient.SetMultipleCheckboxById("Input_173", listing.WaterfrontFeatures); // Waterfront Features
+            this.uploaderClient.SetMultipleCheckboxById("Input_173", listing.RoadSurface); // Road Surface
+            this.uploaderClient.SetMultipleCheckboxById("Input_173", listing.Access); // Access
+            this.uploaderClient.SetMultipleCheckboxById("Input_173", listing.WaterSewer); // Water/Sewer
+            this.uploaderClient.SetMultipleCheckboxById("Input_173", listing.Restrictions); // Restrictions
         }
 
         private void NavigateToTab(string tabName)
