@@ -17,6 +17,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
+    using Microsoft.IdentityModel.Tokens;
     using OpenQA.Selenium;
 
     public class SaborUploadService : ISaborUploadService
@@ -345,6 +346,7 @@ namespace Husa.Uploader.Core.Services
                         this.uploaderClient.WriteTextbox(By.Id("CLOSEDATE"), listing.ClosedDate.Value.ToString("MM/dd/yyyy")); // Closing Date
                         this.uploaderClient.WriteTextbox(By.Id("SOLDPRICE"), listing.SoldPrice.DecimalToString()); // Sold Price
                         this.uploaderClient.WriteTextbox(By.Id("CONTINFO"), listing.ContingencyInfo); // Contingent Info
+                        this.uploaderClient.WriteTextbox(By.Id("SELLCONCESSYNID"), (!listing.SellConcess.IsNullOrEmpty()).BooleanToStringYN()); // Seller Concessions YN
                         this.uploaderClient.WriteTextbox(By.Id("SELLCONCES"), listing.SellConcess.PriceWithDollarSign()); // Seller Concessions
                         this.uploaderClient.WriteTextbox(By.Id("SELL_CONC_DESCID"), listing.SellConcessDescription); // Seller Concessions Description
                         this.uploaderClient.FindElement(By.Name("AGTRMRKS")).Clear(); // Agent Confidential Remarks
