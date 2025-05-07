@@ -131,7 +131,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.LeftDimensions = propertyInfo.LeftDimensions;
                 lotListingRequest.RightDimensions = propertyInfo.RightDimensions;
                 lotListingRequest.LotDescription = propertyInfo.LotDescription.ToStringFromEnumMembers();
-
             }
 
             void FillFeaturesInfo(LotFeaturesResponse featureInfo)
@@ -149,7 +148,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.GasServices = featureInfo.Gas?.ToStringFromEnumMember();
                 lotListingRequest.CableServices = featureInfo.Cable?.ToStringFromEnumMember();
                 lotListingRequest.PhoneServices = featureInfo.Phone?.ToStringFromEnumMember();
-                lotListingRequest.GolfDescription = featureInfo.GolfCourseName?.ToStringFromEnumMember();
+                lotListingRequest.GolfDescription = featureInfo.GolfCourseName?.GetEnumDescription();
                 lotListingRequest.HasSubdivisionLake = featureInfo.SubdivisionLakeAccess;
                 lotListingRequest.LotUse = featureInfo.LotUse.ToStringFromEnumMembers();
                 lotListingRequest.LotImprovements = featureInfo.LotImprovements.ToStringFromEnumMembers();
@@ -157,7 +156,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.RoadSurface = featureInfo.RoadSurface.ToStringFromEnumMembers();
                 lotListingRequest.Access = featureInfo.Access.ToStringFromEnumMembers();
                 lotListingRequest.WaterSewer = featureInfo.WaterSewerDescription.ToStringFromEnumMembers();
-
             }
 
             void FillFinancialInfo(LotFinancialResponse financialInfo)
