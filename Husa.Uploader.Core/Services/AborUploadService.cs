@@ -1266,11 +1266,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_9"); // click in tab Listing Information
             Thread.Sleep(400);
 
-            var viewFullFormToggle = this.uploaderClient.FindElement(By.Id("InputForm_full-form-view-toggle"));
-            if (!viewFullFormToggle.Selected)
-            {
-                viewFullFormToggle.Click();
-            }
+            this.ClickIfNotSelected("InputForm_full-form-view-toggle");
 
             // Listing Information
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_77"));
@@ -1577,12 +1573,18 @@ namespace Husa.Uploader.Core.Services
                 return;
             }
 
-            // Enter Manage Photos
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSaveIncomplete"), cancellationToken);
-            this.uploaderClient.ClickOnElement(By.Id("m_lbSaveIncomplete"));
+            this.uploaderClient.ClickOnElementById("InputForm_nav-photos");
+            this.ClickIfNotSelected("InputForm_photo-full-info-toggle");
+            this.uploaderClient.ClickOnElementById("InputForm_photos_addPhotoBtn");
+            this.uploaderClient.ClickOnElement(By.XPath("//button[contains(@onclick, 'mtrxDnDFileUploader.OpenFilesSelector(event)')]"));
+            var element = this.uploaderClient.FindElement(By.Id("InputForm_photos_certificationText"));
+            this.uploaderClient.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight;", args: element);
+
+            this.ClickIfNotSelected("InputForm_photos_commonAgreement");
+            this.ClickIfNotSelected("InputForm_photos_aiAgreement", desiredState: false);
+
+            this.uploaderClient.ClickOnElementById("InputForm_photos_agreeBtn");
             Thread.Sleep(1000);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbManagePhotos"), cancellationToken);
-            this.uploaderClient.ClickOnElement(By.Id("m_lbManagePhotos"));
 
             await this.ProcessImages(listing, cancellationToken);
         }
@@ -1757,6 +1759,16 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(800));
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
             this.uploaderClient.ResetImplicitWait();
+        }
+
+        private void ClickIfNotSelected(string elementId, bool desiredState = true)
+        {
+            var element = this.uploaderClient.FindElementById(elementId);
+
+            if (element != null && element.Selected != desiredState)
+            {
+                element.Click();
+            }
         }
 
         private void NavigateToNewLotPropertyInput()
