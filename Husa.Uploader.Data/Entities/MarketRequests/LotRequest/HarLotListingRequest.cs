@@ -70,6 +70,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
             FillLotPropertyInfo(this.listingDetailResponse);
             FillAddressInfo(this.listingDetailResponse.AddressInfo);
             FillPropertyInfo(this.listingDetailResponse.PropertyInfo);
+            FillFeaturesInfo(this.listingDetailResponse.FeaturesInfo);
+            FillFinancialInfo(this.listingDetailResponse.FinancialInfo);
 
             return lotListingRequest;
 
@@ -120,6 +122,49 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.MasterPlannedCommunity = propertyInfo.PlannedCommunity?.GetEnumDescription();
                 lotListingRequest.LegalSubdivision = propertyInfo.LegalSubdivision?.GetEnumDescription();
                 lotListingRequest.LotListType = propertyInfo.LotListType?.ToStringFromEnumMember();
+                lotListingRequest.LotSize = propertyInfo.LotSize;
+                lotListingRequest.LotSizeSrc = propertyInfo.LotSizeSource?.ToStringFromEnumMember();
+                lotListingRequest.Acres = propertyInfo.Acres.ToString();
+                lotListingRequest.FrontDimensions = propertyInfo.FrontDimensions;
+                lotListingRequest.BackDimensions = propertyInfo.BackDimensions;
+                lotListingRequest.LeftDimensions = propertyInfo.LeftDimensions;
+                lotListingRequest.RightDimensions = propertyInfo.RightDimensions;
+                lotListingRequest.LotDescription = propertyInfo.LotDescription.ToStringFromEnumMembers();
+            }
+
+            void FillFeaturesInfo(LotFeaturesResponse featureInfo)
+            {
+                if (featureInfo is null)
+                {
+                    throw new ArgumentNullException(nameof(featureInfo));
+                }
+
+                lotListingRequest.HasDevelopedCommunity = featureInfo.DevelopedCommunity;
+                lotListingRequest.HasTennis = featureInfo.Tennis;
+                lotListingRequest.HasPool = featureInfo.PoolArea;
+                lotListingRequest.HasUtilityDistrict = featureInfo.UtilityDistrict;
+                lotListingRequest.ElectricServices = featureInfo.Electric?.ToStringFromEnumMember();
+                lotListingRequest.GasServices = featureInfo.Gas?.ToStringFromEnumMember();
+                lotListingRequest.CableServices = featureInfo.Cable?.ToStringFromEnumMember();
+                lotListingRequest.PhoneServices = featureInfo.Phone?.ToStringFromEnumMember();
+                lotListingRequest.GolfDescription = featureInfo.GolfCourseName?.GetEnumDescription();
+                lotListingRequest.HasSubdivisionLake = featureInfo.SubdivisionLakeAccess;
+                lotListingRequest.LotUse = featureInfo.LotUse.ToStringFromEnumMembers();
+                lotListingRequest.LotImprovements = featureInfo.LotImprovements.ToStringFromEnumMembers();
+                lotListingRequest.WaterfrontFeatures = featureInfo.WaterfrontFeatures.ToStringFromEnumMembers();
+                lotListingRequest.RoadSurface = featureInfo.RoadSurface.ToStringFromEnumMembers();
+                lotListingRequest.Access = featureInfo.Access.ToStringFromEnumMembers();
+                lotListingRequest.WaterSewer = featureInfo.WaterSewerDescription.ToStringFromEnumMembers();
+            }
+
+            void FillFinancialInfo(LotFinancialResponse financialInfo)
+            {
+                if (financialInfo is null)
+                {
+                    throw new ArgumentNullException(nameof(financialInfo));
+                }
+
+                lotListingRequest.Restrictions = financialInfo.Restrictions.ToStringFromEnumMembers();
             }
         }
     }

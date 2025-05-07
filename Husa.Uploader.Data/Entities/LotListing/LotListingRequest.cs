@@ -87,6 +87,7 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public int? AlsoListedAs { get; set; }
         public bool BuilderRestrictions { get; set; }
         public string Acreage { get; set; }
+        public string Acres { get; set; }
         public int? FrontDimensions { get; set; }
         public int? BackDimensions { get; set; }
         public int? LeftDimensions { get; set; }
@@ -114,6 +115,20 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public string Disclosures { get; set; }
         public string DocumentsAvailable { get; set; }
         public string WaterBodyName { get; set; }
+        public bool HasDevelopedCommunity { get; set; }
+        public bool HasTennis { get; set; }
+        public bool HasPool { get; set; }
+        public bool HasUtilityDistrict { get; set; }
+        public string ElectricServices { get; set; }
+        public string GasServices { get; set; }
+        public string CableServices { get; set; }
+        public string PhoneServices { get; set; }
+        public string GolfDescription { get; set; }
+        public bool HasSubdivisionLake { get; set; }
+        public string LotUse { get; set; }
+        public string LotImprovements { get; set; }
+        public string Access { get; set; }
+        public string Restrictions { get; set; }
 
         // Lot Finantial
         public bool HasHoa { get; set; }
