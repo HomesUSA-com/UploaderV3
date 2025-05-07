@@ -20,6 +20,7 @@ namespace Husa.Uploader.Core.Services
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
     using OpenQA.Selenium;
+    using OpenQA.Selenium.Support.UI;
 
     public class AborUploadService : IAborUploadService
     {
@@ -1107,42 +1108,22 @@ namespace Husa.Uploader.Core.Services
             inputId = $"filter_{inputId}";
             string inputXPath = this.GetInputPath(inputId);
             var filterInputElement = this.uploaderClient.FindElement(By.XPath(inputXPath), shouldWait: true);
-            if (filterInputElement == null)
+
+            try
             {
-                return;
-            }
-
-            filterInputElement.Click();
-            Thread.Sleep(400);
-
-            string actualFilterId = filterInputElement.GetAttribute("id");
-            string baseId = actualFilterId.Replace("filter_", string.Empty);
-            string dropdownListId = "listbox_select_" + baseId;
-
-            var waitTime = 100;
-            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-            bool dropdownVisible = false;
-            while (stopwatch.ElapsedMilliseconds < waitTime)
-            {
-                var dropdown = this.uploaderClient.FindElement(By.Id(dropdownListId));
-                if (dropdown.Displayed)
+                if (filterInputElement == null)
                 {
-                    dropdownVisible = true;
-                    break;
+                    return;
                 }
 
-                Thread.Sleep(200);
-            }
+                filterInputElement.Click();
+                Thread.Sleep(400);
 
-            if (!dropdownVisible || (value == string.Empty || value == null))
-            {
-                this.uploaderClient.ExecuteScript("document.activeElement.blur();");
-                return;
-            }
-            else
-            {
+                string actualFilterId = filterInputElement.GetAttribute("id");
+                string baseId = actualFilterId.Replace("filter_", string.Empty);
+                string dropdownListId = "listbox_select_" + baseId;
                 string optionXPath = $"//ul[@id='{dropdownListId}']/li[@data-mtrx-listbox-item-value='{value}']";
-                var optionElement = this.uploaderClient.FindElement(By.XPath(optionXPath), shouldWait: true);
+                var optionElement = this.uploaderClient.FindElement(By.XPath(optionXPath), shouldWait: false);
                 if (optionElement == null)
                 {
                     return;
@@ -1152,9 +1133,17 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(200);
 
                 optionElement.Click();
-            }
 
-            this.uploaderClient.ScrollDown(250);
+                this.uploaderClient.ScrollDown(250);
+            }
+            catch (Exception ex) when (ex is NoSuchElementException || ex is UnexpectedTagNameException)
+            {
+                this.uploaderClient.ExecuteScript("document.activeElement.blur();", false);
+                this.uploaderClient.ExecuteScript("document.body.click();", false);
+                string friendlyErrorMessage = $"Tried to select a non-existing option with value '{value}' for input '{inputId}'.";
+                this.logger.LogWarning(ex, friendlyErrorMessage);
+                this.uploaderClient.UploadInformation.AddError("SetSelect", inputId, value, friendlyErrorMessage, ex.Message);
+            }
         }
 
         private void SetMultipleCheckboxById(string inputId, string csvValues)
@@ -1326,6 +1315,10 @@ namespace Husa.Uploader.Core.Services
 
             // School Information
             this.uploaderClient.ScrollDown(1000);
+            this.SetSelect("Input_207", listing.SchoolDistrict); // School District
+            this.SetSelect("Input_209", listing.SchoolName1); // Elementary School
+            this.SetSelect("Input_210", listing.SchoolName2); // Middle School
+            this.SetSelect("Input_211", listing.HighSchool); // High School
             this.WriteTextbox("Input_212", listing.SchoolName4); // Elementary Other
             this.WriteTextbox("Input_213", listing.SchoolName5); // Middle or Junior Other
             this.WriteTextbox("Input_214", listing.SchoolName6); // High School Other
