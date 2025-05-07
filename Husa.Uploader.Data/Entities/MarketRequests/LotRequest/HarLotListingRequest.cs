@@ -1,6 +1,5 @@
 namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
 {
-    using System.Reflection;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Har.Api.Contracts.Response.ListingRequest.LotRequest;
