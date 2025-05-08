@@ -76,9 +76,9 @@ namespace Husa.Uploader.Data.Repositories
             this.maxHeight = height;
         }
 
-        public async Task<IEnumerable<ResidentialListingVirtualTour>> GetListingVirtualTours(Guid residentialListingRequestId, MarketCode market, CancellationToken token)
+        public async Task<IEnumerable<ResidentialListingVirtualTour>> GetListingVirtualTours(Guid residentialListingRequestId, MarketCode market, CancellationToken token, MediaType mediaType = MediaType.ListingRequest)
         {
-            var listingMedia = await this.mediaServiceClient.GetResources(entityId: residentialListingRequestId, type: MediaType.ListingRequest, token);
+            var listingMedia = await this.mediaServiceClient.GetResources(entityId: residentialListingRequestId, type: mediaType, token);
             var result = new List<ResidentialListingVirtualTour>();
             foreach (var virtualTourDetail in listingMedia.VirtualTour)
             {

@@ -6,6 +6,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
+    using Husa.MediaService.Domain.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Quicklister.Har.Domain.Enums;
     using Husa.Quicklister.Har.Domain.Enums.Domain;
@@ -686,7 +687,7 @@ namespace Husa.Uploader.Core.Services
 
                 this.GoToManageTourLinks();
 
-                await this.UpdateVirtualTourLinks(listing, cancellationToken);
+                await this.UpdateVirtualTourLinks(listing.ResidentialListingRequestID, MediaType.ListingRequest, cancellationToken);
 
                 UploaderResponse response = new UploaderResponse();
                 response.UploadResult = UploadResult.Success;
@@ -764,6 +765,11 @@ namespace Husa.Uploader.Core.Services
                     this.FillLotListingInformation(listing);
                     this.FillLotInformation(listing);
                     this.FillLotFinancialInformation(listing as HarLotListingRequest);
+                    this.FillLotRemarks(listing as HarLotListingRequest);
+                    if (listing.IsNewListing)
+                    {
+                        await this.UpdateVirtualTourLinks(listing.LotListingRequestID, MediaType.LotRequest, cancellationToken);
+                    }
                 }
                 catch (Exception exception)
                 {
@@ -839,15 +845,34 @@ namespace Husa.Uploader.Core.Services
 
             this.GoToRemarksTab(housingType);
 
+            this.UploadVirtualTour(virtualTours);
+        }
+
+        private async Task UpdateVirtualTourLinks(Guid listingId, MediaType mediaType, CancellationToken cancellationToken = default)
+        {
+            var virtualTours = await this.mediaRepository.GetListingVirtualTours(listingId, market: MarketCode.Houston, cancellationToken, mediaType);
+            this.UploadVirtualTour(virtualTours);
+        }
+
+        private void UploadVirtualTour(IEnumerable<ResidentialListingVirtualTour> virtualTours)
+        {
+            if (!virtualTours.Any())
+            {
+                return;
+            }
+
             var firstVirtualTour = virtualTours.FirstOrDefault();
-            if (firstVirtualTour != null)
+            if (firstVirtualTour is not null)
             {
                 this.uploaderClient.WriteTextbox(By.Id("Input_341"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
             }
 
-            virtualTours = virtualTours.Skip(1).ToList();
+            virtualTours =
+                [
+                .. virtualTours.Skip(1)
+                ];
             var secondVirtualTour = virtualTours.FirstOrDefault();
-            if (secondVirtualTour != null)
+            if (secondVirtualTour is not null)
             {
                 this.uploaderClient.WriteTextbox(By.Id("Input_532"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
             }
@@ -887,29 +912,6 @@ namespace Husa.Uploader.Core.Services
             }
 
             Thread.Sleep(1000);
-        }
-
-        private async Task UpdateVirtualTourLinks(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
-        {
-            var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.Houston, cancellationToken);
-
-            if (!virtualTours.Any())
-            {
-                return;
-            }
-
-            var firstVirtualTour = virtualTours.FirstOrDefault();
-            if (firstVirtualTour != null)
-            {
-                this.uploaderClient.WriteTextbox(By.Id("Input_341"), firstVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
-            }
-
-            virtualTours = virtualTours.Skip(1).ToList();
-            var secondVirtualTour = virtualTours.FirstOrDefault();
-            if (secondVirtualTour != null)
-            {
-                this.uploaderClient.WriteTextbox(By.Id("Input_532"), secondVirtualTour.MediaUri.AbsoluteUri); // Virtual Tour URL Unbranded
-            }
         }
 
         private void NavigateToQuickEdit(string mlsNumber)
@@ -1317,16 +1319,14 @@ namespace Husa.Uploader.Core.Services
             this.UpdatePublicRemarksInRemarksTab(listing);
         }
 
-        private void GoToRemarksTab(HousingType housingType)
+        private void GoToRemarksTab(HousingType? housingType = null)
         {
-            if (housingType == HousingType.TownhouseCondo)
+            if (housingType.HasValue && housingType.Value == HousingType.TownhouseCondo)
             {
                 this.GoToTab("Remarks/Tour Remarks");
             }
-            else
-            {
-                this.GoToTab("Remarks/Tour Links");
-            }
+
+            this.GoToTab("Remarks/Tour Links");
         }
 
         private void GoToPropertyInformationTab()
@@ -1393,6 +1393,16 @@ namespace Husa.Uploader.Core.Services
         {
             var remarks = listing.GetPublicRemarks();
             string baseRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
+            string additionalRemarks = listing.AgentPrivateRemarksAdditional ?? string.Empty;
+            var agentRemarks = $"{baseRemarks} {additionalRemarks}";
+            this.uploaderClient.WriteTextbox(By.Id("Input_135"), remarks, true); // Public Remarks
+            this.uploaderClient.WriteTextbox(By.Id("Input_137"), agentRemarks, true); // Agent Remarks
+        }
+
+        private void UpdatePublicRemarksInRemarksTab(HarLotListingRequest listing)
+        {
+            var remarks = listing.GetPublicRemarks(false);
+            string baseRemarks = listing.GetAgentRemarksMessage(listing.AgentPrivateRemarks) ?? string.Empty;
             string additionalRemarks = listing.AgentPrivateRemarksAdditional ?? string.Empty;
             var agentRemarks = $"{baseRemarks} {additionalRemarks}";
             this.uploaderClient.WriteTextbox(By.Id("Input_135"), remarks, true); // Public Remarks
@@ -1642,6 +1652,12 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_290"), listing.TaxYear); // Tax Year
             this.uploaderClient.WriteTextbox(By.Id("Input_292"), listing.TaxRate); // Total Tax Rate
             this.uploaderClient.WriteTextbox(By.Id("Input_293"), listing.TaxExemptions); // Exemptions
+        }
+
+        private void FillLotRemarks(HarLotListingRequest listing)
+        {
+            this.GoToRemarksTab();
+            this.UpdatePublicRemarksInRemarksTab(listing);
         }
 
         private void NavigateToTab(string tabName)

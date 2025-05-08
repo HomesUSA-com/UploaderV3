@@ -5,6 +5,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common.Enums;
+    using Husa.MediaService.Domain.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Quicklister.Sabor.Api.Contracts.Response;
     using Husa.Quicklister.Sabor.Api.Contracts.Response.ListingRequest.SaleRequest;
@@ -189,7 +190,7 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCompany();
             var saborListing = new SaborListingRequest(new ListingSaleRequestDetailResponse());
             this.mediaRepository
-                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>(), MediaType.ListingRequest))
                 .ReturnsAsync(Array.Empty<ResidentialListingVirtualTour>())
             .Verifiable();
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
@@ -611,7 +612,7 @@ namespace Husa.Uploader.Core.Tests
         private void SetUpVirtualTours()
         {
             this.mediaRepository
-                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>(), MediaType.ListingRequest))
                 .ReturnsAsync(new ResidentialListingVirtualTour[] { GetResidentialListingVirtualTour(), GetResidentialListingVirtualTour() })
             .Verifiable();
         }
