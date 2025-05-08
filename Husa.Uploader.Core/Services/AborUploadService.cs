@@ -1308,6 +1308,8 @@ namespace Husa.Uploader.Core.Services
             }
 
             this.WriteTextbox("Input_197", listing.Legal, inputType: "textarea"); // Tax Legal Description
+            this.uploaderClient.ClickOnElement(By.XPath("//button[contains(@onclick, 'mtrxGeoCoder.EnableMap') and contains(@onclick, 'Input_178')]")); // Button Accept Pin Map
+            this.uploaderClient.ClickOnElement(By.XPath("//div[starts-with(@id, 'Input_178') and contains(@id, 'divMapContainer')]")); // Map Container
 
             // School Information
             this.uploaderClient.ScrollDown(1000);
