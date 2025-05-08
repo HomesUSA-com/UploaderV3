@@ -4,6 +4,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common.Enums;
+    using Husa.MediaService.Domain.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Models;
@@ -74,7 +75,7 @@ namespace Husa.Uploader.Core.Tests
             UploaderResponse expectedResponse = new UploaderResponse();
             expectedResponse.UploadResult = UploadResult.Success;
             this.mediaRepository
-                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>(), MediaType.ListingRequest))
                 .ReturnsAsync(new ResidentialListingVirtualTour[0])
             .Verifiable();
             var request = this.GetEmptyListingRequest();
@@ -167,7 +168,7 @@ namespace Husa.Uploader.Core.Tests
         protected void SetUpVirtualTours()
         {
             this.mediaRepository
-                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), It.IsAny<MarketCode>(), It.IsAny<CancellationToken>(), MediaType.ListingRequest))
                 .ReturnsAsync(new ResidentialListingVirtualTour[] { GetResidentialListingVirtualTour(), GetResidentialListingVirtualTour() })
             .Verifiable();
         }

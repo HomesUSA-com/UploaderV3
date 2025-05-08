@@ -3,6 +3,7 @@ namespace Husa.Uploader.Data.Entities.LotListing
     using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
+    using Microsoft.IdentityModel.Tokens;
 
     public abstract class LotListingRequest
     {
@@ -211,9 +212,14 @@ namespace Husa.Uploader.Data.Entities.LotListing
                 WorkingSourceAction = workingSourceAction,
             };
 
-        public virtual string GetAgentRemarksMessage()
+        public virtual string GetAgentRemarksMessage(string agentRemarks = null)
         {
             var privateRemarks = "LIMITED SERVICE LISTING: Buyer verifies dimensions & ISD info. Use Bldr contract.";
+
+            if (!agentRemarks.IsNullOrEmpty())
+            {
+                privateRemarks = $"{privateRemarks} {agentRemarks}";
+            }
 
             var bonusMessage = this.GetAgentBonusRemarksMessage();
             if (!string.IsNullOrWhiteSpace(bonusMessage))
@@ -269,14 +275,18 @@ namespace Husa.Uploader.Data.Entities.LotListing
             return string.Empty;
         }
 
-        public virtual string GetPublicRemarks()
+        public virtual string GetPublicRemarks(bool addBuiltByMsg = true)
         {
             var builtNote = !string.IsNullOrWhiteSpace(this.MLSNum) ? $"MLS# {this.MLSNum}" : "MLS# ";
 
-            if (!string.IsNullOrWhiteSpace(this.CompanyName))
+            if (addBuiltByMsg && !string.IsNullOrWhiteSpace(this.CompanyName))
             {
                 builtNote += !string.IsNullOrWhiteSpace(builtNote) ? " - " : string.Empty;
                 builtNote += "Built by " + this.CompanyName + " - ";
+            }
+            else
+            {
+                builtNote += " - ";
             }
 
             return GetRemarks();

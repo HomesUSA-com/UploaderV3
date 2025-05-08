@@ -34,6 +34,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
         public string MaintenanceFeeIncludes { get; set; }
         public string HasOtherFees { get; set; }
         public string OtherFeesInclude { get; set; }
+        public string AgentPrivateRemarks { get; set; }
+        public string AgentPrivateRemarksAdditional { get; set; }
 
         public override MarketCode MarketCode => MarketCode.Houston;
 
@@ -78,6 +80,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
             FillPropertyInfo(this.listingDetailResponse.PropertyInfo);
             FillFeaturesInfo(this.listingDetailResponse.FeaturesInfo);
             FillFinancialInfo(this.listingDetailResponse.FinancialInfo);
+            FillShowingInformation(this.listingDetailResponse.ShowingInfo);
 
             return lotListingRequest;
 
@@ -192,6 +195,16 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.AgentBonusAmount = financialInfo.AgentBonusAmount.DecimalToString();
                 lotListingRequest.AgentBonusAmountType = financialInfo.AgentBonusAmountType.ToStringFromEnumMember();
                 lotListingRequest.BonusExpirationDate = financialInfo.BonusExpirationDate;
+            }
+
+            void FillShowingInformation(LotShowingResponse showingInfo)
+            {
+                ArgumentNullException.ThrowIfNull(showingInfo);
+
+                lotListingRequest.PublicRemarks = showingInfo.PhysicalPropertyDescription;
+                lotListingRequest.AgentPrivateRemarks = showingInfo.AgentPrivateRemarks;
+                lotListingRequest.AgentPrivateRemarksAdditional = showingInfo.AgentPrivateRemarksAdditional;
+                lotListingRequest.AgentListApptPhone = showingInfo.ContactPhone;
             }
         }
     }
