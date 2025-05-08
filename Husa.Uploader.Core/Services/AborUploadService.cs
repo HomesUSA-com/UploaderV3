@@ -1575,14 +1575,18 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.ClickOnElementById("InputForm_nav-photos");
             this.ClickIfNotSelected("InputForm_photo-full-info-toggle");
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("InputForm_photos_addPhotoBtn"));
             this.uploaderClient.ClickOnElementById("InputForm_photos_addPhotoBtn");
+
             this.uploaderClient.ClickOnElement(By.XPath("//button[contains(@onclick, 'mtrxDnDFileUploader.OpenFilesSelector(event)')]"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("InputForm_photos_certificationText"));
             var element = this.uploaderClient.FindElement(By.Id("InputForm_photos_certificationText"));
             this.uploaderClient.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight;", args: element);
 
             this.ClickIfNotSelected("InputForm_photos_commonAgreement");
             this.ClickIfNotSelected("InputForm_photos_aiAgreement", desiredState: false);
 
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("InputForm_photos_agreeBtn"));
             this.uploaderClient.ClickOnElementById("InputForm_photos_agreeBtn");
             Thread.Sleep(1000);
 
@@ -1753,16 +1757,9 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        private void NavigateToTab(string tabName)
-        {
-            this.uploaderClient.ClickOnElement(By.LinkText(tabName));
-            this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(800));
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
-            this.uploaderClient.ResetImplicitWait();
-        }
-
         private void ClickIfNotSelected(string elementId, bool desiredState = true)
         {
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id(elementId));
             var element = this.uploaderClient.FindElementById(elementId);
 
             if (element != null && element.Selected != desiredState)
