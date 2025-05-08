@@ -8,7 +8,7 @@ namespace Husa.Uploader.Data.Interfaces
     {
         Task<IEnumerable<ResidentialListingMedia>> GetListingImages(Guid residentialListingRequestId, MarketCode market, CancellationToken token, MediaType mediaType = MediaType.ListingRequest);
 
-        Task<IEnumerable<ResidentialListingVirtualTour>> GetListingVirtualTours(Guid residentialListingRequestId, MarketCode market, CancellationToken token);
+        Task<IEnumerable<ResidentialListingVirtualTour>> GetListingVirtualTours(Guid residentialListingRequestId, MarketCode market, CancellationToken token, MediaType mediaType = MediaType.ListingRequest);
 
         Task PrepareImage(ResidentialListingMedia image, MarketCode marketName, CancellationToken token, string folder);
     }
