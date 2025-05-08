@@ -29,6 +29,12 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
         {
         }
 
+        public string HoaPhone { get; set; }
+        public string SeniorActiveCommunity { get; set; }
+        public string MaintenanceFeeIncludes { get; set; }
+        public string HasOtherFees { get; set; }
+        public string OtherFeesInclude { get; set; }
+
         public override MarketCode MarketCode => MarketCode.Houston;
 
         public override LotListingRequest CreateFromApiResponse() => new HarLotListingRequest()
@@ -159,12 +165,33 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
 
             void FillFinancialInfo(LotFinancialResponse financialInfo)
             {
-                if (financialInfo is null)
-                {
-                    throw new ArgumentNullException(nameof(financialInfo));
-                }
+                ArgumentNullException.ThrowIfNull(financialInfo);
 
                 lotListingRequest.Restrictions = financialInfo.Restrictions.ToStringFromEnumMembers();
+                lotListingRequest.HasHoa = financialInfo.HasHoa;
+                lotListingRequest.HoaIncludes = financialInfo.HoaAmenities.ToStringFromEnumMembers();
+                lotListingRequest.HoaName = financialInfo.HoaName;
+                lotListingRequest.HoaPhone = financialInfo.HoaPhone.PhoneFormat(true);
+                lotListingRequest.Disclosures = financialInfo.Disclosures.ToStringFromEnumMembers();
+                lotListingRequest.SeniorActiveCommunity = financialInfo.SeniorActiveCommunity.BoolToNumericBool();
+                lotListingRequest.AcceptableFinancing = financialInfo.FinanacingConsidered.ToStringFromEnumMembers();
+                lotListingRequest.HOARequirement = financialInfo.HoaRequirement?.ConvertToBoolean().BoolToNumericBool();
+                lotListingRequest.HoaFee = financialInfo.HoaFee.DecimalToString();
+                lotListingRequest.BillingFrequency = financialInfo.BillingFrequency?.ToStringFromEnumMember();
+                lotListingRequest.MaintenanceFeeIncludes = financialInfo.MaintenanceFeeIncludes.ToStringFromEnumMembers();
+                lotListingRequest.HasOtherFees = financialInfo.HasOtherFees.BoolToNumericBool();
+                lotListingRequest.OtherFees = financialInfo.OtherFeeAmount.DecimalToString();
+                lotListingRequest.OtherFeesInclude = financialInfo.OtherFeesInclude;
+                lotListingRequest.TaxYear = financialInfo.TaxYear.IntegerToString();
+                lotListingRequest.TaxRate = financialInfo.TaxRate.DecimalToString();
+                lotListingRequest.TaxExemptions = financialInfo.Exemption;
+                lotListingRequest.BuyersAgentCommission = financialInfo.BuyersAgentCommission;
+                lotListingRequest.BuyersAgentCommissionType = financialInfo.BuyersAgentCommissionType.ToStringFromEnumMember();
+                lotListingRequest.HasAgentBonus = financialInfo.HasAgentBonus;
+                lotListingRequest.HasBonusWithAmount = financialInfo.HasBonusWithAmount;
+                lotListingRequest.AgentBonusAmount = financialInfo.AgentBonusAmount.DecimalToString();
+                lotListingRequest.AgentBonusAmountType = financialInfo.AgentBonusAmountType.ToStringFromEnumMember();
+                lotListingRequest.BonusExpirationDate = financialInfo.BonusExpirationDate;
             }
         }
     }

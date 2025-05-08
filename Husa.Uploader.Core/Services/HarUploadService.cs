@@ -18,6 +18,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
+    using Husa.Uploader.Data.Entities.MarketRequests.LotRequest;
     using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
@@ -762,6 +763,7 @@ namespace Husa.Uploader.Core.Services
 
                     this.FillLotListingInformation(listing);
                     this.FillLotInformation(listing);
+                    this.FillLotFinancialInformation(listing as HarLotListingRequest);
                 }
                 catch (Exception exception)
                 {
@@ -1619,6 +1621,27 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_442", listing.Access); // Access
             this.uploaderClient.SetMultipleCheckboxById("Input_440", listing.WaterSewer); // Water/Sewer
             this.uploaderClient.SetMultipleCheckboxById("Input_441", listing.Restrictions); // Restrictions
+        }
+
+        private void FillLotFinancialInformation(HarLotListingRequest listing)
+        {
+            this.GoToTab("Financial Information");
+            this.uploaderClient.SetSelect(By.Id("Input_275"), listing.HasHoa.BoolToNumericBool()); // Mandatory HOA
+            this.uploaderClient.WriteTextbox(By.Id("Input_278"), listing.HoaName); // Hoa Name
+            this.uploaderClient.WriteTextbox(By.Id("Input_276"), listing.HoaPhone); // Hoa Phone
+            this.uploaderClient.SetMultipleCheckboxById("Input_481", listing.Disclosures); // Disclosures
+            this.uploaderClient.SetSelect(By.Id("Input_674"), listing.SeniorActiveCommunity); // 55+ Active Community
+            this.uploaderClient.SetMultipleCheckboxById("Input_280", listing.AcceptableFinancing); // Financing Considered
+            this.uploaderClient.SetSelect(By.Id("Input_281"), listing.HOARequirement); // Maintenance Fee
+            this.uploaderClient.WriteTextbox(By.Id("Input_282"), listing.HoaFee); // Maintenance Fee Amount
+            this.uploaderClient.SetSelect(By.Id("Input_283"), listing.BillingFrequency); // Maintenance Fee Payment Sched
+            this.uploaderClient.SetMultipleCheckboxById("Input_687", listing.MaintenanceFeeIncludes); // Maintenance Fee Includes
+            this.uploaderClient.SetSelect(By.Id("Input_347"), listing.HasOtherFees); // Other Mandatory Fees
+            this.uploaderClient.WriteTextbox(By.Id("Input_286"), listing.OtherFees); // Other Mandatory Fees Amount
+            this.uploaderClient.WriteTextbox(By.Id("Input_285"), listing.OtherFeesInclude); // Other Mandatory Fees Include
+            this.uploaderClient.WriteTextbox(By.Id("Input_290"), listing.TaxYear); // Tax Year
+            this.uploaderClient.WriteTextbox(By.Id("Input_292"), listing.TaxRate); // Total Tax Rate
+            this.uploaderClient.WriteTextbox(By.Id("Input_293"), listing.TaxExemptions); // Exemptions
         }
 
         private void NavigateToTab(string tabName)
