@@ -766,6 +766,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillLotMapInformation(listing as HarLotListingRequest);
                     this.FillLotInformation(listing);
                     this.FillLotFinancialInformation(listing as HarLotListingRequest);
+                    this.FillLotShowingInformation(listing);
                     this.FillLotRemarks(listing as HarLotListingRequest);
                     if (listing.IsNewListing)
                     {
@@ -1659,6 +1660,17 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_290"), listing.TaxYear); // Tax Year
             this.uploaderClient.WriteTextbox(By.Id("Input_292"), listing.TaxRate); // Total Tax Rate
             this.uploaderClient.WriteTextbox(By.Id("Input_293"), listing.TaxExemptions); // Exemptions
+        }
+
+        private void FillLotShowingInformation(LotListingRequest listing)
+        {
+            this.GoToTab("Showing Information");
+
+            this.uploaderClient.WriteTextbox(By.Id("Input_304"), listing.AgentListApptPhone.PhoneFormat(true), isElementOptional: true);  // Appointment Desk Phone
+            this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(2000));
+            this.uploaderClient.SetSelect(By.Id("Input_303"), "OFFIC");  // Appointment Phone Desc
+            this.uploaderClient.ResetImplicitWait();
+            this.uploaderClient.WriteTextbox(By.Id("Input_136"), listing.Directions.RemoveSlash(), true); // Directions
         }
 
         private void FillLotRemarks(HarLotListingRequest listing)
