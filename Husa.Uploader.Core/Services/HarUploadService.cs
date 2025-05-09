@@ -763,6 +763,7 @@ namespace Husa.Uploader.Core.Services
                     }
 
                     this.FillLotListingInformation(listing);
+                    this.FillLotMapInformation(listing as HarLotListingRequest);
                     this.FillLotInformation(listing);
                     this.FillLotFinancialInformation(listing as HarLotListingRequest);
                     this.FillLotRemarks(listing as HarLotListingRequest);
@@ -1172,7 +1173,13 @@ namespace Husa.Uploader.Core.Services
             {
                 this.GoToTab("Map Information");
                 this.uploaderClient.ScrollDown(250);
-                this.SetLongitudeAndLatitudeValues(listing);
+                this.SetLongitudeAndLatitudeValues(
+                    listing.Latitude,
+                    listing.Longitude,
+                    listing.UpdateGeocodes,
+                    listing.IsNewListing,
+                    listing.StreetNum,
+                    listing.StreetName);
             }
         }
 
@@ -1409,18 +1416,18 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_137"), agentRemarks, true); // Agent Remarks
         }
 
-        private void SetLongitudeAndLatitudeValues(ResidentialListingRequest listing)
+        private void SetLongitudeAndLatitudeValues(decimal? latitude, decimal? longitude, bool updateGeocodes, bool isNewListing, string streetNum, string streetName)
         {
-            if (!listing.IsNewListing)
+            if (!isNewListing)
             {
-                this.logger.LogInformation("Skipping configuration of latitude and longitude for listing {address} because it already has an mls number", $"{listing.StreetNum} {listing.StreetName}");
+                this.logger.LogInformation("Skipping configuration of latitude and longitude for listing {address} because it already has an mls number", $"{streetNum} {streetName}");
                 return;
             }
 
-            if (listing.UpdateGeocodes)
+            if (updateGeocodes)
             {
-                this.uploaderClient.WriteTextbox(By.Id("INPUT__93"), listing.Latitude); // latitude
-                this.uploaderClient.WriteTextbox(By.Id("INPUT__94"), listing.Longitude); // longitude
+                this.uploaderClient.WriteTextbox(By.Id("INPUT__93"), latitude); // latitude
+                this.uploaderClient.WriteTextbox(By.Id("INPUT__94"), longitude); // longitude
             }
             else
             {
@@ -1658,6 +1665,22 @@ namespace Husa.Uploader.Core.Services
         {
             this.GoToRemarksTab();
             this.UpdatePublicRemarksInRemarksTab(listing);
+        }
+
+        private void FillLotMapInformation(HarLotListingRequest listing)
+        {
+            if (listing.IsNewListing)
+            {
+                this.GoToTab("Map Information");
+                this.uploaderClient.ScrollDown(250);
+                this.SetLongitudeAndLatitudeValues(
+                    listing.Latitude,
+                    listing.Longitude,
+                    listing.UpdateGeocodes,
+                    listing.IsNewListing,
+                    listing.StreetNum,
+                    listing.StreetName);
+            }
         }
 
         private void NavigateToTab(string tabName)

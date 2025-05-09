@@ -81,6 +81,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
             FillFeaturesInfo(this.listingDetailResponse.FeaturesInfo);
             FillFinancialInfo(this.listingDetailResponse.FinancialInfo);
             FillShowingInformation(this.listingDetailResponse.ShowingInfo);
+            FillSchoolsInfo(this.listingDetailResponse.SchoolsInfo);
 
             return lotListingRequest;
 
@@ -205,6 +206,14 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.AgentPrivateRemarks = showingInfo.AgentPrivateRemarks;
                 lotListingRequest.AgentPrivateRemarksAdditional = showingInfo.AgentPrivateRemarksAdditional;
                 lotListingRequest.AgentListApptPhone = showingInfo.ContactPhone;
+            }
+
+            void FillSchoolsInfo(LotSchoolsResponse schoolsInfo)
+            {
+                ArgumentNullException.ThrowIfNull(schoolsInfo);
+
+                lotListingRequest.SchoolDistrict = schoolsInfo.SchoolDistrict?.ToStringFromEnumMember();
+                lotListingRequest.HighSchool = schoolsInfo.HighSchool?.ToStringFromEnumMember();
             }
         }
     }
