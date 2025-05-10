@@ -19,6 +19,7 @@ namespace Husa.Uploader.Core.Interfaces
         bool WaitUntilElementIsDisplayed(By findBy, CancellationToken token = default);
         bool WaitUntilElementIsDisplayed(By findBy, TimeSpan waitTime, CancellationToken token = default);
         bool WaitUntilElementIsDisplayed(Func<IWebDriver, bool> waitCondition, CancellationToken token = default);
+        bool WaitUntilElementIsNotDisplayed(By findBy, TimeSpan waitTime, CancellationToken token = default);
         bool WaitUntilElementDisappears(By findBy, CancellationToken token = default);
         bool WaitUntilScriptIsComplete(string script, string expectedCompletedResult, CancellationToken token = default);
         void WaitUntilElementExists(By findBy, CancellationToken token = default);
