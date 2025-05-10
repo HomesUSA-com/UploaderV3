@@ -426,7 +426,7 @@ namespace Husa.Uploader.Core.Services
 
                     if (autoSave)
                     {
-                        this.uploaderClient.WaitUntilElementExists(By.Id("css_InputCompleted"), new TimeSpan(0, 5, 0), true, cancellationToken);
+                        this.uploaderClient.WaitUntilElementIsNotDisplayed(By.Id("LISTPRICE"), new TimeSpan(0, 5, 0), cancellationToken);
                         Thread.Sleep(400);
                     }
                 }
