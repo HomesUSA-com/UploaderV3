@@ -227,6 +227,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.ViewDesc = featuresInfo.View.ToStringFromEnumMembers();
                 residentialListingRequest.Disclosures = featuresInfo.Disclosures.ToStringFromEnumMembers();
                 residentialListingRequest.Documents = featuresInfo.DocumentsAvailable.ToStringFromEnumMembers();
+                residentialListingRequest.ParkingTotal = featuresInfo.ParkingTotal;
             }
 
             void FillFinancialInfo(FinancialResponse financialInfo)

@@ -117,6 +117,7 @@ namespace Husa.Uploader.Data.Entities
         public string GarageDesc { get; set; }
         public string GarageCarpotDesc { get; set; }
         public int? GarageCapacity { get; set; }
+        public int? ParkingTotal { get; set; }
         public string FoundationDesc { get; set; }
         public string FloorsDesc { get; set; }
         public string FenceDesc { get; set; }
