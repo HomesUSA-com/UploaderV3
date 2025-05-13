@@ -997,7 +997,7 @@ namespace Husa.Uploader.Core.Services
             // driver.wait.Until(x => ExpectedConditions.ElementIsVisible(By.Id("Input_917")));
             Thread.Sleep(400);
             string baseRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
-            string additionalRemarks = listing.AgentPrivateRemarksAdditional ?? string.Empty;
+            string additionalRemarks = listing.AgentPrivateRemarks ?? string.Empty;
             var agentRemarks = $"{baseRemarks}. {additionalRemarks}";
             this.uploaderClient.WriteTextbox(By.Id("Input_140"), listing.GetPublicRemarks()); // Internet / Remarks / Desc. of Property
             this.uploaderClient.WriteTextbox(By.Id("Input_141"), agentRemarks); // Agent Remarks
