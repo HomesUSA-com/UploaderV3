@@ -1325,6 +1325,8 @@ namespace Husa.Uploader.Core.Services
             }
 
             this.WriteTextbox("Input_197", listing.Legal, inputType: "textarea"); // Tax Legal Description
+            this.uploaderClient.ClickOnElement(By.XPath("//button[contains(@onclick, 'mtrxGeoCoder.EnableMap') and contains(@onclick, 'Input_178')]")); // Button Accept Pin Map
+            this.uploaderClient.ClickOnElement(By.XPath("//div[starts-with(@id, 'Input_178') and contains(@id, 'divMapContainer')]")); // Map Container
 
             // School Information
             this.uploaderClient.ScrollDown(1000);
@@ -1381,7 +1383,7 @@ namespace Husa.Uploader.Core.Services
                 this.SetSelect("Input_227", "BUILDER"); // Living Area Source
 
                 this.uploaderClient.WriteTextbox(By.Name("Input_717"), listing.GarageCapacity); // # Garage Spaces
-                this.uploaderClient.WriteTextbox(By.Name("Input_229"), listing.GarageCapacity); // Parking Total
+                this.uploaderClient.WriteTextbox(By.Name("Input_229"), listing.ParkingTotal); // Parking Total
                 this.SetSelect("Input_342", listing.FacesDesc); // Direction Faces
 
                 this.WriteTextbox("Input_242", listing.LotSize); // Lot Size Acres
@@ -1590,12 +1592,22 @@ namespace Husa.Uploader.Core.Services
                 return;
             }
 
-            // Enter Manage Photos
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSaveIncomplete"), cancellationToken);
-            this.uploaderClient.ClickOnElement(By.Id("m_lbSaveIncomplete"));
+            this.uploaderClient.ClickOnElementById("InputForm_nav-photos");
+            this.ClickIfNotSelected("InputForm_photo-full-info-toggle");
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("InputForm_photos_addPhotoBtn"));
+            this.uploaderClient.ClickOnElementById("InputForm_photos_addPhotoBtn");
+
+            this.uploaderClient.ClickOnElement(By.XPath("//button[contains(@onclick, 'mtrxDnDFileUploader.OpenFilesSelector(event)')]"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("InputForm_photos_certificationText"));
+            var element = this.uploaderClient.FindElement(By.Id("InputForm_photos_certificationText"));
+            this.uploaderClient.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight;", args: element);
+
+            this.ClickIfNotSelected("InputForm_photos_commonAgreement");
+            this.ClickIfNotSelected("InputForm_photos_aiAgreement", desiredState: false);
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("InputForm_photos_agreeBtn"));
+            this.uploaderClient.ClickOnElementById("InputForm_photos_agreeBtn");
             Thread.Sleep(1000);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbManagePhotos"), cancellationToken);
-            this.uploaderClient.ClickOnElement(By.Id("m_lbManagePhotos"));
 
             await this.ProcessImages(listing, cancellationToken);
         }
@@ -1764,12 +1776,15 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        private void NavigateToTab(string tabName)
+        private void ClickIfNotSelected(string elementId, bool desiredState = true)
         {
-            this.uploaderClient.ClickOnElement(By.LinkText(tabName));
-            this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(800));
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
-            this.uploaderClient.ResetImplicitWait();
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id(elementId));
+            var element = this.uploaderClient.FindElementById(elementId);
+
+            if (element != null && element.Selected != desiredState)
+            {
+                element.Click();
+            }
         }
 
         private void NavigateToNewLotPropertyInput()
