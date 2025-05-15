@@ -1269,20 +1269,11 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_9"); // click in tab Listing Information
             Thread.Sleep(400);
 
-            var viewFullFormToggle = this.uploaderClient.FindElement(By.Id("InputForm_full-form-view-toggle"));
+            this.ClickIfNotSelected("InputForm_full-form-view-toggle");
 
             if (!listing.IsNewListing)
             {
-                var expandDataSourceToggle = this.uploaderClient.FindElement(By.Id("InputForm_showSources"));
-                if (expandDataSourceToggle.Selected)
-                {
-                    viewFullFormToggle.Click();
-                }
-            }
-
-            if (!viewFullFormToggle.Selected)
-            {
-                viewFullFormToggle.Click();
+                this.ClickIfNotSelected("InputForm_showSources", false);
             }
 
             // Listing Information
