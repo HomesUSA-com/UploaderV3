@@ -1181,6 +1181,7 @@ namespace Husa.Uploader.Core.Services
 
             if (selectedCheckboxes.Count > 0)
             {
+                Thread.Sleep(1000);
                 filterInputElement.Click();
             }
 
@@ -1192,6 +1193,7 @@ namespace Husa.Uploader.Core.Services
                     string trimmedValue = val.Trim();
                     try
                     {
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath($"//ul[@id='{dropdownListId}']/li[starts-with(@data-mtrx-listbox-item-value, '{trimmedValue}')]"));
                         var liElement = this.uploaderClient.FindElement(
                             By.XPath($"//ul[@id='{dropdownListId}']/li[starts-with(@data-mtrx-listbox-item-value, '{trimmedValue}')]"),
                             shouldWait: true);
@@ -1207,9 +1209,10 @@ namespace Husa.Uploader.Core.Services
                             }
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception ex) when (ex is NoSuchElementException || ex is UnexpectedTagNameException)
                     {
-                        this.logger.LogError("Error to select value {trimmedValue}: {ex}", trimmedValue, ex.Message);
+                        this.uploaderClient.ExecuteScript("document.activeElement.blur();", false);
+                        this.uploaderClient.ExecuteScript("document.body.click();", false);
                     }
                 }
             }
@@ -1266,7 +1269,21 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_9"); // click in tab Listing Information
             Thread.Sleep(400);
 
-            this.ClickIfNotSelected("InputForm_full-form-view-toggle");
+            var viewFullFormToggle = this.uploaderClient.FindElement(By.Id("InputForm_full-form-view-toggle"));
+
+            if (!listing.IsNewListing)
+            {
+                var expandDataSourceToggle = this.uploaderClient.FindElement(By.Id("InputForm_showSources"));
+                if (expandDataSourceToggle.Selected)
+                {
+                    viewFullFormToggle.Click();
+                }
+            }
+
+            if (!viewFullFormToggle.Selected)
+            {
+                viewFullFormToggle.Click();
+            }
 
             // Listing Information
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_77"));
@@ -1371,7 +1388,7 @@ namespace Husa.Uploader.Core.Services
 
                 this.WriteTextbox("Input_242", listing.LotSize); // Lot Size Acres
                 this.WriteTextbox("Input_241", listing.LotDim); // Lot Dimensions (Frontage x Depth)
-                this.SetSelect("Input_225", listing.YearBuiltDesc); // Property condition
+                this.SetMultipleCheckboxById("Input_225", listing.YearBuiltDesc); // Property condition
                 this.WriteTextbox("Input_678", listing.OwnerName); // Builder Name
                 this.SetMultipleCheckboxById("Input_230", listing.UnitStyleDesc); // Unit Style (5)
                 this.SetMultipleCheckboxById("Input_234", listing.ViewDesc); // View (4)
