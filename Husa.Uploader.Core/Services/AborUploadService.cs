@@ -1269,20 +1269,11 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_9"); // click in tab Listing Information
             Thread.Sleep(400);
 
-            var viewFullFormToggle = this.uploaderClient.FindElement(By.Id("InputForm_full-form-view-toggle"));
+            this.ClickIfNotSelected("InputForm_full-form-view-toggle");
 
             if (!listing.IsNewListing)
             {
-                var expandDataSourceToggle = this.uploaderClient.FindElement(By.Id("InputForm_showSources"));
-                if (expandDataSourceToggle.Selected)
-                {
-                    viewFullFormToggle.Click();
-                }
-            }
-
-            if (!viewFullFormToggle.Selected)
-            {
-                viewFullFormToggle.Click();
+                this.ClickIfNotSelected("InputForm_showSources", false);
             }
 
             // Listing Information
@@ -1325,8 +1316,6 @@ namespace Husa.Uploader.Core.Services
             }
 
             this.WriteTextbox("Input_197", listing.Legal, inputType: "textarea"); // Tax Legal Description
-            this.uploaderClient.ClickOnElement(By.XPath("//button[contains(@onclick, 'mtrxGeoCoder.EnableMap') and contains(@onclick, 'Input_178')]")); // Button Accept Pin Map
-            this.uploaderClient.ClickOnElement(By.XPath("//div[starts-with(@id, 'Input_178') and contains(@id, 'divMapContainer')]")); // Map Container
 
             // School Information
             this.uploaderClient.ScrollDown(1000);
