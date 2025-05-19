@@ -1372,7 +1372,7 @@ namespace Husa.Uploader.Core.Services
                 this.SetSelect("Input_227", "BUILDER"); // Living Area Source
 
                 this.uploaderClient.WriteTextbox(By.Name("Input_717"), listing.GarageCapacity); // # Garage Spaces
-                this.uploaderClient.WriteTextbox(By.Name("Input_229"), listing.GarageCapacity); // Parking Total
+                this.uploaderClient.WriteTextbox(By.Name("Input_229"), listing.ParkingTotal); // Parking Total
                 this.SetSelect("Input_342", listing.FacesDesc); // Direction Faces
 
                 this.WriteTextbox("Input_242", listing.LotSize); // Lot Size Acres

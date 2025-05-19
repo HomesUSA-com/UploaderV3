@@ -1,9 +1,10 @@
-﻿namespace Husa.Uploader.Core.Tests
+namespace Husa.Uploader.Core.Tests
 {
     using System.Collections.ObjectModel;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common.Enums;
+    using Husa.MediaService.Domain.Enums;
     using Husa.Quicklister.Amarillo.Api.Contracts.Response;
     using Husa.Quicklister.Amarillo.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.Amarillo.Api.Contracts.Response.SalePropertyDetail;
@@ -223,7 +224,7 @@
                 MLSNum = "123-4567",
             };
             this.mediaRepository
-                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), MarketCode.Amarillo, It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), MarketCode.Amarillo, It.IsAny<CancellationToken>(), MediaType.ListingRequest))
                 .ReturnsAsync(Array.Empty<ResidentialListingVirtualTour>())
             .Verifiable();
             this.uploaderClient.Setup(x => x.FindElement(It.IsAny<By>(), false, false).Click());
@@ -647,7 +648,7 @@
         private void SetUpVirtualTours()
         {
             this.mediaRepository
-                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), MarketCode.Amarillo, It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetListingVirtualTours(It.IsAny<Guid>(), MarketCode.Amarillo, It.IsAny<CancellationToken>(), MediaType.ListingRequest))
                 .ReturnsAsync(new ResidentialListingVirtualTour[] { GetResidentialListingVirtualTour(), GetResidentialListingVirtualTour() })
             .Verifiable();
         }

@@ -3,6 +3,7 @@ namespace Husa.Uploader.Data.Entities.LotListing
     using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
+    using Microsoft.IdentityModel.Tokens;
 
     public abstract class LotListingRequest
     {
@@ -44,6 +45,7 @@ namespace Husa.Uploader.Data.Entities.LotListing
 
         public int ListPrice { get; set; }
         public DateTime? ListDate { get; set; }
+        public string TypeOfContract { get; set; }
 
         // Lot Schools
         public string SchoolDistrict { get; set; }
@@ -56,6 +58,8 @@ namespace Husa.Uploader.Data.Entities.LotListing
 
         // Lot Address
         public string UnitNumber { get; set; }
+        public int? LotNumber { get; set; }
+        public string StDirection { get; set; }
 
         // Lot Property
         public string MlsArea { get; set; }
@@ -79,9 +83,19 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public string TaxBlock { get; set; }
         public string LotDimension { get; set; }
         public string LotSize { get; set; }
+        public string LotSizeSrc { get; set; }
         public bool UpdateGeocodes { get; set; }
         public int? AlsoListedAs { get; set; }
         public bool BuilderRestrictions { get; set; }
+        public string Acreage { get; set; }
+        public string Acres { get; set; }
+        public int? FrontDimensions { get; set; }
+        public int? BackDimensions { get; set; }
+        public int? LeftDimensions { get; set; }
+        public int? RightDimensions { get; set; }
+        public string HasMasterPlannedCommunity { get; set; }
+        public string MasterPlannedCommunity { get; set; }
+        public string LegalSubdivision { get; set; }
 
         // Lot Features
         public string RestrictionsDescription { get; set; }
@@ -102,6 +116,20 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public string Disclosures { get; set; }
         public string DocumentsAvailable { get; set; }
         public string WaterBodyName { get; set; }
+        public bool HasDevelopedCommunity { get; set; }
+        public bool HasTennis { get; set; }
+        public bool HasPool { get; set; }
+        public bool HasUtilityDistrict { get; set; }
+        public string ElectricServices { get; set; }
+        public string GasServices { get; set; }
+        public string CableServices { get; set; }
+        public string PhoneServices { get; set; }
+        public string GolfDescription { get; set; }
+        public bool HasSubdivisionLake { get; set; }
+        public string LotUse { get; set; }
+        public string LotImprovements { get; set; }
+        public string Access { get; set; }
+        public string Restrictions { get; set; }
 
         // Lot Finantial
         public bool HasHoa { get; set; }
@@ -151,6 +179,7 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public string SecondAgentMarketUniqueId { get; set; }
         public string SoldTerms { get; set; }
         public string SellConcess { get; set; }
+        public string LotListType { get; set; }
         public abstract LotListingRequest CreateFromApiResponse();
 
         public abstract LotListingRequest CreateFromApiResponseDetail();
@@ -183,9 +212,14 @@ namespace Husa.Uploader.Data.Entities.LotListing
                 WorkingSourceAction = workingSourceAction,
             };
 
-        public virtual string GetAgentRemarksMessage()
+        public virtual string GetAgentRemarksMessage(string agentRemarks = null)
         {
             var privateRemarks = "LIMITED SERVICE LISTING: Buyer verifies dimensions & ISD info. Use Bldr contract.";
+
+            if (!agentRemarks.IsNullOrEmpty())
+            {
+                privateRemarks = $"{privateRemarks} {agentRemarks}";
+            }
 
             var bonusMessage = this.GetAgentBonusRemarksMessage();
             if (!string.IsNullOrWhiteSpace(bonusMessage))
@@ -241,14 +275,18 @@ namespace Husa.Uploader.Data.Entities.LotListing
             return string.Empty;
         }
 
-        public virtual string GetPublicRemarks()
+        public virtual string GetPublicRemarks(bool addBuiltByMsg = true)
         {
             var builtNote = !string.IsNullOrWhiteSpace(this.MLSNum) ? $"MLS# {this.MLSNum}" : "MLS# ";
 
-            if (!string.IsNullOrWhiteSpace(this.CompanyName))
+            if (addBuiltByMsg && !string.IsNullOrWhiteSpace(this.CompanyName))
             {
                 builtNote += !string.IsNullOrWhiteSpace(builtNote) ? " - " : string.Empty;
                 builtNote += "Built by " + this.CompanyName + " - ";
+            }
+            else
+            {
+                builtNote += " - ";
             }
 
             return GetRemarks();
