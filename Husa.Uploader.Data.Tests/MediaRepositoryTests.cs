@@ -43,7 +43,6 @@ namespace Husa.Uploader.Data.Tests
                 IsPrimary = true,
                 Title = title,
                 Description = description,
-                MimeType = MimeType.Image,
                 Order = 0,
                 Uri = new Uri($"{BaseImageUrl}media/{mediaId}"),
                 UriMedium = new Uri($"{BaseImageUrl}thumbnail-md/{mediaId}"),
