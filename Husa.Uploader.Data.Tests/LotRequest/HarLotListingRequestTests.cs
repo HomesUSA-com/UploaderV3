@@ -145,6 +145,12 @@ namespace Husa.Uploader.Data.Tests.Entities.MarketRequests.LotRequest
                 ExpirationDate = apiDate.AddMonths(6),
                 OwnerName = "Detail Owner",
                 CompanyId = companyId,
+                AddressInfo = new(),
+                PropertyInfo = new(),
+                ShowingInfo = new(),
+                FinancialInfo = new(),
+                FeaturesInfo = new(),
+                SchoolsInfo = new(),
             };
 
             var sut = new HarLotListingRequest(listingDetailResponse);
@@ -181,6 +187,12 @@ namespace Husa.Uploader.Data.Tests.Entities.MarketRequests.LotRequest
                 ExpirationDate = apiDate.AddMonths(6),
                 OwnerName = "Detail Owner",
                 CompanyId = companyId,
+                AddressInfo = new(),
+                PropertyInfo = new(),
+                ShowingInfo = new(),
+                FinancialInfo = new(),
+                FeaturesInfo = new(),
+                SchoolsInfo = new(),
             };
 
             var sut = new HarLotListingRequest(listingDetailResponse);
