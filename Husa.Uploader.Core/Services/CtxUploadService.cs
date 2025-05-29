@@ -22,7 +22,7 @@ namespace Husa.Uploader.Core.Services
 
     public class CtxUploadService : ICtxUploadService
     {
-        private const string SuccessMessagePage = "esperando por el id";
+        private const string SuccessMessagePage = "css_InputCompleted";
         private readonly IUploaderClient uploaderClient;
         private readonly IMediaRepository mediaRepository;
         private readonly IServiceSubscriptionClient serviceSubscriptionClient;
