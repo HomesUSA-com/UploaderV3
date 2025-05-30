@@ -46,7 +46,7 @@ namespace Husa.Uploader.Core.Services
             this.serviceSubscriptionClient = serviceSubscriptionClient ?? throw new ArgumentNullException(nameof(serviceSubscriptionClient));
             this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+            }
 
         public MarketCode CurrentMarket => MarketCode.DFW;
         public string MultiFamilyPropType => ListPropertyType.ResidencialIncome.ToStringFromEnumMember();
@@ -76,9 +76,42 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(1000);
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
             Thread.Sleep(1000);
+
+            string userName;
+            string password;
+            switch (this.uploaderClient.UploadInformation.UserFullName)
+            {
+                case "Rhonda Morgan":
+                case "Ashley Henry":
+                case "Andy Nunez":
+                case "Marian Foster":
+                case "Van Eisele":
+                    userName = "0644994";
+                    password = "!@#kQcQe5";
+                    break;
+                case "Amanda Henderson":
+                case "Amanda R Henderson":
+                    userName = "0488530";
+                    password = "Redbull1";
+                    break;
+                case "Laura Ramos":
+                case "laura ramos":
+                    userName = "D991133";
+                    password = "husa2018!";
+                    break;
+                case "Liz Justine":
+                    userName = "D110237";
+                    password = "Abigail1!";
+                    break;
+                default:
+                    userName = credentials[LoginCredentials.Username];
+                    password = credentials[LoginCredentials.Password];
+                    break;
+            }
+
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id(loginButtonId));
-            this.uploaderClient.WriteTextbox(By.Name("username"), credentials[LoginCredentials.Username]);
-            this.uploaderClient.WriteTextbox(By.Name("password"), credentials[LoginCredentials.Password]);
+            this.uploaderClient.WriteTextbox(By.Name("username"), userName);
+            this.uploaderClient.WriteTextbox(By.Name("password"), password);
             Thread.Sleep(1000);
             this.uploaderClient.ClickOnElementById(loginButtonId);
 
@@ -106,6 +139,8 @@ namespace Husa.Uploader.Core.Services
                 throw new ArgumentNullException(nameof(listing));
             }
 
+            this.uploaderClient.UploadInformation.UserFullName = listing.WorkingBy;
+
             return EditListing();
 
             async Task<UploaderResponse> EditListing()
@@ -131,6 +166,8 @@ namespace Husa.Uploader.Core.Services
             {
                 throw new ArgumentNullException(nameof(listing));
             }
+
+            this.uploaderClient.UploadInformation.UserFullName = listing.WorkingBy;
 
             return UploadListing(logIn);
 
@@ -220,6 +257,8 @@ namespace Husa.Uploader.Core.Services
                 throw new ArgumentNullException(nameof(listing));
             }
 
+            this.uploaderClient.UploadInformation.UserFullName = listing.WorkingBy;
+
             return PartialUploadListing(logIn);
 
             async Task<UploaderResponse> PartialUploadListing(bool logIn)
@@ -271,6 +310,8 @@ namespace Husa.Uploader.Core.Services
             {
                 throw new ArgumentNullException(nameof(listing));
             }
+
+            this.uploaderClient.UploadInformation.UserFullName = listing.WorkingBy;
 
             return UpdateListingCompletionDate(logIn);
 
@@ -328,6 +369,8 @@ namespace Husa.Uploader.Core.Services
                 throw new ArgumentNullException(nameof(listing));
             }
 
+            this.uploaderClient.UploadInformation.UserFullName = listing.WorkingBy;
+
             return UpdateListingImages(logIn);
             async Task<UploaderResponse> UpdateListingImages(bool logIn)
             {
@@ -378,6 +421,8 @@ namespace Husa.Uploader.Core.Services
                 throw new ArgumentNullException(nameof(listing));
             }
 
+            this.uploaderClient.UploadInformation.UserFullName = listing.WorkingBy;
+
             return UpdateListingPrice(logIn);
 
             async Task<UploaderResponse> UpdateListingPrice(bool logIn)
@@ -427,6 +472,8 @@ namespace Husa.Uploader.Core.Services
             {
                 throw new ArgumentNullException(nameof(listing));
             }
+
+            this.uploaderClient.UploadInformation.UserFullName = listing.WorkingBy;
 
             return UpdateListingStatus(logIn);
 
@@ -546,6 +593,8 @@ namespace Husa.Uploader.Core.Services
                 throw new ArgumentNullException(nameof(listing));
             }
 
+            this.uploaderClient.UploadInformation.UserFullName = listing.WorkingBy;
+
             return UploadListingVirtualTour();
 
             async Task<UploaderResponse> UploadListingVirtualTour()
@@ -573,6 +622,8 @@ namespace Husa.Uploader.Core.Services
             {
                 throw new ArgumentNullException(nameof(listing));
             }
+
+            this.uploaderClient.UploadInformation.UserFullName = listing.WorkingBy;
 
             return UploadOpenHouse();
 
