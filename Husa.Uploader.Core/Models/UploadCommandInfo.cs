@@ -13,6 +13,8 @@ namespace Husa.Uploader.Core.Models
 
         public List<UploaderError> UploaderErrors { get; set; }
 
+        public string UserFullName { get; set; }
+
         public void AddError(
             string fieldFindBy,
             string fieldLabel,
