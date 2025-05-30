@@ -1426,6 +1426,7 @@ namespace Husa.Uploader.Desktop.ViewModels
                 await this.SetFullRequestInformation();
                 var listing = this.SelectedListingRequest.FullListing;
                 var token = this.cancellationTokenSource.Token;
+                listing.WorkingBy = this.UserFullName;
                 return await Task.Run(() => action(listing, token));
             }
             catch (OperationCanceledException)
