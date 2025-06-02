@@ -84,10 +84,13 @@ namespace Husa.Uploader.Core.Services
                 case "Rhonda Morgan":
                 case "Ashley Henry":
                 case "Andy Nunez":
-                case "Marian Foster":
                 case "Van Eisele":
                     userName = "0644994";
                     password = "!@#kQcQe5";
+                    break;
+                case "Marian Foster":
+                    userName = "D132274";
+                    password = "fy^!Je5tq";
                     break;
                 case "Amanda Henderson":
                 case "Amanda R Henderson":
