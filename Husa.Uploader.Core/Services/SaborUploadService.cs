@@ -80,46 +80,39 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(1000);
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
             Thread.Sleep(1000);
-            try
+
+            var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("member_login_id"));
+            this.uploaderClient.WriteTextbox(By.XPath("//input[@type='text' and @aria-label='Username' and @name='member_login_id']"), credentials[LoginCredentials.Username]);
+            this.uploaderClient.WriteTextbox(By.XPath("//input[@type='password' and @aria-label='Password']"), credentials[LoginCredentials.Password]);
+            this.uploaderClient.FindElement(By.XPath("//div[@class='v-btn__content' and text()=' Log In ']")).Click();
+            Thread.Sleep(2000);
+
+            if (this.uploaderClient.IsElementPresent(By.Name("remindLater"), isVisible: true))
             {
-                var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
-                try
-                {
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("go"));
-                    this.uploaderClient.WriteTextbox(By.Id("j_username"), credentials[LoginCredentials.Username]);
-                    this.uploaderClient.WriteTextbox(By.Id("j_password"), credentials[LoginCredentials.Password]);
-                    this.uploaderClient.ClickOnElementByName(elementName: "go");
-                }
-                catch
-                {
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("login"));
-                    this.uploaderClient.WriteTextbox(By.Id("userid"), credentials[LoginCredentials.Username]);
-                    this.uploaderClient.WriteTextbox(By.Id("password"), credentials[LoginCredentials.Password]);
-                    this.uploaderClient.SubmitForm(By.Name("login"));
-                }
-
-                if (this.uploaderClient.IsElementPresent(By.Name("remindLater"), isVisible: true))
-                {
-                    this.uploaderClient.ClickOnElementByName(elementName: "remindLater");
-                }
-
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("newlistingLink"));
+                this.uploaderClient.ClickOnElementByName(elementName: "remindLater");
             }
-            catch
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("newlistingLink"));
+            this.uploaderClient.NavigateToUrl("http://sabor.mysolidearth.com/resources/panels/8");
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("master-navigation-bar"));
+            this.uploaderClient.ExecuteScript("let head = document.getElementsByTagName(\"head\")[0];let script = document.createElement(\"script\");script.setAttribute(\"src\", \"https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js\");document.body.appendChild(script);");
+
+            switch (company.Name)
             {
-                this.uploaderClient.ExecuteScript("let head = document.getElementsByTagName(\"head\")[0];let script = document.createElement(\"script\");script.setAttribute(\"src\", \"https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js\");document.body.appendChild(script);");
-                this.uploaderClient.ExecuteScript("$(\"head link[rel='stylesheet']\").last().after(\"<link rel='stylesheet' href='https://leadmanager.homesusa.com/css/animate.css' type='text/css'>\");");
-
-                this.uploaderClient.ExecuteScript("$(\"head link[rel='stylesheet']\").last().after(\"<link rel='stylesheet' href='https://leadmanager.homesusa.com/css/igrowl.css' type='text/css'>\");");
-
-                this.uploaderClient.ExecuteScript("$(\"head link[rel='stylesheet']\").last().after(\"<link rel='stylesheet' href='https://leadmanager.homesusa.com/css/fonts/feather.css' type='text/css'>\");");
-                this.uploaderClient.ExecuteScript("$(\"head\").append('<script src=\"https://leadmanager.homesusa.com/Scripts/igrowl.js\"></script>')");
-                Thread.Sleep(2000);
-
-                string errorMessageScript = "  $.iGrowl({type: 'error',title: 'HomesUSA - Uploader',message: 'Failed to Log In. Please try to enter the credentials manually within 5 minutes. <div id=\"time\" style=\"font-weight: bold\"></div>',delay: 0,small: false,placement:{ x: 'right', y: 'top'}, offset: {x: 30,y: 50},animShow: 'fadeInDown',animHide: 'bounceOutUp'}); var fiveMinutes = 60 * 5,display = document.getElementById('time'); startTimer(fiveMinutes, display);";
-                this.uploaderClient.ExecuteScript($"{StartTimeFunctionScript}{errorMessageScript}");
-                this.uploaderClient.WaitUntilElementExists(By.Id("newlistingLink"), waitTime: new TimeSpan(0, 5, 2));
+                case "Highland Homes":
+                    this.uploaderClient.ExecuteScript("jQuery('div[role=listitem] .primary--text:eq(1)')[0].click()");
+                    break;
+                case "HistoryMaker Homes":
+                    this.uploaderClient.ExecuteScript("jQuery('div[role=listitem] .primary--text:eq(2)')[0].click()");
+                    break;
+                default:
+                    this.uploaderClient.ExecuteScript("jQuery('div[role=listitem] .primary--text:eq(3)')[0].click()");
+                    break;
             }
+
+            this.uploaderClient.FindElement(By.XPath("//a[contains(@class, 'resource-card') and contains(@title, 'connectMLS')]")).Click();
+            this.uploaderClient.SwitchToLast();
 
             return LoginResult.Logged;
         }
