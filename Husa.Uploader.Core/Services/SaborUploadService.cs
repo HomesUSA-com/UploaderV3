@@ -79,24 +79,20 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.NavigateToUrl(marketInfo.LogoutUrl);
             Thread.Sleep(1000);
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
-            Thread.Sleep(1000);
 
             var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("member_login_id"));
-            this.uploaderClient.WriteTextbox(By.XPath("//input[@type='text' and @aria-label='Username' and @name='member_login_id']"), credentials[LoginCredentials.Username]);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//div[@class='v-btn__content' and text()=' Log In ']"));
+
+            this.uploaderClient.WriteTextbox(By.Name("member_login_id"), credentials[LoginCredentials.Username]);
             this.uploaderClient.WriteTextbox(By.XPath("//input[@type='password' and @aria-label='Password']"), credentials[LoginCredentials.Password]);
-            this.uploaderClient.FindElement(By.XPath("//div[@class='v-btn__content' and text()=' Log In ']")).Click();
             Thread.Sleep(2000);
+            this.uploaderClient.FindElement(By.XPath("//div[@class='v-btn__content' and text()=' Log In ']")).Click();
 
-            if (this.uploaderClient.IsElementPresent(By.Name("remindLater"), isVisible: true))
-            {
-                this.uploaderClient.ClickOnElementByName(elementName: "remindLater");
-            }
+            Thread.Sleep(5000);
 
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("newlistingLink"));
-            this.uploaderClient.NavigateToUrl("http://sabor.mysolidearth.com/resources/panels/8");
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("master-navigation-bar"));
             this.uploaderClient.ExecuteScript("let head = document.getElementsByTagName(\"head\")[0];let script = document.createElement(\"script\");script.setAttribute(\"src\", \"https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js\");document.body.appendChild(script);");
+            this.uploaderClient.WaitUntilScriptIsComplete(script: "return document.readyState", expectedCompletedResult: "complete");
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//a[contains(@class, 'resource-card') and contains(@title, 'connectMLS')]"));
 
             switch (company.Name)
             {
