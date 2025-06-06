@@ -138,9 +138,9 @@ namespace Husa.Uploader.Core.Services
                     return element != null && element.Displayed;
                 });
             }
-            catch (WebDriverTimeoutException)
+            catch (WebDriverTimeoutException ex)
             {
-                this.logger.LogWarning("Timeout while waiting for element '{by}' to be displayed", findBy.ToString());
+                this.logger.LogWarning(ex, "Timeout while waiting for element '{by}' to be displayed", findBy.ToString());
                 return false;
             }
         }
