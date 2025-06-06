@@ -107,6 +107,8 @@ namespace Husa.Uploader.Core.Services
                     break;
             }
 
+            this.uploaderClient.WaitUntilScriptIsComplete(script: "return document.readyState", expectedCompletedResult: "complete");
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//a[contains(@class, 'resource-card') and contains(@title, 'connectMLS')]"));
             this.uploaderClient.FindElement(By.XPath("//a[contains(@class, 'resource-card') and contains(@title, 'connectMLS')]")).Click();
             this.uploaderClient.SwitchToLast();
 
