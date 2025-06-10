@@ -127,14 +127,12 @@ jobs:
   - task: SonarCloudPublish@1
     inputs:
       pollingTimeoutSec: '300'
-
   - task: UseDotNet@2
     displayName: 'Install .NET Core SDK'
     inputs:
         version: 8.x
         performMultiLevelLookup: true
         includePreviewVersions: true # Required for preview versions
-
   - task: MSBuild@1
     condition: ne(variables.isPullRequest, true)
     displayName: 'publish with ClickOnce'
