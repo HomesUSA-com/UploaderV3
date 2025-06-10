@@ -736,6 +736,7 @@ namespace Husa.Uploader.Core.Services
         {
             const string tabName = "General";
             this.uploaderClient.ScrollDown(500);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("listTxnsLink"), TimeSpan.FromSeconds(5000));
             this.uploaderClient.FindElement(By.Id("listTxnsLink")).Click();
             this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("mylistcontainer"));
 
