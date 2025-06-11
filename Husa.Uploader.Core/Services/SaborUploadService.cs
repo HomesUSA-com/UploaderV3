@@ -1764,7 +1764,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ExecuteScript(script: "jQuery('.button.Save').click();");
                 Thread.Sleep(2000);
 
-                var window = this.uploaderClient.WindowHandles.FirstOrDefault();
+                var window = this.uploaderClient.WindowHandles.LastOrDefault();
                 this.uploaderClient.SwitchTo().Window(windowName: window);
                 iterationCount++;
             }
