@@ -1425,7 +1425,7 @@ namespace Husa.Uploader.Core.Services
             this.SetMultipleCheckboxById("Input_262", "None"); // Private Pool Features (On Property)
             this.SetMultipleCheckboxById("Input_251", listing.GuestAccommodationsDesc); // Guest Accommodations
             this.SetMultipleCheckboxById("Input_267", listing.WindowCoverings); // Window Features
-            this.SetMultipleCheckboxById("Input_266", listing.SecurityDesc?.ToUpper()); // Security Features
+            this.SetMultipleCheckboxById("Input_266", listing.SecurityDesc); // Security Features
             this.SetMultipleCheckboxById("Input_255", listing.LaundryLocDesc); // Laundry Location (3)
             this.SetMultipleCheckboxById("Input_261", listing.FenceDesc); // Fencing (4)
             this.uploaderClient.WriteTextbox(By.Name("Input_252"), listing.NumGuestBeds); // # Guest Beds
