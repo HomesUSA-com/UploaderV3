@@ -47,6 +47,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private readonly IOptions<ApplicationOptions> options;
         private readonly IListingRequestRepository sqlDataLoader;
         private readonly ILotListingRequestRepository sqlLotDataLoader;
+        private readonly IListingRepository sqlListingDataLoader;
         private readonly IAuthenticationService authenticationClient;
         private readonly IVersionManagerService versionManagerService;
         private readonly IChildViewFactory mlsIssueReportFactory;
@@ -110,14 +111,17 @@ namespace Husa.Uploader.Desktop.ViewModels
             IOptions<ApplicationOptions> options,
             IListingRequestRepository sqlDataLoader,
             ILotListingRequestRepository sqlLotDataLoader,
+            IListingRepository sqlListingDataLoader,
             IAuthenticationService authenticationClient,
             IVersionManagerService versionManagerService,
             IChildViewFactory mlsIssueReportFactory,
             IAbstractFactory<BulkUploadView> bulkUploadViewFactory,
+            IAbstractFactory<TaxIdBulkUploadView> taxIdBulkUploadViewFactory,
             IAbstractFactory<LatLonInputView> locationViewFactory,
             IAbstractFactory<MlsnumInputView> mlsNumberInputFactory,
             IUploadFactory uploadFactory,
             IBulkUploadFactory bulkUploadFactory,
+            ITaxIdBulkUploadFactory taxIdBulkUploadFactory,
             ILogger<ShellView> logger)
             : this()
         {
@@ -133,6 +137,9 @@ namespace Husa.Uploader.Desktop.ViewModels
             this.uploadFactory = uploadFactory ?? throw new ArgumentNullException(nameof(uploadFactory));
             this.bulkUploadFactory = bulkUploadFactory ?? throw new ArgumentNullException(nameof(bulkUploadFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.taxIdBulkUploadViewFactory = taxIdBulkUploadViewFactory ?? throw new ArgumentNullException(nameof(taxIdBulkUploadViewFactory));
+            this.taxIdBulkUploadFactory = taxIdBulkUploadFactory ?? throw new ArgumentNullException(nameof(taxIdBulkUploadFactory));
+            this.sqlListingDataLoader = sqlListingDataLoader ?? throw new ArgumentNullException(nameof(sqlListingDataLoader));
 
             this.ConfigureVersionCheck();
         }
@@ -236,6 +243,8 @@ namespace Husa.Uploader.Desktop.ViewModels
         public bool UploadFailed => this.State == UploaderState.UploadFailed;
 
         public bool ShowBulkUploadButton => this.State == UploaderState.Ready && this.CurrentEntity == Entity.Listing;
+
+        public bool ShowTaxIdBulkUploadButton => this.State == UploaderState.Ready && this.CurrentEntity == Entity.Listing;
 
         public Dictionary<string, Item> Workers { get; set; }
 

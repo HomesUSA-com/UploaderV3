@@ -1,21 +1,11 @@
 namespace Husa.Uploader.Core.Interfaces.ServiceActions
 {
-    using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
-    using Husa.Uploader.Core.Models;
     using Husa.Uploader.Data.Entities;
 
-    public interface IBulkUploadListings
+    public interface IBulkUploadListings : IBulkUpload
     {
-        MarketCode CurrentMarket { get; }
-
         RequestFieldChange RequestFieldChange { get; set; }
-
-        Task<UploaderResponse> Upload(CancellationToken cancellationToken = default);
-
-        void CancelOperation();
-
-        UploaderResponse Logout();
 
         void SetRequestFieldChange(RequestFieldChange requestFieldChange);
 
