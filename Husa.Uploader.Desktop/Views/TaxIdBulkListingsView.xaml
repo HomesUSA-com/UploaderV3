@@ -13,7 +13,7 @@
         WindowStartupLocation="CenterOwner" 
         ResizeMode="NoResize">
     <StackPanel Margin="10">
-        <TextBlock>Select the Listings Request to update</TextBlock>
+        <TextBlock>Select the Listings to update</TextBlock>
         <StackPanel Margin="0,10">
             <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Hidden" Height="350">
                 <ListView x:Name="ListingsBulkFiltered"

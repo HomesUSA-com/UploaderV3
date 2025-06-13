@@ -102,7 +102,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
 
             this.ShowCancelButton = true;
-            var uploader = this.taxIdBulkUploadFactory.Create<IBulkUpload>(bulkUploadInfo.Market.Value, filteredBulkListings);
+            var uploader = this.taxIdBulkUploadFactory.Create<ITaxIdBulkUploadListings>(bulkUploadInfo.Market.Value, filteredBulkListings);
             await this.StartTaxIdBulk(action: uploader.Upload);
         }
 

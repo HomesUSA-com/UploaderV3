@@ -60,31 +60,36 @@ namespace Husa.Uploader.Core.Services.BulkUpload.TaxIdBulkUpload
 
             foreach (var group in this.BulkListings.GroupBy(item => item.OwnerName))
             {
-                await this.ProcessCompanyGroup(group, cancellationToken);
+                await this.ProcessCompanyGroup(group);
             }
 
             response.UploadResult = UploadResult.Success;
             return response;
         }
 
-        private async Task ProcessCompanyGroup(IGrouping<string, TaxIdBulkUploadListingItem> group, CancellationToken cancellationToken)
+        public async Task<UploaderResponse> TaxIdUpdate(TaxIdBulkUploadListingItem listing)
         {
-            var logInForCompany = true;
+            ArgumentNullException.ThrowIfNull(listing);
 
+            UploaderResponse uploaderResponse = new();
+
+            this.logger.LogInformation("Updating Tax Id information for the listing {ListingId}", listing.Id);
+            this.uploaderClient.InitializeUploadInfo(listing.Id, false);
+            await this.uploadService.Login(listing.CompanyId);
+            Thread.Sleep(5000);
+
+            uploaderResponse.UploadResult = UploadResult.Success;
+            return uploaderResponse;
+        }
+
+        private async Task ProcessCompanyGroup(IGrouping<string, TaxIdBulkUploadListingItem> group)
+        {
             foreach (var bulkFullListing in group)
             {
-                await this.ProcessListing(bulkFullListing, logInForCompany, cancellationToken);
-                logInForCompany = false;
-                Thread.Sleep(400);
+                await this.TaxIdUpdate(bulkFullListing);
             }
 
             this.uploadService.Logout();
-            Thread.Sleep(400);
-        }
-
-        private async Task ProcessListing(TaxIdBulkUploadListingItem bulkFullListing, bool logInForCompany, CancellationToken cancellationToken)
-        {
-           await this.uploadService.TaxIdUpdate(bulkFullListing, logInForCompany, cancellationToken);
         }
     }
 }
