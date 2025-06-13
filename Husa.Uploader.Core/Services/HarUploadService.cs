@@ -357,7 +357,7 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"), cancellationToken);
                     this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
                     this.DeleteAllImages();
-                    await this.ProcessImages(listing, cancellationToken);
+                    await this.ProcessListingImages(listing, cancellationToken);
                 }
                 catch (Exception exception)
                 {
@@ -773,6 +773,8 @@ namespace Husa.Uploader.Core.Services
                     {
                         await this.UpdateVirtualTourLinks(listing.LotListingRequestID, MediaType.LotRequest, cancellationToken);
                     }
+
+                    await this.FillLotMedia(listing, cancellationToken);
                 }
                 catch (Exception exception)
                 {
@@ -854,6 +856,24 @@ namespace Husa.Uploader.Core.Services
             this.GoToRemarksTab(housingType);
 
             this.UploadVirtualTour(virtualTours);
+        }
+
+        private async Task FillLotMedia(LotListingRequest listing, CancellationToken cancellationToken)
+        {
+            if (!listing.IsNewListing)
+            {
+                this.logger.LogInformation("Skipping media upload for existing lot {lotId}", listing.LotListingRequestID);
+                return;
+            }
+
+            this.GetInManagePhotos(cancellationToken);
+
+            await this.ProcessLotImages(listing, cancellationToken);
+        }
+
+        private async Task ProcessLotImages(LotListingRequest listing, CancellationToken cancellationToken)
+        {
+            await this.ProcessImages(listing.LotListingRequestID, cancellationToken, MediaType.LotRequest);
         }
 
         private async Task UpdateVirtualTourLinks(Guid listingId, MediaType mediaType, CancellationToken cancellationToken = default)
@@ -1370,13 +1390,18 @@ namespace Husa.Uploader.Core.Services
             }
 
             // Enter Manage Photos
+            this.GetInManagePhotos(cancellationToken);
+
+            await this.ProcessListingImages(listing, cancellationToken);
+        }
+
+        private void GetInManagePhotos(CancellationToken cancellationToken = default)
+        {
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSaveIncomplete"), cancellationToken);
             this.uploaderClient.ClickOnElement(By.Id("m_lbSaveIncomplete"));
             Thread.Sleep(1000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbManagePhotos"), cancellationToken);
             this.uploaderClient.ClickOnElement(By.Id("m_lbManagePhotos"));
-
-            await this.ProcessImages(listing, cancellationToken);
         }
 
         private void UpdateYearBuiltDescription(ResidentialListingRequest listing)
@@ -1459,10 +1484,16 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        [SuppressMessage("SonarLint", "S2583", Justification = "Ignored due to suspected false positive")]
-        private async Task ProcessImages(ResidentialListingRequest listing, CancellationToken cancellationToken)
+        private async Task ProcessListingImages(ResidentialListingRequest listing, CancellationToken cancellationToken)
         {
-            var media = await this.mediaRepository.GetListingImages(listing.ResidentialListingRequestID, market: this.CurrentMarket, token: cancellationToken);
+            await this.ProcessImages(listing.ResidentialListingRequestID, cancellationToken);
+        }
+
+        [SuppressMessage("SonarLint", "S2583", Justification = "Ignored due to suspected false positive")]
+        private async Task ProcessImages(Guid listingId, CancellationToken cancellationToken = default, MediaType mediaType = MediaType.ListingRequest)
+        {
+            var media = await this.mediaRepository.GetListingImages(listingId, this.CurrentMarket, cancellationToken, mediaType);
+
             var imageOrder = 0;
             var imageRow = 0;
             var imageCell = 0;
@@ -1472,6 +1503,7 @@ namespace Husa.Uploader.Core.Services
             Directory.CreateDirectory(folder);
             var captionImageId = string.Empty;
             var truncatedCaption = string.Empty;
+
             foreach (var image in media)
             {
                 await this.mediaRepository.PrepareImage(image, MarketCode.Houston, cancellationToken, folder);
