@@ -3,6 +3,7 @@ namespace Husa.Uploader.Core.Services.BulkUpload.TaxIdBulkUpload
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
@@ -60,33 +61,18 @@ namespace Husa.Uploader.Core.Services.BulkUpload.TaxIdBulkUpload
 
             foreach (var group in this.BulkListings.GroupBy(item => item.OwnerName))
             {
-                await this.ProcessCompanyGroup(group);
+                await this.ProcessCompanyGroup(group, cancellationToken);
             }
 
             response.UploadResult = UploadResult.Success;
             return response;
         }
 
-        public async Task<UploaderResponse> TaxIdUpdate(TaxIdBulkUploadListingItem listing)
-        {
-            ArgumentNullException.ThrowIfNull(listing);
-
-            UploaderResponse uploaderResponse = new();
-
-            this.logger.LogInformation("Updating Tax Id information for the listing {ListingId}", listing.Id);
-            this.uploaderClient.InitializeUploadInfo(listing.Id, false);
-            await this.uploadService.Login(listing.CompanyId);
-            Thread.Sleep(5000);
-
-            uploaderResponse.UploadResult = UploadResult.Success;
-            return uploaderResponse;
-        }
-
-        private async Task ProcessCompanyGroup(IGrouping<string, TaxIdBulkUploadListingItem> group)
+        private async Task ProcessCompanyGroup(IGrouping<string, TaxIdBulkUploadListingItem> group, CancellationToken cancellationToken = default)
         {
             foreach (var bulkFullListing in group)
             {
-                await this.TaxIdUpdate(bulkFullListing);
+                await this.uploadService.TaxIdUpdate(bulkFullListing, cancellationToken: cancellationToken);
             }
 
             this.uploadService.Logout();

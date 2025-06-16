@@ -29,6 +29,7 @@ namespace Husa.Uploader.Core.Services
         private const string LandingPageURL = "https://matrix.ntreis.net/";
         private const string EditUrl = "https://ntrdd.mlsmatrix.com/Matrix/Input";
         private const string NavigateToUrlNewListing = "https://ntrdd.mlsmatrix.com/Matrix/Input";
+        private const string SEARCHURL = "https://ntrdd.mlsmatrix.com/Matrix/Search/Residential/Quick";
         private readonly IUploaderClient uploaderClient;
         private readonly IMediaRepository mediaRepository;
         private readonly IServiceSubscriptionClient serviceSubscriptionClient;
@@ -723,9 +724,39 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploaderResponse> TaxIdUpdate(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default)
+        public async Task<UploaderResponse> TaxIdUpdate(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(listing);
+
+            UploaderResponse uploaderResponse = new();
+
+            this.logger.LogInformation("Updating Tax Id information for the listing {ListingId}", listing.Id);
+            this.uploaderClient.InitializeUploadInfo(listing.Id, false);
+            await this.Login(listing.CompanyId);
+            this.CheckIfAutoSaveWindowIsVisible();
+            this.NavigateToListing(listing.MlsNumber, cancellationToken);
+            Thread.Sleep(5000);
+
+            uploaderResponse.UploadResult = UploadResult.Success;
+            return uploaderResponse;
+        }
+
+        private void CheckIfAutoSaveWindowIsVisible()
+        {
+            if (this.uploaderClient.IsElementPresent(By.Id("m_divAutoSaveRestore"), true))
+            {
+                this.uploaderClient.ClickOnElementById("ctl02_ctl10_m_tdSkip");
+            }
+        }
+
+        private void NavigateToListing(string mlsNumber, CancellationToken cancellationToken = default)
+        {
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_ucSpeedBar_m_tbSpeedBar"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+            this.uploaderClient.WriteTextbox(By.Id("ctl02_m_ucSpeedBar_m_tbSpeedBar"), value: mlsNumber);
+            this.uploaderClient.ClickOnElement(By.Id("ctl02_m_ucSpeedBar_m_lnkGo"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_upResultsInfo"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.LinkText(mlsNumber));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("mtx-containerNavTabs"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
         }
 
         private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
