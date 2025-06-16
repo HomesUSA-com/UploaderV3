@@ -51,6 +51,10 @@ namespace Husa.Uploader.Core.Services
 
         public MarketCode CurrentMarket => MarketCode.Houston;
 
+        public IUploaderClient UploaderClient => this.uploaderClient;
+
+        public IServiceSubscriptionClient ServiceSubscriptionClient => this.serviceSubscriptionClient;
+
         public bool IsFlashRequired => false;
 
         public bool CanUpload(ResidentialListingRequest listing) => listing.MarketCode == this.CurrentMarket;

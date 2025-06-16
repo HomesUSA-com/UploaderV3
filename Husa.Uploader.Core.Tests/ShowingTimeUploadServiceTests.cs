@@ -1,8 +1,6 @@
 namespace Husa.Uploader.Core.Tests
 {
     using System.Linq;
-    using Husa.CompanyServicesManager.Api.Client.Interfaces;
-    using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Quicklister.Extensions.Api.Contracts.Models.ShowingTime;
     using Husa.Quicklister.Extensions.Domain.Enums.ShowingTime;
     using Husa.Uploader.Core.Interfaces;
@@ -18,14 +16,13 @@ namespace Husa.Uploader.Core.Tests
     {
         private readonly Mock<IUploaderClient> uploaderClient = new();
         private readonly Mock<ILogger<ShowingTimeUploadService>> logger = new();
-        private readonly Mock<IServiceSubscriptionClient> serviceSubscriptionClient = new();
+        private readonly Mock<IDfwUploadService> dfwUploadService = new();
 
         public ShowingTimeUploadServiceTests()
         {
             this.uploaderClient.SetupAllProperties();
             this.Sut = new(
-                this.uploaderClient.Object,
-                this.serviceSubscriptionClient.Object,
+                this.dfwUploadService.Object,
                 this.logger.Object);
         }
 
@@ -34,29 +31,7 @@ namespace Husa.Uploader.Core.Tests
         [Fact]
         public async Task Login_Success()
         {
-            var sut = this.Sut;
-            var companyClient = new Mock<ICompany>();
-            companyClient.Setup(x => x.GetShowingTimeInfo(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(new ShowingTimeResponse()));
-            this.serviceSubscriptionClient.SetupGet(x => x.Company).Returns(companyClient.Object);
-            this.uploaderClient.Setup(x => x.NavigateToUrl(It.IsAny<string>())).Verifiable();
-            this.uploaderClient.Setup(x =>
-                x.WaitForElementToBeVisible(It.IsAny<By>(), It.IsAny<TimeSpan>())).Verifiable();
-            this.uploaderClient.Setup(x =>
-                x.WriteTextbox(It.IsAny<By>(), It.IsAny<string>(), false, false, false, false))
-                .Verifiable();
-            this.uploaderClient.Setup(x => x.ClickOnElement(It.IsAny<By>())).Verifiable();
-
-            var result = await sut.Login(Guid.Empty);
-
-            this.uploaderClient.Verify(x => x.NavigateToUrl(It.IsAny<string>()), Times.Once);
-            this.uploaderClient.Verify(
-                x => x.WaitForElementToBeVisible(It.IsAny<By>(), It.IsAny<TimeSpan>()),
-                Times.Once);
-            this.uploaderClient.Verify(
-                x => x.WriteTextbox(It.IsAny<By>(), It.IsAny<string>(), false, false, false, false),
-                Times.Exactly(2));
-            this.uploaderClient.Verify(x => x.ClickOnElement(It.IsAny<By>()), Times.Exactly(2));
+            var result = await this.Sut.Login(Guid.Empty);
             Assert.Equal(LoginResult.Logged, result);
         }
 

@@ -1,0 +1,510 @@
+namespace Husa.Uploader.Core.Services
+{
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Husa.CompanyServicesManager.Api.Client.Interfaces;
+    using Husa.Extensions.Common;
+    using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Extensions.Api.Contracts.Models.ShowingTime;
+    using Husa.Quicklister.Extensions.Domain.Enums;
+    using Husa.Quicklister.Extensions.Domain.Enums.ShowingTime;
+    using Husa.Uploader.Core.Interfaces;
+    using Husa.Uploader.Core.Interfaces.ShowingTime;
+    using Husa.Uploader.Core.Models;
+    using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Crosscutting.Extensions;
+    using Husa.Uploader.Data.Entities;
+    using Microsoft.Extensions.Logging;
+    using OpenQA.Selenium;
+
+    public class ShowingTimeUploadService : IShowingTimeUploadService
+    {
+        private readonly IMarketUploadService marketUploadService;
+        private readonly ILogger logger;
+
+        public ShowingTimeUploadService(
+            IMarketUploadService marketUploadService,
+            ILogger logger)
+        {
+            this.marketUploadService = marketUploadService ?? throw new ArgumentNullException(nameof(marketUploadService));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
+        public MarketCode CurrentMarket => this.marketUploadService.CurrentMarket;
+        protected IUploaderClient UploaderClient => this.marketUploadService?.UploaderClient;
+        protected IServiceSubscriptionClient ServiceSubscriptionClient => this.marketUploadService?.ServiceSubscriptionClient;
+
+        public void CancelOperation()
+        {
+            this.logger.LogInformation("Stopping driver at the request of the current user");
+            this.UploaderClient.CloseDriver();
+        }
+
+        public async Task<LoginResult> Login(Guid companyId, CancellationToken cancellationToken = default)
+        {
+            this.logger.LogDebug("Starting login");
+            var result = await this.marketUploadService.Login(companyId);
+            if (result != LoginResult.Logged)
+            {
+                this.logger.LogError("Login failed");
+                return result;
+            }
+
+            this.logger.LogDebug("login");
+
+            return LoginResult.Logged;
+        }
+
+        public Task NavigateToListing(string listingId, CancellationToken cancellationToken = default) =>
+            Task.Factory.StartNew(
+            () =>
+        {
+            this.UploaderClient.NavigateToUrl($"Listings/Management/{listingId}");
+            Thread.Sleep(500);
+        },
+            cancellationToken);
+
+        public Task SetAppointmentCenter(CancellationToken cancellationToken) =>
+            Task.Factory.StartNew(
+            () =>
+        {
+            this.UploaderClient.ClickOnElementById("Allow3rdPartyAppts_Yes");
+            this.UploaderClient.ClickOnElementById("AllowOnlineShowingRequests_Yes");
+        },
+            cancellationToken);
+
+        public Task SetAppointmentSettings(AppointmentType appointmentType, CancellationToken cancellationToken = default) =>
+            Task.Factory.StartNew(
+                () =>
+            {
+                this.UploaderClient.WaitUntilElementExists(By.Id("appointmentTypeSelection"));
+
+                this.UploaderClient.ExecuteScript(
+                    "document.querySelector('#appointmentTypeSelection > div > a').click()");
+                switch (appointmentType)
+                {
+                    case AppointmentType.AppointmentRequired:
+                        this.UploaderClient.ExecuteScript(
+                            "document.querySelector(`a[data-dk-dropdown-value='APPOINTMENT_REQUIRED_ANY']`).click()");
+                        break;
+                    case AppointmentType.GoAndShow:
+                        this.UploaderClient.ExecuteScript(
+                            "document.querySelector(`a[data-dk-dropdown-value='GO_AND_SHOW']`).click()");
+                        break;
+                    case AppointmentType.CourtesyCall:
+                        this.UploaderClient.ExecuteScript(
+                            "document.querySelector(`a[data-dk-dropdown-value='COURTESY_CALL']`).click()");
+                        break;
+                    default:
+                        this.UploaderClient.ExecuteScript(
+                            "document.querySelector('#appointmentTypeSelection > div > a').click()");
+                        break;
+                }
+
+                if (appointmentType == AppointmentType.AppointmentRequired)
+                {
+                    this.UploaderClient.WaitForElementToBeVisible(By.Id("isAgentAccompany_No"), TimeSpan.FromMilliseconds(600));
+                    this.UploaderClient.ClickOnElementById("isAgentAccompany_No");
+                }
+
+                this.UploaderClient.ClickOnElementById("SendFeedback_Yes");
+                this.UploaderClient.ClickOnElementById("IsOccupied_No");
+            },
+                cancellationToken);
+
+        public Task SetAppointmentRestrictions(AppointmentRestrictionsInfo info, CancellationToken cancellationToken = default) =>
+            Task.Factory.StartNew(
+                () =>
+        {
+            var allowSameDayRequest = info.LeadTime ? "Yes" : "No";
+            var allowAppraisals = info.AllowAppraisals ? "Yes" : "No";
+            var allowInspections = info.AllowInspectionsAndWalkThroughs ? "Yes" : "No";
+            this.UploaderClient.ClickOnElementById($"AllowAppraisals_{allowAppraisals}");
+            this.UploaderClient.ClickOnElementById($"AllowInspections_{allowInspections}");
+            this.UploaderClient.ClickOnElementById($"AllowSameDayRequests_{allowSameDayRequest}");
+            this.UploaderClient.SetSelect(By.Id("RequiredLeadTime"), info.RequiredTimeHours);
+            this.UploaderClient.SetSelect(By.Id("SuggestedLeadTime"), info.SuggestedTimeHours);
+        },
+                cancellationToken);
+
+        public Task SetAccessInformation(AccessInformationInfo info, CancellationToken cancellationToken = default) =>
+            Task.Factory.StartNew(
+            () =>
+        {
+            var lockboxNotesId = "LockboxNotes";
+            var lockboxCbsCodeId = "LockboxCbsCode";
+            var lockboxSerialNumberId = "LockboxSerialNumber";
+            this.UploaderClient.SetSelect(By.Id("AccessType"), (int)info.AccessMethod.Value);
+            switch (info.AccessMethod.Value)
+            {
+                case AccessMethod.CodeBox:
+                    this.UploaderClient.WriteTextbox(By.Id(lockboxSerialNumberId), info.Serial);
+                    this.UploaderClient.WriteTextbox(By.Id(lockboxNotesId), info.Location);
+                    break;
+                case AccessMethod.Combination:
+                    this.UploaderClient.WriteTextbox(By.Id(lockboxNotesId), info.Combination);
+                    this.UploaderClient.WriteTextbox(By.Id(lockboxCbsCodeId), info.Location);
+                    break;
+                case AccessMethod.Keypad:
+                    this.UploaderClient.WriteTextbox(By.Id(lockboxNotesId), info.Location);
+                    this.UploaderClient.WriteTextbox(By.Id(lockboxCbsCodeId), info.Code);
+                    break;
+                case AccessMethod.MasterLockBluetooth:
+                    this.UploaderClient.WriteTextbox(By.Id(lockboxSerialNumberId), info.DeviceId);
+                    this.UploaderClient.WriteTextbox(By.Id(lockboxNotesId), info.Location);
+                    this.UploaderClient.WriteTextbox(By.Id(lockboxCbsCodeId), info.SharingCode);
+                    break;
+                case AccessMethod.SentriLock:
+                case AccessMethod.SupraiBox:
+                    this.UploaderClient.WriteTextbox(By.Id(lockboxSerialNumberId), info.Serial);
+                    this.UploaderClient.WriteTextbox(By.Id(lockboxNotesId), info.Location);
+                    this.UploaderClient.WriteTextbox(By.Id(lockboxCbsCodeId), info.CbsCode);
+                    break;
+            }
+
+            var provideAlarm = info.ProvideAlarmDetails ? "Yes" : "No";
+            this.UploaderClient.ClickOnElementById($"ProvideAlarm{provideAlarm}");
+            if (info.ProvideAlarmDetails)
+            {
+                this.UploaderClient.WriteTextbox(By.Id("DisarmCode"), info.AlarmDisarmCode);
+                this.UploaderClient.WriteTextbox(By.Id("ArmCode"), info.AlarmArmCode);
+                this.UploaderClient.WriteTextbox(By.Id("PassCode"), info.AlarmPasscode);
+                this.UploaderClient.WriteTextbox(By.Id("AlarmNotes"), info.AlarmNotes);
+            }
+        },
+            cancellationToken);
+
+        public Task SetAdditionalInstructions(AdditionalInstructionsInfo info, CancellationToken cancellationToken = default) =>
+            Task.Factory.StartNew(
+            () =>
+        {
+            this.UploaderClient.WriteTextbox(By.Id("ShowingInstructionsToApptStaff"), info.NotesForApptStaff);
+            this.UploaderClient.WriteTextbox(By.Id("ShowingInstructionsToShowingAgent"), info.NotesForShowingAgent);
+        },
+            cancellationToken);
+
+        public Task<bool> AddExistentContact(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default) =>
+            Task.Factory.StartNew(
+            () =>
+        {
+            this.UploaderClient.ExecuteScript("document.querySelector('#addListingContact').click()");
+            Task.Delay(1000).Wait();
+            var searchText = string.IsNullOrEmpty(contact.Email?.Trim()) ?
+                $"{contact.FirstName} {contact.LastName}".Trim() : contact.Email;
+            this.UploaderClient.WriteTextbox(By.Id("agentClientsFilter"), searchText);
+            this.UploaderClient.ExecuteScript("document.querySelector('#agentClientSearch').click()");
+
+            this.WaitUntilUnblockUI(By.XPath("//div[@class='blockUI blockMsg blockPage']"));
+
+            this.UploaderClient.WaitForElementToBeVisible(By.Id("agentClientsTable"), TimeSpan.FromSeconds(3));
+            var element = this.UploaderClient.FindElement(
+                By.XPath("//table[@id='agentClientsTable']/tbody/tr[1]"), isElementOptional: false);
+
+            if (element.Text.Contains("No matching records listingFound"))
+            {
+                this.UploaderClient.ExecuteScript(
+                    "document.querySelectorAll('.ui-dialog-buttonset button')[1].click()");
+                return false;
+            }
+
+            element.Click();
+            this.UploaderClient.WaitForElementToBeVisible(By.Id("agentClientContactDetails"), TimeSpan.FromSeconds(3));
+            this.UploaderClient.ClickOnElementById("ACIsOwner_Yes");
+            this.UploaderClient.ClickOnElementById("ACIsOccupant_No");
+            this.UploaderClient.ClickOnElementById("saveContact");
+            return true;
+        },
+            cancellationToken);
+
+        public Task<bool> AddNewContact(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default) =>
+            Task.Factory.StartNew(
+            () =>
+        {
+            var xpath = "//div[@class='ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable']";
+            this.UploaderClient.ExecuteScript("document.querySelector(`#addListingContact`).click()");
+            this.UploaderClient.WaitForElementToBeVisible(By.XPath(xpath), TimeSpan.FromSeconds(4));
+            this.UploaderClient.ExecuteScript("document.querySelectorAll(`.ui-dialog .ui-tabs-nav li > a`)[1].click()");
+
+            this.WaitUntilUnblockUI(By.XPath("//div[@class='blockUI blockMsg blockPage']"));
+
+            this.UploaderClient.WriteTextbox(By.Id("FirstName"), contact.FirstName);
+            this.UploaderClient.WriteTextbox(By.Id("LastName"), contact.LastName);
+            this.UploaderClient.ExecuteScript("document.querySelector(`#IsOwner_Yes`).click()");
+            this.UploaderClient.ExecuteScript("document.querySelector(`#IsOccupant_No`).click()");
+
+            if (!string.IsNullOrEmpty(contact.MobilePhone?.Trim()))
+            {
+                var phone = contact.MobilePhone.PhoneFormat();
+                this.UploaderClient.SetSelect(By.Id("PhoneDescriptions_0_"), "2");
+                this.UploaderClient.WriteTextbox(By.Id("PhoneDescriptions_0_"), phone);
+            }
+
+            if (!string.IsNullOrEmpty(contact.OfficePhone?.Trim()))
+            {
+                var phone = contact.OfficePhone.PhoneFormat();
+                this.UploaderClient.SetSelect(By.Id("PhoneDescriptions_1_"), "3");
+                this.UploaderClient.WriteTextbox(By.Id("Phones_1_"), phone);
+            }
+
+            if (!string.IsNullOrEmpty(contact.Email?.Trim()))
+            {
+                this.UploaderClient.WriteTextbox(By.Id("Email"), contact.Email.Trim());
+            }
+
+            this.UploaderClient.ExecuteScript("document.querySelector(`#saveContact`).click()");
+
+            return true;
+        },
+            cancellationToken);
+
+        public Task EditContact(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default) =>
+            Task.Factory.StartNew(
+            () =>
+        {
+            this.UploaderClient.ExecuteScript(@"document.querySelector(`button[title='Edit Contact']`).click()");
+            this.UploaderClient.WaitForElementToBeVisible(
+                By.XPath("//div[@class='ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable']"),
+                TimeSpan.FromSeconds(3));
+
+            if (string.IsNullOrEmpty(contact.MobilePhone?.Trim()))
+            {
+                this.UploaderClient.SetSelect(By.Name("PhoneDescriptions[0]"), "-1");
+                this.UploaderClient.WriteTextbox(By.Name("Phones[0]"), string.Empty);
+            }
+            else
+            {
+                var phone = long.Parse(contact.MobilePhone.Trim()).ToString("(000) 000-0000");
+                this.UploaderClient.SetSelect(By.Name("PhoneDescriptions[0]"), "2");
+                this.UploaderClient.WriteTextbox(By.Name("Phones[0]"), phone);
+            }
+
+            if (string.IsNullOrEmpty(contact.OfficePhone?.Trim()))
+            {
+                this.UploaderClient.SetSelect(By.Name("PhoneDescriptions[1]"), "-1");
+                this.UploaderClient.WriteTextbox(By.Name("Phones[1]"), string.Empty);
+            }
+            else
+            {
+                var phone = long.Parse(contact.OfficePhone.Trim()).ToString("(000) 000-0000");
+                this.UploaderClient.SetSelect(By.Name("PhoneDescriptions[1]"), "3");
+                this.UploaderClient.WriteTextbox(By.Name("Phones[1]"), phone);
+            }
+
+            if (string.IsNullOrEmpty(contact.Email?.Trim()))
+            {
+                this.UploaderClient.WriteTextbox(By.Id("SABOR--966512Email"), string.Empty);
+            }
+            else
+            {
+                this.UploaderClient.WriteTextbox(By.Id("SABOR--966512Email"), contact.Email.Trim());
+            }
+
+            var saveBtn = this.UploaderClient.FindElementById("contactEditSaveContact");
+
+            if (string.IsNullOrEmpty(saveBtn.GetAttribute("disabled")))
+            {
+                this.UploaderClient.ClickOnElementById("contactEditSaveContact");
+            }
+            else
+            {
+                this.UploaderClient.ClickOnElementById("contactEditCancel");
+            }
+        },
+            cancellationToken);
+
+        public Task SetContactConfirmSection(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default)
+        {
+            return Task.Factory.StartNew(
+            () =>
+        {
+            var confirmSection = this.UploaderClient.FindElement(By.ClassName("confirm-section"), isElementOptional: true);
+            if (IsConfirmSectionHidden(confirmSection))
+            {
+                return;
+            }
+
+            if (ShouldSendConfirmation(contact))
+            {
+                this.UploaderClient.ExecuteScript(
+                        $"document.querySelector('#ConfirmMethod_SendConfirmation_{position}').click()");
+            }
+
+            this.HandleConfirmationMethods(contact, position);
+            this.HandleFYIMethods(contact, position);
+        },
+            cancellationToken);
+        }
+
+        public Task SetContactNotificationSection(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default) =>
+            Task.Factory.StartNew(
+            () =>
+        {
+            this.UploaderClient.ExecuteScript(
+                    $"['#notifySms_{position}', '#notifyEmail_{position}', '#notifyPhone_{position}']"
+                    + ".map(x => document.querySelector(x).checked = false);");
+
+            if (contact.NotifyAppointmentsChangesByText.Value)
+            {
+                this.UploaderClient.ExecuteScript(
+                    $"document.querySelector('#notifySms_{position}').click()");
+            }
+
+            if (contact.NotifyAppointmentChangesByEmail.Value)
+            {
+                this.UploaderClient.ExecuteScript(
+                    $"document.querySelector('#notifyEmail_{position}').click()");
+            }
+
+            if (contact.NotifyAppointmentChangesByOfficePhone.Value || contact.NotifyAppointmentChangesByMobilePhone.Value)
+            {
+                this.UploaderClient.ExecuteScript(
+                    $"document.querySelector('#notifyPhone_{position}').click()");
+                var callType = contact.AppointmentChangesNotificationsOptionsOfficePhone ?? contact.AppointmentChangesNotificationsOptionsMobilePhone;
+                this.UploaderClient.SetSelect(By.Id($"CallToCancelConfirm{position}"), callType.Value.ToStringFromEnumMember());
+            }
+        },
+            cancellationToken);
+
+        public async Task SetContact(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default)
+        {
+            var element = this.UploaderClient.FindElement(By.Id($"contact{position}_row"), isElementOptional: true);
+
+            if (element is null)
+            {
+                var added = await this.AddExistentContact(contact, position, cancellationToken)
+                    || await this.AddNewContact(contact, position, cancellationToken);
+
+                element = added ? this.UploaderClient.FindElement(By.Id($"contact{position}_row"), isElementOptional: true) : null;
+            }
+
+            if (element is not null)
+            {
+                await this.EditContact(contact, position, cancellationToken);
+                await this.SetContactConfirmSection(contact, position, cancellationToken);
+                await this.SetContactNotificationSection(contact, position, cancellationToken);
+            }
+        }
+
+        public async Task SetContacts(IEnumerable<ContactDetailInfo> contacts, CancellationToken cancellationToken)
+        {
+            for (int index = 0; index < (contacts?.Count() ?? 0); index++)
+            {
+                await this.SetContact(contacts.ElementAt(index), index + 1, cancellationToken);
+            }
+        }
+
+        public async Task<UploaderResponse> Upload(ResidentialListingRequest request, bool logIn = true, CancellationToken cancellationToken = default)
+        {
+            UploaderResponse response = new UploaderResponse();
+            response.UploadInformation = null;
+
+            if (request?.ShowingTime is null || request.MLSNum is null
+                || (logIn && (await this.Login(request.CompanyId, cancellationToken)) != LoginResult.Logged)
+                || !await this.FindListing(request.MLSNum, cancellationToken))
+            {
+                this.UploaderClient.CloseDriver();
+                response.UploadResult = UploadResult.Failure;
+                return response;
+            }
+
+            response.UploadResult = UploadResult.Success;
+            return response;
+        }
+
+        public Task<bool> FindListing(string mlsNumber, CancellationToken cancellationToken = default) =>
+            Task.Factory.StartNew(
+            () =>
+        {
+            this.UploaderClient.ClickOnElement(By.XPath("//a/span[text()='Input']"));
+            this.UploaderClient.WaitForElementToBeVisible(By.Id("m_dlInputList"), TimeSpan.FromSeconds(3));
+            this.UploaderClient.WriteTextbox(By.Id("m_lvInputUISections_ctrl0_tbQuickEditCommonID_m_txbInternalTextBox"), mlsNumber);
+            this.UploaderClient.ClickOnElementById("m_lvInputUISections_ctrl0_lbQuickEdit");
+            Task.Delay(3000).Wait();
+            var listingFound = this.UploaderClient.FindElement(By.XPath("//span[text()='Modify Property']"), isElementOptional: true) != null;
+            if (listingFound)
+            {
+                this.UploaderClient.ClickOnElementById("m_oThirdPartyLinks_m_lvThirdPartLinks_ctrl3_m_lbtnThirdPartyLink");
+            }
+
+            return listingFound;
+        },
+            cancellationToken);
+
+        private static bool IsConfirmSectionHidden(IWebElement confirmSection)
+        {
+            return new string[] { null, "none" }.Contains(confirmSection?.GetCssValue("display"));
+        }
+
+        private static bool ShouldSendConfirmation(ContactDetailInfo contact)
+        {
+            return contact.ConfirmAppointmentsByEmail.Value
+                || contact.ConfirmAppointmentsByMobilePhone.Value
+                || contact.ConfirmAppointmentsByOfficePhone.Value
+                || contact.ConfirmAppointmentsByText.Value;
+        }
+
+        private static bool ShouldSendFYI(ContactDetailInfo contact)
+        {
+            return contact.SendOnFYIByEmail.Value || contact.SendOnFYIByText.Value;
+        }
+
+        private void HandleConfirmationMethods(ContactDetailInfo contact, int position)
+        {
+            if (contact.ConfirmAppointmentsByText.Value)
+            {
+                this.UploaderClient.ExecuteScript($"document.querySelector('#confirmSms_{position}').click()");
+            }
+
+            if (contact.ConfirmAppointmentsByEmail.Value)
+            {
+                this.UploaderClient.ExecuteScript($"document.querySelector('#confirmEmail_{position}').click()");
+            }
+
+            if (contact.ConfirmAppointmentsByMobilePhone.Value || contact.ConfirmAppointmentsByOfficePhone.Value)
+            {
+                this.HandlePhoneConfirmation(contact, position);
+            }
+        }
+
+        private void HandlePhoneConfirmation(ContactDetailInfo contact, int position)
+        {
+            this.UploaderClient.ExecuteScript($"document.querySelector('#confirmPhone_{position}').click()");
+            var caller = contact.ConfirmAppointmentCallerByOfficePhone ?? contact.ConfirmAppointmentCallerByMobilePhone;
+            this.UploaderClient.SetSelect(By.Id($"phoneRequestChoice_{position}"), caller.Equals(ConfirmAppointmentCaller.AutoCall));
+        }
+
+        private void HandleFYIMethods(ContactDetailInfo contact, int position)
+        {
+            if (!ShouldSendFYI(contact))
+            {
+                return;
+            }
+
+            this.UploaderClient.ExecuteScript($"document.querySelector('#ConfirmMethod_FYI_{position}').click()");
+
+            if (contact.SendOnFYIByText.Value)
+            {
+                this.UploaderClient.ExecuteScript($"document.querySelector('#fyiSms_{position}').click()");
+            }
+
+            if (contact.SendOnFYIByEmail.Value)
+            {
+                this.UploaderClient.ExecuteScript($"document.querySelector('#fyiEmail_{position}').click()");
+            }
+        }
+
+        private void WaitUntilUnblockUI(By by)
+        {
+            try
+            {
+                this.UploaderClient.WaitUntilElementDisappears(by);
+                Task.Delay(1000);
+            }
+            catch
+            {
+                // Nothing to do
+            }
+        }
+    }
+}

@@ -1588,7 +1588,8 @@ namespace Husa.Uploader.Desktop.ViewModels
         private async Task StartShowingTimeUpload()
         {
             this.ShowCancelButton = true;
-            var uploader = this.uploadFactory.ShowingTimeUploaderFactory();
+            var market = Enum.Parse<MarketCode>(this.selectedListingRequest.Market);
+            var uploader = this.uploadFactory.ShowingTimeUploaderFactory(market);
             this.cancellationTokenSource = new CancellationTokenSource();
             await this.SetFullRequestInformation();
             await uploader.Upload(this.selectedListingRequest?.FullListing);

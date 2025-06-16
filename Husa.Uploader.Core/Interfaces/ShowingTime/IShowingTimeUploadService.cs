@@ -1,4 +1,4 @@
-namespace Husa.Uploader.Core.Interfaces
+namespace Husa.Uploader.Core.Interfaces.ShowingTime
 {
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Extensions.Api.Contracts.Models.ShowingTime;

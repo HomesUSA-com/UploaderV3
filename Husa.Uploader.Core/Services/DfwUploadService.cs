@@ -50,6 +50,11 @@ namespace Husa.Uploader.Core.Services
             }
 
         public MarketCode CurrentMarket => MarketCode.DFW;
+
+        public IUploaderClient UploaderClient => this.uploaderClient;
+
+        public IServiceSubscriptionClient ServiceSubscriptionClient => this.serviceSubscriptionClient;
+
         public string MultiFamilyPropType => ListPropertyType.ResidencialIncome.ToStringFromEnumMember();
 
         public bool IsFlashRequired => false;
