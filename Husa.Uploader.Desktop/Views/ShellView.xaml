@@ -534,6 +534,7 @@
                                             </GroupBox.Style>
                                             <StackPanel>
                                                 <Button Name="StartShowingTimeUpload" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartShowingTimeUploadCommand}">Upload</Button>
+                                                <Button Name="StartShowingTimeDeleteDuplicateClients" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartShowingTimeDeleteDuplicateClientsCommand}">Delete Duplicate Clients</Button>
                                             </StackPanel>
                                         </GroupBox>
                                     </StackPanel>

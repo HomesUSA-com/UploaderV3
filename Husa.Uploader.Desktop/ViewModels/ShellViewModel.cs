@@ -105,6 +105,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private ICommand startLotPriceUpdateCommand;
 
         private ICommand startShowingTimeUploadCommand;
+        private ICommand startShowingTimeDeleteDuplicateClientsCommand;
         private ICommand startRefreshListingsCommand;
 
         public ShellViewModel(
@@ -657,6 +658,15 @@ namespace Husa.Uploader.Desktop.ViewModels
             {
                 this.startShowingTimeUploadCommand ??= new RelayAsyncCommand(param => this.StartShowingTimeUpload(), param => true);
                 return this.startShowingTimeUploadCommand;
+            }
+        }
+
+        public ICommand StartShowingTimeDeleteDuplicateClientsCommand
+        {
+            get
+            {
+                this.startShowingTimeDeleteDuplicateClientsCommand ??= new RelayAsyncCommand(param => this.StartShowingTimeDeleteDuplicateClients(), param => true);
+                return this.startShowingTimeDeleteDuplicateClientsCommand;
             }
         }
 
@@ -1587,12 +1597,37 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private async Task StartShowingTimeUpload()
         {
+            if (this.selectedListingRequest is null)
+            {
+                return;
+            }
+
             this.ShowCancelButton = true;
             var market = Enum.Parse<MarketCode>(this.selectedListingRequest.Market);
             var uploader = this.uploadFactory.ShowingTimeUploaderFactory(market);
-            this.cancellationTokenSource = new CancellationTokenSource();
+            this.cancellationTokenSource ??= new CancellationTokenSource();
             await this.SetFullRequestInformation();
-            await uploader.Upload(this.selectedListingRequest?.FullListing);
+            this.selectedListingRequest.FullListing.MLSNum = "20802062";
+            await uploader.Upload(
+                this.selectedListingRequest.FullListing, this.cancellationTokenSource.Token);
+        }
+
+        private async Task StartShowingTimeDeleteDuplicateClients()
+        {
+            if (this.selectedListingRequest is null)
+            {
+                return;
+            }
+
+            this.ShowCancelButton = true;
+            var market = Enum.Parse<MarketCode>(this.selectedListingRequest.Market);
+            var uploader = this.uploadFactory.ShowingTimeUploaderFactory(market);
+            this.cancellationTokenSource ??= new CancellationTokenSource();
+            await this.SetFullRequestInformation();
+            var companyId = this.selectedListingRequest.FullListing.CompanyId;
+            var mlsNumber = this.selectedListingRequest.FullListing.MLSNum ?? "20851507";
+            var cancellationToken = this.cancellationTokenSource.Token;
+            await uploader.DeleteDuplicateClients(companyId, mlsNumber, cancellationToken);
         }
 
         private async Task StartStatusUpdate()

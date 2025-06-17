@@ -4,15 +4,13 @@ namespace Husa.Uploader.Core.Interfaces.ShowingTime
     using Husa.Quicklister.Extensions.Api.Contracts.Models.ShowingTime;
     using Husa.Quicklister.Extensions.Domain.Enums.ShowingTime;
     using Husa.Uploader.Core.Models;
-    using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Data.Entities;
 
     public interface IShowingTimeUploadService
     {
         MarketCode CurrentMarket { get; }
-        Task<LoginResult> Login(Guid companyId, CancellationToken cancellationToken = default);
-        Task<bool> FindListing(string mlsNumber, CancellationToken cancellationToken = default);
-        Task NavigateToListing(string listingId, CancellationToken cancellationToken = default);
+        Task<bool> FindListingOnMls(string mlsNumber, CancellationToken cancellationToken = default);
+        Task<bool> GetInShowingTimeSite(Guid companyId, string mlsNumber, CancellationToken cancellationToken = default);
         Task SetAppointmentCenter(CancellationToken cancellationToken);
         Task SetAppointmentSettings(AppointmentType appointmentType, CancellationToken cancellationToken = default);
         Task SetAppointmentRestrictions(AppointmentRestrictionsInfo info, CancellationToken cancellationToken = default);
@@ -25,7 +23,8 @@ namespace Husa.Uploader.Core.Interfaces.ShowingTime
         Task SetContactNotificationSection(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default);
         Task SetContact(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default);
         Task SetContacts(IEnumerable<ContactDetailInfo> contacts, CancellationToken cancellationToken);
-        Task<UploaderResponse> Upload(ResidentialListingRequest request, bool logIn = true, CancellationToken cancellationToken = default);
+        Task<UploaderResponse> Upload(ResidentialListingRequest request, CancellationToken cancellationToken = default);
+        Task<int> DeleteDuplicateClients(Guid companyId, string mlsNumber, CancellationToken cancellationToken = default);
         void CancelOperation();
     }
 }

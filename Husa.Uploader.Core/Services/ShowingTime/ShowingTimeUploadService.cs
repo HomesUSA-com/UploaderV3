@@ -3,7 +3,6 @@ namespace Husa.Uploader.Core.Services
     using System;
     using System.Threading;
     using System.Threading.Tasks;
-    using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Extensions.Api.Contracts.Models.ShowingTime;
@@ -12,6 +11,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.ShowingTime;
     using Husa.Uploader.Core.Models;
+    using Husa.Uploader.Core.Services.ShowingTime;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities;
@@ -22,18 +22,20 @@ namespace Husa.Uploader.Core.Services
     {
         private readonly IMarketUploadService marketUploadService;
         private readonly ILogger logger;
+        private readonly string agentSelectorValue;
 
         public ShowingTimeUploadService(
             IMarketUploadService marketUploadService,
+            string agentSelectorValue,
             ILogger logger)
         {
             this.marketUploadService = marketUploadService ?? throw new ArgumentNullException(nameof(marketUploadService));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.agentSelectorValue = agentSelectorValue;
         }
 
         public MarketCode CurrentMarket => this.marketUploadService.CurrentMarket;
-        protected IUploaderClient UploaderClient => this.marketUploadService?.UploaderClient;
-        protected IServiceSubscriptionClient ServiceSubscriptionClient => this.marketUploadService?.ServiceSubscriptionClient;
+        private IUploaderClient UploaderClient => this.marketUploadService.UploaderClient;
 
         public void CancelOperation()
         {
@@ -41,29 +43,158 @@ namespace Husa.Uploader.Core.Services
             this.UploaderClient.CloseDriver();
         }
 
-        public async Task<LoginResult> Login(Guid companyId, CancellationToken cancellationToken = default)
-        {
-            this.logger.LogDebug("Starting login");
-            var result = await this.marketUploadService.Login(companyId);
-            if (result != LoginResult.Logged)
-            {
-                this.logger.LogError("Login failed");
-                return result;
-            }
-
-            this.logger.LogDebug("login");
-
-            return LoginResult.Logged;
-        }
-
-        public Task NavigateToListing(string listingId, CancellationToken cancellationToken = default) =>
+        public Task<bool> FindListingOnMls(string mlsNumber, CancellationToken cancellationToken = default) =>
             Task.Factory.StartNew(
             () =>
-        {
-            this.UploaderClient.NavigateToUrl($"Listings/Management/{listingId}");
-            Thread.Sleep(500);
-        },
+            {
+                this.UploaderClient.ClickOnElement(By.XPath("//a/span[text()='Input']"));
+                this.UploaderClient.WaitForElementToBeVisible(By.Id("m_dlInputList"), TimeSpan.FromSeconds(3));
+                this.UploaderClient.WriteTextbox(By.Id("m_lvInputUISections_ctrl0_tbQuickEditCommonID_m_txbInternalTextBox"), mlsNumber);
+                this.UploaderClient.ClickOnElementById("m_lvInputUISections_ctrl0_lbQuickEdit");
+                Task.Delay(3000).Wait(cancellationToken);
+                return this.UploaderClient.FindElement(By.XPath("//span[text()='Modify Property']"), isElementOptional: true) != null;
+            },
             cancellationToken);
+
+        public async Task<bool> GetInShowingTimeSite(Guid companyId, string mlsNumber, CancellationToken cancellationToken = default)
+        {
+            var success = !string.IsNullOrEmpty(mlsNumber);
+            this.logger.LogDebug("Mls number provided: {MlsNumber}", mlsNumber);
+            success = success && (await this.marketUploadService.Login(companyId))
+                .Equals(LoginResult.Logged);
+            this.logger.LogDebug("Mls Login success: {LoginSuccess}", success);
+            this.UploaderClient.ClickOnElement(
+                By.Id("ctl02_ctl10_HyperLink2"), shouldWait: true, waitTime: 1000, isElementOptional: true);
+            success = success && await this.FindListingOnMls(mlsNumber, cancellationToken);
+            this.logger.LogDebug("Mls Listing located: {FindListingSuccess}", success);
+            if (success)
+            {
+                this.logger.LogDebug("Accessing...");
+                this.UploaderClient.ClickOnElementById("m_oThirdPartyLinks_m_lvThirdPartLinks_ctrl3_m_lbtnThirdPartyLink");
+            }
+
+            return success;
+        }
+
+        public async Task<int> DeleteDuplicateClients(Guid companyId, string mlsNumber, CancellationToken cancellationToken = default)
+        {
+            if (!await this.GetInShowingTimeSite(companyId, mlsNumber, cancellationToken))
+            {
+                return 0;
+            }
+
+            this.UploaderClient.SwitchTo().Window(this.UploaderClient.WindowHandles[1]);
+            this.UploaderClient.ClickOnElement(
+                By.XPath("//button/span[text()='Remind Me Later']"),
+                shouldWait: true,
+                waitTime: 1000,
+                isElementOptional: true);
+            this.UploaderClient.ClickOnElement(By.XPath("//a[text()='Contacts']"));
+            await Task.Delay(2000, cancellationToken);
+            this.UploaderClient.SetSelect(By.ClassName("selectList"), this.agentSelectorValue);
+            this.UploaderClient.ClickOnElement(By.XPath("//a[text()='Sellers']"));
+            var pages = int.Parse(
+                this.UploaderClient.FindElement(
+                    By.XPath("//div[@id='clientSellersTable_paginate']/span/a[last()]"),
+                    shouldWait: true)
+                ?.Text ?? "0");
+
+            var clients = Enumerable.Range(0, pages)
+                .Select(x => Array.Empty<ShowingTimeClientTableItem>())
+                .Aggregate((acc, x) =>
+                {
+                    var table = this.UploaderClient.FindElementById("clientSellersTable");
+                    var rows = table.FindElements(By.TagName("tr"));
+                    var items = rows.Skip(1).Select(x =>
+                    {
+                        var columns = x.FindElements(By.TagName("td"));
+                        return new ShowingTimeClientTableItem
+                        {
+                            FirstName = columns[0].Text,
+                            LastName = columns[1].Text,
+                            Phone = columns[3].Text,
+                        };
+                    }).ToArray();
+                    this.UploaderClient.ClickOnElement(
+                        By.Id("clientSellersTable_next"),
+                        shouldWait: true,
+                        waitTime: 3000,
+                        isElementOptional: true);
+
+                    return
+                    [
+                        .. acc,
+                        ..items
+                    ];
+                });
+
+            var duplicates = clients
+                .OrderBy(c => c.FirstName)
+                .ThenBy(c => c.LastName)
+                .ThenBy(c => c.Phone)
+                .GroupBy(c => new { c.FirstName, c.LastName, c.Phone })
+                .Where(c => c.Count() > 1)
+                .Select(c => new ShowingTimeClientTableItem
+                {
+                    FirstName = c.Key.FirstName,
+                    LastName = c.Key.LastName,
+                    Phone = c.Key.Phone,
+                });
+
+            var forSearch = duplicates
+                .GroupBy(x => $"{x.FirstName} {x.LastName}")
+                .ToDictionary(a => a.Key, b => b.Select(x => x.Phone).ToList());
+
+            foreach (var (searchText, phones) in forSearch)
+            {
+                var rowIndex = 0;
+                var phonesToKeep = new List<string>();
+                this.UploaderClient.WriteTextbox(By.Id("tableFilter"), searchText);
+                await Task.Delay(1000, cancellationToken);
+                var table = this.UploaderClient.FindElementById("clientSellersTable");
+                var rows = table.FindElements(By.TagName("tr")).Skip(1);
+                var rowsTotal = rows.Count();
+
+                while (rowIndex < rowsTotal)
+                {
+                    foreach (var row in rows)
+                    {
+                        var columns = row.FindElements(By.TagName("td"));
+                        var phone = columns[3].Text;
+                        var listings = columns[4].Text.Trim();
+                        if (!phonesToKeep.Contains(phone))
+                        {
+                            phonesToKeep.Add(phone);
+                        }
+                        else if (phones.Contains(phone) && string.IsNullOrEmpty(listings))
+                        {
+                            columns[6].FindElement(By.TagName("a")).Click();
+                            await Task.Delay(3000, cancellationToken);
+                            this.UploaderClient.ClickOnElement(
+                                By.Id("deleteButton"),
+                                shouldWait: true,
+                                waitTime: 3000,
+                                isElementOptional: false);
+                            await Task.Delay(3000, cancellationToken);
+                            var confirmButton = this.UploaderClient.FindElement(
+                                By.XPath("//button/span[text()='Yes']"),
+                                shouldWait: true,
+                                isElementOptional: false);
+                            confirmButton.Click();
+                            await Task.Delay(3000, cancellationToken);
+                            table = this.UploaderClient.FindElementById("clientSellersTable");
+                            rows = table.FindElements(By.TagName("tr")).Skip(1 + rowIndex);
+                            rowsTotal = rows.Count();
+                            break;
+                        }
+
+                        rowIndex += 1;
+                    }
+                }
+            }
+
+            return duplicates.Count();
+        }
 
         public Task SetAppointmentCenter(CancellationToken cancellationToken) =>
             Task.Factory.StartNew(
@@ -189,13 +320,13 @@ namespace Husa.Uploader.Core.Services
             () =>
         {
             this.UploaderClient.ExecuteScript("document.querySelector('#addListingContact').click()");
-            Task.Delay(1000).Wait();
+            Task.Delay(1000, cancellationToken).Wait();
             var searchText = string.IsNullOrEmpty(contact.Email?.Trim()) ?
                 $"{contact.FirstName} {contact.LastName}".Trim() : contact.Email;
             this.UploaderClient.WriteTextbox(By.Id("agentClientsFilter"), searchText);
             this.UploaderClient.ExecuteScript("document.querySelector('#agentClientSearch').click()");
 
-            this.WaitUntilUnblockUI(By.XPath("//div[@class='blockUI blockMsg blockPage']"));
+            this.WaitUntilUnblockUI(By.XPath("//div[@class='blockUI blockMsg blockPage']"), cancellationToken);
 
             this.UploaderClient.WaitForElementToBeVisible(By.Id("agentClientsTable"), TimeSpan.FromSeconds(3));
             var element = this.UploaderClient.FindElement(
@@ -226,7 +357,7 @@ namespace Husa.Uploader.Core.Services
             this.UploaderClient.WaitForElementToBeVisible(By.XPath(xpath), TimeSpan.FromSeconds(4));
             this.UploaderClient.ExecuteScript("document.querySelectorAll(`.ui-dialog .ui-tabs-nav li > a`)[1].click()");
 
-            this.WaitUntilUnblockUI(By.XPath("//div[@class='blockUI blockMsg blockPage']"));
+            this.WaitUntilUnblockUI(By.XPath("//div[@class='blockUI blockMsg blockPage']"), cancellationToken);
 
             this.UploaderClient.WriteTextbox(By.Id("FirstName"), contact.FirstName);
             this.UploaderClient.WriteTextbox(By.Id("LastName"), contact.LastName);
@@ -342,7 +473,7 @@ namespace Husa.Uploader.Core.Services
         {
             this.UploaderClient.ExecuteScript(
                     $"['#notifySms_{position}', '#notifyEmail_{position}', '#notifyPhone_{position}']"
-                    + ".map(x => document.querySelector(x).checked = false);");
+                    + ".map(c => document.querySelector(c).checked = false);");
 
             if (contact.NotifyAppointmentsChangesByText.Value)
             {
@@ -394,14 +525,14 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public async Task<UploaderResponse> Upload(ResidentialListingRequest request, bool logIn = true, CancellationToken cancellationToken = default)
+        public async Task<UploaderResponse> Upload(ResidentialListingRequest request, CancellationToken cancellationToken = default)
         {
             UploaderResponse response = new UploaderResponse();
             response.UploadInformation = null;
 
-            if (request?.ShowingTime is null || request.MLSNum is null
-                || (logIn && (await this.Login(request.CompanyId, cancellationToken)) != LoginResult.Logged)
-                || !await this.FindListing(request.MLSNum, cancellationToken))
+            if (request?.ShowingTime is null
+                || !await this.GetInShowingTimeSite(
+                    request.CompanyId, request.MLSNum, cancellationToken))
             {
                 this.UploaderClient.CloseDriver();
                 response.UploadResult = UploadResult.Failure;
@@ -420,7 +551,7 @@ namespace Husa.Uploader.Core.Services
             this.UploaderClient.WaitForElementToBeVisible(By.Id("m_dlInputList"), TimeSpan.FromSeconds(3));
             this.UploaderClient.WriteTextbox(By.Id("m_lvInputUISections_ctrl0_tbQuickEditCommonID_m_txbInternalTextBox"), mlsNumber);
             this.UploaderClient.ClickOnElementById("m_lvInputUISections_ctrl0_lbQuickEdit");
-            Task.Delay(3000).Wait();
+            Task.Delay(3000, cancellationToken).Wait();
             var listingFound = this.UploaderClient.FindElement(By.XPath("//span[text()='Modify Property']"), isElementOptional: true) != null;
             if (listingFound)
             {
@@ -494,12 +625,12 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        private void WaitUntilUnblockUI(By by)
+        private void WaitUntilUnblockUI(By by, CancellationToken cancellationToken)
         {
             try
             {
-                this.UploaderClient.WaitUntilElementDisappears(by);
-                Task.Delay(1000);
+                this.UploaderClient.WaitUntilElementDisappears(by, cancellationToken);
+                Task.Delay(1000, cancellationToken).Wait(cancellationToken);
             }
             catch
             {

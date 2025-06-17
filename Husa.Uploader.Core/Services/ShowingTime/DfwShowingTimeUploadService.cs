@@ -8,7 +8,7 @@ namespace Husa.Uploader.Core.Services.ShowingTime
         public DfwShowingTimeUploadService(
             IDfwUploadService marketUploadService,
             ILogger<DfwShowingTimeUploadService> logger)
-            : base(marketUploadService, logger)
+            : base(marketUploadService, "SABOR:966512", logger)
         {
         }
     }

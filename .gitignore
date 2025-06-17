@@ -368,3 +368,6 @@ FodyWeavers.xsd
 **/*.user
 **/Husa.Uploader.Desktop/ChromeForTesting/*
 /.idea/
+
+# Custom ignored files
+Husa.Uploader.Desktop/appsettings.Development.json
