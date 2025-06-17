@@ -127,8 +127,22 @@ namespace Husa.Uploader.Core.Services
         public bool WaitUntilElementIsDisplayed(By findBy, TimeSpan waitTime, CancellationToken token = default)
         {
             this.logger.LogDebug("Waiting for the element '{by}' to be displayed", findBy.ToString());
+
             var customWait = new WebDriverWait(this.driver, waitTime);
-            return customWait.Until(driver => driver.FindElement(findBy).Displayed, token);
+
+            try
+            {
+                return customWait.Until(driver =>
+                {
+                    var element = driver.FindElements(findBy).FirstOrDefault();
+                    return element != null && element.Displayed;
+                });
+            }
+            catch (WebDriverTimeoutException ex)
+            {
+                this.logger.LogWarning(ex, "Timeout while waiting for element '{by}' to be displayed", findBy.ToString());
+                return false;
+            }
         }
 
         public bool WaitUntilElementIsDisplayed(Func<IWebDriver, bool> waitCondition, CancellationToken token = default)

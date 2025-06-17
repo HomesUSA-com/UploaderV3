@@ -47,11 +47,11 @@ namespace Husa.Uploader.Core.Services
 
         public MarketCode CurrentMarket => MarketCode.SanAntonio;
 
-        public IUploaderClient UploaderClient => this.uploaderClient;
-
-        public IServiceSubscriptionClient ServiceSubscriptionClient => this.serviceSubscriptionClient;
-
         public bool IsFlashRequired => false;
+
+        public IUploaderClient UploaderClient => throw new NotImplementedException();
+
+        public IServiceSubscriptionClient ServiceSubscriptionClient => throw new NotImplementedException();
 
         public bool CanUpload(ResidentialListingRequest listing) => listing.MarketCode == this.CurrentMarket;
 
@@ -84,24 +84,18 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.NavigateToUrl(marketInfo.LogoutUrl);
             Thread.Sleep(1000);
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
-            Thread.Sleep(1000);
 
             var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("member_login_id"));
-            this.uploaderClient.WriteTextbox(By.XPath("//input[@type='text' and @aria-label='Username' and @name='member_login_id']"), credentials[LoginCredentials.Username]);
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//div[@class='v-btn__content' and text()=' Log In ']"), TimeSpan.FromSeconds(5000));
+
+            this.uploaderClient.WriteTextbox(By.Name("member_login_id"), credentials[LoginCredentials.Username]);
             this.uploaderClient.WriteTextbox(By.XPath("//input[@type='password' and @aria-label='Password']"), credentials[LoginCredentials.Password]);
-            this.uploaderClient.FindElement(By.XPath("//div[@class='v-btn__content' and text()=' Log In ']")).Click();
             Thread.Sleep(2000);
+            this.uploaderClient.FindElement(By.XPath("//div[@class='v-btn__content' and text()=' Log In ']")).Click();
 
-            if (this.uploaderClient.IsElementPresent(By.Name("remindLater"), isVisible: true))
-            {
-                this.uploaderClient.ClickOnElementByName(elementName: "remindLater");
-            }
-
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("newlistingLink"));
-            this.uploaderClient.NavigateToUrl("http://sabor.mysolidearth.com/resources/panels/8");
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("master-navigation-bar"));
             this.uploaderClient.ExecuteScript("let head = document.getElementsByTagName(\"head\")[0];let script = document.createElement(\"script\");script.setAttribute(\"src\", \"https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js\");document.body.appendChild(script);");
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//a[contains(@class, 'resource-card') and contains(@title, 'connectMLS')]"), TimeSpan.FromSeconds(5000));
 
             switch (company.Name)
             {
@@ -187,6 +181,7 @@ namespace Husa.Uploader.Core.Services
 
                     if (listing.IsNewListing)
                     {
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("newlistingLink"), TimeSpan.FromSeconds(5000));
                         this.uploaderClient.ClickOnElementById("newlistingLink");
                         this.NewProperty(listing);
                     }
@@ -650,6 +645,11 @@ namespace Husa.Uploader.Core.Services
             throw new NotImplementedException();
         }
 
+        public Task<UploaderResponse> TaxIdUpdate(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<UploaderResponse> EditLot(LotListingRequest listing, CancellationToken cancellationToken, bool logIn)
         {
             throw new NotImplementedException();
@@ -673,11 +673,6 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WriteTextbox(By.Name("LSTDATE"), now); // List Date
                 this.uploaderClient.WriteTextbox(By.Name("EXPDATE"), listing.ExpiredDate.Value.Date.ToString("MM/dd/yyyy")); // Expiration Date
             }
-        }
-
-        public Task<UploaderResponse> TaxIdUpdate(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
         }
 
         private void NewProperty(ResidentialListingRequest listing)
@@ -751,6 +746,7 @@ namespace Husa.Uploader.Core.Services
         {
             const string tabName = "General";
             this.uploaderClient.ScrollDown(500);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("listTxnsLink"), TimeSpan.FromSeconds(5000));
             this.uploaderClient.FindElement(By.Id("listTxnsLink")).Click();
             this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("mylistcontainer"));
 
@@ -1778,7 +1774,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ExecuteScript(script: "jQuery('.button.Save').click();");
                 Thread.Sleep(2000);
 
-                var window = this.uploaderClient.WindowHandles.FirstOrDefault();
+                var window = this.uploaderClient.WindowHandles.LastOrDefault();
                 this.uploaderClient.SwitchTo().Window(windowName: window);
                 iterationCount++;
             }
