@@ -1607,7 +1607,6 @@ namespace Husa.Uploader.Desktop.ViewModels
             var uploader = this.uploadFactory.ShowingTimeUploaderFactory(market);
             this.cancellationTokenSource ??= new CancellationTokenSource();
             await this.SetFullRequestInformation();
-            this.selectedListingRequest.FullListing.MLSNum = "20802062";
             await uploader.Upload(
                 this.selectedListingRequest.FullListing, this.cancellationTokenSource.Token);
         }
@@ -1625,7 +1624,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             this.cancellationTokenSource ??= new CancellationTokenSource();
             await this.SetFullRequestInformation();
             var companyId = this.selectedListingRequest.FullListing.CompanyId;
-            var mlsNumber = this.selectedListingRequest.FullListing.MLSNum ?? "20851507";
+            var mlsNumber = this.selectedListingRequest.FullListing.MLSNum;
             var cancellationToken = this.cancellationTokenSource.Token;
             await uploader.DeleteDuplicateClients(companyId, mlsNumber, cancellationToken);
         }

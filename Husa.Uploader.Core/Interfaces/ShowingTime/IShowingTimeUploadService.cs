@@ -16,6 +16,7 @@ namespace Husa.Uploader.Core.Interfaces.ShowingTime
         Task SetAppointmentRestrictions(AppointmentRestrictionsInfo info, CancellationToken cancellationToken = default);
         Task SetAccessInformation(AccessInformationInfo info, CancellationToken cancellationToken = default);
         Task SetAdditionalInstructions(AdditionalInstructionsInfo info, CancellationToken cancellationToken = default);
+        Task SetDrivingDirections(ResidentialListingRequest request, CancellationToken cancellationToken = default);
         Task<bool> AddExistentContact(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default);
         Task<bool> AddNewContact(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default);
         Task EditContact(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default);

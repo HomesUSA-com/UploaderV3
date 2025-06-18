@@ -18,7 +18,6 @@ namespace Husa.Uploader.Core.Tests
         private readonly Mock<IMarketUploadService> mockMarketUploadService;
         private readonly Mock<IUploaderClient> mockUploaderClient;
         private readonly Mock<ILogger> mockLogger;
-        private readonly ShowingTimeUploadService sut;
         private readonly string agentSelectorValue = "test-agent";
 
         public ShowingTimeUploadServiceTests()
@@ -29,7 +28,7 @@ namespace Husa.Uploader.Core.Tests
 
             this.mockMarketUploadService.Setup(x => x.UploaderClient).Returns(this.mockUploaderClient.Object);
 
-            this.sut = new ShowingTimeUploadService(
+            this.Sut = new ShowingTimeUploadService(
                 this.mockMarketUploadService.Object,
                 this.agentSelectorValue,
                 this.mockLogger.Object);
@@ -98,7 +97,7 @@ namespace Husa.Uploader.Core.Tests
                 .Verifiable();
 
             // Act
-            var result = await this.sut.GetInShowingTimeSite(companyId, mlsNumber, cancellationToken);
+            var result = await this.Sut.GetInShowingTimeSite(companyId, mlsNumber, cancellationToken);
 
             // Assert
             Assert.True(result);
@@ -123,7 +122,7 @@ namespace Husa.Uploader.Core.Tests
             var cancellationToken = CancellationToken.None;
 
             // Act
-            var result = await this.sut.GetInShowingTimeSite(companyId, mlsNumber, cancellationToken);
+            var result = await this.Sut.GetInShowingTimeSite(companyId, mlsNumber, cancellationToken);
 
             // Assert
             Assert.False(result);
@@ -139,7 +138,7 @@ namespace Husa.Uploader.Core.Tests
             var cancellationToken = CancellationToken.None;
 
             // Act
-            var result = await this.sut.GetInShowingTimeSite(companyId, mlsNumber, cancellationToken);
+            var result = await this.Sut.GetInShowingTimeSite(companyId, mlsNumber, cancellationToken);
 
             // Assert
             Assert.False(result);
@@ -159,7 +158,7 @@ namespace Husa.Uploader.Core.Tests
                 .ReturnsAsync(LoginResult.Failure);
 
             // Act
-            var result = await this.sut.GetInShowingTimeSite(companyId, mlsNumber, cancellationToken);
+            var result = await this.Sut.GetInShowingTimeSite(companyId, mlsNumber, cancellationToken);
 
             // Assert
             Assert.False(result);
@@ -190,7 +189,7 @@ namespace Husa.Uploader.Core.Tests
                 .Returns((IWebElement)null);
 
             // Act
-            var result = await this.sut.GetInShowingTimeSite(companyId, mlsNumber, cancellationToken);
+            var result = await this.Sut.GetInShowingTimeSite(companyId, mlsNumber, cancellationToken);
 
             // Assert
             Assert.False(result);
@@ -216,7 +215,7 @@ namespace Husa.Uploader.Core.Tests
             this.SetupDeleteDuplicateClientsFlow();
 
             // Act
-            var result = await this.sut.DeleteDuplicateClients(companyId, mlsNumber, cancellationToken);
+            var result = await this.Sut.DeleteDuplicateClients(companyId, mlsNumber, cancellationToken);
 
             // Assert
             Assert.Equal(1, result); // Based on mock setup with 2 duplicates
@@ -234,7 +233,7 @@ namespace Husa.Uploader.Core.Tests
             this.SetupGetInShowingTimeSiteFailure(companyId);
 
             // Act
-            var result = await this.sut.DeleteDuplicateClients(companyId, mlsNumber, cancellationToken);
+            var result = await this.Sut.DeleteDuplicateClients(companyId, mlsNumber, cancellationToken);
 
             // Assert
             Assert.Equal(0, result);
@@ -252,7 +251,7 @@ namespace Husa.Uploader.Core.Tests
             this.SetupNoDuplicatesFlow();
 
             // Act
-            var result = await this.sut.DeleteDuplicateClients(companyId, mlsNumber, cancellationToken);
+            var result = await this.Sut.DeleteDuplicateClients(companyId, mlsNumber, cancellationToken);
 
             // Assert
             Assert.Equal(0, result);
@@ -271,7 +270,7 @@ namespace Husa.Uploader.Core.Tests
 
             // Act & Assert
             await Assert.ThrowsAsync<TaskCanceledException>(
-                async () => await this.sut.DeleteDuplicateClients(companyId, mlsNumber, cancellationTokenSource.Token));
+                async () => await this.Sut.DeleteDuplicateClients(companyId, mlsNumber, cancellationTokenSource.Token));
 
             cancellationTokenSource.Dispose();
         }
@@ -288,7 +287,7 @@ namespace Husa.Uploader.Core.Tests
                 .ReturnsAsync(LoginResult.Logged);
 
             // Act
-            var result = await this.sut.DeleteDuplicateClients(companyId, mlsNumber, cancellationToken);
+            var result = await this.Sut.DeleteDuplicateClients(companyId, mlsNumber, cancellationToken);
 
             // Assert
             Assert.Equal(0, result);
@@ -306,7 +305,7 @@ namespace Husa.Uploader.Core.Tests
                 .ReturnsAsync(LoginResult.Logged);
 
             // Act
-            var result = await this.sut.DeleteDuplicateClients(companyId, mlsNumber, cancellationToken);
+            var result = await this.Sut.DeleteDuplicateClients(companyId, mlsNumber, cancellationToken);
 
             // Assert
             Assert.Equal(0, result);
@@ -324,7 +323,7 @@ namespace Husa.Uploader.Core.Tests
             this.SetupMultiplePagesFlow();
 
             // Act
-            var result = await this.sut.DeleteDuplicateClients(companyId, mlsNumber, cancellationToken);
+            var result = await this.Sut.DeleteDuplicateClients(companyId, mlsNumber, cancellationToken);
 
             // Assert
             Assert.Equal(2, result); // Based on mock setup with 4 entries and 2 duplicates across pages
@@ -498,6 +497,14 @@ namespace Husa.Uploader.Core.Tests
                 executeScriptQty += 1;
             }
 
+            var confirmSectionMock = new Mock<IWebElement>();
+            confirmSectionMock.SetupAllProperties();
+            confirmSectionMock.Setup(x => x.GetCssValue(It.IsAny<string>()))
+                .Returns("block");
+            this.mockUploaderClient.Setup(
+                x => x.FindElement(
+                    It.Is<By>(y => y.Criteria == ".confirm\\-section"), It.IsAny<bool>(), It.IsAny<bool>()))
+                .Returns(confirmSectionMock.Object);
             this.mockUploaderClient.Setup(
                 x => x.ExecuteScript(It.IsAny<string>(), It.IsAny<bool>()))
                 .Verifiable();
