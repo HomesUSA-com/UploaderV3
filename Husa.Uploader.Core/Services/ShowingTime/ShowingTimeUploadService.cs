@@ -71,6 +71,13 @@ namespace Husa.Uploader.Core.Services
             {
                 this.logger.LogDebug("Accessing...");
                 this.UploaderClient.ClickOnElementById("m_oThirdPartyLinks_m_lvThirdPartLinks_ctrl3_m_lbtnThirdPartyLink");
+                await Task.Delay(3000, cancellationToken);
+                this.UploaderClient.SwitchTo().Window(this.UploaderClient.WindowHandles[1]);
+                this.UploaderClient.ClickOnElement(
+                    By.XPath("//button/span[text()='Remind Me Later']"),
+                    shouldWait: true,
+                    waitTime: 1000,
+                    isElementOptional: true);
             }
 
             return success;
@@ -83,12 +90,6 @@ namespace Husa.Uploader.Core.Services
                 return 0;
             }
 
-            this.UploaderClient.SwitchTo().Window(this.UploaderClient.WindowHandles[1]);
-            this.UploaderClient.ClickOnElement(
-                By.XPath("//button/span[text()='Remind Me Later']"),
-                shouldWait: true,
-                waitTime: 1000,
-                isElementOptional: true);
             this.UploaderClient.ClickOnElement(By.XPath("//a[text()='Contacts']"));
             await Task.Delay(2000, cancellationToken);
             this.UploaderClient.SetSelect(By.ClassName("selectList"), this.agentSelectorValue);
@@ -315,6 +316,14 @@ namespace Husa.Uploader.Core.Services
         },
             cancellationToken);
 
+        public Task SetDrivingDirections(ResidentialListingRequest request, CancellationToken cancellationToken = default) =>
+            Task.Factory.StartNew(
+            () =>
+        {
+            this.UploaderClient.WriteTextbox(By.Id("Directions"), request.Directions);
+        },
+            cancellationToken);
+
         public Task<bool> AddExistentContact(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default) =>
             Task.Factory.StartNew(
             () =>
@@ -332,7 +341,7 @@ namespace Husa.Uploader.Core.Services
             var element = this.UploaderClient.FindElement(
                 By.XPath("//table[@id='agentClientsTable']/tbody/tr[1]"), isElementOptional: false);
 
-            if (element.Text.Contains("No matching records listingFound"))
+            if (element.Text.Contains("No matching records found"))
             {
                 this.UploaderClient.ExecuteScript(
                     "document.querySelectorAll('.ui-dialog-buttonset button')[1].click()");
@@ -444,9 +453,8 @@ namespace Husa.Uploader.Core.Services
         },
             cancellationToken);
 
-        public Task SetContactConfirmSection(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default)
-        {
-            return Task.Factory.StartNew(
+        public Task SetContactConfirmSection(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default) =>
+            Task.Factory.StartNew(
             () =>
         {
             var confirmSection = this.UploaderClient.FindElement(By.ClassName("confirm-section"), isElementOptional: true);
@@ -465,7 +473,6 @@ namespace Husa.Uploader.Core.Services
             this.HandleFYIMethods(contact, position);
         },
             cancellationToken);
-        }
 
         public Task SetContactNotificationSection(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default) =>
             Task.Factory.StartNew(
@@ -538,6 +545,18 @@ namespace Husa.Uploader.Core.Services
                 response.UploadResult = UploadResult.Failure;
                 return response;
             }
+
+            await this.SetAppointmentCenter(cancellationToken);
+            await this.SetAppointmentSettings(
+                request.ShowingTime.AppointmentType.Value, cancellationToken);
+            await this.SetAppointmentRestrictions(
+                request.ShowingTime.AppointmentRestrictions, cancellationToken);
+            await this.SetAccessInformation(
+                request.ShowingTime.AccessInformation, cancellationToken);
+            await this.SetAdditionalInstructions(
+                request.ShowingTime.AdditionalInstructions, cancellationToken);
+            await this.SetDrivingDirections(request, cancellationToken);
+            await this.SetContacts(request.ShowingTime.Contacts, cancellationToken);
 
             response.UploadResult = UploadResult.Success;
             return response;
