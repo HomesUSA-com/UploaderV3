@@ -242,7 +242,7 @@ namespace Husa.Uploader.Core.Services
                 this.FillUtilitiesInformation(listing as DfwListingRequest);
                 this.FillEnvironmentInformation(listing as DfwListingRequest);
                 this.FillFinancialInformation(listing as DfwListingRequest);
-                this.FillAgentOfficeInformation();
+                this.FillAgentOfficeInformation(listing as DfwListingRequest);
                 this.FillShowingInformation(listing as DfwListingRequest);
                 this.FillRemarksInformation(listing as DfwListingRequest);
 
@@ -284,7 +284,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillPropertyInformation(listing as DfwListingRequest, isNotPartialFill: false);
                     this.FillLocationSchools(listing as DfwListingRequest, isNotPartialFill: false);
                     this.FillFinancialInformation(listing as DfwListingRequest);
-                    this.FillAgentOfficeInformation();
+                    this.FillAgentOfficeInformation(listing as DfwListingRequest);
                     this.FillShowingInformation(listing as DfwListingRequest, isNotPartialFill: false);
                     this.FillRemarksInformation(listing as DfwListingRequest);
 
@@ -1232,7 +1232,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_385", listing.AssocFeeIncludes, "HOA Includes", tabName); // HOA Includes
         }
 
-        private void FillAgentOfficeInformation()
+        private void FillAgentOfficeInformation(DfwListingRequest listing)
         {
             var tabName = "Agent/Office";
             this.GoToTab(tabName);
@@ -1243,6 +1243,11 @@ namespace Husa.Uploader.Core.Services
             if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
             {
                 var agentName = this.options.MarketInfo.Dfw.AgentId;
+                if (listing.CompanyName.Contains("Pacesetter Homes"))
+                {
+                    agentName = "Randol Vick (0719432)";
+                }
+
                 if (!string.IsNullOrEmpty(agentName))
                 {
                     foreach (var charact in agentName)
