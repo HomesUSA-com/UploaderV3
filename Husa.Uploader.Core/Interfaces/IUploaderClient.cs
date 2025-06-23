@@ -76,6 +76,8 @@ namespace Husa.Uploader.Core.Interfaces
         void SwitchTo(string windowName);
         void SwitchToLast();
 
+        bool IsElementClickable(By locator);
+
         void CloseDriver();
         void FinalizeSession();
         void DeleteAllCookies();

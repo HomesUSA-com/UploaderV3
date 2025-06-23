@@ -8,6 +8,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
     using Husa.MediaService.Domain.Enums;
+    using Husa.Quicklister.Dfw.Api.Client;
     using Husa.Quicklister.Dfw.Domain.Enums;
     using Husa.Quicklister.Dfw.Domain.Enums.Domain;
     using Husa.Quicklister.Extensions.Domain.Enums;
@@ -17,6 +18,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.BulkUpload;
     using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Microsoft.Extensions.Logging;
@@ -30,6 +32,7 @@ namespace Husa.Uploader.Core.Tests
     {
         private readonly Mock<IUploaderClient> uploaderClient = new();
         private readonly Mock<ILogger<DfwUploadService>> logger = new();
+        private readonly Mock<IQuicklisterDfwClient> quicklisterDfwClient = new();
         private readonly ApplicationServicesFixture fixture;
 
         public DfwUploadServiceTests(ApplicationServicesFixture fixture)
@@ -569,6 +572,50 @@ namespace Husa.Uploader.Core.Tests
             this.uploaderClient.Verify(x => x.WriteTextbox(By.Id("Input_80"), expectedDate.ToShortDateString(), false, false, false, false), Times.Once);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task TaxIdUpdate_Success(bool logIn)
+        {
+            // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var uploadInformationMock = new Mock<Models.UploadCommandInfo>();
+            uploadInformationMock.Object.IsNewListing = true;
+            this.uploaderClient.Setup(x => x.UploadInformation).Returns(uploadInformationMock.Object);
+
+            var dfwListing = new TaxIdBulkUploadListingItem()
+            {
+                Address = "1234 Address",
+                CompanyId = Guid.NewGuid(),
+                Id = Guid.NewGuid(),
+                Market = "DFW",
+                MlsNumber = "123456",
+                OwnerName = "Test Company",
+                TaxId = "12346",
+                UnitNumber = "12",
+            };
+
+            this.uploaderClient
+                .Setup(x => x.WriteTextbox(
+                    It.IsAny<By>(),
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()));
+
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.TaxIdUpdate(dfwListing, logIn);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result.UploadResult);
+        }
+
         protected override LotListingRequest GetLotListingRequest(bool isNewListing = true)
         {
             throw new NotImplementedException();
@@ -580,6 +627,7 @@ namespace Husa.Uploader.Core.Tests
                 this.fixture.ApplicationOptions,
                 this.mediaRepository.Object,
                 this.serviceSubscriptionClient.Object,
+                this.quicklisterDfwClient.Object,
                 this.logger.Object);
 
         protected override DfwListingRequest GetEmptyListingRequest()

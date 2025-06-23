@@ -1059,6 +1059,28 @@ namespace Husa.Uploader.Core.Services
             this.SwitchTo().Window(lastWindow);
         }
 
+        public bool IsElementClickable(By locator)
+        {
+            try
+            {
+                IWebElement element = this.driver.FindElement(locator);
+
+                if (!element.Displayed)
+                {
+                    return false;
+                }
+
+                IWebElement parentLi = element.FindElement(By.XPath("./.."));
+                string parentClass = parentLi.GetAttribute("class");
+
+                return !parentClass.Contains("disabled");
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         public void CloseDriver()
         {
             if (this.driver == null)

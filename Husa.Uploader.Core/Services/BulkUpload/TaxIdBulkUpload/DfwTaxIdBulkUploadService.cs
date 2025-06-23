@@ -70,9 +70,12 @@ namespace Husa.Uploader.Core.Services.BulkUpload.TaxIdBulkUpload
 
         private async Task ProcessCompanyGroup(IGrouping<string, TaxIdBulkUploadListingItem> group, CancellationToken cancellationToken = default)
         {
+            var logInForCompany = true;
+
             foreach (var bulkFullListing in group)
             {
-                await this.uploadService.TaxIdUpdate(bulkFullListing, cancellationToken: cancellationToken);
+                await this.uploadService.TaxIdUpdate(bulkFullListing, logInForCompany, cancellationToken: cancellationToken);
+                logInForCompany = false;
             }
 
             this.uploadService.Logout();
