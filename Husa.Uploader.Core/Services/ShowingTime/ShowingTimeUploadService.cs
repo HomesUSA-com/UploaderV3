@@ -252,11 +252,21 @@ namespace Husa.Uploader.Core.Services
             var allowSameDayRequest = info.LeadTime ? "Yes" : "No";
             var allowAppraisals = info.AllowAppraisals ? "Yes" : "No";
             var allowInspections = info.AllowInspectionsAndWalkThroughs ? "Yes" : "No";
+            var allowRealTime = info.AllowRealtimeAvailabilityForBrokers ? "Yes" : "No";
+            var overlaping = (info.OverlappingAppointmentMode ?? default).ToStringFromEnumMember();
+            var bufferTime = info.BufferTimeBetweenAppointments ?? 0;
+            var requiredTime = info.LeadTime ? info.RequiredTimeHours ?? 0 : 0;
+            var suggestedTime = info.LeadTime ? info.SuggestedTimeHours ?? 0 : 0;
             this.UploaderClient.ClickOnElementById($"AllowAppraisals_{allowAppraisals}");
             this.UploaderClient.ClickOnElementById($"AllowInspections_{allowInspections}");
             this.UploaderClient.ClickOnElementById($"AllowSameDayRequests_{allowSameDayRequest}");
-            this.UploaderClient.SetSelect(By.Id("RequiredLeadTime"), info.RequiredTimeHours);
-            this.UploaderClient.SetSelect(By.Id("SuggestedLeadTime"), info.SuggestedTimeHours);
+            this.UploaderClient.ClickOnElementById($"PublicListingAvailabilityEnabled_{allowRealTime}");
+            this.UploaderClient.SetSelect(By.Id("RequiredLeadTime"), requiredTime);
+            this.UploaderClient.SetSelect(By.Id("SuggestedLeadTime"), suggestedTime);
+            this.UploaderClient.SetSelect(By.Id("MinShowingWindowShowings"), info.MinShowingWindowShowings ?? 0);
+            this.UploaderClient.SetSelect(By.Id("MaxShowingWindowShowings"), info.MaxShowingWindowShowings ?? 0);
+            this.UploaderClient.SetSelect(By.Id("OverlappingAppointmentMode"), overlaping);
+            this.UploaderClient.SetSelect(By.Id("AppointmentNoOverlapBufferMinutes"), bufferTime);
         },
                 cancellationToken);
 
@@ -267,7 +277,10 @@ namespace Husa.Uploader.Core.Services
             var lockboxNotesId = "LockboxNotes";
             var lockboxCbsCodeId = "LockboxCbsCode";
             var lockboxSerialNumberId = "LockboxSerialNumber";
+            this.UploaderClient.WriteTextbox(By.Id("GateCode"), info.GateCode);
+            this.UploaderClient.WriteTextbox(By.Id("AccessNotes"), info.AccessNotes);
             this.UploaderClient.SetSelect(By.Id("AccessType"), (int)info.AccessMethod.Value);
+
             switch (info.AccessMethod.Value)
             {
                 case AccessMethod.CodeBox:
