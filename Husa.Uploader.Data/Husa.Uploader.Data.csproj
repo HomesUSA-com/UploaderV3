@@ -4,15 +4,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Husa.CompanyServiceManager.Client" Version="2.19.1" />
+        <PackageReference Include="Husa.CompanyServiceManager.Client" Version="2.20.0" />
         <PackageReference Include="Husa.Extensions.Api" Version="5.2.1" />
-        <PackageReference Include="Husa.Extensions.Common" Version="4.2.2" />
+        <PackageReference Include="Husa.Extensions.Common" Version="4.3.0" />
         <PackageReference Include="Husa.Extensions.Media" Version="4.0.9" />
         <PackageReference Include="Husa.MediaService.Client" Version="2.5.1" />
         <PackageReference Include="Husa.Quicklister.Abor.Api.Client" Version="2.21.2" />
         <PackageReference Include="Husa.Quicklister.Amarillo.Api.Client" Version="1.10.2" />
         <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="2.17.2" />
-        <PackageReference Include="Husa.Quicklister.Extensions.Api.Client" Version="1.18.2" />
+        <PackageReference Include="Husa.Quicklister.Extensions.Api.Client" Version="1.18.4" />
         <PackageReference Include="Husa.Quicklister.Har.Api.Client" Version="2.17.2" />
         <PackageReference Include="Husa.Quicklister.Dfw.Api.Client" Version="0.21.2" />
         <PackageReference Include="Husa.Quicklister.Sabor.Api.Client" Version="2.18.2" />
