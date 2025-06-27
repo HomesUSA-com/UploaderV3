@@ -728,7 +728,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public async Task<UploaderResponse> TaxIdUpdate(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default)
+        public async Task<UploaderResponse> TaxIdRequestCreation(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(listing);
 
@@ -789,6 +789,43 @@ namespace Husa.Uploader.Core.Services
             catch (Exception ex)
             {
                 this.logger.LogError(ex, "Error from Quicklister: {error}", ex);
+            }
+
+            uploaderResponse.UploadResult = UploadResult.Success;
+            return uploaderResponse;
+        }
+
+        public async Task<UploaderResponse> TaxIdUpdate(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(listing);
+
+            UploaderResponse uploaderResponse = new();
+
+            this.logger.LogInformation("Updating Tax Id information for the listing {ListingId}", listing.ResidentialListingRequestID);
+            this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, false);
+            if (logIn)
+            {
+                await this.Login(listing.CompanyId);
+                Thread.Sleep(2000);
+                this.CheckIfAutoSaveWindowIsVisible();
+            }
+
+            try
+            {
+                this.NavigateToQuickEdit(listing.MLSNum);
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//span[text()='Modify Property']"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+                this.uploaderClient.ClickOnElementById("m_dlInputList_ctl00_m_btnSelect");
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_235"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+                this.uploaderClient.WriteTextbox(By.Id("Input_235"), listing.TaxID);
+                this.uploaderClient.WaitUntilElementExists(By.Id("css_InputCompleted"), TimeSpan.FromMinutes(5), showAlert: true, cancellationToken);
+                Thread.Sleep(500);
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
+                uploaderResponse.UploadResult = UploadResult.Failure;
+                uploaderResponse.UploadInformation = this.uploaderClient.UploadInformation;
+                return uploaderResponse;
             }
 
             uploaderResponse.UploadResult = UploadResult.Success;

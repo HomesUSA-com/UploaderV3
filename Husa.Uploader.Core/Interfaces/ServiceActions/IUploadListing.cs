@@ -20,7 +20,9 @@ namespace Husa.Uploader.Core.Interfaces.ServiceActions
 
         Task<UploaderResponse> PartialUpload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false);
 
-        Task<UploaderResponse> TaxIdUpdate(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default);
+        Task<UploaderResponse> TaxIdRequestCreation(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default);
+
+        Task<UploaderResponse> TaxIdUpdate(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default);
 
         Task<LoginResult> Login(Guid companyId);
 

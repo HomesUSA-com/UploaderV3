@@ -7,6 +7,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
+    using Husa.Extensions.Common.Exceptions;
     using Husa.MediaService.Domain.Enums;
     using Husa.Quicklister.Dfw.Api.Client;
     using Husa.Quicklister.Dfw.Domain.Enums;
@@ -575,7 +576,7 @@ namespace Husa.Uploader.Core.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task TaxIdUpdate_Success(bool logIn)
+        public async Task TaxIdRequestCreation_Success(bool logIn)
         {
             // Arrange
             UploaderResponse expectedResponse = new UploaderResponse();
@@ -610,10 +611,93 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act
-            var result = await sut.TaxIdUpdate(dfwListing, logIn);
+            var result = await sut.TaxIdRequestCreation(dfwListing, logIn);
 
             // Assert
             Assert.Equal(UploadResult.Success, result.UploadResult);
+        }
+
+        [Fact]
+        public async Task TaxIdUpdate_Success()
+        {
+            // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var uploadInformationMock = new Mock<Models.UploadCommandInfo>();
+            uploadInformationMock.Object.IsNewListing = true;
+            this.uploaderClient.Setup(x => x.UploadInformation).Returns(uploadInformationMock.Object);
+
+            var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse())
+            {
+                ListStatus = MarketStatuses.Active.ToStringFromEnumMember(),
+                MLSNum = "123456",
+                ResidentialListingID = Guid.NewGuid(),
+                ResidentialListingRequestID = Guid.NewGuid(),
+                TaxID = "123456",
+                BackOnMarketDate = DateTime.Now,
+                OffMarketDate = DateTime.Now,
+            };
+
+            this.uploaderClient
+                .Setup(x => x.WriteTextbox(
+                    It.IsAny<By>(),
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()));
+
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.TaxIdUpdate(dfwListing, logIn: true);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result.UploadResult);
+        }
+
+        [Fact]
+        public async Task TaxIdUpdate_Fails()
+        {
+            // Arrange
+            UploaderResponse expectedResponse = new UploaderResponse();
+            expectedResponse.UploadResult = UploadResult.Success;
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var uploadInformationMock = new Mock<Models.UploadCommandInfo>();
+            uploadInformationMock.Object.IsNewListing = true;
+            this.uploaderClient.Setup(x => x.UploadInformation).Returns(uploadInformationMock.Object);
+
+            var dfwListing = new DfwListingRequest(new DfwResponse.ListingRequest.SaleRequest.SaleListingRequestDetailResponse())
+            {
+                ListStatus = MarketStatuses.Active.ToStringFromEnumMember(),
+                MLSNum = "123456",
+                ResidentialListingID = Guid.NewGuid(),
+                ResidentialListingRequestID = Guid.NewGuid(),
+                TaxID = "123456",
+                BackOnMarketDate = DateTime.Now,
+                OffMarketDate = DateTime.Now,
+            };
+
+            this.uploaderClient
+                .Setup(x => x.WriteTextbox(
+                    It.Is<By>(x => x == By.Id("Input_235")),
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()))
+                .Throws<DomainException>();
+
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.TaxIdUpdate(dfwListing, logIn: true);
+
+            // Assert
+            Assert.Equal(UploadResult.Failure, result.UploadResult);
         }
 
         protected override LotListingRequest GetLotListingRequest(bool isNewListing = true)
