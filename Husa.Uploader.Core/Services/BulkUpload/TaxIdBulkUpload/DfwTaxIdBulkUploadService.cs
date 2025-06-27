@@ -74,7 +74,7 @@ namespace Husa.Uploader.Core.Services.BulkUpload.TaxIdBulkUpload
 
             foreach (var bulkFullListing in group)
             {
-                await this.uploadService.TaxIdUpdate(bulkFullListing, logInForCompany, cancellationToken: cancellationToken);
+                await this.uploadService.TaxIdRequestCreation(bulkFullListing, logInForCompany, cancellationToken: cancellationToken);
                 logInForCompany = false;
             }
 
