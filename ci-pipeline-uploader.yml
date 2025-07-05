@@ -99,7 +99,7 @@ jobs:
     inputs:
       command: restore
       projects: '**/Husa.Uploader.sln'
-      restoreArguments: '/property:Configuration=Release'
+      restoreArguments: '/property:Configuration=Release /p:RuntimeIdentifier=win-x64'
       feedsToUse: 'select'
       vstsFeed: 'f820f957-6781-4cd6-b5f5-e720c189507f/891ce0ed-37b7-4336-b1fe-079c0525a171'
 
@@ -123,22 +123,19 @@ jobs:
     inputs:
       codeCoverageTool: 'Cobertura'
       summaryFileLocation: '$(Agent.TempDirectory)/**/coverage.cobertura.xml'
+
   - task: SonarCloudAnalyze@1
+
   - task: SonarCloudPublish@1
     inputs:
       pollingTimeoutSec: '300'
-  - task: UseDotNet@2
-    displayName: 'Install .NET Core SDK'
-    inputs:
-        version: 8.0.410
-        performMultiLevelLookup: true
-        includePreviewVersions: true # Required for preview versions
+
   - task: MSBuild@1
     condition: ne(variables.isPullRequest, true)
     displayName: 'publish with ClickOnce'
     inputs:
       solution: '**/Husa.Uploader.Desktop/Husa.Uploader.Desktop.csproj'
-      msbuildArguments: '/target:Publish /p:ApplicationRevision=$(revisionNumber) /P:PublishProfile=$(projectDirectory)\Properties\PublishProfiles\ClickOnceProfile.pubxml'
+      msbuildArguments: '/target:Publish /p:ApplicationRevision=$(revisionNumber) /P:PublishProfile=$(projectDirectory)\Properties\PublishProfiles\ClickOnceProfile.pubxml /p:RuntimeIdentifier=win-x64'
       platform: 'AnyCPU'
       configuration: 'Release'
       logFileVerbosity: 'detailed'
