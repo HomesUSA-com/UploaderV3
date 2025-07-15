@@ -9,5 +9,6 @@
 
         [Required]
         public IReadOnlyList<string> Arguments { get; set; }
+        public ProxySettings Proxy { get; set; }
     }
 }
