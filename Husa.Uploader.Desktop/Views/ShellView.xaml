@@ -587,6 +587,11 @@
                                                 <TextBlock Text="Database online" Foreground="#FF1B3861" VerticalAlignment="Top" FontSize="14" Margin="15 5 10 0" />
                                             </StackPanel>
                                         </ListViewItem>
+                                        <ListViewItem Height="50" ToolTip="The system is connected to Database server." Visibility="{Binding ShowDataBaseOnline, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <mam:ToggleSwitch Name="UseProxy" Content="Use Proxy" IsOn="{Binding UseProxy, Mode=TwoWay}" IsEnabled="{Binding EnableUseProxyButton}"/>
+                                            </StackPanel>
+                                        </ListViewItem>
                                     </ListView>
                                 </StackPanel>
                             </materialDesign:PopupBox>
