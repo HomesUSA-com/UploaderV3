@@ -72,6 +72,8 @@ namespace Husa.Uploader.Desktop.ViewModels
         private bool isListingButtonActive;
         private bool isLotButtonActive;
         private int selectedTabItem;
+        private bool useProxy;
+        private bool enableUseProxyButton;
         private string correlationIdBox;
         private string lastUpdated;
         private bool loadFailed;
@@ -134,6 +136,11 @@ namespace Husa.Uploader.Desktop.ViewModels
             this.bulkUploadFactory = bulkUploadFactory ?? throw new ArgumentNullException(nameof(bulkUploadFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
+            // Check if ChromeOptions.Proxy and its URL are defined, then set flags accordingly
+            var proxyOptions = this.options.Value.Uploader.ChromeOptions?.Proxy;
+            var hasValidProxy = proxyOptions is not null && proxyOptions.Enabled;
+            this.UseProxy = hasValidProxy;
+            this.enableUseProxyButton = proxyOptions is not null && !string.IsNullOrEmpty(proxyOptions.Url);
             this.ConfigureVersionCheck();
         }
 
@@ -150,6 +157,27 @@ namespace Husa.Uploader.Desktop.ViewModels
             this.LastUpdated = "Last Updated: 12/12/12 22:22:22";
             this.State = UploaderState.Ready;
             this.SourceAction = string.Empty;
+        }
+
+        public bool UseProxy
+        {
+            get => this.useProxy;
+            set
+            {
+                this.useProxy = value;
+                ViewModelHelpers.UpdateAppSetting("Application:Uploader:ChromeOptions:Proxy:Enabled", this.useProxy);
+                this.OnPropertyChanged();
+            }
+        }
+
+        public bool EnableUseProxyButton
+        {
+            get => this.enableUseProxyButton;
+            set
+            {
+                this.enableUseProxyButton = value;
+                this.OnPropertyChanged();
+            }
         }
 
         public int SelectedTabItem
