@@ -5,7 +5,7 @@ namespace Husa.Uploader.Core.Services
     using System.Threading.Tasks;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
-    using Husa.Quicklister.Extensions.Api.Contracts.Models.ShowingTime;
+    using Husa.Quicklister.Extensions.Api.Contracts.Response.ShowingTime;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums.ShowingTime;
     using Husa.Uploader.Core.Interfaces;
@@ -216,7 +216,7 @@ namespace Husa.Uploader.Core.Services
                     "document.querySelector('#appointmentTypeSelection > div > a').click()");
                 switch (appointmentType)
                 {
-                    case AppointmentType.AppointmentRequired:
+                    case AppointmentType.AppointmentRequiredConfirmWithAny:
                         this.UploaderClient.ExecuteScript(
                             "document.querySelector(`a[data-dk-dropdown-value='APPOINTMENT_REQUIRED_ANY']`).click()");
                         break;
@@ -234,7 +234,7 @@ namespace Husa.Uploader.Core.Services
                         break;
                 }
 
-                if (appointmentType == AppointmentType.AppointmentRequired)
+                if (appointmentType == AppointmentType.AppointmentRequiredConfirmWithAny)
                 {
                     this.UploaderClient.WaitForElementToBeVisible(By.Id("isAgentAccompany_No"), TimeSpan.FromMilliseconds(600));
                     this.UploaderClient.ClickOnElementById("isAgentAccompany_No");
@@ -245,7 +245,7 @@ namespace Husa.Uploader.Core.Services
             },
                 cancellationToken);
 
-        public Task SetAppointmentRestrictions(AppointmentRestrictionsInfo info, CancellationToken cancellationToken = default) =>
+        public Task SetAppointmentRestrictions(AppointmentRestrictionsResponse info, CancellationToken cancellationToken = default) =>
             Task.Factory.StartNew(
                 () =>
         {
@@ -270,7 +270,7 @@ namespace Husa.Uploader.Core.Services
         },
                 cancellationToken);
 
-        public Task SetAccessInformation(AccessInformationInfo info, CancellationToken cancellationToken = default) =>
+        public Task SetAccessInformation(AccessInformationResponse info, CancellationToken cancellationToken = default) =>
             Task.Factory.StartNew(
             () =>
         {
@@ -320,7 +320,7 @@ namespace Husa.Uploader.Core.Services
         },
             cancellationToken);
 
-        public Task SetAdditionalInstructions(AdditionalInstructionsInfo info, CancellationToken cancellationToken = default) =>
+        public Task SetAdditionalInstructions(AdditionalInstructionsResponse info, CancellationToken cancellationToken = default) =>
             Task.Factory.StartNew(
             () =>
         {
@@ -337,7 +337,7 @@ namespace Husa.Uploader.Core.Services
         },
             cancellationToken);
 
-        public Task<bool> AddExistentContact(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default) =>
+        public Task<bool> AddExistentContact(ContactDetailResponse contact, int position, CancellationToken cancellationToken = default) =>
             Task.Factory.StartNew(
             () =>
         {
@@ -370,7 +370,7 @@ namespace Husa.Uploader.Core.Services
         },
             cancellationToken);
 
-        public Task<bool> AddNewContact(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default) =>
+        public Task<bool> AddNewContact(ContactDetailResponse contact, int position, CancellationToken cancellationToken = default) =>
             Task.Factory.StartNew(
             () =>
         {
@@ -411,7 +411,7 @@ namespace Husa.Uploader.Core.Services
         },
             cancellationToken);
 
-        public Task EditContact(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default) =>
+        public Task EditContact(ContactDetailResponse contact, int position, CancellationToken cancellationToken = default) =>
             Task.Factory.StartNew(
             () =>
         {
@@ -466,7 +466,7 @@ namespace Husa.Uploader.Core.Services
         },
             cancellationToken);
 
-        public Task SetContactConfirmSection(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default) =>
+        public Task SetContactConfirmSection(ContactDetailResponse contact, int position, CancellationToken cancellationToken = default) =>
             Task.Factory.StartNew(
             () =>
         {
@@ -487,7 +487,7 @@ namespace Husa.Uploader.Core.Services
         },
             cancellationToken);
 
-        public Task SetContactNotificationSection(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default) =>
+        public Task SetContactNotificationSection(ContactDetailResponse contact, int position, CancellationToken cancellationToken = default) =>
             Task.Factory.StartNew(
             () =>
         {
@@ -517,7 +517,7 @@ namespace Husa.Uploader.Core.Services
         },
             cancellationToken);
 
-        public async Task SetContact(ContactDetailInfo contact, int position, CancellationToken cancellationToken = default)
+        public async Task SetContact(ContactDetailResponse contact, int position, CancellationToken cancellationToken = default)
         {
             var element = this.UploaderClient.FindElement(By.Id($"contact{position}_row"), isElementOptional: true);
 
@@ -537,7 +537,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public async Task SetContacts(IEnumerable<ContactDetailInfo> contacts, CancellationToken cancellationToken)
+        public async Task SetContacts(IEnumerable<ContactDetailResponse> contacts, CancellationToken cancellationToken)
         {
             for (int index = 0; index < (contacts?.Count() ?? 0); index++)
             {
@@ -561,7 +561,7 @@ namespace Husa.Uploader.Core.Services
 
             await this.SetAppointmentCenter(cancellationToken);
             await this.SetAppointmentSettings(
-                request.ShowingTime.AppointmentType.Value, cancellationToken);
+                request.ShowingTime.AppointmentSettings.AppointmentType.Value, cancellationToken);
             await this.SetAppointmentRestrictions(
                 request.ShowingTime.AppointmentRestrictions, cancellationToken);
             await this.SetAccessInformation(
@@ -599,7 +599,7 @@ namespace Husa.Uploader.Core.Services
             return new string[] { null, "none" }.Contains(confirmSection?.GetCssValue("display"));
         }
 
-        private static bool ShouldSendConfirmation(ContactDetailInfo contact)
+        private static bool ShouldSendConfirmation(ContactDetailResponse contact)
         {
             return contact.ConfirmAppointmentsByEmail.Value
                 || contact.ConfirmAppointmentsByMobilePhone.Value
@@ -607,12 +607,12 @@ namespace Husa.Uploader.Core.Services
                 || contact.ConfirmAppointmentsByText.Value;
         }
 
-        private static bool ShouldSendFYI(ContactDetailInfo contact)
+        private static bool ShouldSendFYI(ContactDetailResponse contact)
         {
             return contact.SendOnFYIByEmail.Value || contact.SendOnFYIByText.Value;
         }
 
-        private void HandleConfirmationMethods(ContactDetailInfo contact, int position)
+        private void HandleConfirmationMethods(ContactDetailResponse contact, int position)
         {
             if (contact.ConfirmAppointmentsByText.Value)
             {
@@ -630,14 +630,14 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        private void HandlePhoneConfirmation(ContactDetailInfo contact, int position)
+        private void HandlePhoneConfirmation(ContactDetailResponse contact, int position)
         {
             this.UploaderClient.ExecuteScript($"document.querySelector('#confirmPhone_{position}').click()");
             var caller = contact.ConfirmAppointmentCallerByOfficePhone ?? contact.ConfirmAppointmentCallerByMobilePhone;
             this.UploaderClient.SetSelect(By.Id($"phoneRequestChoice_{position}"), caller.Equals(ConfirmAppointmentCaller.AutoCall));
         }
 
-        private void HandleFYIMethods(ContactDetailInfo contact, int position)
+        private void HandleFYIMethods(ContactDetailResponse contact, int position)
         {
             if (!ShouldSendFYI(contact))
             {

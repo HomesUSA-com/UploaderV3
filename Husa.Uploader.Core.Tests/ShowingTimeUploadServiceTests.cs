@@ -2,7 +2,7 @@ namespace Husa.Uploader.Core.Tests
 {
     using System.Collections.ObjectModel;
     using System.Linq;
-    using Husa.Quicklister.Extensions.Api.Contracts.Models.ShowingTime;
+    using Husa.Quicklister.Extensions.Api.Contracts.Response.ShowingTime;
     using Husa.Quicklister.Extensions.Domain.Enums.ShowingTime;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
@@ -343,13 +343,13 @@ namespace Husa.Uploader.Core.Tests
         public async Task SetAppointmentSettings_Success()
         {
             var showingTime = this.ShowingTimeFaker();
-            var clickOnElementByIdQty = showingTime.AppointmentType.Equals(AppointmentType.AppointmentRequired) ? 3 : 2;
+            var clickOnElementByIdQty = showingTime.AppointmentSettings.AppointmentType.Equals(AppointmentType.AppointmentRequiredConfirmWithAny) ? 3 : 2;
             this.mockUploaderClient.Setup(x => x.ExecuteScript(It.IsAny<string>(), It.IsAny<bool>())).Verifiable();
             this.mockUploaderClient.Setup(
                 x => x.ClickOnElementById(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<bool>()))
                 .Verifiable();
 
-            await this.Sut.SetAppointmentSettings(showingTime.AppointmentType.Value, CancellationToken.None);
+            await this.Sut.SetAppointmentSettings(showingTime.AppointmentSettings.AppointmentType.Value, CancellationToken.None);
 
             this.mockUploaderClient.Verify(x => x.ExecuteScript(It.IsAny<string>(), It.IsAny<bool>()), Times.Exactly(2));
             this.mockUploaderClient.Verify(
@@ -602,9 +602,12 @@ namespace Husa.Uploader.Core.Tests
             return row.Object;
         }
 
-        private ShowingTimeFullInfo ShowingTimeFaker() => new()
+        private ShowingTimeFullInfoResponse ShowingTimeFaker() => new()
         {
-            AppointmentType = Faker.Enum.Random<AppointmentType>(),
+            AppointmentSettings = new()
+            {
+                AppointmentType = Faker.Enum.Random<AppointmentType>(),
+            },
             AppointmentRestrictions = new()
             {
                 AllowAppraisals = Faker.Boolean.Random(),
