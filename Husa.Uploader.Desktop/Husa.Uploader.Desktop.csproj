@@ -117,6 +117,12 @@
         <None Update="Deployment\Publish.html">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
+        <None Update="husa_proxy_extension.crx">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="husa_proxy_extension.pem">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <ItemGroup>

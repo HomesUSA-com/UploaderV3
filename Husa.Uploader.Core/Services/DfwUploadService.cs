@@ -73,9 +73,9 @@ namespace Husa.Uploader.Core.Services
             // Connect to the login page
             var loginButtonId = "loginbtn";
             this.uploaderClient.NavigateToUrl(marketInfo.LogoutUrl);
-            Thread.Sleep(1000);
+            Thread.Sleep(5000);
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
-            Thread.Sleep(1000);
+            Thread.Sleep(5000);
 
             string userName;
             string password;
@@ -117,12 +117,13 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Name("password"), password);
             Thread.Sleep(1000);
             this.uploaderClient.ClickOnElementById(loginButtonId);
+            Thread.Sleep(5000);
 
             this.uploaderClient.ExecuteScript(" $('.tour-backdrop').remove();$('#step-0').remove();");
 
             Thread.Sleep(1000);
             this.uploaderClient.NavigateToUrl(LandingPageURL);
-            Thread.Sleep(1000);
+            Thread.Sleep(5000);
 
             return LoginResult.Logged;
         }

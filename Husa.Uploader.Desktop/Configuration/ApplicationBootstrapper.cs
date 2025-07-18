@@ -4,7 +4,6 @@ namespace Husa.Uploader.Desktop.Configuration
     using System.Globalization;
     using System.IO;
     using System.IO.Abstractions;
-    using System.IO.Compression;
     using System.Reflection;
     using Husa.CompanyServicesManager.Api.Client;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
@@ -210,7 +209,6 @@ namespace Husa.Uploader.Desktop.Configuration
                     BinaryLocation = @$"{driverPath}\ChromeForTesting\chrome.exe",
                 };
 
-                options.AddArguments(uploaderOptions.ChromeOptions.Arguments);
                 foreach (var preference in uploaderOptions.ChromeOptions.UserProfilePreferences)
                 {
                     options.AddUserProfilePreference(preference.Key, preference.Value);
@@ -218,22 +216,35 @@ namespace Husa.Uploader.Desktop.Configuration
 
                 // Handle proxy configuration
                 var isEnabledProxy = configuration.GetValue<bool>("Application:Uploader:ChromeOptions:Proxy:Enabled");
-                if (isEnabledProxy)
+                if (!isEnabledProxy)
+                {
+                    options.AddArguments(uploaderOptions.ChromeOptions.Arguments);
+                }
+                else
                 {
                     var proxyOptions = uploaderOptions.ChromeOptions.Proxy;
-                    options.AddArgument("--disable-blink-features=AutomationControlled");
-                    options.AddArgument("--disable-extensions");
+                    options.AddArgument("--enable-extensions");
                     options.AddArgument("--disable-popup-blocking");
-                    options.AddArgument("--enable-automation");
-
                     options.AddArgument("--auth-server-whitelist=*");
                     options.AddArgument("--auth-negotiate-delegate-whitelist=*");
 
                     options.AddUserProfilePreference("security.insecure_field_warning.contextual.enabled", false);
                     options.AddUserProfilePreference("security.insecure_password_field_warning.enabled", false);
+                    options.AddUserProfilePreference("security.ssl.enable_ocsp_stapling", false);
+                    options.AddUserProfilePreference("security.ssl.enable_false_start", false);
+                    options.AddUserProfilePreference("security.ssl.errorReporting.enabled", false);
 
                     var proxyUri = new Uri(proxyOptions.Url);
-                    ConfigureProxyAuthentication(options, proxyUri.Host, proxyUri.Port, proxyOptions.Username, proxyOptions.Password);
+                    var extensionPath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "husa_proxy_extension.crx");
+                    options.AddExtension(extensionPath);
+                    options.AddArgument("--disable-blink-features=AutomationControlled");
+                    options.AddArgument("--ignore-certificate-errors");
+                    options.AddArguments($"--proxy-server={proxyUri.Host}:{proxyUri.Port}", "--ignore-certificate-errors", "--allow-running-insecure-content", "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--disable-popup-blocking", "--disable-web-security", "--allow-insecure-localhost", "--ignore-certificate-errors-spki-list", "--disable-save-password-bubble", "--disable-autofill-assistant", "--disable-infobars", "--disable-notifications", "--disable-component-update", "start-maximized", "--no-default-browser-check");
+                    options.AddUserProfilePreference("credentials_enable_service", false);
+                    options.AddUserProfilePreference("profile.password_manager_enabled", false);
+                    options.AddUserProfilePreference("autofill.enabled", false);
+                    options.AddUserProfilePreference("profile.default_content_setting_values.notifications", 2);
+                    options.AddUserProfilePreference("profile.managed_default_content_settings.popups", 2);
                 }
 
                 return options;
@@ -276,175 +287,6 @@ namespace Husa.Uploader.Desktop.Configuration
         public static void ConfigureSignalR(this IServiceCollection services)
         {
             services.AddTransient<ISignalRConnectionService, SignalRConnectionService>();
-        }
-
-        private static void ConfigureProxyAuthentication(ChromeOptions options, string proxyHost, int proxyPort, string username, string password)
-        {
-            var extensionScript = $@"
-                const config = {{
-                    mode: 'fixed_servers',
-                    rules: {{
-                        singleProxy: {{
-                            scheme: 'http',
-                            host: '{proxyHost}',
-                            port: {proxyPort}
-                        }},
-                        bypassList: ['localhost', '127.0.0.1']
-                    }}
-                }};
-
-                chrome.proxy.settings.set({{value: config, scope: 'regular'}}, () => {{
-                    console.log('Proxy working...');
-                }});
-
-                chrome.webRequest.onAuthRequired.addListener(
-                    function(details) {{
-                        return {{
-                            authCredentials: {{
-                                username: '{username}',
-                                password: '{password}'
-                            }}
-                        }};
-                    }},
-                    {{ urls: ['<all_urls>'] }},
-                    ['blocking']
-                );
-
-                chrome.webRequest.onBeforeSendHeaders.addListener(
-                    function(details) {{
-                        const authString = btoa('{username}:{password}');
-                        let headers = details.requestHeaders || [];
-                        const hasAuth = headers.some(h => h.name.toLowerCase() === 'proxy-authorization');
-
-                        if (!hasAuth) {{
-                            headers.push({{
-                                name: 'Proxy-Authorization',
-                                value: 'Basic ' + authString
-                            }});
-                        }}
-
-                        return {{ requestHeaders: headers }};
-                    }},
-                    {{ urls: ['<all_urls>'] }},
-                    ['blocking', 'requestHeaders']
-                );
-
-                setInterval(() => {{
-                    chrome.proxy.settings.set({{value: config, scope: 'regular'}});
-                }}, 30000);
-            ";
-
-            var popupBlockerScript = @"
-                const originalAlert = window.alert;
-                window.alert = function(message) {
-                    if (message.includes('proxy') || message.includes('authentication')) {
-                        return;
-                    }
-                    originalAlert(message);
-                };
-
-                const observer = new MutationObserver(mutations => {
-                    mutations.forEach(mutation => {
-                        mutation.addedNodes.forEach(node => {
-                            if (node.nodeType === 1) {
-                                const element = node;
-                                if (element.tagName === 'DIALOG' ||
-                                    element.tagName === 'INPUT' && element.type === 'password' ||
-                                    element.innerText.includes('Sign in') ||
-                                    element.innerText.includes('Authentication')) {
-                                    element.style.display = 'none';
-                                }
-                            }
-                        });
-                    });
-                });
-
-                observer.observe(document.body, { childList: true, subtree: true });
-            ";
-
-            var manifest = @"
-            {
-                ""manifest_version"": 3,
-                ""name"": ""Proxy Auth Enforcer"",
-                ""version"": ""1.3"",
-                ""permissions"": [
-                    ""proxy"",
-                    ""webRequest"",
-                    ""webRequestAuthProvider"",
-                    ""scripting"",
-                    ""tabs""
-                ],
-                ""host_permissions"": [""<all_urls>""],
-                ""background"": {
-                    ""service_worker"": ""background.js""
-                },
-                ""content_scripts"": [
-                    {
-                        ""matches"": [""<all_urls>""],
-                        ""js"": [""popupBlocker.js""],
-                        ""run_at"": ""document_start""
-                    }
-                ]
-            }";
-
-            using (var zipStream = new MemoryStream())
-            {
-                using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true))
-                {
-                    // Adding manifest.json
-                    var manifestEntry = archive.CreateEntry("manifest.json");
-                    using (var writer = new StreamWriter(manifestEntry.Open()))
-                    {
-                        writer.Write(manifest);
-                    }
-
-                    // Adding background.js
-                    var bgEntry = archive.CreateEntry("background.js");
-                    using (var writer = new StreamWriter(bgEntry.Open()))
-                    {
-                        writer.Write(extensionScript);
-                    }
-
-                    // Adding popupBlocker.js
-                    var popupEntry = archive.CreateEntry("popupBlocker.js");
-                    using (var writer = new StreamWriter(popupEntry.Open()))
-                    {
-                        writer.Write(popupBlockerScript);
-                    }
-                }
-
-                // 5. Creating a temporal file ZIP
-                zipStream.Position = 0;
-                string tempZip = Path.GetRandomFileName() + ".zip";
-                File.WriteAllBytes(tempZip, zipStream.ToArray());
-
-                // 6. Adding extension to chrome
-                options.AddExtension(tempZip);
-            }
-
-            options.AddArgument("--disable-blink-features=AutomationControlled");
-            options.AddArgument("--disable-web-security");
-            options.AddArgument("--allow-running-insecure-content");
-            options.AddArgument("--ignore-certificate-errors-spki-list");
-            options.AddArgument("--disable-popup-blocking");
-
-            options.AddArgument($"--proxy-server=http://{proxyHost}:{proxyPort}");
-
-            options.AddUserProfilePreference("automatic_https_upgrade", 0);
-            options.AddUserProfilePreference("security.insecure_field_warning.contextual.enabled", false);
-
-            options.AddUserProfilePreference("proxy.config", new
-            {
-                mode = "fixed_servers",
-                rules = new
-                {
-                    proxyForHttp = $"{proxyHost}:{proxyPort}",
-                    proxyForHttps = $"{proxyHost}:{proxyPort}",
-                    bypassList = "localhost,127.0.0.1",
-                },
-                username = username,
-                password = password,
-            });
         }
     }
 }
