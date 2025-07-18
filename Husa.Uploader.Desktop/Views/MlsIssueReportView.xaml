@@ -15,7 +15,8 @@
         ShowInTaskbar="False"
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize"
+        Topmost="True">
     <StackPanel Margin="10">
         <StackPanel.Resources>
             <Style x:Key="HyperlinkButton" TargetType="Button">
