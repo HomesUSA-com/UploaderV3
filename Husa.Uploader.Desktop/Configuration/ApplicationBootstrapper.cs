@@ -235,7 +235,7 @@ namespace Husa.Uploader.Desktop.Configuration
                     options.AddUserProfilePreference("security.ssl.errorReporting.enabled", false);
 
                     var proxyUri = new Uri(proxyOptions.Url);
-                    var extensionPath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "husa_proxy_extension.crx");
+                    var extensionPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "husa_proxy_extension.crx");
                     options.AddExtension(extensionPath);
                     options.AddArgument("--disable-blink-features=AutomationControlled");
                     options.AddArgument("--ignore-certificate-errors");

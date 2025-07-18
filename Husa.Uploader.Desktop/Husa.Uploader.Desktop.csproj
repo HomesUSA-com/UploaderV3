@@ -39,6 +39,8 @@
     <ItemGroup>
         <None Remove="appsettings.Development.json" />
         <None Remove="appsettings.json" />
+        <None Remove="husa_proxy_extension.crx" />
+        <None Remove="husa_proxy_extension.pem" />
         <None Remove="Media\dark-logo.png" />
         <None Remove="Media\home-icon-1.png" />
         <None Remove="Media\House01.jpg" />
@@ -55,6 +57,12 @@
         </Content>
         <Content Include="chromedriver.exe">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="husa_proxy_extension.crx">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="husa_proxy_extension.pem">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
 
@@ -116,12 +124,6 @@
     <ItemGroup>
         <None Update="Deployment\Publish.html">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="husa_proxy_extension.crx">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-        <None Update="husa_proxy_extension.pem">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
     </ItemGroup>
 
