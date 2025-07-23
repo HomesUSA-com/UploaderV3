@@ -19,11 +19,8 @@ namespace Husa.Uploader.Desktop.Configuration
     using Husa.Quicklister.Sabor.Api.Client;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.BulkUpload;
-    using Husa.Uploader.Core.Interfaces.BulkUpload.TaxIdBulkUpload;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Core.Services.BulkUpload;
-    using Husa.Uploader.Core.Services.BulkUpload.TaxIdBulkUpload;
-    using Husa.Uploader.Core.Services.ShowingTime;
     using Husa.Uploader.Crosscutting.Constants;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Interfaces;
@@ -104,7 +101,6 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<IMediaRepository, MediaRepository>();
             services.AddTransient<IListingRequestRepository, ListingRequestRepository>();
             services.AddTransient<ILotListingRequestRepository, LotListingRequestRepository>();
-            services.AddTransient<IListingRepository, ListingRepository>();
         }
 
         public static void ConfigureServices(this IServiceCollection services)
@@ -197,14 +193,12 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<IHarUploadService, HarUploadService>();
             services.AddTransient<IDfwUploadService, DfwUploadService>();
             services.AddSingleton<IBulkUploadFactory, BulkUploadFactory>();
-            services.AddSingleton<ITaxIdBulkUploadFactory, TaxIdBulkUploadFactory>();
             services.AddTransient<ISaborBulkUploadService, SaborBulkUploadService>();
             services.AddTransient<IDfwBulkUploadService, DfwBulkUploadService>();
             services.AddTransient<IHarBulkUploadService, HarBulkUploadService>();
             services.AddTransient<ICtxBulkUploadService, CtxBulkUploadService>();
             services.AddTransient<IAborBulkUploadService, AborBulkUploadService>();
-            services.AddTransient<IDfwTaxIdBulkUploadService, DfwTaxIdBulkUploadService>();
-            services.AddTransient<DfwShowingTimeUploadService>();
+            services.AddTransient<IShowingTimeUploadService, ShowingTimeUploadService>();
 
             return services;
 
@@ -241,7 +235,7 @@ namespace Husa.Uploader.Desktop.Configuration
                     options.AddUserProfilePreference("security.ssl.errorReporting.enabled", false);
 
                     var proxyUri = new Uri(proxyOptions.Url);
-                    var extensionPath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "husa_proxy_extension.crx");
+                    var extensionPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "husa_proxy_extension.crx");
                     options.AddExtension(extensionPath);
                     options.AddArgument("--disable-blink-features=AutomationControlled");
                     options.AddArgument("--ignore-certificate-errors");
@@ -266,7 +260,6 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddViewFactory<LatLonInputView, LatLonInputViewModel>();
             services.AddViewFactory<MlsIssueReportView, MlsIssueReportViewModel>();
             services.AddViewFactory<BulkUploadView, BulkUploadViewModel>();
-            services.AddViewFactory<TaxIdBulkUploadView, TaxIdBulkUploadViewModel>();
         }
 
         public static void AddViewFactory<TForm, TModel>(this IServiceCollection services)
