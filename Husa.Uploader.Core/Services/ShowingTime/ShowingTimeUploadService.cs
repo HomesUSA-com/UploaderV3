@@ -249,14 +249,16 @@ namespace Husa.Uploader.Core.Services
             Task.Factory.StartNew(
                 () =>
         {
-            var allowSameDayRequest = info.LeadTime ? "Yes" : "No";
+            var leadTime = info.AdvancedNotice?.Equals(AdvancedNotice.LeadTime) ?? false;
+            var advancedNoticeText = info.AdvancedNotice?.ToStringFromEnumMember().ToLower();
+            var allowSameDayRequest = bool.Parse(advancedNoticeText ?? "false") ? "Yes" : "No";
             var allowAppraisals = info.AllowAppraisals ? "Yes" : "No";
             var allowInspections = info.AllowInspectionsAndWalkThroughs ? "Yes" : "No";
             var allowRealTime = info.AllowRealtimeAvailabilityForBrokers ? "Yes" : "No";
             var overlaping = (info.OverlappingAppointmentMode ?? default).ToStringFromEnumMember();
             var bufferTime = info.BufferTimeBetweenAppointments ?? 0;
-            var requiredTime = info.LeadTime ? info.RequiredTimeHours ?? 0 : 0;
-            var suggestedTime = info.LeadTime ? info.SuggestedTimeHours ?? 0 : 0;
+            var requiredTime = leadTime ? info.RequiredTimeHours ?? 0 : 0;
+            var suggestedTime = leadTime ? info.SuggestedTimeHours ?? 0 : 0;
             this.UploaderClient.ClickOnElementById($"AllowAppraisals_{allowAppraisals}");
             this.UploaderClient.ClickOnElementById($"AllowInspections_{allowInspections}");
             this.UploaderClient.ClickOnElementById($"AllowSameDayRequests_{allowSameDayRequest}");
