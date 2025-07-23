@@ -534,6 +534,7 @@
                                             </GroupBox.Style>
                                             <StackPanel>
                                                 <Button Name="StartShowingTimeUpload" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartShowingTimeUploadCommand}">Upload</Button>
+                                                <Button Name="StartShowingTimeDeleteDuplicateClients" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartShowingTimeDeleteDuplicateClientsCommand}">Delete Duplicate Clients</Button>
                                             </StackPanel>
                                         </GroupBox>
                                     </StackPanel>
@@ -555,6 +556,10 @@
                             <StackPanel Margin="10,0" >
                                 <StackPanel Visibility="{Binding ShowBulkUploadButton, Converter={StaticResource BooleanToVisibilityConverter }}">
                                     <Button Name="StartBulkUpload" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartBulkUploadCommand}">Bulk Upload
+                                    </Button>
+                                </StackPanel>
+                                <StackPanel Visibility="{Binding ShowTaxIdBulkUploadButton, Converter={StaticResource BooleanToVisibilityConverter }}">
+                                    <Button Name="StartTaxIdBulkUpload" Margin="5,5,5,0" Background="#FF1B3861" FontSize="12" Command="{Binding StartTaxIdBulkUploadCommand}">Tax Id Update
                                     </Button>
                                 </StackPanel>
                                 <StackPanel Visibility="{Binding ShowCancelButton, Converter={StaticResource BooleanToVisibilityConverter }}">

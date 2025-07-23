@@ -1,6 +1,6 @@
 namespace Husa.Uploader.Data.Entities
 {
-    using Husa.Quicklister.Extensions.Api.Contracts.Models.ShowingTime;
+    using Husa.Quicklister.Extensions.Api.Contracts.Response.ShowingTime;
     using Husa.Uploader.Data.Entities.LotListing;
 
     public class UploadListingItem
@@ -30,7 +30,7 @@ namespace Husa.Uploader.Data.Entities
         public bool IsNewListing => (this.FullListing != null && this.FullListing.IsNewListing) || (this.FullLotListing != null && this.FullLotListing.IsNewListing) || string.IsNullOrWhiteSpace(this.MlsNumber) || this.MlsNumber == NewListingMlsNumber;
         public ResidentialListingRequest FullListing { get; set; }
         public LotListingRequest FullLotListing { get; set; }
-        public ShowingTimeFullInfo ShowingTime { get; set; }
+        public ShowingTimeFullInfoResponse ShowingTime { get; set; }
         public bool FullListingConfigured { get; protected set; }
         public bool UseShowingTime { get; set; }
 

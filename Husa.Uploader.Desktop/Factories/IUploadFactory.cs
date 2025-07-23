@@ -1,8 +1,8 @@
 namespace Husa.Uploader.Desktop.Factories
 {
     using Husa.Extensions.Common.Enums;
-    using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.ServiceActions;
+    using Husa.Uploader.Core.Interfaces.ShowingTime;
 
     public interface IUploadFactory
     {
@@ -10,7 +10,7 @@ namespace Husa.Uploader.Desktop.Factories
 
         T Create<T>(MarketCode marketCode);
 
-        IShowingTimeUploadService ShowingTimeUploaderFactory();
+        IShowingTimeUploadService ShowingTimeUploaderFactory(MarketCode market);
 
         void CloseDriver();
     }

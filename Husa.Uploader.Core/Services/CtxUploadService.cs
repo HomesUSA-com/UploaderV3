@@ -13,6 +13,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.BulkUpload;
     using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Interfaces;
@@ -44,6 +45,10 @@ namespace Husa.Uploader.Core.Services
         }
 
         public MarketCode CurrentMarket => MarketCode.CTX;
+
+        public IUploaderClient UploaderClient => this.uploaderClient;
+
+        public IServiceSubscriptionClient ServiceSubscriptionClient => this.serviceSubscriptionClient;
 
         public bool IsFlashRequired => false;
 
@@ -636,6 +641,16 @@ namespace Husa.Uploader.Core.Services
 
                 this.uploaderClient.WriteTextbox(By.Id("Input_129"), listDate.ToShortDateString()); // List Date
             }
+        }
+
+        public Task<UploaderResponse> TaxIdRequestCreation(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<UploaderResponse> TaxIdUpdate(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
         }
 
         private void NavigateToNewPropertyInput()

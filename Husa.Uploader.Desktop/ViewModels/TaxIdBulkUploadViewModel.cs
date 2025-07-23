@@ -5,56 +5,28 @@ namespace Husa.Uploader.Desktop.ViewModels
     using System.Windows;
     using System.Windows.Input;
     using Husa.Extensions.Common.Enums;
-    using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Desktop.Commands;
-    using Husa.Uploader.Desktop.Models;
+    using Husa.Uploader.Desktop.Models.BulkUpload;
 
-    public class BulkUploadViewModel : ViewModel
+    public class TaxIdBulkUploadViewModel : ViewModel
     {
         private UiState state;
 
-        private RequestFieldChange? requestFieldChange;
         private MarketCode? market;
 
         private ICommand searchCommand;
         private ICommand closeCommand;
 
-        public static ObservableCollection<dynamic> Markets => new ObservableCollection<dynamic>()
-        {
+        public static ObservableCollection<dynamic> Markets =>
+        [
             new { Value = MarketCode.SanAntonio, Text = "San Antonio" },
             new { Value = MarketCode.CTX, Text = "Ctx" },
             new { Value = MarketCode.Austin, Text = "Austin" },
             new { Value = MarketCode.Houston, Text = "Houston" },
             new { Value = MarketCode.DFW, Text = "Dfw" },
             new { Value = MarketCode.Amarillo, Text = "Amarillo" },
-        };
-
-        public static ObservableCollection<dynamic> RequestFieldChanges => new ObservableCollection<dynamic>()
-        {
-            new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.FullUpload, Text = "Upload (Full)" },
-            new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.PartialUpload, Text = "Upload (Common fields)" },
-            new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.CompletionDate, Text = "Completion Date" },
-            new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.ListPrice, Text = "List Price" },
-            new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.ConstructionStage, Text = "Construction stage" },
-            new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.UploadMedia, Text = "Upload Media" },
-            new { Value = Husa.Quicklister.Extensions.Domain.Enums.RequestFieldChange.TaxId, Text = "Tax Id" },
-        };
-
-        public RequestFieldChange? RequestFieldChange
-        {
-            get => this.requestFieldChange;
-            set
-            {
-                if (value == this.requestFieldChange)
-                {
-                    return;
-                }
-
-                this.requestFieldChange = value;
-                this.OnPropertyChanged();
-            }
-        }
+        ];
 
         public MarketCode? Market
         {
@@ -91,7 +63,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        private bool CanContinue => this.Market.HasValue && this.RequestFieldChange.HasValue;
+        private bool CanContinue => this.Market.HasValue;
 
         private UiState State
         {
@@ -126,8 +98,8 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        public BulkUploadInfo GetBulkUploadInfo() => this.market.HasValue && this.requestFieldChange.HasValue ?
-            new(this.requestFieldChange.Value, this.market.Value) :
+        public TaxIdBulkUploadInfo GetBulkUploadInfo() => this.market.HasValue ?
+            new(this.market.Value) :
             new();
     }
 }

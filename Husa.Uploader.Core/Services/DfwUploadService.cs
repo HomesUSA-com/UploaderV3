@@ -6,6 +6,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Dfw.Api.Client;
     using Husa.Quicklister.Dfw.Domain.Enums;
     using Husa.Quicklister.Dfw.Domain.Enums.Domain;
     using Husa.Quicklister.Extensions.Domain.Enums;
@@ -16,6 +17,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.BulkUpload;
     using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Interfaces;
@@ -28,17 +30,20 @@ namespace Husa.Uploader.Core.Services
         private const string LandingPageURL = "https://matrix.ntreis.net/";
         private const string EditUrl = "https://ntrdd.mlsmatrix.com/Matrix/Input";
         private const string NavigateToUrlNewListing = "https://ntrdd.mlsmatrix.com/Matrix/Input";
+        private const string SEARCHURL = "https://ntrdd.mlsmatrix.com/Matrix/Search/Residential/Quick";
         private readonly IUploaderClient uploaderClient;
         private readonly IMediaRepository mediaRepository;
         private readonly IServiceSubscriptionClient serviceSubscriptionClient;
         private readonly ApplicationOptions options;
         private readonly ILogger<DfwUploadService> logger;
+        private readonly IQuicklisterDfwClient quicklisterDfwClient;
 
         public DfwUploadService(
             IUploaderClient uploaderClient,
             IOptions<ApplicationOptions> options,
             IMediaRepository mediaRepository,
             IServiceSubscriptionClient serviceSubscriptionClient,
+            IQuicklisterDfwClient quicklisterDfwClient,
             ILogger<DfwUploadService> logger)
         {
             this.uploaderClient = uploaderClient ?? throw new ArgumentNullException(nameof(uploaderClient));
@@ -46,9 +51,15 @@ namespace Husa.Uploader.Core.Services
             this.serviceSubscriptionClient = serviceSubscriptionClient ?? throw new ArgumentNullException(nameof(serviceSubscriptionClient));
             this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.quicklisterDfwClient = quicklisterDfwClient ?? throw new ArgumentNullException(nameof(quicklisterDfwClient));
             }
 
         public MarketCode CurrentMarket => MarketCode.DFW;
+
+        public IUploaderClient UploaderClient => this.uploaderClient;
+
+        public IServiceSubscriptionClient ServiceSubscriptionClient => this.serviceSubscriptionClient;
+
         public string MultiFamilyPropType => ListPropertyType.ResidencialIncome.ToStringFromEnumMember();
 
         public bool IsFlashRequired => false;
@@ -717,6 +728,135 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WriteTextbox(By.Id("Input_80"), listDate.Date.ToShortDateString()); // List Date
             }
         }
+
+        public async Task<UploaderResponse> TaxIdRequestCreation(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(listing);
+
+            UploaderResponse uploaderResponse = new();
+
+            this.logger.LogInformation("Updating Tax Id information for the listing {ListingId}", listing.Id);
+            this.uploaderClient.InitializeUploadInfo(listing.Id, false);
+            if (logIn)
+            {
+                await this.Login(listing.CompanyId);
+                Thread.Sleep(2000);
+                this.CheckIfAutoSaveWindowIsVisible();
+            }
+
+            this.NavigateToListingInfo(listing.MlsNumber, logIn, cancellationToken);
+
+            var taxTabLocator = By.XPath("//li[@role='presentation']/a[text()='Tax']");
+
+            if (!this.uploaderClient.IsElementClickable(taxTabLocator))
+            {
+                this.logger.LogInformation("Tax section is not available. Skipping...");
+                uploaderResponse.UploadResult = UploadResult.Success;
+                return uploaderResponse;
+            }
+
+            this.uploaderClient.FindElement(taxTabLocator).Click();
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//span[text()='Tax ID:']"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+
+            var taxId = this.ScrapeFieldFromTaxPage("Tax ID");
+            if (string.IsNullOrEmpty(taxId))
+            {
+                taxId = this.ScrapeFieldFromTaxPage("Parcel ID");
+            }
+
+            if (string.IsNullOrEmpty(taxId))
+            {
+                this.logger.LogInformation("Tax ID and Parcel Id is not available. Skipping...");
+                uploaderResponse.UploadResult = UploadResult.Success;
+                return uploaderResponse;
+            }
+
+            try
+            {
+                await this.quicklisterDfwClient.ListingSaleRequest.CreateTaxIdRequestAsync(listing.Id, taxId, cancellationToken);
+            }
+            catch (HttpRequestException ex)
+            {
+                this.uploaderClient.ExecuteScript("$(\"head link[rel='stylesheet']\").last().after(\"<link rel='stylesheet' href='https://leadmanager.homesusa.com/css/animate.css' type='text/css'>\");");
+                this.uploaderClient.ExecuteScript("$(\"head link[rel='stylesheet']\").last().after(\"<link rel='stylesheet' href='https://leadmanager.homesusa.com/css/igrowl.css' type='text/css'>\");");
+                this.uploaderClient.ExecuteScript("$(\"head link[rel='stylesheet']\").last().after(\"<link rel='stylesheet' href='https://leadmanager.homesusa.com/css/fonts/feather.css' type='text/css'>\");");
+                this.uploaderClient.ExecuteScript("$(\"head\").append('<script src=\"https://leadmanager.homesusa.com/Scripts/igrowl.js\"></script>')");
+                Thread.Sleep(2000);
+                this.uploaderClient.ExecuteScript("$.iGrowl({type: 'error',title: 'HomesUSA - Bulk Uploader',message: 'Request creation failed! Please check if listing has at least one completed request and does not have any pending requests. List will be skipped...',delay: 0,small: false,placement:{ x: 'right', y: 'bottom'}, offset: {x: 30,y: 50},animShow: 'fadeInDown',animHide: 'bounceOutUp'});");
+                this.logger.LogError(ex, "Error from Quicklister: {error}", ex);
+                Thread.Sleep(5000);
+                this.uploaderClient.ExecuteScript("$.iGrowl.prototype.dismissAll('all')");
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Error from Quicklister: {error}", ex);
+            }
+
+            uploaderResponse.UploadResult = UploadResult.Success;
+            return uploaderResponse;
+        }
+
+        public async Task<UploaderResponse> TaxIdUpdate(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(listing);
+
+            UploaderResponse uploaderResponse = new();
+
+            this.logger.LogInformation("Updating Tax Id information for the listing {ListingId}", listing.ResidentialListingRequestID);
+            this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, false);
+            if (logIn)
+            {
+                await this.Login(listing.CompanyId);
+                Thread.Sleep(2000);
+                this.CheckIfAutoSaveWindowIsVisible();
+            }
+
+            try
+            {
+                this.NavigateToQuickEdit(listing.MLSNum);
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//span[text()='Modify Property']"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+                this.uploaderClient.ClickOnElementById("m_dlInputList_ctl00_m_btnSelect");
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_235"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+                this.uploaderClient.WriteTextbox(By.Id("Input_235"), listing.TaxID);
+                this.uploaderClient.WaitUntilElementExists(By.Id("css_InputCompleted"), TimeSpan.FromMinutes(5), showAlert: true, cancellationToken);
+                Thread.Sleep(500);
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
+                uploaderResponse.UploadResult = UploadResult.Failure;
+                uploaderResponse.UploadInformation = this.uploaderClient.UploadInformation;
+                return uploaderResponse;
+            }
+
+            uploaderResponse.UploadResult = UploadResult.Success;
+            return uploaderResponse;
+        }
+
+        private void CheckIfAutoSaveWindowIsVisible()
+        {
+            if (this.uploaderClient.IsElementPresent(By.Id("m_divAutoSaveRestore"), true))
+            {
+                this.uploaderClient.ClickOnElementById("ctl02_ctl10_m_tdSkip");
+                this.uploaderClient.WaitUntilElementIsNotDisplayed(By.Id("m_divAutoSaveRestore"), waitTime: TimeSpan.FromSeconds(2));
+            }
+        }
+
+        private void NavigateToListingInfo(string mlsNumber, bool isInHomePage, CancellationToken cancellationToken = default)
+        {
+            this.uploaderClient.ScrollToTop();
+            var number = isInHomePage ? "2" : "1";
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id($"ctl0{number}_m_ucSpeedBar_m_tbSpeedBar"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+            this.uploaderClient.WriteTextbox(By.Id($"ctl0{number}_m_ucSpeedBar_m_tbSpeedBar"), value: mlsNumber);
+            this.uploaderClient.ClickOnElement(By.Id($"ctl0{number}_m_ucSpeedBar_m_lnkGo"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("singleLineTableHeader"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.LinkText(mlsNumber));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("mtx-containerNavTabs"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+        }
+
+        private string ScrapeFieldFromTaxPage(string fieldLabel) =>
+            this.uploaderClient.FindElement(By.XPath($"//span[text()='{fieldLabel}:']/../following-sibling::div/span")).Text;
 
         private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {

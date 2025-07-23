@@ -14,6 +14,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.BulkUpload;
     using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Interfaces;
@@ -45,6 +46,10 @@ namespace Husa.Uploader.Core.Services
         }
 
         public MarketCode CurrentMarket => MarketCode.Austin;
+
+        public IUploaderClient UploaderClient => this.uploaderClient;
+
+        public IServiceSubscriptionClient ServiceSubscriptionClient => this.serviceSubscriptionClient;
 
         public bool IsFlashRequired => false;
 
@@ -1022,6 +1027,16 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
+        public Task<UploaderResponse> TaxIdRequestCreation(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<UploaderResponse> TaxIdUpdate(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
         private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
             this.uploaderClient.ClickOnElementById("toc_InputForm_section_13"); // click in tab Remarks/Tours/Internet
@@ -1425,7 +1440,7 @@ namespace Husa.Uploader.Core.Services
             this.SetMultipleCheckboxById("Input_262", "None"); // Private Pool Features (On Property)
             this.SetMultipleCheckboxById("Input_251", listing.GuestAccommodationsDesc); // Guest Accommodations
             this.SetMultipleCheckboxById("Input_267", listing.WindowCoverings); // Window Features
-            this.SetMultipleCheckboxById("Input_266", listing.SecurityDesc); // Security Features
+            this.SetMultipleCheckboxById("Input_266", listing.SecurityDesc?.ToUpper()); // Security Features
             this.SetMultipleCheckboxById("Input_255", listing.LaundryLocDesc); // Laundry Location (3)
             this.SetMultipleCheckboxById("Input_261", listing.FenceDesc); // Fencing (4)
             this.uploaderClient.WriteTextbox(By.Name("Input_252"), listing.NumGuestBeds); // # Guest Beds

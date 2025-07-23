@@ -93,7 +93,7 @@
         <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
         <PackageReference Include="Serilog.Sinks.EventLog" Version="3.1.0" />
         <PackageReference Include="Serilog.Sinks.Trace" Version="3.0.0" />
-        <PackageReference Include="Husa.Extensions.Common" Version="4.2.1" />
+        <PackageReference Include="Husa.Extensions.Common" Version="4.3.1" />
         <PackageReference Include="System.IO.Abstractions" Version="20.0.15" />
     </ItemGroup>
 
@@ -124,6 +124,12 @@
     <ItemGroup>
         <None Update="Deployment\Publish.html">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="husa_proxy_extension.crx">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+        <None Update="husa_proxy_extension.pem">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
     </ItemGroup>
 

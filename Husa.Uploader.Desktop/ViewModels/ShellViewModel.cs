@@ -47,6 +47,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private readonly IOptions<ApplicationOptions> options;
         private readonly IListingRequestRepository sqlDataLoader;
         private readonly ILotListingRequestRepository sqlLotDataLoader;
+        private readonly IListingRepository sqlListingDataLoader;
         private readonly IAuthenticationService authenticationClient;
         private readonly IVersionManagerService versionManagerService;
         private readonly IChildViewFactory mlsIssueReportFactory;
@@ -106,20 +107,24 @@ namespace Husa.Uploader.Desktop.ViewModels
         private ICommand startLotPriceUpdateCommand;
 
         private ICommand startShowingTimeUploadCommand;
+        private ICommand startShowingTimeDeleteDuplicateClientsCommand;
         private ICommand startRefreshListingsCommand;
 
         public ShellViewModel(
             IOptions<ApplicationOptions> options,
             IListingRequestRepository sqlDataLoader,
             ILotListingRequestRepository sqlLotDataLoader,
+            IListingRepository sqlListingDataLoader,
             IAuthenticationService authenticationClient,
             IVersionManagerService versionManagerService,
             IChildViewFactory mlsIssueReportFactory,
             IAbstractFactory<BulkUploadView> bulkUploadViewFactory,
+            IAbstractFactory<TaxIdBulkUploadView> taxIdBulkUploadViewFactory,
             IAbstractFactory<LatLonInputView> locationViewFactory,
             IAbstractFactory<MlsnumInputView> mlsNumberInputFactory,
             IUploadFactory uploadFactory,
             IBulkUploadFactory bulkUploadFactory,
+            ITaxIdBulkUploadFactory taxIdBulkUploadFactory,
             ILogger<ShellView> logger)
             : this()
         {
@@ -135,6 +140,9 @@ namespace Husa.Uploader.Desktop.ViewModels
             this.uploadFactory = uploadFactory ?? throw new ArgumentNullException(nameof(uploadFactory));
             this.bulkUploadFactory = bulkUploadFactory ?? throw new ArgumentNullException(nameof(bulkUploadFactory));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.taxIdBulkUploadViewFactory = taxIdBulkUploadViewFactory ?? throw new ArgumentNullException(nameof(taxIdBulkUploadViewFactory));
+            this.taxIdBulkUploadFactory = taxIdBulkUploadFactory ?? throw new ArgumentNullException(nameof(taxIdBulkUploadFactory));
+            this.sqlListingDataLoader = sqlListingDataLoader ?? throw new ArgumentNullException(nameof(sqlListingDataLoader));
 
             // Check if ChromeOptions.Proxy and its URL are defined, then set flags accordingly
             var proxyOptions = this.options.Value.Uploader.ChromeOptions?.Proxy;
@@ -264,6 +272,8 @@ namespace Husa.Uploader.Desktop.ViewModels
         public bool UploadFailed => this.State == UploaderState.UploadFailed;
 
         public bool ShowBulkUploadButton => this.State == UploaderState.Ready && this.CurrentEntity == Entity.Listing;
+
+        public bool ShowTaxIdBulkUploadButton => this.State == UploaderState.Ready && this.CurrentEntity == Entity.Listing;
 
         public Dictionary<string, Item> Workers { get; set; }
 
@@ -676,6 +686,15 @@ namespace Husa.Uploader.Desktop.ViewModels
             {
                 this.startShowingTimeUploadCommand ??= new RelayAsyncCommand(param => this.StartShowingTimeUpload(), param => true);
                 return this.startShowingTimeUploadCommand;
+            }
+        }
+
+        public ICommand StartShowingTimeDeleteDuplicateClientsCommand
+        {
+            get
+            {
+                this.startShowingTimeDeleteDuplicateClientsCommand ??= new RelayAsyncCommand(param => this.StartShowingTimeDeleteDuplicateClients(), param => true);
+                return this.startShowingTimeDeleteDuplicateClientsCommand;
             }
         }
 
@@ -1606,11 +1625,36 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private async Task StartShowingTimeUpload()
         {
+            if (this.selectedListingRequest is null)
+            {
+                return;
+            }
+
             this.ShowCancelButton = true;
-            var uploader = this.uploadFactory.ShowingTimeUploaderFactory();
-            this.cancellationTokenSource = new CancellationTokenSource();
+            var market = Enum.Parse<MarketCode>(this.selectedListingRequest.Market);
+            var uploader = this.uploadFactory.ShowingTimeUploaderFactory(market);
+            this.cancellationTokenSource ??= new CancellationTokenSource();
             await this.SetFullRequestInformation();
-            await uploader.Upload(this.selectedListingRequest?.FullListing);
+            await uploader.Upload(
+                this.selectedListingRequest.FullListing, this.cancellationTokenSource.Token);
+        }
+
+        private async Task StartShowingTimeDeleteDuplicateClients()
+        {
+            if (this.selectedListingRequest is null)
+            {
+                return;
+            }
+
+            this.ShowCancelButton = true;
+            var market = Enum.Parse<MarketCode>(this.selectedListingRequest.Market);
+            var uploader = this.uploadFactory.ShowingTimeUploaderFactory(market);
+            this.cancellationTokenSource ??= new CancellationTokenSource();
+            await this.SetFullRequestInformation();
+            var companyId = this.selectedListingRequest.FullListing.CompanyId;
+            var mlsNumber = this.selectedListingRequest.FullListing.MLSNum;
+            var cancellationToken = this.cancellationTokenSource.Token;
+            await uploader.DeleteDuplicateClients(companyId, mlsNumber, cancellationToken);
         }
 
         private async Task StartStatusUpdate()

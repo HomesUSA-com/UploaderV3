@@ -4,6 +4,8 @@ namespace Husa.Uploader.Desktop.Factories
     using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.ServiceActions;
+    using Husa.Uploader.Core.Interfaces.ShowingTime;
+    using Husa.Uploader.Core.Services.ShowingTime;
     using Microsoft.Extensions.DependencyInjection;
 
     public class UploaderFactory : IUploadFactory
@@ -73,8 +75,16 @@ namespace Husa.Uploader.Desktop.Factories
             }
         }
 
-        public IShowingTimeUploadService ShowingTimeUploaderFactory() =>
-            this.serviceProvider.GetRequiredService<IShowingTimeUploadService>();
+        public IShowingTimeUploadService ShowingTimeUploaderFactory(MarketCode market) => market switch
+        {
+            MarketCode.Amarillo => throw new NotImplementedException(),
+            MarketCode.Austin => throw new NotImplementedException(),
+            MarketCode.CTX => throw new NotImplementedException(),
+            MarketCode.DFW => this.serviceProvider.GetRequiredService<DfwShowingTimeUploadService>(),
+            MarketCode.Houston => throw new NotImplementedException(),
+            MarketCode.SanAntonio => throw new NotImplementedException(),
+            _ => throw new NotImplementedException(),
+        };
 
         private static bool IsAssignableFrom<TService, T>()
             where TService : IUploadListing

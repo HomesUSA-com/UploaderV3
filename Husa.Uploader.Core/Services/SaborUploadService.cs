@@ -12,6 +12,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
+    using Husa.Uploader.Data.Entities.BulkUpload;
     using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
     using Husa.Uploader.Data.Interfaces;
@@ -47,6 +48,10 @@ namespace Husa.Uploader.Core.Services
         public MarketCode CurrentMarket => MarketCode.SanAntonio;
 
         public bool IsFlashRequired => false;
+
+        public IUploaderClient UploaderClient => throw new NotImplementedException();
+
+        public IServiceSubscriptionClient ServiceSubscriptionClient => throw new NotImplementedException();
 
         public bool CanUpload(ResidentialListingRequest listing) => listing.MarketCode == this.CurrentMarket;
 
@@ -636,6 +641,16 @@ namespace Husa.Uploader.Core.Services
         }
 
         public Task<UploaderResponse> UpdateLotImages(LotListingRequest listing, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<UploaderResponse> TaxIdRequestCreation(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<UploaderResponse> TaxIdUpdate(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
