@@ -1625,7 +1625,8 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private async Task StartShowingTimeUpload()
         {
-            if (this.selectedListingRequest is null)
+            await Task.CompletedTask;
+            /*if (this.selectedListingRequest is null)
             {
                 return;
             }
@@ -1636,7 +1637,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             this.cancellationTokenSource ??= new CancellationTokenSource();
             await this.SetFullRequestInformation();
             await uploader.Upload(
-                this.selectedListingRequest.FullListing, this.cancellationTokenSource.Token);
+                this.selectedListingRequest.FullListing, this.cancellationTokenSource.Token);*/
         }
 
         private async Task StartShowingTimeDeleteDuplicateClients()

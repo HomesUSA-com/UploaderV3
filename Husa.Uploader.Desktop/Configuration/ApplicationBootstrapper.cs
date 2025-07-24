@@ -102,6 +102,7 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<IMediaRepository, MediaRepository>();
             services.AddTransient<IListingRequestRepository, ListingRequestRepository>();
             services.AddTransient<ILotListingRequestRepository, LotListingRequestRepository>();
+            services.AddTransient<IListingRepository, ListingRepository>();
         }
 
         public static void ConfigureServices(this IServiceCollection services)
@@ -200,6 +201,7 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<ICtxBulkUploadService, CtxBulkUploadService>();
             services.AddTransient<IAborBulkUploadService, AborBulkUploadService>();
             services.AddTransient<IShowingTimeUploadService, ShowingTimeUploadService>();
+            services.AddTransient<ITaxIdBulkUploadFactory, TaxIdBulkUploadFactory>();
 
             return services;
 
@@ -261,6 +263,7 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddViewFactory<LatLonInputView, LatLonInputViewModel>();
             services.AddViewFactory<MlsIssueReportView, MlsIssueReportViewModel>();
             services.AddViewFactory<BulkUploadView, BulkUploadViewModel>();
+            services.AddViewFactory<TaxIdBulkUploadView, TaxIdBulkUploadViewModel>();
         }
 
         public static void AddViewFactory<TForm, TModel>(this IServiceCollection services)
