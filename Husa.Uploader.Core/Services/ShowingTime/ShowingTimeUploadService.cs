@@ -249,20 +249,14 @@ namespace Husa.Uploader.Core.Services
             Task.Factory.StartNew(
                 () =>
         {
-            var allowSameDayRequest = info.LeadTime ? "Yes" : "No";
             var allowAppraisals = info.AllowAppraisals ? "Yes" : "No";
             var allowInspections = info.AllowInspectionsAndWalkThroughs ? "Yes" : "No";
             var allowRealTime = info.AllowRealtimeAvailabilityForBrokers ? "Yes" : "No";
             var overlaping = (info.OverlappingAppointmentMode ?? default).ToStringFromEnumMember();
             var bufferTime = info.BufferTimeBetweenAppointments ?? 0;
-            var requiredTime = info.LeadTime ? info.RequiredTimeHours ?? 0 : 0;
-            var suggestedTime = info.LeadTime ? info.SuggestedTimeHours ?? 0 : 0;
             this.UploaderClient.ClickOnElementById($"AllowAppraisals_{allowAppraisals}");
             this.UploaderClient.ClickOnElementById($"AllowInspections_{allowInspections}");
-            this.UploaderClient.ClickOnElementById($"AllowSameDayRequests_{allowSameDayRequest}");
             this.UploaderClient.ClickOnElementById($"PublicListingAvailabilityEnabled_{allowRealTime}");
-            this.UploaderClient.SetSelect(By.Id("RequiredLeadTime"), requiredTime);
-            this.UploaderClient.SetSelect(By.Id("SuggestedLeadTime"), suggestedTime);
             this.UploaderClient.SetSelect(By.Id("MinShowingWindowShowings"), info.MinShowingWindowShowings ?? 0);
             this.UploaderClient.SetSelect(By.Id("MaxShowingWindowShowings"), info.MaxShowingWindowShowings ?? 0);
             this.UploaderClient.SetSelect(By.Id("OverlappingAppointmentMode"), overlaping);
