@@ -21,7 +21,6 @@ namespace Husa.Uploader.Desktop.Configuration
     using Husa.Quicklister.Sabor.Api.Client;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.BulkUpload;
-    using Husa.Uploader.Core.Interfaces.ShowingTime;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Core.Services.BulkUpload;
     using Husa.Uploader.Crosscutting.Constants;
@@ -106,6 +105,7 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<IMediaRepository, MediaRepository>();
             services.AddTransient<IListingRequestRepository, ListingRequestRepository>();
             services.AddTransient<ILotListingRequestRepository, LotListingRequestRepository>();
+            services.AddTransient<IListingRepository, ListingRepository>();
         }
 
         public static void ConfigureServices(this IServiceCollection services)
@@ -211,7 +211,7 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<IHarBulkUploadService, HarBulkUploadService>();
             services.AddTransient<ICtxBulkUploadService, CtxBulkUploadService>();
             services.AddTransient<IAborBulkUploadService, AborBulkUploadService>();
-            services.AddTransient<IShowingTimeUploadService, ShowingTimeUploadService>();
+            services.AddTransient<ITaxIdBulkUploadFactory, TaxIdBulkUploadFactory>();
 
             return services;
 
@@ -273,6 +273,7 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddViewFactory<LatLonInputView, LatLonInputViewModel>();
             services.AddViewFactory<MlsIssueReportView, MlsIssueReportViewModel>();
             services.AddViewFactory<BulkUploadView, BulkUploadViewModel>();
+            services.AddViewFactory<TaxIdBulkUploadView, TaxIdBulkUploadViewModel>();
         }
 
         public static void AddViewFactory<TForm, TModel>(this IServiceCollection services)
