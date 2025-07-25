@@ -4,7 +4,9 @@ namespace Husa.Uploader.Desktop.Configuration
     using System.Globalization;
     using System.IO;
     using System.IO.Abstractions;
+    using System.Net.Http;
     using System.Reflection;
+    using System.Security.Authentication;
     using Husa.CompanyServicesManager.Api.Client;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Api.Client;
@@ -41,6 +43,8 @@ namespace Husa.Uploader.Desktop.Configuration
 
     public static class ApplicationBootstrapper
     {
+        public const string MainApi = "MainApiClient";
+
         public static IServiceCollection ConfigureApplicationOptions(this IServiceCollection services)
         {
             services
@@ -113,7 +117,15 @@ namespace Husa.Uploader.Desktop.Configuration
 
         public static void ConfigureHttpClients(this IServiceCollection services)
         {
-            services.AddHttpClient();
+            services.AddHttpClient(MainApi, (provider, client) =>
+            {
+                var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
+                client.BaseAddress = new Uri(options.PublishingPath);
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
+            });
 
             services.AddHttpClient<IMigrationClient, MigrationClient>((provider, client) =>
             {
