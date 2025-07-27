@@ -332,9 +332,11 @@ namespace Husa.Uploader.Core.Tests
         [Fact]
         public async Task SetAppointmentCenter_Success()
         {
+            var showingTime = this.ShowingTimeFaker();
+
             this.mockUploaderClient.Setup(x => x.ClickOnElementById(It.IsAny<string>(), false, 400, false)).Verifiable();
 
-            await this.Sut.SetAppointmentCenter(CancellationToken.None);
+            await this.Sut.SetAppointmentCenter(showingTime.AppointmentSettings, CancellationToken.None);
 
             this.mockUploaderClient.Verify(x => x.ClickOnElementById(It.IsAny<string>(), false, 400, false), Times.Exactly(2));
         }
@@ -349,7 +351,7 @@ namespace Husa.Uploader.Core.Tests
                 x => x.ClickOnElementById(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<bool>()))
                 .Verifiable();
 
-            await this.Sut.SetAppointmentSettings(showingTime.AppointmentSettings.AppointmentType.Value, CancellationToken.None);
+            await this.Sut.SetAppointmentSettings(showingTime.AppointmentSettings, CancellationToken.None);
 
             this.mockUploaderClient.Verify(x => x.ExecuteScript(It.IsAny<string>(), It.IsAny<bool>()), Times.Exactly(2));
             this.mockUploaderClient.Verify(

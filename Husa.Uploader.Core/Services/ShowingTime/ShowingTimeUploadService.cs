@@ -197,16 +197,25 @@ namespace Husa.Uploader.Core.Services
             return duplicates.Count();
         }
 
-        public Task SetAppointmentCenter(CancellationToken cancellationToken) =>
+        public Task SetAppointmentCenter(AppointmentSettingsResponse info, CancellationToken cancellationToken) =>
             Task.Factory.StartNew(
             () =>
         {
-            this.UploaderClient.ClickOnElementById("Allow3rdPartyAppts_Yes");
-            this.UploaderClient.ClickOnElementById("AllowOnlineShowingRequests_Yes");
+            var allowThirdPartyApps = info.AllowApptCenterTakeAppts ? "Yes" : "No";
+            this.UploaderClient.ClickOnElementById($"Allow3rdPartyAppts_{allowThirdPartyApps}");
+
+            var allowOnlineShowingRequests = info.AllowShowingAgentsToRequest ? "Yes" : "No";
+            this.UploaderClient.ClickOnElementById($"AllowOnlineShowingRequests_{allowOnlineShowingRequests}");
+
+            var appointmentPresentationType = (info.AppointmentPresentationType ?? default).ToStringFromEnumMember();
+            this.UploaderClient.SetSelect(
+                By.Id("AppointmentPresentationType"),
+                appointmentPresentationType,
+                isElementOptional: false);
         },
             cancellationToken);
 
-        public Task SetAppointmentSettings(AppointmentType appointmentType, CancellationToken cancellationToken = default) =>
+        public Task SetAppointmentSettings(AppointmentSettingsResponse info, CancellationToken cancellationToken = default) =>
             Task.Factory.StartNew(
                 () =>
             {
@@ -214,7 +223,7 @@ namespace Husa.Uploader.Core.Services
 
                 this.UploaderClient.ExecuteScript(
                     "document.querySelector('#appointmentTypeSelection > div > a').click()");
-                switch (appointmentType)
+                switch (info.AppointmentType)
                 {
                     case AppointmentType.AppointmentRequiredConfirmWithAny:
                         this.UploaderClient.ExecuteScript(
@@ -234,14 +243,34 @@ namespace Husa.Uploader.Core.Services
                         break;
                 }
 
-                if (appointmentType == AppointmentType.AppointmentRequiredConfirmWithAny)
+                if (info.AppointmentType == AppointmentType.AppointmentRequiredConfirmWithAny)
                 {
+                    var isAgentAccompanied = info.IsAgentAccompaniedShowing ? "Yes" : "No";
                     this.UploaderClient.WaitForElementToBeVisible(By.Id("isAgentAccompany_No"), TimeSpan.FromMilliseconds(600));
-                    this.UploaderClient.ClickOnElementById("isAgentAccompany_No");
+                    this.UploaderClient.ClickOnElementById($"isAgentAccompany_{isAgentAccompanied}");
                 }
 
-                this.UploaderClient.ClickOnElementById("SendFeedback_Yes");
-                this.UploaderClient.ClickOnElementById("IsOccupied_No");
+                var sendFeedback = info.IsFeedbackRequested ? "Yes" : "No";
+                this.UploaderClient.ClickOnElementById($"SendFeedback_{sendFeedback}");
+
+                var isOccupied = info.IsPropertyOccupied ? "Yes" : "No";
+                this.UploaderClient.ClickOnElementById($"IsOccupied_{isOccupied}");
+
+                var officeTemplates = info.FeedbackTemplate?.GetEnumDescription();
+                var officeTemplatesOption = officeTemplates is null ? null : this.UploaderClient.FindElement(
+                    By.XPath($"//select[@id='ListingFeedbackTemplateId']/optgroup[@label='{officeTemplates}']/option[1]"),
+                    isElementOptional: false);
+                if (officeTemplatesOption != null)
+                {
+                    var officeTemplatesValue = officeTemplatesOption.GetAttribute("value");
+                    this.UploaderClient.SetSelect(By.Id("ListingFeedbackTemplateId"), officeTemplatesValue);
+                }
+
+                var staffLanguage = info.RequiredStaffLanguage?.ToStringFromEnumMember();
+                if (staffLanguage is not null)
+                {
+                    this.UploaderClient.SetSelect(By.Id("RequiredStaffLanguage"), staffLanguage);
+                }
             },
                 cancellationToken);
 
@@ -256,9 +285,9 @@ namespace Husa.Uploader.Core.Services
             var allowInspections = info.AllowInspectionsAndWalkThroughs ? "Yes" : "No";
             var allowRealTime = info.AllowRealtimeAvailabilityForBrokers ? "Yes" : "No";
             var overlaping = (info.OverlappingAppointmentMode ?? default).ToStringFromEnumMember();
-            var bufferTime = info.BufferTimeBetweenAppointments ?? 0;
-            var requiredTime = leadTime ? info.RequiredTimeHours ?? 0 : 0;
-            var suggestedTime = leadTime ? info.SuggestedTimeHours ?? 0 : 0;
+            var bufferTime = (info.BufferTimeBetweenAppointments ?? default).ToStringFromEnumMember();
+            var requiredTime = leadTime ? info.RequiredTimeHours?.ToStringFromEnumMember() ?? "0" : "0";
+            var suggestedTime = leadTime ? info.SuggestedTimeHours?.ToStringFromEnumMember() ?? "0" : "0";
             this.UploaderClient.ClickOnElementById($"AllowAppraisals_{allowAppraisals}");
             this.UploaderClient.ClickOnElementById($"AllowInspections_{allowInspections}");
             this.UploaderClient.ClickOnElementById($"AllowSameDayRequests_{allowSameDayRequest}");
@@ -561,9 +590,10 @@ namespace Husa.Uploader.Core.Services
                 return response;
             }
 
-            await this.SetAppointmentCenter(cancellationToken);
+            await this.SetAppointmentCenter(
+                request.ShowingTime.AppointmentSettings, cancellationToken);
             await this.SetAppointmentSettings(
-                request.ShowingTime.AppointmentSettings.AppointmentType.Value, cancellationToken);
+                request.ShowingTime.AppointmentSettings, cancellationToken);
             await this.SetAppointmentRestrictions(
                 request.ShowingTime.AppointmentRestrictions, cancellationToken);
             await this.SetAccessInformation(
