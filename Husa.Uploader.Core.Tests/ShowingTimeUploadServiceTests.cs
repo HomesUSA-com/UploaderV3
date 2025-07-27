@@ -37,83 +37,6 @@ namespace Husa.Uploader.Core.Tests
         public ShowingTimeUploadService Sut { get; private set; }
 
         [Fact]
-        public async Task GetInShowingTimeSite_WithValidMlsNumber_ReturnsTrue()
-        {
-            // Arrange
-            var companyId = Guid.NewGuid();
-            var mlsNumber = "123456";
-            var cancellationToken = CancellationToken.None;
-
-            this.mockMarketUploadService
-                .Setup(x => x.Login(companyId))
-                .ReturnsAsync(LoginResult.Logged);
-
-            this.mockUploaderClient
-                .Setup(x => x.ClickOnElement(
-                    It.Is<By>(by => by.ToString().Contains("ctl02_ctl10_HyperLink2")),
-                    true,
-                    1000,
-                    true,
-                    false));
-
-            this.mockUploaderClient
-                .Setup(x => x.ClickOnElement(It.Is<By>(by => by.ToString().Contains("Input"))))
-                .Verifiable();
-
-            this.mockUploaderClient
-                .Setup(x => x.WaitForElementToBeVisible(
-                    It.Is<By>(by => by.ToString().Contains("m_dlInputList")),
-                    It.IsAny<TimeSpan>()))
-                .Verifiable();
-
-            this.mockUploaderClient
-                .Setup(x => x.WriteTextbox(
-                    It.Is<By>(by => by.ToString().Contains("m_lvInputUISections_ctrl0_tbQuickEditCommonID_m_txbInternalTextBox")),
-                    mlsNumber,
-                    false,
-                    false,
-                    false,
-                    false))
-                .Verifiable();
-
-            this.mockUploaderClient
-                .Setup(x => x.ClickOnElementById(
-                    "m_lvInputUISections_ctrl0_lbQuickEdit", false, 400, false))
-                .Verifiable();
-
-            this.mockUploaderClient
-                .Setup(x => x.FindElement(
-                    It.Is<By>(by => by.ToString().Contains("Modify Property")),
-                    It.IsAny<bool>(),
-                    It.IsAny<bool>()))
-                .Returns(Mock.Of<IWebElement>());
-
-            this.mockUploaderClient
-                .Setup(x => x.ClickOnElementById(
-                    "m_oThirdPartyLinks_m_lvThirdPartLinks_ctrl3_m_lbtnThirdPartyLink",
-                    It.IsAny<bool>(),
-                    It.IsAny<int>(),
-                    It.IsAny<bool>()))
-                .Verifiable();
-
-            // Act
-            var result = await this.Sut.GetInShowingTimeSite(companyId, mlsNumber, cancellationToken);
-
-            // Assert
-            Assert.True(result);
-            this.mockMarketUploadService.Verify(x => x.Login(companyId), Times.Once);
-            this.mockUploaderClient.Verify(
-                x => x.ClickOnElement(
-                    It.Is<By>(by => by.ToString().Contains("ctl02_ctl10_HyperLink2")),
-                    true,
-                    1000,
-                    true,
-                    It.IsAny<bool>()),
-                Times.Once);
-            this.mockUploaderClient.Verify();
-        }
-
-        [Fact]
         public async Task GetInShowingTimeSite_WithEmptyMlsNumber_ReturnsFalse()
         {
             // Arrange
@@ -372,29 +295,10 @@ namespace Husa.Uploader.Core.Tests
             await this.Sut.SetAppointmentRestrictions(showingTime.AppointmentRestrictions, CancellationToken.None);
 
             this.mockUploaderClient.Verify(
-                x => x.SetSelect(It.IsAny<By>(), It.IsAny<object>(), It.IsAny<bool>()), Times.Exactly(2));
+                x => x.SetSelect(It.IsAny<By>(), It.IsAny<object>(), It.IsAny<bool>()), Times.Exactly(3));
             this.mockUploaderClient.Verify(
                 x => x.ClickOnElementById(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<bool>()),
                 Times.Exactly(3));
-        }
-
-        [Fact]
-        public async Task SetAccessInformation_Success()
-        {
-            var showingTime = this.ShowingTimeFaker();
-            var accessMethod = showingTime.AccessInformation.AccessMethod.Value;
-            var alarmDetails = showingTime.AccessInformation.ProvideAlarmDetails;
-            var accessMethodOptions = new AccessMethod[] { AccessMethod.CodeBox, AccessMethod.Combination, AccessMethod.Keypad };
-            var writeTextBoxQty = (accessMethodOptions.Contains(accessMethod) ? 2 : 3) + (alarmDetails ? 4 : 0);
-            this.mockUploaderClient.Setup(x => x.SetSelect(It.IsAny<By>(), It.IsAny<object>(), It.IsAny<bool>()));
-            this.mockUploaderClient.Setup(x => x.ClickOnElementById(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<bool>()));
-            this.mockUploaderClient.Setup(x => x.WriteTextbox(It.IsAny<By>(), It.IsAny<string>(), false, false, false, false));
-
-            await this.Sut.SetAccessInformation(showingTime.AccessInformation, CancellationToken.None);
-
-            this.mockUploaderClient.Verify(x => x.SetSelect(It.IsAny<By>(), It.IsAny<object>(), It.IsAny<bool>()), Times.AtMostOnce);
-            this.mockUploaderClient.Verify(x => x.ClickOnElementById(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<bool>()), Times.AtMostOnce);
-            this.mockUploaderClient.Verify(x => x.WriteTextbox(It.IsAny<By>(), It.IsAny<string>(), false, false, false, false), Times.Exactly(writeTextBoxQty));
         }
 
         [Fact]

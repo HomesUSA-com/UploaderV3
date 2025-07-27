@@ -290,10 +290,7 @@ namespace Husa.Uploader.Core.Services
             var suggestedTime = leadTime ? info.SuggestedTimeHours?.ToStringFromEnumMember() ?? "0" : "0";
             this.UploaderClient.ClickOnElementById($"AllowAppraisals_{allowAppraisals}");
             this.UploaderClient.ClickOnElementById($"AllowInspections_{allowInspections}");
-            this.UploaderClient.ClickOnElementById($"AllowSameDayRequests_{allowSameDayRequest}");
             this.UploaderClient.ClickOnElementById($"PublicListingAvailabilityEnabled_{allowRealTime}");
-            this.UploaderClient.SetSelect(By.Id("RequiredLeadTime"), requiredTime);
-            this.UploaderClient.SetSelect(By.Id("SuggestedLeadTime"), suggestedTime);
             this.UploaderClient.SetSelect(By.Id("MinShowingWindowShowings"), info.MinShowingWindowShowings ?? 0);
             this.UploaderClient.SetSelect(By.Id("MaxShowingWindowShowings"), info.MaxShowingWindowShowings ?? 0);
             this.UploaderClient.SetSelect(By.Id("OverlappingAppointmentMode"), overlaping);

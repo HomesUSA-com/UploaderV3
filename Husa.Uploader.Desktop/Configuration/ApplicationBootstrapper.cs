@@ -4,7 +4,9 @@ namespace Husa.Uploader.Desktop.Configuration
     using System.Globalization;
     using System.IO;
     using System.IO.Abstractions;
+    using System.Net.Http;
     using System.Reflection;
+    using System.Security.Authentication;
     using Husa.CompanyServicesManager.Api.Client;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Api.Client;
@@ -19,11 +21,8 @@ namespace Husa.Uploader.Desktop.Configuration
     using Husa.Quicklister.Sabor.Api.Client;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.BulkUpload;
-    using Husa.Uploader.Core.Interfaces.BulkUpload.TaxIdBulkUpload;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Core.Services.BulkUpload;
-    using Husa.Uploader.Core.Services.BulkUpload.TaxIdBulkUpload;
-    using Husa.Uploader.Core.Services.ShowingTime;
     using Husa.Uploader.Crosscutting.Constants;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Interfaces;
@@ -43,6 +42,8 @@ namespace Husa.Uploader.Desktop.Configuration
 
     public static class ApplicationBootstrapper
     {
+        public const string MainApi = "MainApiClient";
+
         public static IServiceCollection ConfigureApplicationOptions(this IServiceCollection services)
         {
             services
@@ -116,7 +117,15 @@ namespace Husa.Uploader.Desktop.Configuration
 
         public static void ConfigureHttpClients(this IServiceCollection services)
         {
-            services.AddHttpClient();
+            services.AddHttpClient(MainApi, (provider, client) =>
+            {
+                var options = provider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
+                client.BaseAddress = new Uri(options.PublishingPath);
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
+            });
 
             services.AddHttpClient<IMigrationClient, MigrationClient>((provider, client) =>
             {
@@ -197,14 +206,12 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<IHarUploadService, HarUploadService>();
             services.AddTransient<IDfwUploadService, DfwUploadService>();
             services.AddSingleton<IBulkUploadFactory, BulkUploadFactory>();
-            services.AddSingleton<ITaxIdBulkUploadFactory, TaxIdBulkUploadFactory>();
             services.AddTransient<ISaborBulkUploadService, SaborBulkUploadService>();
             services.AddTransient<IDfwBulkUploadService, DfwBulkUploadService>();
             services.AddTransient<IHarBulkUploadService, HarBulkUploadService>();
             services.AddTransient<ICtxBulkUploadService, CtxBulkUploadService>();
             services.AddTransient<IAborBulkUploadService, AborBulkUploadService>();
-            services.AddTransient<IDfwTaxIdBulkUploadService, DfwTaxIdBulkUploadService>();
-            services.AddTransient<DfwShowingTimeUploadService>();
+            services.AddTransient<ITaxIdBulkUploadFactory, TaxIdBulkUploadFactory>();
 
             return services;
 
@@ -241,7 +248,7 @@ namespace Husa.Uploader.Desktop.Configuration
                     options.AddUserProfilePreference("security.ssl.errorReporting.enabled", false);
 
                     var proxyUri = new Uri(proxyOptions.Url);
-                    var extensionPath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "husa_proxy_extension.crx");
+                    var extensionPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "husa_proxy_extension.crx");
                     options.AddExtension(extensionPath);
                     options.AddArgument("--disable-blink-features=AutomationControlled");
                     options.AddArgument("--ignore-certificate-errors");
