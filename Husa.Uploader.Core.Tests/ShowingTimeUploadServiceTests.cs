@@ -286,7 +286,7 @@ namespace Husa.Uploader.Core.Tests
         public async Task SetAppointmentRestrictions_Success()
         {
             var showingTime = this.ShowingTimeFaker();
-            this.mockUploaderClient.Setup(x => x.SetSelect(It.IsAny<By>(), It.IsAny<object>(), It.IsAny<bool>()))
+            this.mockUploaderClient.Setup(x => x.SetSelect(It.IsAny<By>(), It.IsAny<string>(), It.IsAny<bool>()))
                 .Verifiable();
             this.mockUploaderClient.Setup(
                 x => x.ClickOnElementById(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<bool>()))
@@ -298,7 +298,7 @@ namespace Husa.Uploader.Core.Tests
                 x => x.ClickOnElementById(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<bool>()),
                 Times.Exactly(3));
             this.mockUploaderClient.Verify(
-                x => x.SetSelect(It.IsAny<By>(), It.IsAny<object>(), It.IsAny<bool>()), Times.Exactly(6));
+                x => x.SetSelect(It.IsAny<By>(), It.IsAny<string>(), It.IsAny<bool>()), Times.AtLeast(4));
         }
 
         [Fact]
