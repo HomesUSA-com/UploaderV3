@@ -340,6 +340,9 @@ namespace Husa.Uploader.Core.Services
                 this.UploaderClient.WriteTextbox(By.Id("PassCode"), info.AlarmPasscode);
                 this.UploaderClient.WriteTextbox(By.Id("AlarmNotes"), info.AlarmNotes);
             }
+
+            var manageKeySets = info.HasManageKeySets ? "Yes" : "No";
+            this.UploaderClient.ClickOnElementById($"KeysAvailable{manageKeySets}");
         },
             cancellationToken);
 
