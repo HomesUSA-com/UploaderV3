@@ -222,26 +222,7 @@ namespace Husa.Uploader.Core.Services
             {
                 this.UploaderClient.WaitUntilElementExists(By.Id("appointmentTypeSelection"));
 
-                var appoimentType = info.AppointmentType?.ToStringFromEnumMember();
-                if (appoimentType is not null)
-                {
-                    this.UploaderClient.ExecuteScript(
-                    "document.querySelector('#appointmentTypeSelection > div > a').click()");
-                    this.UploaderClient.ExecuteScript(
-                       $"document.querySelector(`a[data-dk-dropdown-value='{appoimentType}']`).click()");
-                }
-
-                if (info.AppointmentType?.Equals(AppointmentType.AppointmentRequiredConfirmWithAll) ?? false)
-                {
-                    this.OnAlertClickOk();
-                }
-
-                if (info.AppointmentType?.Equals(AppointmentType.AppointmentRequiredConfirmWithAny) ?? false)
-                {
-                    var isAgentAccompanied = info.IsAgentAccompaniedShowing ? "Yes" : "No";
-                    this.UploaderClient.WaitForElementToBeVisible(By.Id("isAgentAccompany_No"), TimeSpan.FromMilliseconds(600));
-                    this.UploaderClient.ClickOnElementById($"isAgentAccompany_{isAgentAccompanied}");
-                }
+                this.SetAppointmentType(info);
 
                 var sendFeedback = info.IsFeedbackRequested ? "Yes" : "No";
                 this.UploaderClient.ClickOnElementById($"SendFeedback_{sendFeedback}");
@@ -654,6 +635,30 @@ namespace Husa.Uploader.Core.Services
         private static bool ShouldSendFYI(ContactDetailResponse contact)
         {
             return contact.SendOnFYIByEmail.Value || contact.SendOnFYIByText.Value;
+        }
+
+        private void SetAppointmentType(AppointmentSettingsResponse info)
+        {
+            var appoimentType = info.AppointmentType?.ToStringFromEnumMember();
+            if (appoimentType is not null)
+            {
+                this.UploaderClient.ExecuteScript(
+                "document.querySelector('#appointmentTypeSelection > div > a').click()");
+                this.UploaderClient.ExecuteScript(
+                   $"document.querySelector(`a[data-dk-dropdown-value='{appoimentType}']`).click()");
+            }
+
+            if (info.AppointmentType?.Equals(AppointmentType.AppointmentRequiredConfirmWithAll) ?? false)
+            {
+                this.OnAlertClickOk();
+            }
+
+            if (info.AppointmentType?.Equals(AppointmentType.AppointmentRequiredConfirmWithAny) ?? false)
+            {
+                var isAgentAccompanied = info.IsAgentAccompaniedShowing ? "Yes" : "No";
+                this.UploaderClient.WaitForElementToBeVisible(By.Id("isAgentAccompany_No"), TimeSpan.FromMilliseconds(600));
+                this.UploaderClient.ClickOnElementById($"isAgentAccompany_{isAgentAccompanied}");
+            }
         }
 
         private void HandleConfirmationMethods(ContactDetailResponse contact, int position)
