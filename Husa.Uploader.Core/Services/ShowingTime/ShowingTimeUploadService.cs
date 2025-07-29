@@ -21,7 +21,6 @@ namespace Husa.Uploader.Core.Services
     public class ShowingTimeUploadService : IShowingTimeUploadService
     {
         private const string AlertClass = "ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable";
-        private const string AlertOkButtonClass = "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only";
         private readonly IMarketUploadService marketUploadService;
         private readonly ILogger logger;
         private readonly string agentSelectorValue;

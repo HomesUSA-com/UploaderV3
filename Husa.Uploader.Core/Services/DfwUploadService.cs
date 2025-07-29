@@ -833,11 +833,6 @@ namespace Husa.Uploader.Core.Services
             return uploaderResponse;
         }
 
-        public Task<UploaderResponse> TaxIdUpdate(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
         private void CheckIfAutoSaveWindowIsVisible()
         {
             if (this.uploaderClient.IsElementPresent(By.Id("m_divAutoSaveRestore"), true))
