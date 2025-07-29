@@ -295,10 +295,10 @@ namespace Husa.Uploader.Core.Tests
             await this.Sut.SetAppointmentRestrictions(showingTime.AppointmentRestrictions, CancellationToken.None);
 
             this.mockUploaderClient.Verify(
-                x => x.SetSelect(It.IsAny<By>(), It.IsAny<object>(), It.IsAny<bool>()), Times.Exactly(3));
-            this.mockUploaderClient.Verify(
                 x => x.ClickOnElementById(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<bool>()),
                 Times.Exactly(3));
+            this.mockUploaderClient.Verify(
+                x => x.SetSelect(It.IsAny<By>(), It.IsAny<object>(), It.IsAny<bool>()), Times.Exactly(6));
         }
 
         [Fact]

@@ -23,6 +23,7 @@ namespace Husa.Uploader.Desktop.Configuration
     using Husa.Uploader.Core.Interfaces.BulkUpload;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Core.Services.BulkUpload;
+    using Husa.Uploader.Core.Services.ShowingTime;
     using Husa.Uploader.Crosscutting.Constants;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Interfaces;
@@ -212,6 +213,8 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<ICtxBulkUploadService, CtxBulkUploadService>();
             services.AddTransient<IAborBulkUploadService, AborBulkUploadService>();
             services.AddTransient<ITaxIdBulkUploadFactory, TaxIdBulkUploadFactory>();
+            services.AddTransient<DfwShowingTimeUploadService>();
+            services.AddTransient<HarShowingTimeUploadService>();
 
             return services;
 

@@ -10,7 +10,7 @@ namespace Husa.Uploader.Desktop.Factories
 
         T Create<T>(MarketCode marketCode);
 
-        IShowingTimeUploadService ShowingTimeUploaderFactory(MarketCode market);
+        IShowingTimeUploadService ShowingTimeUploaderFactory(string marketCode);
 
         void CloseDriver();
     }
