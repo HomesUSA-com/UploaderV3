@@ -77,8 +77,12 @@ namespace Husa.Uploader.Desktop.Factories
 
         public IShowingTimeUploadService ShowingTimeUploaderFactory(string marketCode) => marketCode switch
         {
+            "ABOR" => this.serviceProvider.GetRequiredService<AborShowingTimeUploadService>(),
+            "AMARILLO" => this.serviceProvider.GetRequiredService<AmarilloShowingTimeUploadService>(),
+            "CTX" => this.serviceProvider.GetRequiredService<CtxShowingTimeUploadService>(),
             "DFW" => this.serviceProvider.GetRequiredService<DfwShowingTimeUploadService>(),
             "HAR" => this.serviceProvider.GetRequiredService<HarShowingTimeUploadService>(),
+            "SABOR" => this.serviceProvider.GetRequiredService<SaborShowingTimeUploadService>(),
             _ => throw new NotImplementedException(),
         };
 

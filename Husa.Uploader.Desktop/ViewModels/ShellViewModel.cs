@@ -1631,7 +1631,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
 
             this.ShowCancelButton = true;
-            var marketCode = this.selectedListingRequest.Market;
+            var marketCode = this.selectedListingRequest.Market.ToUpper();
             var uploader = this.uploadFactory.ShowingTimeUploaderFactory(marketCode);
             this.cancellationTokenSource ??= new CancellationTokenSource();
             await this.SetFullRequestInformation();
@@ -1647,7 +1647,7 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
 
             this.ShowCancelButton = true;
-            var marketCode = this.selectedListingRequest.Market;
+            var marketCode = this.selectedListingRequest.Market.ToUpper();
             var uploader = this.uploadFactory.ShowingTimeUploaderFactory(marketCode);
             this.cancellationTokenSource ??= new CancellationTokenSource();
             await this.SetFullRequestInformation();
