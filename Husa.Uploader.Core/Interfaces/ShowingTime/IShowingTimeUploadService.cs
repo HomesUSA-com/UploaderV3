@@ -2,7 +2,6 @@ namespace Husa.Uploader.Core.Interfaces.ShowingTime
 {
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ShowingTime;
-    using Husa.Quicklister.Extensions.Domain.Enums.ShowingTime;
     using Husa.Uploader.Core.Models;
     using Husa.Uploader.Data.Entities;
 
@@ -11,8 +10,8 @@ namespace Husa.Uploader.Core.Interfaces.ShowingTime
         MarketCode CurrentMarket { get; }
         Task<bool> FindListingOnMls(string mlsNumber, CancellationToken cancellationToken = default);
         Task<bool> GetInShowingTimeSite(Guid companyId, string mlsNumber, CancellationToken cancellationToken = default);
-        Task SetAppointmentCenter(CancellationToken cancellationToken);
-        Task SetAppointmentSettings(AppointmentType appointmentType, CancellationToken cancellationToken = default);
+        Task SetAppointmentCenter(AppointmentSettingsResponse info, CancellationToken cancellationToken);
+        Task SetAppointmentSettings(AppointmentSettingsResponse info, CancellationToken cancellationToken = default);
         Task SetAppointmentRestrictions(AppointmentRestrictionsResponse info, CancellationToken cancellationToken = default);
         Task SetAccessInformation(AccessInformationResponse info, CancellationToken cancellationToken = default);
         Task SetAdditionalInstructions(AdditionalInstructionsResponse info, CancellationToken cancellationToken = default);
