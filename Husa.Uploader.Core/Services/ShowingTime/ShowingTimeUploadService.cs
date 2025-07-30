@@ -20,6 +20,7 @@ namespace Husa.Uploader.Core.Services
 
     public class ShowingTimeUploadService : IShowingTimeUploadService
     {
+        private const string AlertClass = "ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable";
         private readonly IMarketUploadService marketUploadService;
         private readonly ILogger logger;
         private readonly string agentSelectorValue;
@@ -44,7 +45,7 @@ namespace Husa.Uploader.Core.Services
         }
 
         public Task<bool> FindListingOnMls(string mlsNumber, CancellationToken cancellationToken = default) =>
-            Task.Factory.StartNew(
+            Task.Run(
             () =>
             {
                 this.UploaderClient.ClickOnElement(By.XPath("//a/span[text()='Input']"));
@@ -197,75 +198,103 @@ namespace Husa.Uploader.Core.Services
             return duplicates.Count();
         }
 
-        public Task SetAppointmentCenter(CancellationToken cancellationToken) =>
-            Task.Factory.StartNew(
+        public Task SetAppointmentCenter(AppointmentSettingsResponse info, CancellationToken cancellationToken) =>
+            Task.Run(
             () =>
         {
-            this.UploaderClient.ClickOnElementById("Allow3rdPartyAppts_Yes");
-            this.UploaderClient.ClickOnElementById("AllowOnlineShowingRequests_Yes");
+            var allowThirdPartyApps = info.AllowApptCenterTakeAppts ? "Yes" : "No";
+            this.UploaderClient.ClickOnElementById($"Allow3rdPartyAppts_{allowThirdPartyApps}");
+
+            var allowOnlineShowingRequests = info.AllowShowingAgentsToRequest ? "Yes" : "No";
+            this.UploaderClient.ClickOnElementById($"AllowOnlineShowingRequests_{allowOnlineShowingRequests}");
+
+            var appointmentPresentationType = (info.AppointmentPresentationType ?? default).ToStringFromEnumMember();
+            this.UploaderClient.SetSelect(
+                By.Id("AppointmentPresentationType"),
+                appointmentPresentationType,
+                isElementOptional: false);
         },
             cancellationToken);
 
-        public Task SetAppointmentSettings(AppointmentType appointmentType, CancellationToken cancellationToken = default) =>
-            Task.Factory.StartNew(
+        public Task SetAppointmentSettings(AppointmentSettingsResponse info, CancellationToken cancellationToken = default) =>
+            Task.Run(
                 () =>
             {
                 this.UploaderClient.WaitUntilElementExists(By.Id("appointmentTypeSelection"));
 
-                this.UploaderClient.ExecuteScript(
-                    "document.querySelector('#appointmentTypeSelection > div > a').click()");
-                switch (appointmentType)
+                this.SetAppointmentType(info);
+
+                var sendFeedback = info.IsFeedbackRequested ? "Yes" : "No";
+                this.UploaderClient.ClickOnElementById($"SendFeedback_{sendFeedback}");
+
+                var isOccupied = info.IsPropertyOccupied ? "Yes" : "No";
+                this.UploaderClient.ClickOnElementById($"IsOccupied_{isOccupied}");
+                if (info.IsPropertyOccupied)
                 {
-                    case AppointmentType.AppointmentRequiredConfirmWithAny:
-                        this.UploaderClient.ExecuteScript(
-                            "document.querySelector(`a[data-dk-dropdown-value='APPOINTMENT_REQUIRED_ANY']`).click()");
-                        break;
-                    case AppointmentType.GoAndShow:
-                        this.UploaderClient.ExecuteScript(
-                            "document.querySelector(`a[data-dk-dropdown-value='GO_AND_SHOW']`).click()");
-                        break;
-                    case AppointmentType.CourtesyCall:
-                        this.UploaderClient.ExecuteScript(
-                            "document.querySelector(`a[data-dk-dropdown-value='COURTESY_CALL']`).click()");
-                        break;
-                    default:
-                        this.UploaderClient.ExecuteScript(
-                            "document.querySelector('#appointmentTypeSelection > div > a').click()");
-                        break;
+                    this.OnAlertClickOk();
                 }
 
-                if (appointmentType == AppointmentType.AppointmentRequiredConfirmWithAny)
+                var officeTemplates = info.FeedbackTemplate?.GetEnumDescription();
+                var officeTemplatesOption = info.FeedbackTemplate is null ? null : this.UploaderClient.FindElement(
+                    By.XPath($"//select[@id='ListingFeedbackTemplateId']/optgroup[@label='{officeTemplates}']/option[1]"),
+                    isElementOptional: true);
+                if (officeTemplatesOption != null)
                 {
-                    this.UploaderClient.WaitForElementToBeVisible(By.Id("isAgentAccompany_No"), TimeSpan.FromMilliseconds(600));
-                    this.UploaderClient.ClickOnElementById("isAgentAccompany_No");
+                    var officeTemplatesValue = officeTemplatesOption.GetAttribute("value");
+                    this.UploaderClient.SetSelect(By.Id("ListingFeedbackTemplateId"), officeTemplatesValue);
                 }
 
-                this.UploaderClient.ClickOnElementById("SendFeedback_Yes");
-                this.UploaderClient.ClickOnElementById("IsOccupied_No");
+                var staffLanguage = info.RequiredStaffLanguage?.ToStringFromEnumMember();
+                if (staffLanguage is not null)
+                {
+                    this.UploaderClient.SetSelect(By.Id("RequiredStaffLanguage"), staffLanguage);
+                }
             },
                 cancellationToken);
 
         public Task SetAppointmentRestrictions(AppointmentRestrictionsResponse info, CancellationToken cancellationToken = default) =>
-            Task.Factory.StartNew(
+            Task.Run(
                 () =>
         {
+            var leadTime = info.AdvancedNotice?.Equals(AdvancedNotice.LeadTime) ?? false;
+            var advancedNoticeText = info.AdvancedNotice?.ToStringFromEnumMember().ToLower();
+            var allowSameDayRequest = bool.Parse(advancedNoticeText ?? "false") ? "Yes" : "No";
+            this.UploaderClient.ClickOnElement(By.Id($"AllowSameDayRequests_{allowSameDayRequest}"));
+
             var allowAppraisals = info.AllowAppraisals ? "Yes" : "No";
-            var allowInspections = info.AllowInspectionsAndWalkThroughs ? "Yes" : "No";
-            var allowRealTime = info.AllowRealtimeAvailabilityForBrokers ? "Yes" : "No";
-            var overlaping = (info.OverlappingAppointmentMode ?? default).ToStringFromEnumMember();
-            var bufferTime = info.BufferTimeBetweenAppointments ?? 0;
             this.UploaderClient.ClickOnElementById($"AllowAppraisals_{allowAppraisals}");
+
+            var allowInspections = info.AllowInspectionsAndWalkThroughs ? "Yes" : "No";
             this.UploaderClient.ClickOnElementById($"AllowInspections_{allowInspections}");
+
+            var allowRealTime = info.AllowRealtimeAvailabilityForBrokers ? "Yes" : "No";
             this.UploaderClient.ClickOnElementById($"PublicListingAvailabilityEnabled_{allowRealTime}");
-            this.UploaderClient.SetSelect(By.Id("MinShowingWindowShowings"), info.MinShowingWindowShowings ?? 0);
-            this.UploaderClient.SetSelect(By.Id("MaxShowingWindowShowings"), info.MaxShowingWindowShowings ?? 0);
+
+            var minShowingWindow = (info.MinShowingWindowShowings ?? default).ToStringFromEnumMember();
+            this.UploaderClient.SetSelect(By.Id("MinShowingWindowShowings"), minShowingWindow);
+
+            var maxShowingWindow = (info.MaxShowingWindowShowings ?? default).ToStringFromEnumMember();
+            this.UploaderClient.SetSelect(By.Id("MaxShowingWindowShowings"), maxShowingWindow);
+
+            var overlaping = (info.OverlappingAppointmentMode ?? default).ToStringFromEnumMember();
             this.UploaderClient.SetSelect(By.Id("OverlappingAppointmentMode"), overlaping);
+
+            var bufferTime = (info.BufferTimeBetweenAppointments ?? default).ToStringFromEnumMember();
             this.UploaderClient.SetSelect(By.Id("AppointmentNoOverlapBufferMinutes"), bufferTime);
+
+            if (leadTime)
+            {
+                var requiredTime = (info.RequiredTimeHours ?? default).ToStringFromEnumMember();
+                this.UploaderClient.SetSelect(By.Id("RequiredLeadTime"), requiredTime);
+
+                var suggestedTime = (info.SuggestedTimeHours ?? default).ToStringFromEnumMember();
+                this.UploaderClient.SetSelect(By.Id("SuggestedLeadTime"), suggestedTime);
+            }
         },
                 cancellationToken);
 
         public Task SetAccessInformation(AccessInformationResponse info, CancellationToken cancellationToken = default) =>
-            Task.Factory.StartNew(
+            Task.Run(
             () =>
         {
             var lockboxNotesId = "LockboxNotes";
@@ -311,11 +340,14 @@ namespace Husa.Uploader.Core.Services
                 this.UploaderClient.WriteTextbox(By.Id("PassCode"), info.AlarmPasscode);
                 this.UploaderClient.WriteTextbox(By.Id("AlarmNotes"), info.AlarmNotes);
             }
+
+            var manageKeySets = info.HasManageKeySets ? "Yes" : "No";
+            this.UploaderClient.ClickOnElementById($"KeysAvailable{manageKeySets}");
         },
             cancellationToken);
 
         public Task SetAdditionalInstructions(AdditionalInstructionsResponse info, CancellationToken cancellationToken = default) =>
-            Task.Factory.StartNew(
+            Task.Run(
             () =>
         {
             this.UploaderClient.WriteTextbox(By.Id("ShowingInstructionsToApptStaff"), info.NotesForApptStaff);
@@ -324,7 +356,7 @@ namespace Husa.Uploader.Core.Services
             cancellationToken);
 
         public Task SetDrivingDirections(ResidentialListingRequest request, CancellationToken cancellationToken = default) =>
-            Task.Factory.StartNew(
+            Task.Run(
             () =>
         {
             this.UploaderClient.WriteTextbox(By.Id("Directions"), request.Directions);
@@ -332,7 +364,7 @@ namespace Husa.Uploader.Core.Services
             cancellationToken);
 
         public Task<bool> AddExistentContact(ContactDetailResponse contact, int position, CancellationToken cancellationToken = default) =>
-            Task.Factory.StartNew(
+            Task.Run(
             () =>
         {
             this.UploaderClient.ExecuteScript("document.querySelector('#addListingContact').click()");
@@ -365,7 +397,7 @@ namespace Husa.Uploader.Core.Services
             cancellationToken);
 
         public Task<bool> AddNewContact(ContactDetailResponse contact, int position, CancellationToken cancellationToken = default) =>
-            Task.Factory.StartNew(
+            Task.Run(
             () =>
         {
             var xpath = "//div[@class='ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable']";
@@ -406,7 +438,7 @@ namespace Husa.Uploader.Core.Services
             cancellationToken);
 
         public Task EditContact(ContactDetailResponse contact, int position, CancellationToken cancellationToken = default) =>
-            Task.Factory.StartNew(
+            Task.Run(
             () =>
         {
             this.UploaderClient.ExecuteScript(@"document.querySelector(`button[title='Edit Contact']`).click()");
@@ -461,9 +493,10 @@ namespace Husa.Uploader.Core.Services
             cancellationToken);
 
         public Task SetContactConfirmSection(ContactDetailResponse contact, int position, CancellationToken cancellationToken = default) =>
-            Task.Factory.StartNew(
+            Task.Run(
             () =>
         {
+            this.OnAlertClickOk();
             var confirmSection = this.UploaderClient.FindElement(By.ClassName("confirm-section"), isElementOptional: true);
             if (IsConfirmSectionHidden(confirmSection))
             {
@@ -482,7 +515,7 @@ namespace Husa.Uploader.Core.Services
             cancellationToken);
 
         public Task SetContactNotificationSection(ContactDetailResponse contact, int position, CancellationToken cancellationToken = default) =>
-            Task.Factory.StartNew(
+            Task.Run(
             () =>
         {
             this.UploaderClient.ExecuteScript(
@@ -553,9 +586,10 @@ namespace Husa.Uploader.Core.Services
                 return response;
             }
 
-            await this.SetAppointmentCenter(cancellationToken);
+            await this.SetAppointmentCenter(
+                request.ShowingTime.AppointmentSettings, cancellationToken);
             await this.SetAppointmentSettings(
-                request.ShowingTime.AppointmentSettings.AppointmentType.Value, cancellationToken);
+                request.ShowingTime.AppointmentSettings, cancellationToken);
             await this.SetAppointmentRestrictions(
                 request.ShowingTime.AppointmentRestrictions, cancellationToken);
             await this.SetAccessInformation(
@@ -570,7 +604,7 @@ namespace Husa.Uploader.Core.Services
         }
 
         public Task<bool> FindListing(string mlsNumber, CancellationToken cancellationToken = default) =>
-            Task.Factory.StartNew(
+            Task.Run(
             () =>
         {
             this.UploaderClient.ClickOnElement(By.XPath("//a/span[text()='Input']"));
@@ -604,6 +638,30 @@ namespace Husa.Uploader.Core.Services
         private static bool ShouldSendFYI(ContactDetailResponse contact)
         {
             return contact.SendOnFYIByEmail.Value || contact.SendOnFYIByText.Value;
+        }
+
+        private void SetAppointmentType(AppointmentSettingsResponse info)
+        {
+            var appoimentType = info.AppointmentType?.ToStringFromEnumMember();
+            if (appoimentType is not null)
+            {
+                this.UploaderClient.ExecuteScript(
+                "document.querySelector('#appointmentTypeSelection > div > a').click()");
+                this.UploaderClient.ExecuteScript(
+                   $"document.querySelector(`a[data-dk-dropdown-value='{appoimentType}']`).click()");
+            }
+
+            if (info.AppointmentType?.Equals(AppointmentType.AppointmentRequiredConfirmWithAll) ?? false)
+            {
+                this.OnAlertClickOk();
+            }
+
+            if (info.AppointmentType?.Equals(AppointmentType.AppointmentRequiredConfirmWithAny) ?? false)
+            {
+                var isAgentAccompanied = info.IsAgentAccompaniedShowing ? "Yes" : "No";
+                this.UploaderClient.WaitForElementToBeVisible(By.Id("isAgentAccompany_No"), TimeSpan.FromMilliseconds(600));
+                this.UploaderClient.ClickOnElementById($"isAgentAccompany_{isAgentAccompanied}");
+            }
         }
 
         private void HandleConfirmationMethods(ContactDetailResponse contact, int position)
@@ -649,6 +707,20 @@ namespace Husa.Uploader.Core.Services
             {
                 this.UploaderClient.ExecuteScript($"document.querySelector('#fyiEmail_{position}').click()");
             }
+        }
+
+        private void OnAlertClickOk()
+        {
+            var alertXPath = By.XPath($"//div[@class='{AlertClass}']");
+            this.UploaderClient.WaitForElementToBeVisible(alertXPath, TimeSpan.FromMinutes(1));
+            var alert = this.UploaderClient.FindElement(alertXPath, isElementOptional: true);
+            if (alert is null)
+            {
+                return;
+            }
+
+            var alertButton = alert.FindElement(By.TagName("button"));
+            alertButton?.Click();
         }
 
         private void WaitUntilUnblockUI(By by, CancellationToken cancellationToken)
