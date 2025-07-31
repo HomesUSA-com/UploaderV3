@@ -11,7 +11,7 @@
         <PackageReference Include="Husa.MediaService.Client" Version="2.5.1" />
         <PackageReference Include="Husa.Quicklister.Abor.Api.Client" Version="2.22.1" />
         <PackageReference Include="Husa.Quicklister.Amarillo.Api.Client" Version="1.11.1" />
-        <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="2.18.1" />
+        <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="2.18.2" />
         <PackageReference Include="Husa.Quicklister.Extensions.Api.Client" Version="1.19.1" />
         <PackageReference Include="Husa.Quicklister.Har.Api.Client" Version="2.18.1" />
         <PackageReference Include="Husa.Quicklister.Dfw.Api.Client" Version="0.22.1" />
