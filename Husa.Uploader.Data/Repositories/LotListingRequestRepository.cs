@@ -4,6 +4,7 @@ namespace Husa.Uploader.Data.Repositories
     using System.Linq.Expressions;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Abor.Api.Client;
+    using Husa.Quicklister.CTX.Api.Client;
     using Husa.Quicklister.Extensions.Api.Client.Interfaces;
     using Husa.Quicklister.Extensions.Api.Contracts.Request.SaleRequest;
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ListingRequest;
@@ -22,6 +23,7 @@ namespace Husa.Uploader.Data.Repositories
     {
         private readonly IQuicklisterAborClient quicklisterAborClient;
         private readonly IQuicklisterHarClient quicklisterHarClient;
+        private readonly IQuicklisterCtxClient quicklisterCtxClient;
         private readonly ILogger<LotListingRequestRepository> logger;
         private readonly MarketConfiguration marketConfiguration;
 
@@ -29,10 +31,12 @@ namespace Husa.Uploader.Data.Repositories
             IOptions<ApplicationOptions> applicationOptions,
             IQuicklisterAborClient quicklisterAborClient,
             IQuicklisterHarClient quicklisterHarClient,
+            IQuicklisterCtxClient quicklisterCtxClient,
             ILogger<LotListingRequestRepository> logger)
         {
             this.quicklisterAborClient = quicklisterAborClient ?? throw new ArgumentNullException(nameof(quicklisterAborClient));
             this.quicklisterHarClient = quicklisterHarClient ?? throw new ArgumentNullException(nameof(quicklisterHarClient));
+            this.quicklisterCtxClient = quicklisterCtxClient ?? throw new ArgumentNullException(nameof(quicklisterCtxClient));
 
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.marketConfiguration = applicationOptions?.Value?.MarketInfo ?? throw new ArgumentNullException(nameof(applicationOptions));
@@ -51,6 +55,11 @@ namespace Husa.Uploader.Data.Repositories
                     this.marketConfiguration.Har,
                     this.quicklisterHarClient.ListingLotRequest,
                     request => new HarLotListingRequest(request).CreateFromApiResponse(),
+                    token),
+                this.GetRequestByMarket(
+                    this.marketConfiguration.Ctx,
+                    this.quicklisterCtxClient.ListingLotRequest,
+                    request => new CtxLotListingRequest(request).CreateFromApiResponse(),
                     token),
             };
 
