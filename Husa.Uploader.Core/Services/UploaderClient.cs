@@ -149,7 +149,7 @@ namespace Husa.Uploader.Core.Services
             }
             catch (WebDriverTimeoutException ex)
             {
-                this.logger.LogWarning(ex, "Timeout while waiting for element '{by}' to be displayed", findBy.ToString());
+                this.logger.LogWarning(ex, "Timeout while waiting for element '{By}' to be displayed", findBy.ToString());
                 string friendlyErrorMessage = $"Timeout while waiting for element '{findBy.ToString()}' to be displayed";
                 this.UploadInformation.AddError(findBy.ToString(), UNKNOW, UNKNOW, ex.Message, friendlyErrorMessage);
                 return false;
@@ -166,7 +166,7 @@ namespace Husa.Uploader.Core.Services
             }
             catch (WebDriverTimeoutException ex)
             {
-                this.logger.LogWarning(ex, "Timeout while waiting for element '{by}' to be displayed", waitCondition.ToString());
+                this.logger.LogWarning(ex, "Timeout while waiting for element '{By}' to be displayed", waitCondition.ToString());
                 string friendlyErrorMessage = $"Waiting for the condition {waitCondition.ToString()}' to be displayed";
                 this.UploadInformation.AddError(waitCondition.ToString(), UNKNOW, UNKNOW, ex.Message, friendlyErrorMessage);
                 return false;
