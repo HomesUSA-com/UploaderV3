@@ -30,7 +30,6 @@ namespace Husa.Uploader.Core.Services
         private readonly IServiceSubscriptionClient serviceSubscriptionClient;
         private readonly ApplicationOptions options;
         private readonly ILogger<AborUploadService> logger;
-        private readonly string errorMessage = "Failure uploading the request {RequestID}";
 
         public AborUploadService(
             IUploaderClient uploaderClient,
@@ -154,7 +153,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, this.errorMessage, listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.ResidentialListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -224,7 +223,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, this.errorMessage, listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.ResidentialListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -279,7 +278,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, this.errorMessage, listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.ResidentialListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -330,7 +329,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, this.errorMessage, listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.ResidentialListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -393,7 +392,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, this.errorMessage, listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.ResidentialListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -447,7 +446,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, this.errorMessage, listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.ResidentialListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -500,7 +499,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, this.errorMessage, listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.ResidentialListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -707,7 +706,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, this.errorMessage, listing.LotListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.LotListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -773,7 +772,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, this.errorMessage, listing.LotListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.LotListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -820,7 +819,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "{FailurePrefix} {RequestID}", this.errorMessage, listing.LotListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.LotListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -1028,7 +1027,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, this.errorMessage, listing.LotListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.LotListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
