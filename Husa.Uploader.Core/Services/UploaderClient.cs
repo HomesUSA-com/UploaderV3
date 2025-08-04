@@ -120,7 +120,7 @@ namespace Husa.Uploader.Core.Services
 
         public bool WaitUntilElementIsDisplayed(By findBy, CancellationToken token = default)
         {
-            this.logger.LogInformation("Waiting for the element '{by}' to be displayed", findBy.ToString());
+            this.logger.LogInformation("Waiting for the element '{By}' to be displayed", findBy.ToString());
             try
             {
                 return this.wait.Until(driver => driver.FindElement(findBy).Displayed, token);
@@ -135,7 +135,7 @@ namespace Husa.Uploader.Core.Services
 
         public bool WaitUntilElementIsDisplayed(By findBy, TimeSpan waitTime, CancellationToken token = default)
         {
-            this.logger.LogDebug("Waiting for the element '{by}' to be displayed", findBy.ToString());
+            this.logger.LogDebug("Waiting for the element '{By}' to be displayed", findBy.ToString());
 
             var customWait = new WebDriverWait(this.driver, waitTime);
 
@@ -175,7 +175,7 @@ namespace Husa.Uploader.Core.Services
 
         public bool WaitUntilElementIsNotDisplayed(By findBy, TimeSpan waitTime, CancellationToken token = default)
         {
-            this.logger.LogDebug("Waiting for the element '{by}' to be displayed", findBy.ToString());
+            this.logger.LogDebug("Waiting for the element '{By}' to be displayed", findBy.ToString());
 
             try
             {
@@ -184,7 +184,7 @@ namespace Husa.Uploader.Core.Services
             }
             catch (WebDriverTimeoutException ex)
             {
-                this.logger.LogWarning(ex, "Waiting for the element '{by}' to be displayed", findBy.ToString());
+                this.logger.LogWarning(ex, "Waiting for the element '{By}' to be displayed", findBy.ToString());
                 string friendlyErrorMessage = $"Waiting for the element {findBy.ToString()}' to be displayed";
                 this.UploadInformation.AddError(findBy.ToString(), UNKNOW, UNKNOW, ex.Message, friendlyErrorMessage);
                 return false;
@@ -200,7 +200,7 @@ namespace Husa.Uploader.Core.Services
             }
             catch (WebDriverTimeoutException ex)
             {
-                this.logger.LogWarning(ex, "Waiting for the element '{by}' to be displayed", findBy.ToString());
+                this.logger.LogWarning(ex, "Waiting for the element '{By}' to be displayed", findBy.ToString());
                 string friendlyErrorMessage = $"Waiting for the element {findBy.ToString()}' to be displayed";
                 this.UploadInformation.AddError(findBy.ToString(), UNKNOW, UNKNOW, ex.Message, friendlyErrorMessage);
                 return false;
