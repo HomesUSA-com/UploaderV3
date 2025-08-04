@@ -57,7 +57,7 @@ namespace Husa.Uploader.Desktop.Factories
             sb.AppendLine($"User: {Environment.UserName}");
             sb.AppendLine($"Machine: {Environment.MachineName}");
             sb.AppendLine($"OS: {Environment.OSVersion}");
-            sb.AppendLine($"App Version: {this.GetAppVersion()}");
+            sb.AppendLine($"App Version: {GetAppVersion()}");
             sb.AppendLine("\nDescription:");
             sb.AppendLine(description);
             sb.AppendLine($"Error Count: {errors.Count()}");
@@ -92,8 +92,8 @@ namespace Husa.Uploader.Desktop.Factories
             sb.AppendLine($"Timestamp: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
             sb.AppendLine($".NET Version: {Environment.Version}");
             sb.AppendLine($"Processor Count: {Environment.ProcessorCount}");
-            sb.AppendLine($"Working Set: {this.FormatBytes(Environment.WorkingSet)}");
-            sb.AppendLine($"System Page Size: {this.FormatBytes(Environment.SystemPageSize)}");
+            sb.AppendLine($"Working Set: {FormatBytes(Environment.WorkingSet)}");
+            sb.AppendLine($"System Page Size: {FormatBytes(Environment.SystemPageSize)}");
             sb.AppendLine($"Current Directory: {Environment.CurrentDirectory}");
             sb.AppendLine($"User Domain: {Environment.UserDomainName}");
             sb.AppendLine($"Culture: {CultureInfo.CurrentCulture.Name}");
@@ -102,6 +102,28 @@ namespace Husa.Uploader.Desktop.Factories
             sb.AppendLine($"Is 64-bit Process: {Environment.Is64BitProcess}");
 
             return sb.ToString();
+        }
+
+        private static string FormatBytes(long bytes)
+        {
+            string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+            int suffixIndex = 0;
+            double size = bytes;
+
+            while (size >= 1024 && suffixIndex < suffixes.Length - 1)
+            {
+                size /= 1024;
+                suffixIndex++;
+            }
+
+            return $"{size:0.##} {suffixes[suffixIndex]}";
+        }
+
+        private static string GetAppVersion()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var versionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+            return versionInfo.FileVersion ?? assembly.GetName().Version?.ToString() ?? "Unknown";
         }
 
         private static string PadRight(string input, int length)
@@ -135,28 +157,6 @@ namespace Husa.Uploader.Desktop.Factories
             {
                 await this.jiraClient.Attachment.AttachAsync(issueKey, memoryStream, fileName);
             }
-        }
-
-        private string FormatBytes(long bytes)
-        {
-            string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
-            int suffixIndex = 0;
-            double size = bytes;
-
-            while (size >= 1024 && suffixIndex < suffixes.Length - 1)
-            {
-                size /= 1024;
-                suffixIndex++;
-            }
-
-            return $"{size:0.##} {suffixes[suffixIndex]}";
-        }
-
-        private string GetAppVersion()
-        {
-            var assembly = Assembly.GetExecutingAssembly();
-            var versionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
-            return versionInfo.FileVersion ?? assembly.GetName().Version?.ToString() ?? "Unknown";
         }
     }
 }
