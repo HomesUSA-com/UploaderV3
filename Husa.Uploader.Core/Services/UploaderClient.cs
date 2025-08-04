@@ -36,7 +36,7 @@ namespace Husa.Uploader.Core.Services
             this.Dispose(disposing: false);
         }
 
-        public UploadCommandInfo UploadInformation { get; private set; }
+        public UploadCommandInfo UploadInformation { get; set; }
 
         public string Url => this.driver.Url;
 
@@ -120,13 +120,22 @@ namespace Husa.Uploader.Core.Services
 
         public bool WaitUntilElementIsDisplayed(By findBy, CancellationToken token = default)
         {
-            this.logger.LogInformation("Waiting for the element '{by}' to be displayed", findBy.ToString());
-            return this.wait.Until(driver => driver.FindElement(findBy).Displayed, token);
+            this.logger.LogInformation("Waiting for the element '{By}' to be displayed", findBy.ToString());
+            try
+            {
+                return this.wait.Until(driver => driver.FindElement(findBy).Displayed, token);
+            }
+            catch (WebDriverTimeoutException ex)
+            {
+                string friendlyErrorMessage = $"Timeout while waiting for element '{findBy.ToString()}' to be displayed";
+                this.UploadInformation.AddError(findBy.ToString(), UNKNOW, UNKNOW, ex.Message, friendlyErrorMessage);
+                return false;
+            }
         }
 
         public bool WaitUntilElementIsDisplayed(By findBy, TimeSpan waitTime, CancellationToken token = default)
         {
-            this.logger.LogDebug("Waiting for the element '{by}' to be displayed", findBy.ToString());
+            this.logger.LogDebug("Waiting for the element '{By}' to be displayed", findBy.ToString());
 
             var customWait = new WebDriverWait(this.driver, waitTime);
 
@@ -140,7 +149,9 @@ namespace Husa.Uploader.Core.Services
             }
             catch (WebDriverTimeoutException ex)
             {
-                this.logger.LogWarning(ex, "Timeout while waiting for element '{by}' to be displayed", findBy.ToString());
+                this.logger.LogWarning(ex, "Timeout while waiting for element '{By}' to be displayed", findBy.ToString());
+                string friendlyErrorMessage = $"Timeout while waiting for element '{findBy.ToString()}' to be displayed";
+                this.UploadInformation.AddError(findBy.ToString(), UNKNOW, UNKNOW, ex.Message, friendlyErrorMessage);
                 return false;
             }
         }
@@ -148,26 +159,68 @@ namespace Husa.Uploader.Core.Services
         public bool WaitUntilElementIsDisplayed(Func<IWebDriver, bool> waitCondition, CancellationToken token = default)
         {
             this.logger.LogDebug("Waiting for the condition '{@waitCondition}'", waitCondition);
-            return this.wait.Until(waitCondition, token);
+
+            try
+            {
+                return this.wait.Until(waitCondition, token);
+            }
+            catch (WebDriverTimeoutException ex)
+            {
+                this.logger.LogWarning(ex, "Timeout while waiting for element '{By}' to be displayed", waitCondition.ToString());
+                string friendlyErrorMessage = $"Waiting for the condition {waitCondition.ToString()}' to be displayed";
+                this.UploadInformation.AddError(waitCondition.ToString(), UNKNOW, UNKNOW, ex.Message, friendlyErrorMessage);
+                return false;
+            }
         }
 
         public bool WaitUntilElementIsNotDisplayed(By findBy, TimeSpan waitTime, CancellationToken token = default)
         {
-            this.logger.LogDebug("Waiting for the element '{by}' to be displayed", findBy.ToString());
-            var customWait = new WebDriverWait(this.driver, waitTime);
-            return customWait.Until(driver => !driver.FindElement(findBy).Displayed, token);
+            this.logger.LogDebug("Waiting for the element '{By}' to be displayed", findBy.ToString());
+
+            try
+            {
+                var customWait = new WebDriverWait(this.driver, waitTime);
+                return customWait.Until(driver => !driver.FindElement(findBy).Displayed, token);
+            }
+            catch (WebDriverTimeoutException ex)
+            {
+                this.logger.LogWarning(ex, "Waiting for the element '{By}' to be displayed", findBy.ToString());
+                string friendlyErrorMessage = $"Waiting for the element {findBy.ToString()}' to be displayed";
+                this.UploadInformation.AddError(findBy.ToString(), UNKNOW, UNKNOW, ex.Message, friendlyErrorMessage);
+                return false;
+            }
         }
 
         public bool WaitUntilElementDisappears(By findBy, CancellationToken token = default)
         {
             this.logger.LogInformation("Waiting for the element '{by}' to disappear", findBy.ToString());
-            return this.wait.Until(driver => !driver.FindElement(findBy).Displayed, token);
+            try
+            {
+                return this.wait.Until(driver => !driver.FindElement(findBy).Displayed, token);
+            }
+            catch (WebDriverTimeoutException ex)
+            {
+                this.logger.LogWarning(ex, "Waiting for the element '{By}' to be displayed", findBy.ToString());
+                string friendlyErrorMessage = $"Waiting for the element {findBy.ToString()}' to be displayed";
+                this.UploadInformation.AddError(findBy.ToString(), UNKNOW, UNKNOW, ex.Message, friendlyErrorMessage);
+                return false;
+            }
         }
 
         public bool WaitUntilScriptIsComplete(string script, string expectedCompletedResult, CancellationToken token = default)
         {
             this.logger.LogInformation("Waiting for the script '{script}' to execute with the result {result}", script, expectedCompletedResult);
-            return this.wait.Until(x => this.ExecuteScript(script).Equals(expectedCompletedResult), token);
+            try
+            {
+                return this.wait.Until(x => this.ExecuteScript(script).Equals(expectedCompletedResult), token);
+            }
+            catch (WebDriverTimeoutException ex)
+            {
+                string friendlyErrorMessage = $"Waiting for the script '{script}' to execute with the result {expectedCompletedResult}";
+                this.logger.LogWarning(ex, friendlyErrorMessage);
+                this.UploadInformation.AddError(UNKNOW, UNKNOW, UNKNOW, ex.Message, friendlyErrorMessage);
+                return false;
+            }
         }
 
         public void WaitUntilElementExists(By findBy, TimeSpan waitTime, bool showAlert = false, CancellationToken token = default)
@@ -185,14 +238,34 @@ namespace Husa.Uploader.Core.Services
             }
 
             this.logger.LogInformation("Waiting for the element '{by}' to exist", findBy.ToString());
-            var customWait = new WebDriverWait(this.driver, waitTime);
-            customWait.Until(driver => driver.FindElement(findBy), token);
+
+            try
+            {
+                var customWait = new WebDriverWait(this.driver, waitTime);
+                customWait.Until(driver => driver.FindElement(findBy), token);
+            }
+            catch (WebDriverTimeoutException ex)
+            {
+                string friendlyErrorMessage = $"Waiting for the element '{findBy.ToString()}' to exist";
+                this.logger.LogWarning(ex, friendlyErrorMessage);
+                this.UploadInformation.AddError(UNKNOW, UNKNOW, UNKNOW, ex.Message, friendlyErrorMessage);
+            }
         }
 
         public void WaitUntilElementExists(By findBy, CancellationToken token = default)
         {
             this.logger.LogInformation("Waiting for the element '{by}' to exist", findBy.ToString());
-            this.wait.Until(driver => driver.FindElement(findBy), token);
+
+            try
+            {
+                this.wait.Until(driver => driver.FindElement(findBy), token);
+            }
+            catch (WebDriverTimeoutException ex)
+            {
+                string friendlyErrorMessage = $"Waiting for the element '{findBy.ToString()}' to exist";
+                this.logger.LogWarning(ex, friendlyErrorMessage);
+                this.UploadInformation.AddError(UNKNOW, UNKNOW, UNKNOW, ex.Message, friendlyErrorMessage);
+            }
         }
 
         public void SetImplicitWait(TimeSpan waitTime)

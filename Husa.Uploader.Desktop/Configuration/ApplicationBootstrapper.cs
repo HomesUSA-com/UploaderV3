@@ -115,6 +115,7 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddSingleton<IVersionManagerService, VersionManagerService>();
             services.AddSingleton<IFileSystem, FileSystem>();
             services.AddTransient<IAuthenticationService, AuthenticationService>();
+            services.AddSingleton<IJiraService, JiraService>();
         }
 
         public static void ConfigureHttpClients(this IServiceCollection services)

@@ -128,25 +128,36 @@ namespace Husa.Uploader.Core.Services
 
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-                await this.Login(listing.CompanyId);
 
-                if (listing.IsNewListing)
+                try
                 {
-                    this.NavigateToNewPropertyInput();
+                    await this.Login(listing.CompanyId);
+
+                    if (listing.IsNewListing)
+                    {
+                        this.NavigateToNewPropertyInput();
+                    }
+                    else
+                    {
+                        this.NavigateToQuickEdit(listing.MLSNum);
+
+                        this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
+                        this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
+
+                        this.uploaderClient.ClickOnElementById("toc_InputForm_section_9"); // click in tab Listing Information
+                        Thread.Sleep(400);
+                    }
+
+                    response.UploadResult = UploadResult.Success;
+                    return response;
                 }
-                else
+                catch (Exception exception)
                 {
-                    this.NavigateToQuickEdit(listing.MLSNum);
-
-                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
-
-                    this.uploaderClient.ClickOnElementById("toc_InputForm_section_9"); // click in tab Listing Information
-                    Thread.Sleep(400);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.ResidentialListingRequestID}");
+                    response.UploadResult = UploadResult.Failure;
+                    response.UploadInformation = this.uploaderClient.UploadInformation;
+                    return response;
                 }
-
-                response.UploadResult = UploadResult.Success;
-                return response;
             }
         }
 
@@ -212,7 +223,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.ResidentialListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -267,7 +278,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.ResidentialListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -318,7 +329,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.ResidentialListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -381,7 +392,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.ResidentialListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -435,7 +446,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.ResidentialListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -488,7 +499,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.ResidentialListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -695,7 +706,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lot {requestId}", listing.LotListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.LotListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -761,7 +772,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lot {requestId}", listing.LotListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.LotListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -808,7 +819,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.LotListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.LotListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -1016,7 +1027,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.LotListingRequestID);
+                    this.logger.LogError(exception, $"Failure uploading the request {listing.LotListingRequestID}");
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
