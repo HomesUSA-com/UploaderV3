@@ -51,8 +51,6 @@ namespace Husa.Uploader.Desktop.Factories
         public string FormatErrorsForLog(string summary, string description, IEnumerable<UploaderError> errors)
         {
             var sb = new StringBuilder();
-
-            // Encabezado con información general
             sb.AppendLine("=== APPLICATION ERROR REPORT ===");
             sb.AppendLine($"Bug Report: {summary}");
             sb.AppendLine($"Report Timestamp: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
