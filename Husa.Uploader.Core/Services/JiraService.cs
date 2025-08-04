@@ -154,7 +154,9 @@ namespace Husa.Uploader.Desktop.Factories
                 return new string(' ', length);
             }
 
-            return input.Length > length ? input.Substring(0, length - 3) + "..." : input.PadRight(length);
+            return input.Length > length
+                ? string.Concat(input.AsSpan(0, length - 3), "...")
+                : input.PadRight(length);
         }
     }
 }
