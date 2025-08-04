@@ -69,10 +69,10 @@ namespace Husa.Uploader.Desktop.Factories
 
             foreach (var error in errors)
             {
-                sb.AppendLine($"| {this.PadRight(error.FieldId, 15)} " +
-                              $"| {this.PadRight(error.FieldLabel, 16)} " +
-                              $"| {this.PadRight(error.FieldSection, 17)} " +
-                              $"| {this.PadRight(error.FriendlyErrorMessage, 32)} |");
+                sb.AppendLine($"| {PadRight(error.FieldId, 15)} " +
+                              $"| {PadRight(error.FieldLabel, 16)} " +
+                              $"| {PadRight(error.FieldSection, 17)} " +
+                              $"| {PadRight(error.FriendlyErrorMessage, 32)} |");
             }
 
             sb.AppendLine();
@@ -102,6 +102,18 @@ namespace Husa.Uploader.Desktop.Factories
             sb.AppendLine($"Is 64-bit Process: {Environment.Is64BitProcess}");
 
             return sb.ToString();
+        }
+
+        private static string PadRight(string input, int length)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return new string(' ', length);
+            }
+
+            return input.Length > length
+                ? string.Concat(input.AsSpan(0, length - 3), "...")
+                : input.PadRight(length);
         }
 
         private (byte[] Content, string FileName) GenerateLogInMemory(string summary, string description, List<UploaderError> uploadErrors)
@@ -145,18 +157,6 @@ namespace Husa.Uploader.Desktop.Factories
             var assembly = Assembly.GetExecutingAssembly();
             var versionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
             return versionInfo.FileVersion ?? assembly.GetName().Version?.ToString() ?? "Unknown";
-        }
-
-        private string PadRight(string input, int length)
-        {
-            if (string.IsNullOrEmpty(input))
-            {
-                return new string(' ', length);
-            }
-
-            return input.Length > length
-                ? string.Concat(input.AsSpan(0, length - 3), "...")
-                : input.PadRight(length);
         }
     }
 }
