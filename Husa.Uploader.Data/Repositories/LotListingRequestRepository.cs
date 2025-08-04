@@ -135,6 +135,7 @@ namespace Husa.Uploader.Data.Repositories
             LotListingRequest listingRequest = marketCode switch
             {
                 MarketCode.Austin => await GetLotFromAbor(),
+                MarketCode.CTX => await GetLotFromCtx(),
                 MarketCode.Houston => await GetLotFromHar(),
                 _ => throw new NotSupportedException($"The market {marketCode} is not yet supported for Lot Listings."),
             };
@@ -145,6 +146,12 @@ namespace Husa.Uploader.Data.Repositories
             {
                 var request = await this.quicklisterAborClient.ListingLotRequest.GetListRequestSaleByIdAsync(lotListingRequestId, token);
                 return new AborLotListingRequest(request).CreateFromApiResponseDetail();
+            }
+
+            async Task<LotListingRequest> GetLotFromCtx()
+            {
+                var request = await this.quicklisterCtxClient.ListingLotRequest.GetListRequestSaleByIdAsync(lotListingRequestId, token);
+                return new CtxLotListingRequest(request).CreateFromApiResponseDetail();
             }
 
             async Task<LotListingRequest> GetLotFromHar()
