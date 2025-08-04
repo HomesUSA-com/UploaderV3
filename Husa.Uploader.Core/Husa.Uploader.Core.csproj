@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
+        <PackageReference Include="Dapplo.Jira" Version="1.1.47" />
         <PackageReference Include="Husa.Extensions.Common" Version="4.3.1" />
         <PackageReference Include="Husa.Migration.Api.Client" Version="2.1.12" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.0" />

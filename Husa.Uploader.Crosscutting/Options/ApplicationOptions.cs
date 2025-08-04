@@ -40,5 +40,7 @@ namespace Husa.Uploader.Crosscutting.Options
 
         [Required]
         public ShowingTimeSettings ShowingTime { get; set; }
+
+        public JiraServiceSettings JiraService { get; set; }
     }
 }
