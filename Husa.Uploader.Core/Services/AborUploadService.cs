@@ -154,7 +154,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, $"{this.failureUploadingListingPreffix} {listing.ResidentialListingRequestID}");
+                    this.logger.LogError(exception, "{FailurePrefix} {RequestID}", this.failureUploadingListingPreffix, listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -224,7 +224,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, $"{this.failureUploadingListingPreffix} {listing.ResidentialListingRequestID}");
+                    this.logger.LogError(exception, "{FailurePrefix} {RequestID}", this.failureUploadingListingPreffix, listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -279,7 +279,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, $"{this.failureUploadingListingPreffix} {listing.ResidentialListingRequestID}");
+                    this.logger.LogError(exception, "{FailurePrefix} {RequestID}", this.failureUploadingListingPreffix, listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -330,7 +330,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, $"{this.failureUploadingListingPreffix} {listing.ResidentialListingRequestID}");
+                    this.logger.LogError(exception, "{FailurePrefix} {RequestID}", this.failureUploadingListingPreffix, listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -393,7 +393,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, $"{this.failureUploadingListingPreffix} {listing.ResidentialListingRequestID}");
+                    this.logger.LogError(exception, "{FailurePrefix} {RequestID}", this.failureUploadingListingPreffix, listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -447,7 +447,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, $"{this.failureUploadingListingPreffix} {listing.ResidentialListingRequestID}");
+                    this.logger.LogError(exception, "{FailurePrefix} {RequestID}", this.failureUploadingListingPreffix, listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
