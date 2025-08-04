@@ -158,7 +158,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -228,7 +228,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                 }
 
@@ -289,7 +289,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     return response;
                 }
@@ -369,7 +369,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     return response;
                 }
@@ -433,7 +433,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     return response;
                 }
@@ -481,7 +481,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     return response;
                 }
@@ -536,7 +536,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     return response;
                 }
