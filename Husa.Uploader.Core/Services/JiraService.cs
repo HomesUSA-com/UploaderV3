@@ -48,7 +48,7 @@ namespace Husa.Uploader.Desktop.Factories
             }
         }
 
-        public string FormatErrorsForLog(string summary, string description, IEnumerable<UploaderError> errors)
+        private static string FormatErrorsForLog(string summary, string description, IEnumerable<UploaderError> errors)
         {
             var sb = new StringBuilder();
             sb.AppendLine("=== APPLICATION ERROR REPORT ===");
@@ -140,7 +140,7 @@ namespace Husa.Uploader.Desktop.Factories
 
         private (byte[] Content, string FileName) GenerateLogInMemory(string summary, string description, List<UploaderError> uploadErrors)
         {
-            var logContent = this.FormatErrorsForLog(summary, description, uploadErrors);
+            var logContent = FormatErrorsForLog(summary, description, uploadErrors);
 
             var cleanSummary = new string(summary
                 .Where(c => !Path.GetInvalidFileNameChars().Contains(c))
