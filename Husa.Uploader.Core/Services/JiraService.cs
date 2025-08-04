@@ -104,31 +104,6 @@ namespace Husa.Uploader.Desktop.Factories
             return sb.ToString();
         }
 
-        private string PadRight(string input, int length)
-        {
-            if (string.IsNullOrEmpty(input))
-            {
-                return new string(' ', length);
-            }
-
-            return input.Length > length ? input.Substring(0, length - 3) + "..." : input.PadRight(length);
-        }
-
-        private string FormatBytes(long bytes)
-        {
-            string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
-            int suffixIndex = 0;
-            double size = bytes;
-
-            while (size >= 1024 && suffixIndex < suffixes.Length - 1)
-            {
-                size /= 1024;
-                suffixIndex++;
-            }
-
-            return $"{size:0.##} {suffixes[suffixIndex]}";
-        }
-
         private (byte[] Content, string FileName) GenerateLogInMemory(string summary, string description, List<UploaderError> uploadErrors)
         {
             var logContent = this.FormatErrorsForLog(summary, description, uploadErrors);
@@ -150,11 +125,36 @@ namespace Husa.Uploader.Desktop.Factories
             }
         }
 
+        private string FormatBytes(long bytes)
+        {
+            string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+            int suffixIndex = 0;
+            double size = bytes;
+
+            while (size >= 1024 && suffixIndex < suffixes.Length - 1)
+            {
+                size /= 1024;
+                suffixIndex++;
+            }
+
+            return $"{size:0.##} {suffixes[suffixIndex]}";
+        }
+
         private string GetAppVersion()
         {
             var assembly = Assembly.GetExecutingAssembly();
             var versionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
             return versionInfo.FileVersion ?? assembly.GetName().Version?.ToString() ?? "Unknown";
+        }
+
+        private string PadRight(string input, int length)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return new string(' ', length);
+            }
+
+            return input.Length > length ? input.Substring(0, length - 3) + "..." : input.PadRight(length);
         }
     }
 }
