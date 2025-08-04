@@ -22,7 +22,7 @@ namespace Husa.Uploader.Desktop.Factories
         {
             try
             {
-                var (logContent, fileName) = this.GenerateLogInMemory(summary, description, uploaderErrors);
+                var (logContent, fileName) = GenerateLogInMemory(summary, description, uploaderErrors);
                 var issue = new IssueWithFields<IssueFields>
                 {
                     Fields = new IssueFields
@@ -138,7 +138,7 @@ namespace Husa.Uploader.Desktop.Factories
                 : input.PadRight(length);
         }
 
-        private (byte[] Content, string FileName) GenerateLogInMemory(string summary, string description, List<UploaderError> uploadErrors)
+        private static (byte[] Content, string FileName) GenerateLogInMemory(string summary, string description, List<UploaderError> uploadErrors)
         {
             var logContent = FormatErrorsForLog(summary, description, uploadErrors);
 
