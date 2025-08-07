@@ -275,7 +275,7 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act
-            sut.FillListDate(ctxListing);
+            sut.FillListDate(ctxListing.ListStatus, ctxListing.IsNewListing);
 
             // Assert
             this.uploaderClient.Verify(x => x.WriteTextbox(By.Id("Input_129"), expectedDate.ToShortDateString(), false, false, false, false), Times.Once);

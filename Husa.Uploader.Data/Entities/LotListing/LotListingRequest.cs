@@ -3,9 +3,13 @@ namespace Husa.Uploader.Data.Entities.LotListing
     using Husa.Extensions.Common.Enums;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
+    using Husa.Uploader.Data.Interfaces.Common;
+    using Husa.Uploader.Data.Interfaces.Ctx;
     using Microsoft.IdentityModel.Tokens;
 
-    public abstract class LotListingRequest
+    public abstract class LotListingRequest :
+        IListingAddress,
+        IStatusInformationData
     {
         public const string DollarSign = "$";
         private string agentListApptPhone;
@@ -65,6 +69,7 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public string MlsArea { get; set; }
         public string PropertyType { get; set; }
         public string FemaFloodPlain { get; set; }
+        public string Zoning { get; set; }
         public string LotDescription { get; set; }
         public string PropCondition { get; set; }
         public string PropertySubType { get; set; }
@@ -180,6 +185,23 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public string SoldTerms { get; set; }
         public string SellConcess { get; set; }
         public string LotListType { get; set; }
+
+        // Lot Environment / Utiity
+        public string IsGatedCommunity { get; set; }
+        public string HasWaterAccess { get; set; }
+        public string WaterAccessDesc { get; set; }
+        public string TopoLandDescription { get; set; }
+        public string RoadFrontageDesc { get; set; }
+        public string UpgradedEnergyFeatures { get; set; }
+        public string EES { get; set; }
+        public string GreenIndoorAirQuality { get; set; }
+        public string GreenCerts { get; set; }
+        public string EESFeatures { get; set; }
+        public string EnergyDesc { get; set; }
+        public string GreenWaterConservation { get; set; }
+        public string WaterDesc { get; set; }
+        public string SupOther { get; set; }
+
         public abstract LotListingRequest CreateFromApiResponse();
 
         public abstract LotListingRequest CreateFromApiResponseDetail();

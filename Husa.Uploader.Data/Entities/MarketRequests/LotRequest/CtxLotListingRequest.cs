@@ -5,6 +5,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
     using Husa.Quicklister.CTX.Api.Contracts.Response.ListingRequest.LotRequest;
     using Husa.Quicklister.CTX.Api.Contracts.Response.LotListing;
     using Husa.Quicklister.CTX.Api.Contracts.Response.SalePropertyDetail;
+    using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities.LotListing;
 
     public class CtxLotListingRequest : LotListingRequest
@@ -117,21 +118,36 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.LotListType = propertyInfo.ListingType?.ToStringFromEnumMember();
                 lotListingRequest.PropertySubType = propertyInfo.TypeCategory?.ToStringFromEnumMember();
                 lotListingRequest.FemaFloodPlain = propertyInfo.FemaFloodPlain?.ToStringFromEnumMember();
+                lotListingRequest.Zoning = propertyInfo.Zoning;
             }
 
-            void FillFeaturesInfo(LotFeaturesResponse featureInfo)
+            void FillFeaturesInfo(LotFeaturesResponse featuresInfo)
             {
-                ArgumentNullException.ThrowIfNull(featureInfo);
+                ArgumentNullException.ThrowIfNull(featuresInfo);
 
-                lotListingRequest.LotDimension = featureInfo.LotDimension;
-                lotListingRequest.LotSize = featureInfo.LotSize;
-                lotListingRequest.ExteriorFeatures = featureInfo.ExteriorFeatures.ToStringFromEnumMembers();
-                lotListingRequest.Fencing = featureInfo.Fencing.ToStringFromEnumMembers();
-                lotListingRequest.WaterfrontFeatures = featureInfo.WaterFeatures.ToStringFromEnumMembers();
-                lotListingRequest.MineralsFeatures = featureInfo.MineralRights.ToStringFromEnumMembers();
-                lotListingRequest.RestrictionsDescription = featureInfo.RestrictionsType.ToStringFromEnumMembers();
-                lotListingRequest.NeighborhoodAmenities = featureInfo.NeighborhoodAmenities.ToStringFromEnumMembers();
-                lotListingRequest.WaterSewer = featureInfo.WaterSewer.ToStringFromEnumMembers();
+                lotListingRequest.LotDimension = featuresInfo.LotDimension;
+                lotListingRequest.LotSize = featuresInfo.LotSize;
+                lotListingRequest.ExteriorFeatures = featuresInfo.ExteriorFeatures.ToStringFromEnumMembers();
+                lotListingRequest.Fencing = featuresInfo.Fencing.ToStringFromEnumMembers();
+                lotListingRequest.WaterfrontFeatures = featuresInfo.WaterFeatures.ToStringFromEnumMembers();
+                lotListingRequest.MineralsFeatures = featuresInfo.MineralRights.ToStringFromEnumMembers();
+                lotListingRequest.RestrictionsDescription = featuresInfo.RestrictionsType.ToStringFromEnumMembers();
+                lotListingRequest.NeighborhoodAmenities = featuresInfo.NeighborhoodAmenities.ToStringFromEnumMembers();
+                lotListingRequest.WaterSewer = featuresInfo.WaterSewer.ToStringFromEnumMembers();
+                lotListingRequest.IsGatedCommunity = featuresInfo.GatedCommunity.BoolToNumericBool();
+                lotListingRequest.HasWaterAccess = featuresInfo.WaterAccess.BoolToNumericBool();
+                lotListingRequest.WaterAccessDesc = featuresInfo.WaterAccessType.ToStringFromEnumMembers();
+                lotListingRequest.TopoLandDescription = featuresInfo.TopoLandDescription.ToStringFromEnumMembers();
+                lotListingRequest.RoadFrontageDesc = featuresInfo.AccessRoadSurface.ToStringFromEnumMembers();
+                lotListingRequest.UpgradedEnergyFeatures = featuresInfo.UpgradedEnergyFeatures.BoolToNumericBool();
+                lotListingRequest.EES = featuresInfo.EESFeatures.BoolToNumericBool();
+                lotListingRequest.GreenIndoorAirQuality = featuresInfo.AirQuality.ToStringFromEnumMembers();
+                lotListingRequest.GreenCerts = featuresInfo.GreenBuildingVerification.ToStringFromEnumMembers();
+                lotListingRequest.EESFeatures = featuresInfo.EnergyFeatures.ToStringFromEnumMembers();
+                lotListingRequest.EnergyDesc = featuresInfo.GreenVerificationSource.ToStringFromEnumMembers();
+                lotListingRequest.GreenWaterConservation = featuresInfo.WaterConservation.ToStringFromEnumMembers();
+                lotListingRequest.WaterDesc = featuresInfo.WaterSewer.ToStringFromEnumMembers();
+                lotListingRequest.SupOther = featuresInfo.SupplierOther.ToStringFromEnumMembers();
             }
 
             void FillFinancialInfo(LotFinancialResponse financialInfo)
