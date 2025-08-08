@@ -8,6 +8,7 @@ namespace Husa.Uploader.Data.Tests.Entities.MarketRequests.LotRequest
     using Husa.Quicklister.CTX.Api.Contracts.Response.SalePropertyDetail;
     using Husa.Quicklister.CTX.Domain.Enums;
     using Husa.Quicklister.CTX.Domain.Enums.Entities;
+    using Husa.Uploader.Crosscutting.Converters;
     using Husa.Uploader.Data.Entities.MarketRequests.LotRequest;
     using Xunit;
 
@@ -299,10 +300,10 @@ namespace Husa.Uploader.Data.Tests.Entities.MarketRequests.LotRequest
             Assert.Equal("5000", result.LotSize);
 
             // FinancialInfo
-            Assert.Equal("2.1", result.TaxRate);
+            Assert.Equal("2", result.TaxRate);
             Assert.Equal("2023", result.TaxYear);
-            Assert.Equal(HOARequirement.Mandatory.ToStringFromEnumMember(), result.HOARequirement);
-            Assert.Equal("Central HOA", result.HoaName);
+            Assert.Equal(HOARequirement.Mandatory.ToStringFromHOARequirementCTX(), result.HOA);
+            Assert.Equal("Central HOA", result.AssocName);
 
             // ShowingInfo
             Assert.Equal(3, result.BuyersAgentCommission);

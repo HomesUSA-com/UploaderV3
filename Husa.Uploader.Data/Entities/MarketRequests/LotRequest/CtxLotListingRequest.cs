@@ -5,11 +5,14 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
     using Husa.Quicklister.CTX.Api.Contracts.Response.ListingRequest.LotRequest;
     using Husa.Quicklister.CTX.Api.Contracts.Response.LotListing;
     using Husa.Quicklister.CTX.Api.Contracts.Response.SalePropertyDetail;
+    using Husa.Uploader.Crosscutting.Converters;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities.LotListing;
 
     public class CtxLotListingRequest : LotListingRequest
     {
+        private const string RemarksMessage = "No Offers of Compensation Permitted.";
+        private const string DefaultIntegerAsStringValue = "0";
         private readonly ListingLotRequestQueryResponse listingResponse;
         private readonly LotListingRequestDetailResponse listingDetailResponse;
 
@@ -28,6 +31,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
         private CtxLotListingRequest()
             : base()
         {
+            this.ProspectsExempt = DefaultIntegerAsStringValue;
+            this.EarnestMoney = DefaultIntegerAsStringValue;
         }
 
         public override MarketCode MarketCode => MarketCode.CTX;
@@ -154,20 +159,36 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
             {
                 ArgumentNullException.ThrowIfNull(financialInfo);
 
-                lotListingRequest.TaxRate = financialInfo.TaxRate.ToString();
-                lotListingRequest.TaxYear = financialInfo.TaxYear?.ToString();
-                lotListingRequest.HOARequirement = financialInfo.HoaRequirement?.ToStringFromEnumMember();
-                lotListingRequest.HoaName = financialInfo.HoaName;
+                lotListingRequest.ProposedTerms = financialInfo.ProposedTerms.ToStringFromEnumMembers();
+                lotListingRequest.Exemptions = financialInfo.Exemptions.ToStringFromEnumMembers();
+                lotListingRequest.TaxRate = financialInfo.TaxRate.DecimalToString();
+                lotListingRequest.TaxYear = financialInfo.TaxYear.IntegerToString();
+                lotListingRequest.TitleCo = financialInfo.TitleCompany;
+                lotListingRequest.HOA = financialInfo.HoaRequirement?.ToStringFromHOARequirementCTX();
+                lotListingRequest.AssocName = financialInfo.HoaName;
+                lotListingRequest.AssocTransferFee = (int?)financialInfo.HoaTransferFeeAmount;
+                lotListingRequest.HoaWebsite = financialInfo.HoaWebsite;
+                lotListingRequest.AssocPhone = financialInfo.HoaPhone.PhoneFormat(true);
+                lotListingRequest.ManagementCompany = financialInfo.HoaMgmtCo;
+                lotListingRequest.AssocFeeFrequency = financialInfo.HoaTerm?.ToStringFromEnumMember();
+                lotListingRequest.AssocFeeIncludes = financialInfo.HoaFeeIncludes.ToStringFromEnumMembers();
+                lotListingRequest.AssocFee = (int?)financialInfo.HoaAmount;
             }
 
             void FillShowingInformation(LotShowingResponse showingInfo)
             {
                 ArgumentNullException.ThrowIfNull(showingInfo);
 
+                lotListingRequest.AgentListApptPhone = showingInfo.ShowingPhone;
+                lotListingRequest.OtherPhone = showingInfo.SecondShowingPhone;
+                lotListingRequest.LockboxTypeDesc = showingInfo.LockboxType?.ToStringFromEnumMember();
+                lotListingRequest.LockboxLocDesc = showingInfo.LockboxLocation.ToStringFromEnumMembers();
+                lotListingRequest.Showing = showingInfo.Showing.ToStringFromEnumMembers();
                 lotListingRequest.BuyersAgentCommission = showingInfo.BuyersAgentCommission;
                 lotListingRequest.ShowingInstructions = showingInfo.Showing.ToStringFromEnumMembers();
                 lotListingRequest.Directions = showingInfo.Directions;
                 lotListingRequest.PublicRemarks = showingInfo.PublicRemarks;
+                lotListingRequest.AgentPrivateRemarks = showingInfo.AgentPrivateRemarks;
             }
 
             void FillSchoolsInfo(SchoolsResponse schoolsInfo)
@@ -178,5 +199,9 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.HighSchool = schoolsInfo.HighSchool?.ToStringFromEnumMember();
             }
         }
+
+        public virtual string GetPublicRemarks() => RemarksMessage;
+
+        public virtual string GetAgentRemarksMessage() => RemarksMessage;
     }
 }

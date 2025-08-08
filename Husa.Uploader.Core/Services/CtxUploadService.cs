@@ -16,9 +16,9 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Data.Entities.BulkUpload;
     using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
+    using Husa.Uploader.Data.Entities.MarketRequests.LotRequest;
     using Husa.Uploader.Data.Interfaces;
     using Husa.Uploader.Data.Interfaces.Common;
-    using Husa.Uploader.Data.Interfaces.Ctx;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
     using OpenQA.Selenium;
@@ -282,7 +282,7 @@ namespace Husa.Uploader.Core.Services
 
                     this.uploaderClient.ClickOnElement(By.LinkText("Remarks"));
 
-                    this.UpdatePublicRemarksInRemarksTab(listing);
+                    this.UpdatePublicRemarksInRemarksTab(listing, listing.GetAgentRemarksMessage, listing.GetPublicRemarks);
 
                     if (autoSave)
                     {
@@ -607,6 +607,9 @@ namespace Husa.Uploader.Core.Services
                     this.FillStatusInformation(listing);
                     this.FillListingInformation(listing);
                     this.FillLotEnvironmentUtilityInformation(listing);
+                    this.FillFinancialInformation(listing);
+                    this.FillShowingInformation(listing);
+                    this.FillRemarks(listing as CtxLotListingRequest);
                 }
                 catch (Exception exception)
                 {
@@ -820,7 +823,7 @@ namespace Husa.Uploader.Core.Services
             },
             cancellationToken);
 
-        private void FillStatusInformation(IStatusInformationData listing)
+        private void FillStatusInformation(IStatusInformation listing)
         {
             this.uploaderClient.WriteTextbox(By.Id("Input_778"), listing.ExpectedActiveDate, isElementOptional: true);
         }
@@ -1079,13 +1082,16 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_572", listing.AppliancesDesc, "Appliances/Equipment (Max 13)", tabName);
         }
 
+        private string MoveToLotEnvironmentUtilityInformationTab()
+        {
+            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
+            this.uploaderClient.ClickOnElement(By.LinkText("Lot/Environment/Utility")); // Lot/Environment/Utility
+            return "Lot/Environment/Utility";
+        }
+
         private void FillLotEnvironmentUtilityInformation(ResidentialListingRequest listing)
         {
-            string tabName = "Lot/Environment/Utility";
-            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
-
-            this.uploaderClient.ClickOnElement(By.LinkText("Lot/Environment/Utility")); // Lot/Environment/Utility
-
+            var tabName = this.MoveToLotEnvironmentUtilityInformationTab();
             this.uploaderClient.WriteTextbox(By.Id("Input_576"), listing.LotDim); // Lot Dimensions
             this.uploaderClient.SetMultipleCheckboxById("Input_581", listing.FenceDesc, "Fencing (Max 12)", tabName);
             this.uploaderClient.WriteTextbox(By.Id("Input_577"), listing.LotSize); // Apx Acreage
@@ -1123,11 +1129,7 @@ namespace Husa.Uploader.Core.Services
 
         private void FillLotEnvironmentUtilityInformation(LotListingRequest listing)
         {
-            string tabName = "Lot/Environment/Utility";
-            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
-
-            this.uploaderClient.ClickOnElement(By.LinkText("Lot/Environment/Utility")); // Lot/Environment/Utility
-
+            var tabName = this.MoveToLotEnvironmentUtilityInformationTab();
             this.uploaderClient.WriteTextbox(By.Id("Input_576"), listing.LotDimension); // Lot Dimensions
             this.uploaderClient.SetMultipleCheckboxById("Input_581", listing.Fencing, "Fencing (Max 12)", tabName);
             this.uploaderClient.WriteTextbox(By.Id("Input_577"), listing.LotSize); // Apx Acreage
@@ -1158,11 +1160,10 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_613", listing.SupOther, " Other Utilities", tabName);
         }
 
-        private void FillFinancialInformation(ResidentialListingRequest listing)
+        private void FillFinancialInformation(IFinantialInformation listing)
         {
             const string tabName = "Financial Information";
             this.uploaderClient.ExecuteScript(script: " jQuery(document).scrollTop(0);");
-
             this.uploaderClient.ClickOnElement(By.LinkText("Financial")); // Financial
 
             this.uploaderClient.SetMultipleCheckboxById("Input_614", "ATCLO,FUNDI", fieldLabel: "Possession (Max 7)", tabName);
@@ -1185,11 +1186,10 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_630", listing.AssocFeeIncludes, fieldLabel: "HOA Fee Includes", tabName);  // HOA Fee Includes
         }
 
-        private void FillShowingInformation(ResidentialListingRequest listing)
+        private void FillShowingInformation(IShowingInformation listing)
         {
             const string tabName = "Showing Information";
             this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
-
             this.uploaderClient.ClickOnElement(By.LinkText("Brokerage/Showing Information")); // Brokerage/Showing Information
 
             // Brokerage
@@ -1221,12 +1221,25 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetSelect(By.Id("Input_655"), "1", fieldLabel: "Allow 3rd Party Comments", tabName);
         }
 
-        private void FillRemarks(CtxListingRequest listing)
+        private void MoveToRemarksTab()
         {
             const string tabName = "Remarks";
             this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
             this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // Financial Information
-            this.UpdatePublicRemarksInRemarksTab(listing); // Public Remarks
+        }
+
+        private void FillRemarks(CtxListingRequest listing)
+        {
+            this.MoveToRemarksTab();
+            this.UpdatePublicRemarksInRemarksTab(
+                listing, listing.GetAgentRemarksMessage, listing.GetPublicRemarks); // Public Remarks
+        }
+
+        private void FillRemarks(CtxLotListingRequest listing)
+        {
+            this.MoveToRemarksTab();
+            this.UpdatePublicRemarksInRemarksTab(
+                listing, listing.GetAgentRemarksMessage, listing.GetPublicRemarks); // Public Remarks
         }
 
         private async Task FillMedia(ResidentialListingRequest listing, CancellationToken cancellationToken)
@@ -1258,14 +1271,17 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_553"), listing.YearBuilt); // Year Built
         }
 
-        private void UpdatePublicRemarksInRemarksTab(ResidentialListingRequest listing)
+        private void UpdatePublicRemarksInRemarksTab(
+            IListingRemarks listing,
+            Func<string> getAgentRemarksMessage,
+            Func<string> getPublicRemarks)
         {
             // driver.wait.Until(x => ExpectedConditions.ElementIsVisible(By.Id("Input_917")));
             Thread.Sleep(400);
-            string baseRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
+            string baseRemarks = getAgentRemarksMessage() ?? string.Empty;
             string additionalRemarks = listing.AgentPrivateRemarks ?? string.Empty;
             var agentRemarks = $"{baseRemarks}. {additionalRemarks}";
-            this.uploaderClient.WriteTextbox(By.Id("Input_140"), listing.GetPublicRemarks()); // Internet / Remarks / Desc. of Property
+            this.uploaderClient.WriteTextbox(By.Id("Input_140"), getPublicRemarks()); // Internet / Remarks / Desc. of Property
             this.uploaderClient.WriteTextbox(By.Id("Input_141"), agentRemarks); // Agent Remarks
             this.uploaderClient.WriteTextbox(By.Id("Input_142"), listing.Directions); // Syndication Remarks
         }

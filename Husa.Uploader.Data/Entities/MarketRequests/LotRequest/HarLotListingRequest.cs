@@ -34,8 +34,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
         public string MaintenanceFeeIncludes { get; set; }
         public string HasOtherFees { get; set; }
         public string OtherFeesInclude { get; set; }
-        public string AgentPrivateRemarks { get; set; }
-        public string AgentPrivateRemarksAdditional { get; set; }
 
         public override MarketCode MarketCode => MarketCode.Houston;
 

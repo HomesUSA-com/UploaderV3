@@ -4,12 +4,14 @@ namespace Husa.Uploader.Data.Entities.LotListing
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Interfaces.Common;
-    using Husa.Uploader.Data.Interfaces.Ctx;
     using Microsoft.IdentityModel.Tokens;
 
     public abstract class LotListingRequest :
         IListingAddress,
-        IStatusInformationData
+        IFinantialInformation,
+        IShowingInformation,
+        IListingRemarks,
+        IStatusInformation
     {
         public const string DollarSign = "$";
         private string agentListApptPhone;
@@ -154,7 +156,7 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public bool HasBuyerIncentive { get; set; }
         public decimal? BuyersAgentCommission { get; set; }
         public string BuyersAgentCommissionType { get; set; }
-        public bool HasAgentBonus { get; set; }
+        public bool? HasAgentBonus { get; set; }
         public bool HasBonusWithAmount { get; set; }
         public string AgentBonusAmount { get; set; }
         public string AgentBonusAmountType { get; set; }
@@ -166,10 +168,20 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public string ApptPhone { get; set; }
         public string ShowingServicePhone { get; set; }
         public string ShowingInstructions { get; set; }
-        public string PublicRemarks { get; set; }
-        public string Directions { get; set; }
         public string ShowingContactType { get; set; }
         public string ShowingContactName { get; set; }
+        public string ProposedTerms { get; set; }
+        public string Exemptions { get; set; }
+        public string TitleCo { get; set; }
+        public string HOA { get; set; }
+        public string HoaWebsite { get; set; }
+        public string AssocName { get; set; }
+        public int? AssocFee { get; set; }
+        public string AssocFeeFrequency { get; set; }
+        public int? AssocTransferFee { get; set; }
+        public string AssocFeeIncludes { get; set; }
+        public string AssocPhone { get; set; }
+        public string ManagementCompany { get; set; }
 
         // Lot Status
         public DateTime? BackOnMarketDate { get; set; }
@@ -201,6 +213,24 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public string GreenWaterConservation { get; set; }
         public string WaterDesc { get; set; }
         public string SupOther { get; set; }
+
+        // Lot Brokerage/Showing
+        public string Showing { get; set; }
+        public string ProspectsExempt { get; set; }
+        public string EarnestMoney { get; set; }
+        public string OtherPhone { get; set; }
+        public string LockboxTypeDesc { get; set; }
+        public string LockboxLocDesc { get; set; }
+
+        // Lot Remarks
+        public string AgentPrivateRemarks { get; set; }
+        public string AgentPrivateRemarksAdditional { get; set; }
+        public string PublicRemarks { get; set; }
+        public string Directions { get; set; }
+
+        public bool? IncludeRemarks => throw new NotImplementedException();
+
+        public string RemarksFormatFromCompany => throw new NotImplementedException();
 
         public abstract LotListingRequest CreateFromApiResponse();
 
@@ -289,7 +319,7 @@ namespace Husa.Uploader.Data.Entities.LotListing
 
         public virtual string GetAgentBonusRemarksMessage()
         {
-            if (this.HasAgentBonus)
+            if (this.HasAgentBonus ?? false)
             {
                 return "Contact Builder for Bonus Information. ";
             }
