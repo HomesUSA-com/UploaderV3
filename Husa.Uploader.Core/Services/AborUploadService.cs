@@ -1825,6 +1825,8 @@ namespace Husa.Uploader.Core.Services
                 // Comments
                 this.WriteTextbox($"_{fullyqualifiedNameField}__REPEAT{index}_167", openHouse.Comments);
 
+                this.uploaderClient.ExecuteScript(script: "jQuery('.mtrx-toc-content').animate({ scrollTop: 9999 }, 'slow');");
+
                 index++;
             }
         }
