@@ -1807,7 +1807,7 @@ namespace Husa.Uploader.Core.Services
                 // 1. Hour
                 string hourToScript = $"jQuery({toTimeId}).parent().parent().find('select:eq(0)')";
                 this.uploaderClient.ExecuteScript(script: $"{hourToScript}.click()");
-                string toHoursValue = openHouse.StartTime.ToString("hh");
+                string toHoursValue = openHouse.EndTime.ToString("hh");
                 this.uploaderClient.ExecuteScript(script: toHoursValue);
 
                 // 2. Minutes
