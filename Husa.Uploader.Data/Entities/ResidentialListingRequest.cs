@@ -7,10 +7,16 @@ namespace Husa.Uploader.Data.Entities
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Data.Entities.MarketRequests;
+    using Husa.Uploader.Data.Interfaces.Common;
     using Microsoft.IdentityModel.Tokens;
     using BuiltStatus = Husa.Uploader.Crosscutting.Enums.BuiltStatus;
 
-    public abstract class ResidentialListingRequest
+    public abstract class ResidentialListingRequest :
+        IListingAddress,
+        IFinantialInformation,
+        IShowingInformation,
+        IListingRemarks,
+        IStatusInformation
     {
         public const string DollarSign = "$";
         private string agentListApptPhone;
@@ -178,6 +184,7 @@ namespace Husa.Uploader.Data.Entities
         public decimal LandSQFT { get; set; }
         public string BodyofWater { get; set; }
         public bool? HasAgentBonus { get; set; }
+        public bool HasWaterfrontFeatures { get; set; }
 
         public bool HasContingencyInfo { get; set; }
         public string UtilityRoomDesc { get; set; }

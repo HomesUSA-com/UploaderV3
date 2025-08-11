@@ -194,6 +194,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.PlannedDevelopment = propertyInfo.PlannedCommunity;
                 residentialListingRequest.Latitude = propertyInfo.Latitude;
                 residentialListingRequest.Longitude = propertyInfo.Longitude;
+                residentialListingRequest.HasWaterfrontFeatures = propertyInfo.HasWaterfrontFeatures;
+                residentialListingRequest.WaterfrontFeatures = propertyInfo.WaterfrontFeatures.ToStringFromEnumMembers();
             }
 
             void FillSpacesDimensionsInfo(SpacesDimensionsResponse spacesDimensionsInfo)

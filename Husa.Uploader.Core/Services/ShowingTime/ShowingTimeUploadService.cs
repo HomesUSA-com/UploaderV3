@@ -20,7 +20,6 @@ namespace Husa.Uploader.Core.Services
 
     public class ShowingTimeUploadService : IShowingTimeUploadService
     {
-        private const string AlertClass = "ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable";
         private readonly IMarketUploadService marketUploadService;
         private readonly ILogger logger;
         private readonly string agentSelectorValue;
@@ -279,8 +278,17 @@ namespace Husa.Uploader.Core.Services
             var overlaping = (info.OverlappingAppointmentMode ?? default).ToStringFromEnumMember();
             this.UploaderClient.SetSelect(By.Id("OverlappingAppointmentMode"), overlaping);
 
-            var bufferTime = (info.BufferTimeBetweenAppointments ?? default).ToStringFromEnumMember();
-            this.UploaderClient.SetSelect(By.Id("AppointmentNoOverlapBufferMinutes"), bufferTime);
+            IEnumerable<OverlappingAppointmentMode?> bufferTimeOverlappingModes =
+                [
+                    OverlappingAppointmentMode.Default,
+                    OverlappingAppointmentMode.NotAllowed,
+                ];
+
+            if (bufferTimeOverlappingModes.Contains(info.OverlappingAppointmentMode))
+            {
+                var bufferTime = (info.BufferTimeBetweenAppointments ?? default).ToStringFromEnumMember();
+                this.UploaderClient.SetSelect(By.Id("AppointmentNoOverlapBufferMinutes"), bufferTime);
+            }
 
             if (leadTime)
             {
@@ -302,9 +310,10 @@ namespace Husa.Uploader.Core.Services
             var lockboxSerialNumberId = "LockboxSerialNumber";
             this.UploaderClient.WriteTextbox(By.Id("GateCode"), info.GateCode);
             this.UploaderClient.WriteTextbox(By.Id("AccessNotes"), info.AccessNotes);
-            this.UploaderClient.SetSelect(By.Id("AccessType"), (int)info.AccessMethod.Value);
 
-            switch (info.AccessMethod.Value)
+            var accessMethod = info.AccessMethod ?? AccessMethod.Other;
+            this.UploaderClient.SetSelect(By.Id("AccessType"), (int)accessMethod);
+            switch (accessMethod)
             {
                 case AccessMethod.CodeBox:
                     this.UploaderClient.WriteTextbox(By.Id(lockboxSerialNumberId), info.Serial);
@@ -368,7 +377,6 @@ namespace Husa.Uploader.Core.Services
             () =>
         {
             this.UploaderClient.ExecuteScript("document.querySelector('#addListingContact').click()");
-            Task.Delay(1000, cancellationToken).Wait();
             var searchText = string.IsNullOrEmpty(contact.Email?.Trim()) ?
                 $"{contact.FirstName} {contact.LastName}".Trim() : contact.Email;
             this.UploaderClient.WriteTextbox(By.Id("agentClientsFilter"), searchText);
@@ -392,6 +400,7 @@ namespace Husa.Uploader.Core.Services
             this.UploaderClient.ClickOnElementById("ACIsOwner_Yes");
             this.UploaderClient.ClickOnElementById("ACIsOccupant_No");
             this.UploaderClient.ClickOnElementById("saveContact");
+
             return true;
         },
             cancellationToken);
@@ -470,13 +479,14 @@ namespace Husa.Uploader.Core.Services
                 this.UploaderClient.WriteTextbox(By.Name("Phones[1]"), phone);
             }
 
+            var emailInputFindBy = By.Name("Email");
             if (string.IsNullOrEmpty(contact.Email?.Trim()))
             {
-                this.UploaderClient.WriteTextbox(By.Id("SABOR--966512Email"), string.Empty);
+                this.UploaderClient.WriteTextbox(emailInputFindBy, string.Empty);
             }
             else
             {
-                this.UploaderClient.WriteTextbox(By.Id("SABOR--966512Email"), contact.Email.Trim());
+                this.UploaderClient.WriteTextbox(emailInputFindBy, contact.Email.Trim());
             }
 
             var saveBtn = this.UploaderClient.FindElementById("contactEditSaveContact");
@@ -605,13 +615,13 @@ namespace Husa.Uploader.Core.Services
 
         public Task<bool> FindListing(string mlsNumber, CancellationToken cancellationToken = default) =>
             Task.Run(
-            () =>
+            async () =>
         {
             this.UploaderClient.ClickOnElement(By.XPath("//a/span[text()='Input']"));
             this.UploaderClient.WaitForElementToBeVisible(By.Id("m_dlInputList"), TimeSpan.FromSeconds(3));
             this.UploaderClient.WriteTextbox(By.Id("m_lvInputUISections_ctrl0_tbQuickEditCommonID_m_txbInternalTextBox"), mlsNumber);
             this.UploaderClient.ClickOnElementById("m_lvInputUISections_ctrl0_lbQuickEdit");
-            Task.Delay(3000, cancellationToken).Wait();
+            await Task.Delay(3000, cancellationToken);
             var listingFound = this.UploaderClient.FindElement(By.XPath("//span[text()='Modify Property']"), isElementOptional: true) != null;
             if (listingFound)
             {
@@ -711,16 +721,16 @@ namespace Husa.Uploader.Core.Services
 
         private void OnAlertClickOk()
         {
-            var alertXPath = By.XPath($"//div[@class='{AlertClass}']");
-            this.UploaderClient.WaitForElementToBeVisible(alertXPath, TimeSpan.FromMinutes(1));
-            var alert = this.UploaderClient.FindElement(alertXPath, isElementOptional: true);
-            if (alert is null)
+            try
             {
-                return;
+                var alertXPath = By.XPath($"//button/span[text()='OK']");
+                this.UploaderClient.FindElement(
+                    alertXPath, isElementOptional: true, shouldWait: true)?.Click();
             }
-
-            var alertButton = alert.FindElement(By.TagName("button"));
-            alertButton?.Click();
+            catch (Exception ex)
+            {
+                this.logger.LogInformation(ex, "Alert OK button not found");
+            }
         }
 
         private void WaitUntilUnblockUI(By by, CancellationToken cancellationToken)
