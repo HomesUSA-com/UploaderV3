@@ -1774,49 +1774,51 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WriteTextbox(By.Name($"_{fullyqualifiedNameField}__REPEAT{index}_162"), openHouse.Date);
 
                 // From Time
-                string fromTimeId = $"'input[id^=timeBox__{fullyqualifiedNameField}__REPEAT{index}_163]'";
+                string fromTimeId = this.uploaderClient.ExecuteScript(script: $"return jQuery('input[id^=timeBox__{fullyqualifiedNameField}__REPEAT{index}_163]').attr('id');").ToString();
 
                 ////1. click in the time picker FROM field
-                this.uploaderClient.ExecuteScript(script: $"jQuery({fromTimeId}).first().click();");
+                this.uploaderClient.ExecuteScript(script: $"jQuery('#{fromTimeId}').first().click();");
+                this.uploaderClient.ExecuteScript(script: $"document.getElementById('{fromTimeId}').scrollIntoView();");
                 var fromTimeMeridiem = openHouse.StartTime.Hours >= 12 ? "PM" : "AM";
 
                 // 1. Hour
-                string hoursFromScript = $"jQuery({fromTimeId}).parent().parent().find('select:eq(0)')";
+                string hoursFromScript = $"jQuery('#{fromTimeId}').parent().parent().find('select:eq(0)')";
                 this.uploaderClient.ExecuteScript(script: $"{hoursFromScript}.first().click()");
                 string hoursFromValue = DateTime.Today.Add(openHouse.StartTime).ToString("hh");
                 this.uploaderClient.ExecuteScript(script: $"{hoursFromScript}.val('{hoursFromValue}')");
 
                 // 2. Minutes
-                string minutesFromScript = $"jQuery({fromTimeId}).parent().parent().find('select:eq(1)')";
+                string minutesFromScript = $"jQuery('#{fromTimeId}').parent().parent().find('select:eq(1)')";
                 this.uploaderClient.ExecuteScript(script: $"{minutesFromScript}.first().click()");
                 string minutesFromValue = openHouse.StartTime.ToString("mm", CultureInfo.InvariantCulture);
                 this.uploaderClient.ExecuteScript(script: $"{minutesFromScript}.val('{minutesFromValue}')");
 
                 // 3. AM / PM
-                string meridiemFromfieldId = this.uploaderClient.ExecuteScript($"return jQuery({fromTimeId}).parent().parent().find('select:eq(2)').attr('id');").ToString();
+                string meridiemFromfieldId = this.uploaderClient.ExecuteScript($"return jQuery('#{fromTimeId}').parent().parent().find('select:eq(2)').attr('id');").ToString();
                 this.uploaderClient.SetSelect(By.Id(meridiemFromfieldId), fromTimeMeridiem);
 
                 // To Time
-                string toTimeId = $"'input[id^=timeBox__{fullyqualifiedNameField}__REPEAT{index}_164]'";
+                string toTimeId = this.uploaderClient.ExecuteScript(script: $"return jQuery('input[id^=timeBox__{fullyqualifiedNameField}__REPEAT{index}_164]').attr('id');").ToString();
 
                 ////2. click in the time picker TO field
-                this.uploaderClient.ExecuteScript(script: $"jQuery({toTimeId}).first().click();");
+                this.uploaderClient.ExecuteScript(script: $"jQuery('#{toTimeId}').first().click();");
+                this.uploaderClient.ExecuteScript(script: $"document.getElementById('{toTimeId}').scrollIntoView();");
                 var toTimeMeridiem = openHouse.EndTime.Hours >= 12 ? "PM" : "AM";
 
                 // 1. Hour
-                string hoursToScript = $"jQuery({toTimeId}).parent().parent().find('select:eq(0)')";
+                string hoursToScript = $"jQuery('#{toTimeId}').parent().parent().find('select:eq(0)')";
                 this.uploaderClient.ExecuteScript(script: $"{hoursToScript}.first().click()");
                 string hoursToValue = DateTime.Today.Add(openHouse.EndTime).ToString("hh");
                 this.uploaderClient.ExecuteScript(script: $"{hoursToScript}.val('{hoursToValue}')");
 
                 // 2. Minutes
-                string minutesToScript = $"jQuery({toTimeId}).parent().parent().find('select:eq(1)')";
+                string minutesToScript = $"jQuery('#{toTimeId}').parent().parent().find('select:eq(1)')";
                 this.uploaderClient.ExecuteScript(script: $"{minutesToScript}.first().click()");
                 string minutesToValue = openHouse.EndTime.ToString("mm", CultureInfo.InvariantCulture);
                 this.uploaderClient.ExecuteScript(script: $"{minutesToScript}.val('{minutesToValue}')");
 
                 // 3. AM / PM
-                string meridiemTofieldId = this.uploaderClient.ExecuteScript($"return jQuery({toTimeId}).parent().parent().find('select:eq(2)').attr('id');").ToString();
+                string meridiemTofieldId = this.uploaderClient.ExecuteScript($"return jQuery('#{toTimeId}').parent().parent().find('select:eq(2)').attr('id');").ToString();
                 this.uploaderClient.SetSelect(By.Id(meridiemTofieldId), toTimeMeridiem);
 
                 // Comments

@@ -22,6 +22,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private string jiraIssueKey;
         private string issueDescription;
         private bool isFailure;
+        private bool isEnabledReportButton;
         private List<UploaderError> uploaderErrors;
         private JiraServiceSettings jiraSettings;
 
@@ -91,6 +92,27 @@ namespace Husa.Uploader.Desktop.ViewModels
         public bool ShowFields => this.state == UiState.Fields;
 
         public bool ShowError => this.state == UiState.Error;
+
+        public bool IsEnabledReportButton
+        {
+            get
+            {
+                bool newValue = this.uploaderErrors != null && this.uploaderErrors.Count > 0;
+                this.isEnabledReportButton = newValue;
+
+                return this.isEnabledReportButton;
+            }
+            set
+            {
+                if (this.isEnabledReportButton == value)
+                {
+                    return;
+                }
+
+                this.isEnabledReportButton = value;
+                this.OnPropertyChanged();
+            }
+        }
 
         public string Url
         {
