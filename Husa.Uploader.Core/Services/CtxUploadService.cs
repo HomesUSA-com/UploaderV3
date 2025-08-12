@@ -606,6 +606,7 @@ namespace Husa.Uploader.Core.Services
 
                     this.FillStatusInformation(listing);
                     this.FillListingInformation(listing);
+                    this.FillBuildings();
                     this.FillLotEnvironmentUtilityInformation(listing);
                     this.FillFinancialInformation(listing);
                     this.FillShowingInformation(listing);
@@ -996,6 +997,15 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WriteTextbox(By.Id("Input_674"), listing.Zoning); // Builder Name
                 this.uploaderClient.SetSelect(By.Id("Input_551"), "BUILD", "Source SqFt", tabName); // Source SqFt
             }
+        }
+
+        private void FillBuildings()
+        {
+            const string tabName = "Buildings";
+            this.UploaderClient.ClickOnElement(By.LinkText(tabName)); // click in tab Buildings
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_670_NONE"));
+            this.uploaderClient.SetMultipleCheckboxById("Input_670", "NONE", tabName, tabName);
         }
 
         private void FillFieldSingleOption(string fieldName, string value)
