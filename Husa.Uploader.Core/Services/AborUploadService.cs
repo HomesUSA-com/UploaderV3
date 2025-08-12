@@ -1772,6 +1772,10 @@ namespace Husa.Uploader.Core.Services
 
                 // Date
                 this.uploaderClient.WriteTextbox(By.Name($"_{fullyqualifiedNameField}__REPEAT{index}_162"), openHouse.Date);
+                this.uploaderClient.ExecuteScript(script: $"jQuery('input[id^=_{fullyqualifiedNameField}__REPEAT{index}_162]').parent().parent().find('button').click()");
+                Thread.Sleep(5000);
+                this.uploaderClient.ExecuteScript(script: $"jQuery('#btnApplyDate')[0].click()");
+                Thread.Sleep(2000);
 
                 // From Time
                 string fromTimeId = this.uploaderClient.ExecuteScript(script: $"return jQuery('input[id^=timeBox__{fullyqualifiedNameField}__REPEAT{index}_163]').attr('id');").ToString();
