@@ -32,7 +32,7 @@ namespace Husa.Uploader.Core.Services
         private const string SurveillanceEquipmentOnSiteFieldLabel = "Surveillance equipment on-site";
         private const string HOARequiremientFieldLabel = "HOA Requiremient";
         private const string FireplacesNumberFieldLabel = "Fireplaces number";
-        private const string FailureMessage = "Failure uploading the lising {requestId}";
+        private const string FailureMessage = "Failure uploading the request {RequestId}";
         private const string OneQuaterBathFieldLabel = "1/4 Baths";
         private const string HalfBathFieldLabel = "1/2 Baths";
         private const string ThreeQuaterBathFieldLabel = "3/4 Baths";
@@ -122,19 +122,30 @@ namespace Husa.Uploader.Core.Services
 
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-                await this.Login(listing.CompanyId);
 
-                if (listing.IsNewListing)
+                try
                 {
-                    this.NavigateToNewPropertyInput();
-                }
-                else
-                {
-                    this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
-                }
+                    await this.Login(listing.CompanyId);
 
-                response.UploadResult = UploadResult.Success;
-                return response;
+                    if (listing.IsNewListing)
+                    {
+                        this.NavigateToNewPropertyInput();
+                    }
+                    else
+                    {
+                        this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
+                    }
+
+                    response.UploadResult = UploadResult.Success;
+                    return response;
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
+                    response.UploadResult = UploadResult.Failure;
+                    response.UploadInformation = this.uploaderClient.UploadInformation;
+                    return response;
+                }
             }
         }
 
@@ -402,7 +413,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the listing {requestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;

@@ -1,6 +1,8 @@
 namespace Husa.Uploader.Desktop.Factories
 {
     using System;
+    using Husa.Uploader.Core.Models;
+    using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Desktop.ViewModels;
     using Husa.Uploader.Desktop.Views;
@@ -15,10 +17,10 @@ namespace Husa.Uploader.Desktop.Factories
             this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
-        public MlsIssueReportView Create(UploadListingItem uploadListingItem, bool isFailure)
+        public MlsIssueReportView Create(UploadListingItem uploadListingItem, bool isFailure, JiraServiceSettings jiraSettings, List<UploaderError> uploaderErrors)
         {
             var childViewModel = this.serviceProvider.GetRequiredService<MlsIssueReportViewModel>();
-            childViewModel.Configure(uploadListingItem, isFailure);
+            childViewModel.Configure(uploadListingItem, isFailure, jiraSettings, uploaderErrors);
 
             var childWindow = this.serviceProvider.GetRequiredService<MlsIssueReportView>();
             childWindow.DataContext = childViewModel;
