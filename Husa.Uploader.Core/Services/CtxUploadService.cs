@@ -124,7 +124,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploaderResponse> EditListing()
             {
-                UploaderResponse response = new UploaderResponse();
+                UploaderResponse response = new();
 
                 this.logger.LogInformation("Editing the information for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
@@ -344,7 +344,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
