@@ -82,6 +82,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         private bool hasFinishedUpdating;
         private UploadListingItem selectedListingRequest;
         private ObservableCollection<UploadListingItem> listingRequests;
+        private UploaderResponse uploaderResponse;
 
         private ICommand loginCommand;
         private ICommand searchListingCommand;
@@ -174,6 +175,16 @@ namespace Husa.Uploader.Desktop.ViewModels
             {
                 this.useProxy = value;
                 ViewModelHelpers.UpdateAppSetting("Application:Uploader:ChromeOptions:Proxy:Enabled", this.useProxy);
+                this.OnPropertyChanged();
+            }
+        }
+
+        public UploaderResponse UploaderResponse
+        {
+            get => this.uploaderResponse;
+            set
+            {
+                this.uploaderResponse = value;
                 this.OnPropertyChanged();
             }
         }
@@ -1868,7 +1879,8 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private async Task OpenMlsIssueReportView(bool isFailure)
         {
-            var childWindow = this.mlsIssueReportFactory.Create(this.SelectedListingRequest, isFailure);
+            var jiraSettings = this.options.Value.JiraService;
+            var childWindow = this.mlsIssueReportFactory.Create(this.SelectedListingRequest, isFailure, jiraSettings, this.uploaderResponse?.UploadInformation?.UploaderErrors);
             childWindow.ShowDialog();
 
             await this.FinishUpload();
@@ -1889,6 +1901,7 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         private void HandleUploadExecutionResult(UploaderResponse response)
         {
+            this.UploaderResponse = response;
             this.UploadResult = response.UploadResult;
             if (this.UploadResult == UploadResult.Failure)
             {

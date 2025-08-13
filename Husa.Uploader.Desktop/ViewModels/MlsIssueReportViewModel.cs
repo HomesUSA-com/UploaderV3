@@ -4,18 +4,27 @@ namespace Husa.Uploader.Desktop.ViewModels
     using System.Linq;
     using System.Windows;
     using System.Windows.Input;
+    using Husa.Uploader.Core.Models;
     using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Desktop.Commands;
+    using Husa.Uploader.Desktop.Factories;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Options;
 
     public class MlsIssueReportViewModel : ViewModel
     {
         private readonly ILogger<MlsIssueReportViewModel> logger;
-
+        private readonly IJiraService jiraService;
         private UiState state;
         private string url;
+        private string jiraIssueKey;
+        private string issueDescription;
         private bool isFailure;
+        private bool isEnabledReportButton;
+        private List<UploaderError> uploaderErrors;
+        private JiraServiceSettings jiraSettings;
 
         private ICommand cancelCommand;
         private ICommand finishCommand;
@@ -23,9 +32,10 @@ namespace Husa.Uploader.Desktop.ViewModels
         private ICommand reportCommand;
         private ICommand showLogCommand;
 
-        public MlsIssueReportViewModel(ILogger<MlsIssueReportViewModel> logger)
+        public MlsIssueReportViewModel(ILogger<MlsIssueReportViewModel> logger, IJiraService jiraService, IOptions<ApplicationOptions> options)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.jiraService = jiraService ?? throw new ArgumentNullException(nameof(jiraService));
             this.State = UiState.Fields;
             this.Url = string.Empty;
         }
@@ -61,7 +71,7 @@ namespace Husa.Uploader.Desktop.ViewModels
         {
             get
             {
-                this.reportCommand ??= new RelayCommand(param => this.Report(), param => true);
+                this.reportCommand ??= new RelayCommand(async param => await this.ReportAsync(), param => true);
                 return this.reportCommand;
             }
         }
@@ -83,6 +93,27 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         public bool ShowError => this.state == UiState.Error;
 
+        public bool IsEnabledReportButton
+        {
+            get
+            {
+                bool newValue = this.uploaderErrors != null && this.uploaderErrors.Count > 0;
+                this.isEnabledReportButton = newValue;
+
+                return this.isEnabledReportButton;
+            }
+            set
+            {
+                if (this.isEnabledReportButton == value)
+                {
+                    return;
+                }
+
+                this.isEnabledReportButton = value;
+                this.OnPropertyChanged();
+            }
+        }
+
         public string Url
         {
             get => this.url;
@@ -98,9 +129,22 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
         }
 
-        public string IssueDescription { get; set; }
+        public string IssueDescription
+        {
+            get => this.issueDescription;
+            set
+            {
+                if (this.issueDescription == value)
+                {
+                    return;
+                }
 
-        private UiState State
+                this.issueDescription = value;
+                this.OnPropertyChanged();
+            }
+        }
+
+        public UiState State
         {
             get => this.state;
             set
@@ -110,6 +154,21 @@ namespace Husa.Uploader.Desktop.ViewModels
                 this.OnPropertyChanged(name: nameof(this.ShowFields));
                 this.OnPropertyChanged(name: nameof(this.ShowError));
                 this.OnPropertyChanged(name: nameof(this.ShowCreating));
+            }
+        }
+
+        public string JiraIssueKey
+        {
+            get => this.jiraIssueKey;
+            set
+            {
+                if (this.jiraIssueKey == value)
+                {
+                    return;
+                }
+
+                this.jiraIssueKey = value;
+                this.OnPropertyChanged();
             }
         }
 
@@ -130,15 +189,33 @@ namespace Husa.Uploader.Desktop.ViewModels
             // Method intentionally left empty.
         }
 
+        public async Task ReportAsync()
+        {
+            this.jiraService.InitializeBasicAuth(this.jiraSettings.Url, this.jiraSettings.Email, this.jiraSettings.ApiToken);
+            string listingDescription = this.SelectedListingRequest.IsNewListing
+                ? "New Listing"
+                : $"MLS number {this.SelectedListingRequest.MlsNumber}";
+
+            string summary =
+                $"[{this.SelectedListingRequest.Market}] Uploader Issue - Error uploading {listingDescription}";
+            string issueKey = await this.jiraService.CreateBugAsync(summary, this.issueDescription, this.jiraSettings.Project, this.uploaderErrors);
+            this.State = UiState.Issue;
+            this.JiraIssueKey = issueKey;
+            string urlJiraIssue = $"{this.jiraSettings.Url}/browse/{this.jiraIssueKey}";
+            this.Url = urlJiraIssue;
+        }
+
         public void Navigate()
         {
             // Method intentionally left empty.
         }
 
-        public void Configure(UploadListingItem selectedListingRequest, bool isFailure)
+        public void Configure(UploadListingItem selectedListingRequest, bool isFailure, JiraServiceSettings jiraSettings, List<UploaderError> uploaderErrors)
         {
             this.SelectedListingRequest = selectedListingRequest;
             this.isFailure = isFailure;
+            this.jiraSettings = jiraSettings;
+            this.uploaderErrors = uploaderErrors;
         }
 
         private void TryClose()

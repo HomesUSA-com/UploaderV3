@@ -35,20 +35,18 @@
             <TextBox Name="IssueDescription" Height="120" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"></TextBox>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Name="ShowLog" Padding="7" Margin="0,5,95,0" Command="{Binding ShowLogCommand}">Show Error Log</Button>
-                <Button Name="Report" Padding="7" Margin="0,5,0,0" Command="{Binding ReportCommand}">Report</Button>
-                <Button Name="Cancel" Padding="7" Margin="5,5,0,0" Command="{Binding CancelCommand}">Dont' report</Button>
+                <Button Name="Report" Padding="7" Margin="0,5,0,0" Command="{Binding ReportCommand}" IsEnabled="{Binding IsEnabledReportButton}">Report</Button>
+                <Button Name="Cancel" Padding="7" Margin="5,5,0,0" Command="{Binding CancelCommand}">Close</Button>
             </StackPanel>
         </StackPanel>
         <StackPanel Visibility="{Binding ShowIssue, Converter={StaticResource BooleanToVisibilityConverter }}">
             <TextBlock TextAlignment="Center" >
                 Issue created
             </TextBlock>
-            <TextBlock TextAlignment="Center" Name="Url"  FontSize="30">
-                HUSAPUL-122
-            </TextBlock>
+            <TextBlock TextAlignment="Center" Name="JiraIssueKey" FontSize="30" Text="{Binding JiraIssueKey, UpdateSourceTrigger=PropertyChanged}" />
             <Button Style="{StaticResource HyperlinkButton}" Focusable="False" Name="Navigate">
                 <TextBlock HorizontalAlignment="Center">
-                    <Hyperlink>Open Issue in JIRA</Hyperlink>
+                    <Hyperlink  NavigateUri="{Binding Url}" RequestNavigate="Hyperlink_RequestNavigate">Open Issue in JIRA</Hyperlink>
                 </TextBlock>
             </Button>
             <Button Name="CloseBtn" Padding="7" Margin="0,15,0,0" Command="{Binding CloseCommand}">Close</Button>
