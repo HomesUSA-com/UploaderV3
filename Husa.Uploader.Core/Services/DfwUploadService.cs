@@ -1302,6 +1302,9 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetMultipleCheckboxById("Input_353", listing.Easements, "Easements", tabName); // Easements
                 this.uploaderClient.SetMultipleCheckboxById("Input_355", listing.SoilType, "Soil", tabName); // Soil
             }
+
+            this.uploaderClient.SetSelect(By.Id("Input_357"), listing.HasWaterfrontFeatures.BoolToNumericBool());
+            this.uploaderClient.SetMultipleCheckboxById("Input_358", listing.WaterfrontFeatures);
         }
 
         private void FillUtilitiesInformation(DfwListingRequest listing)
@@ -1439,7 +1442,7 @@ namespace Husa.Uploader.Core.Services
 
             Thread.Sleep(1000);
 
-            this.uploaderClient.WriteTextbox(By.Id("Input_396"), listing.OtherPhone.PhoneFormat(), isElementOptional: true); // Occupant Alternate Phone
+            this.uploaderClient.WriteTextbox(By.Id("Input_396"), listing.OtherPhone, isElementOptional: true); // Occupant Alternate Phone
 
             if (isNotPartialFill)
             {
