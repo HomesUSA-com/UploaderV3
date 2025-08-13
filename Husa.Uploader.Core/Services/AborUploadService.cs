@@ -1997,7 +1997,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ScrollDown(400);
             this.WriteTextbox("Input_728", listing.PreferredTitleCompany); // Preferred Title Company
             this.SetMultipleCheckboxById("Input_299", "Funding"); // Possession
-            this.SelectToggleButton("Input_779", listing.HasAgentBonus);
+            this.SelectToggleButton("Input_779", listing.HasAgentBonus ?? false);
         }
 
         private void FillLotShowingInformation(LotListingRequest listing)

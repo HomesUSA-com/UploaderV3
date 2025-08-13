@@ -52,7 +52,7 @@ namespace Husa.Uploader.Core.Services
             this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.quicklisterDfwClient = quicklisterDfwClient ?? throw new ArgumentNullException(nameof(quicklisterDfwClient));
-            }
+        }
 
         public MarketCode CurrentMarket => MarketCode.DFW;
 
@@ -1302,6 +1302,9 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetMultipleCheckboxById("Input_353", listing.Easements, "Easements", tabName); // Easements
                 this.uploaderClient.SetMultipleCheckboxById("Input_355", listing.SoilType, "Soil", tabName); // Soil
             }
+
+            this.uploaderClient.SetSelect(By.Id("Input_357"), listing.HasWaterfrontFeatures.BoolToNumericBool());
+            this.uploaderClient.SetMultipleCheckboxById("Input_358", listing.WaterfrontFeatures);
         }
 
         private void FillUtilitiesInformation(DfwListingRequest listing)
