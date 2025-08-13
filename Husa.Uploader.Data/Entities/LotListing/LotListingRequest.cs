@@ -39,6 +39,7 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public string AgentListApptPhone { get => this.agentListApptPhone.PhoneFormat(); set => this.agentListApptPhone = value; }
 
         public string StreetNum { get; set; }
+        public string StreetDir { get; set; }
         public string StreetName { get; set; }
         public string StreetType { get; set; }
         public string County { get; set; }
@@ -64,14 +65,18 @@ namespace Husa.Uploader.Data.Entities.LotListing
 
         // Lot Address
         public string UnitNumber { get; set; }
+        public string Block { get; set; }
         public int? LotNumber { get; set; }
         public string StDirection { get; set; }
 
         // Lot Property
         public string MlsArea { get; set; }
         public string PropertyType { get; set; }
+        public string PropertyId { get; set; }
+        public string Category { get; set; }
         public string FemaFloodPlain { get; set; }
         public string Zoning { get; set; }
+        public string Flooded { get; set; }
         public string LotDescription { get; set; }
         public string PropCondition { get; set; }
         public string PropertySubType { get; set; }
@@ -103,6 +108,8 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public string HasMasterPlannedCommunity { get; set; }
         public string MasterPlannedCommunity { get; set; }
         public string LegalSubdivision { get; set; }
+        public string DocumentsOnFile { get; set; }
+        public decimal? ApxTotalSqft { get; set; }
 
         // Lot Features
         public string RestrictionsDescription { get; set; }
