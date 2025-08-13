@@ -178,6 +178,7 @@ namespace Husa.Uploader.Data.Entities
         public decimal LandSQFT { get; set; }
         public string BodyofWater { get; set; }
         public bool? HasAgentBonus { get; set; }
+        public bool HasWaterfrontFeatures { get; set; }
 
         public bool HasContingencyInfo { get; set; }
         public string UtilityRoomDesc { get; set; }
