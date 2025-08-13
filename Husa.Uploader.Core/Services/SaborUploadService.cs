@@ -71,7 +71,7 @@ namespace Husa.Uploader.Core.Services
                 waitTime: 0,
                 isElementOptional: false);
 
-            UploaderResponse response = new UploaderResponse();
+            UploaderResponse response = new();
             response.UploadResult = UploadResult.Success;
             return response;
         }
@@ -127,31 +127,42 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploaderResponse> EditListing()
             {
-                UploaderResponse response = new UploaderResponse();
+                UploaderResponse response = new();
 
                 this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
-                await this.Login(listing.CompanyId);
-                if (this.uploaderClient.UploadInformation.IsNewListing)
-                {
-                    this.uploaderClient.ClickOnElementById("newlistingLink");
-                    this.NewProperty(listing);
-                }
-                else
-                {
-                    Thread.Sleep(1000);
-                    this.EditProperty(listing.MLSNum);
 
-                    Thread.Sleep(2000);
-                    this.uploaderClient.ExecuteScript(script: $"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(27) > span > a:first').click();");
-                    Thread.Sleep(1000);
-                    this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[2].click();");
-                    Thread.Sleep(1000);
-                    this.uploaderClient.ExecuteScript(script: "jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
-                }
+                try
+                {
+                    await this.Login(listing.CompanyId);
+                    if (this.uploaderClient.UploadInformation.IsNewListing)
+                    {
+                        this.uploaderClient.ClickOnElementById("newlistingLink");
+                        this.NewProperty(listing);
+                    }
+                    else
+                    {
+                        Thread.Sleep(1000);
+                        this.EditProperty(listing.MLSNum);
 
-                response.UploadResult = UploadResult.Success;
-                return response;
+                        Thread.Sleep(2000);
+                        this.uploaderClient.ExecuteScript(script: $"jQuery('.dctable-cell > a:contains(\"{listing.MLSNum}\")').parent().parent().find('div:eq(27) > span > a:first').click();");
+                        Thread.Sleep(1000);
+                        this.uploaderClient.ExecuteScript(script: "jQuery('.modal-body > .inner-modal-body > div').find('button')[2].click();");
+                        Thread.Sleep(1000);
+                        this.uploaderClient.ExecuteScript(script: "jQuery('#concurrentConsent >.modal-dialog > .modal-content > .modal-footer > button:first').click();", isScriptOptional: true);
+                    }
+
+                    response.UploadResult = UploadResult.Success;
+                    return response;
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
+                    response.UploadResult = UploadResult.Failure;
+                    response.UploadInformation = this.uploaderClient.UploadInformation;
+                    return response;
+                }
             }
         }
 
@@ -166,7 +177,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploaderResponse> UploadListing(bool logIn)
             {
-                UploaderResponse response = new UploaderResponse();
+                UploaderResponse response = new();
 
                 this.logger.LogInformation("Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: listing.IsNewListing);
@@ -217,9 +228,8 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
-                    response.UploadInformation = this.uploaderClient.UploadInformation;
                 }
 
                 response.UploadResult = UploadResult.Success;
@@ -238,7 +248,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploaderResponse> PartialUploadListing(bool logIn)
             {
-                UploaderResponse response = new UploaderResponse();
+                UploaderResponse response = new();
 
                 this.logger.LogInformation("Partial Uploading the information for the listing {requestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: listing.IsNewListing);
@@ -279,9 +289,8 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
-                    response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
                 }
 
@@ -301,7 +310,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploaderResponse> UpdateListingStatus(bool logIn)
             {
-                UploaderResponse response = new UploaderResponse();
+                UploaderResponse response = new();
 
                 const string tabName = "General";
                 this.logger.LogInformation("Updating the status of the listing {requestId} in the {tabName} tab.", listing.ResidentialListingRequestID, tabName);
@@ -360,9 +369,8 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
-                    response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
                 }
 
@@ -382,7 +390,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploaderResponse> UpdateListingPrice(bool logIn)
             {
-                UploaderResponse response = new UploaderResponse();
+                UploaderResponse response = new();
 
                 this.logger.LogInformation("Updating the price of the listing {requestId} to {listPrice}.", listing.ResidentialListingRequestID, listing.ListPrice);
 
@@ -425,9 +433,8 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
-                    response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
                 }
 
@@ -447,7 +454,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploaderResponse> UpdateListingImages(bool logIn)
             {
-                UploaderResponse response = new UploaderResponse();
+                UploaderResponse response = new();
 
                 this.logger.LogInformation("Updating the media of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
@@ -474,9 +481,8 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
-                    response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
                 }
 
@@ -496,7 +502,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploaderResponse> UpdateListingCompletionDate(bool logIn)
             {
-                UploaderResponse response = new UploaderResponse();
+                UploaderResponse response = new();
 
                 this.logger.LogInformation("Updating the completion date of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
@@ -530,9 +536,8 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the lising {requestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
-                    response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
                 }
 
@@ -552,7 +557,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploaderResponse> UpdateListingOpenHouse()
             {
-                UploaderResponse response = new UploaderResponse();
+                UploaderResponse response = new();
 
                 this.logger.LogInformation("Updating the open house information of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
@@ -595,7 +600,7 @@ namespace Husa.Uploader.Core.Services
 
             async Task<UploaderResponse> UploadListingVirtualTour()
             {
-                UploaderResponse response = new UploaderResponse();
+                UploaderResponse response = new();
 
                 this.logger.LogInformation("Updating the virtual tours of the listing {requestId}.", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
