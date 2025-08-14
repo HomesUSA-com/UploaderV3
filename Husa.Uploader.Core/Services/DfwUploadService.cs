@@ -1405,6 +1405,7 @@ namespace Husa.Uploader.Core.Services
 
                 if (!string.IsNullOrEmpty(agentName))
                 {
+                    this.uploaderClient.FindElement(By.Id("filter_Input_146")).Clear();
                     foreach (var charact in agentName)
                     {
                         Thread.Sleep(400);
@@ -1420,6 +1421,7 @@ namespace Husa.Uploader.Core.Services
                 var supervisorName = this.options.MarketInfo.Dfw.SupervisorId;
                 if (!string.IsNullOrEmpty(supervisorName))
                 {
+                    this.uploaderClient.FindElement(By.Id("filter_Input_761")).Clear();
                     foreach (var charact in supervisorName)
                     {
                         Thread.Sleep(400);
