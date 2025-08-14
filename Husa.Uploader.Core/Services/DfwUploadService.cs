@@ -248,23 +248,23 @@ namespace Husa.Uploader.Core.Services
 
             void FillListingDetails(ResidentialListingRequest listing)
             {
-                this.FillPropertyInformation(listing as DfwListingRequest);
-                this.FillLocationSchools(listing as DfwListingRequest);
+                ////this.FillPropertyInformation(listing as DfwListingRequest);
+                ////this.FillLocationSchools(listing as DfwListingRequest);
 
-                if (listing.PropType == this.MultiFamilyPropType)
-                {
-                    this.FillUnitsInformation(listing as DfwListingRequest); // Multi Family
-                }
-                else
-                {
-                    this.FillRoomsInformation(listing as DfwListingRequest); // Single Family
-                }
+                ////if (listing.PropType == this.MultiFamilyPropType)
+                ////{
+                ////    this.FillUnitsInformation(listing as DfwListingRequest); // Multi Family
+                ////}
+                ////else
+                ////{
+                ////    this.FillRoomsInformation(listing as DfwListingRequest); // Single Family
+                ////}
 
-                this.FillFeaturesInformation(listing as DfwListingRequest);
-                this.FillLotInformation(listing as DfwListingRequest);
-                this.FillUtilitiesInformation(listing as DfwListingRequest);
-                this.FillEnvironmentInformation(listing as DfwListingRequest);
-                this.FillFinancialInformation(listing as DfwListingRequest);
+                ////this.FillFeaturesInformation(listing as DfwListingRequest);
+                ////this.FillLotInformation(listing as DfwListingRequest);
+                ////this.FillUtilitiesInformation(listing as DfwListingRequest);
+                ////this.FillEnvironmentInformation(listing as DfwListingRequest);
+                ////this.FillFinancialInformation(listing as DfwListingRequest);
                 this.FillAgentOfficeInformation(listing as DfwListingRequest);
                 this.FillShowingInformation(listing as DfwListingRequest);
                 this.FillRemarksInformation(listing as DfwListingRequest);
@@ -1405,6 +1405,7 @@ namespace Husa.Uploader.Core.Services
 
                 if (!string.IsNullOrEmpty(agentName))
                 {
+                    this.uploaderClient.FindElement(By.Id("filter_Input_146")).Clear();
                     foreach (var charact in agentName)
                     {
                         Thread.Sleep(400);
