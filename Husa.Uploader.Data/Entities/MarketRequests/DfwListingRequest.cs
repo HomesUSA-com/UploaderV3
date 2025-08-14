@@ -294,7 +294,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     throw new ArgumentNullException(nameof(showingInfo));
                 }
 
-                residentialListingRequest.AgentListApptPhone = showingInfo.ContactPhone.PhoneFormat(true);
+                residentialListingRequest.AgentListApptPhone = showingInfo.ContactPhone.PhoneFormat();
                 residentialListingRequest.OtherPhone = showingInfo.OccupantPhone.PhoneFormat(true);
                 residentialListingRequest.AgentPrivateRemarks = showingInfo.AgentPrivateRemarks;
                 residentialListingRequest.AgentPrivateRemarksAdditional = showingInfo.AgentPrivateRemarksAdditional;
