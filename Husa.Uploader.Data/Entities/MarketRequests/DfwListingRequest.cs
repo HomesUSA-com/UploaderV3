@@ -277,9 +277,9 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                 residentialListingRequest.BuyerIncentiveDesc = financialInfo.BuyersAgentCommissionType.ToStringFromEnumMember();
                 residentialListingRequest.HOA = financialInfo.HOARequirement?.ToStringFromEnumMember();
                 residentialListingRequest.AssocFee = financialInfo.HoaFee.HasValue ? decimal.ToInt32(financialInfo.HoaFee.Value) : 0;
-                residentialListingRequest.AssocPhone = financialInfo.HoaPhone;
+                residentialListingRequest.AssocPhone = financialInfo.HoaPhone.PhoneFormat(true);
                 residentialListingRequest.TitleCo = financialInfo.TitleCompany;
-                residentialListingRequest.TitleCoPhone = financialInfo.TitleCompanyPhone;
+                residentialListingRequest.TitleCoPhone = financialInfo.TitleCompanyPhone.PhoneFormat(true);
                 residentialListingRequest.TitleCoLocation = financialInfo.TitleCompanyLocation;
                 residentialListingRequest.HoaTerm = financialInfo.HoaTerm?.ToStringFromEnumMember();
                 residentialListingRequest.AssocName = financialInfo.HoaManagement;
@@ -294,8 +294,8 @@ namespace Husa.Uploader.Data.Entities.MarketRequests
                     throw new ArgumentNullException(nameof(showingInfo));
                 }
 
-                residentialListingRequest.AgentListApptPhone = showingInfo.ContactPhone;
-                residentialListingRequest.OtherPhone = showingInfo.OccupantPhone;
+                residentialListingRequest.AgentListApptPhone = showingInfo.ContactPhone.PhoneFormat(true);
+                residentialListingRequest.OtherPhone = showingInfo.OccupantPhone.PhoneFormat(true);
                 residentialListingRequest.AgentPrivateRemarks = showingInfo.AgentPrivateRemarks;
                 residentialListingRequest.AgentPrivateRemarksAdditional = showingInfo.AgentPrivateRemarksAdditional;
                 residentialListingRequest.ShowingInstructions = showingInfo.ShowingInstructions;

@@ -987,7 +987,8 @@ namespace Husa.Uploader.Core.Services
                 this.FillListDate(listing);
 
                 this.uploaderClient.WriteTextbox(By.Id("Input_81"), DateTime.Today.AddYears(1).ToShortDateString()); // Expire Date
-                this.uploaderClient.WriteTextbox(By.Id("Input_235"), string.IsNullOrWhiteSpace(listing.TaxID) ? "NA" : listing.TaxID); // Parcel Id
+                var parcelId = string.IsNullOrWhiteSpace(listing.TaxID) ? $"{listing.StreetNum} {listing.StreetName}" : listing.TaxID;
+                this.uploaderClient.WriteTextbox(By.Id("Input_235"), parcelId); // Parcel Id
                 this.uploaderClient.SetSelect(By.Id("Input_237"), value: "0"); // Multi Parcel ID YN
             }
 
@@ -1442,7 +1443,7 @@ namespace Husa.Uploader.Core.Services
 
             Thread.Sleep(1000);
 
-            this.uploaderClient.WriteTextbox(By.Id("Input_396"), listing.OtherPhone.PhoneFormat(), isElementOptional: true); // Occupant Alternate Phone
+            this.uploaderClient.WriteTextbox(By.Id("Input_396"), listing.OtherPhone, isElementOptional: true); // Occupant Alternate Phone
 
             if (isNotPartialFill)
             {
