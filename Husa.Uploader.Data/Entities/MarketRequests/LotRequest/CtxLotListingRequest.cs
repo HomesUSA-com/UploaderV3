@@ -2,6 +2,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
 {
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.CTX.Api.Contracts.Response;
     using Husa.Quicklister.CTX.Api.Contracts.Response.ListingRequest.LotRequest;
     using Husa.Quicklister.CTX.Api.Contracts.Response.LotListing;
     using Husa.Quicklister.CTX.Api.Contracts.Response.SalePropertyDetail;
@@ -80,6 +81,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
             FillFinancialInfo(this.listingDetailResponse.FinancialInfo);
             FillShowingInformation(this.listingDetailResponse.ShowingInfo);
             FillSchoolsInfo(this.listingDetailResponse.SchoolsInfo);
+            FillStatusInfo(this.listingDetailResponse.StatusFieldsInfo);
 
             return lotListingRequest;
 
@@ -207,6 +209,24 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.HighSchool = schoolsInfo.HighSchool?.ToStringFromEnumMember();
                 lotListingRequest.SchoolName1 = schoolsInfo.ElementarySchool?.ToStringFromEnumMember();
                 lotListingRequest.SchoolName2 = schoolsInfo.MiddleSchool?.ToStringFromEnumMember();
+            }
+
+            void FillStatusInfo(ListingSaleStatusFieldsResponse statusInfo)
+            {
+                ArgumentNullException.ThrowIfNull(statusInfo);
+
+                lotListingRequest.SoldPrice = statusInfo.ClosePrice;
+                lotListingRequest.ClosedDate = statusInfo.ClosedDate;
+                lotListingRequest.Financing = statusInfo.SellerConcessionDescription?.ToStringFromEnumMember();
+                lotListingRequest.SellConcess = statusInfo.SellConcess;
+                lotListingRequest.ContractDate = statusInfo.ContractDate;
+                lotListingRequest.AgentMarketUniqueId = statusInfo.AgentMarketUniqueId;
+                lotListingRequest.SecondAgentMarketUniqueId = statusInfo.SecondAgentMarketUniqueId;
+                lotListingRequest.EstClosedDate = statusInfo.EstimatedClosedDate;
+                lotListingRequest.IsWithdrawalListingAgreement = statusInfo.WithdrawalActiveListingAgreement.BoolToNumericBool();
+                lotListingRequest.WithdrawalReason = statusInfo.WithdrawalReason;
+                lotListingRequest.WithdrawnDate = statusInfo.WithdrawalDate;
+                lotListingRequest.OffMarketDate = statusInfo.OffMarketDate;
             }
         }
 
