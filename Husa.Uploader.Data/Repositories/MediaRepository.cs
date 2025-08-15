@@ -55,10 +55,10 @@ namespace Husa.Uploader.Data.Repositories
                 {
                     Id = mediaDetail.Id,
                     Caption = GetCaption(mediaDetail.Title, mediaDetail.Description),
-                    MediaUri = mediaDetail.Uri,
+                    MediaUri = mediaDetail.UriHd,
                     Order = mediaDetail.Order ?? count,
                     IsPrimary = mediaDetail.IsPrimary,
-                    ExternalUrl = mediaDetail.Uri.ToString(),
+                    ExternalUrl = mediaDetail.UriHd.ToString(),
                 };
 
                 result.Add(residentialListingMedia);
