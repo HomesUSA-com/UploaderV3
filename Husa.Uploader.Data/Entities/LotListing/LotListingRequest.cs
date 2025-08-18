@@ -114,6 +114,7 @@ namespace Husa.Uploader.Data.Entities.LotListing
 
         // Lot Features
         public string RestrictionsDescription { get; set; }
+        public string Waterfront { get; set; }
         public string WaterfrontFeatures { get; set; }
         public string View { get; set; }
         public string WaterSewer { get; set; }

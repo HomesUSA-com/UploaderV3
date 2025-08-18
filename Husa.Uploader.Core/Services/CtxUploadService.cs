@@ -1107,11 +1107,11 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_576"), listing.LotDimension); // Lot Dimensions
             this.uploaderClient.SetMultipleCheckboxById("Input_581", listing.Fencing, "Fencing (Max 12)", tabName);
             this.uploaderClient.WriteTextbox(By.Id("Input_577"), listing.LotSize); // Apx Acreage
-            // this.uploaderClient.SetSelect(By.Id("Input_582"), listing.WaterfrontYN, fieldLabel: "Waterfront", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_582"), listing.Waterfront, fieldLabel: "Waterfront", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_585", listing.WaterfrontFeatures, "Water Features", tabName);
             this.uploaderClient.SetSelect(By.Id("Input_578"), value: "0", fieldLabel: "Manufactured Allowed", tabName); // (default hardcode "No")
             this.uploaderClient.SetSelect(By.Id("Input_583"), listing.IsGatedCommunity, fieldLabel: "Gated Community", tabName);
-            this.uploaderClient.SetMultipleCheckboxById("Input_595", listing.Restrictions, fieldLabel: "Restrictions Type", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_776", listing.RestrictionsDescription, fieldLabel: "Restrictions Type", tabName);
             this.uploaderClient.SetSelect(By.Id("Input_591"), listing.HasWaterAccess, fieldLabel: "Water Access", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_590", listing.WaterAccessDesc, fieldLabel: "Water Access Type", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_596", listing.ExteriorFeatures, fieldLabel: "Exterior Features (Max 32)", tabName);

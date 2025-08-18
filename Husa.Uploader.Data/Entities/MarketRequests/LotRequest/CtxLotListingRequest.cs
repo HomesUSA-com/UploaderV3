@@ -144,6 +144,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.LotSize = featuresInfo.LotSize;
                 lotListingRequest.ExteriorFeatures = featuresInfo.ExteriorFeatures.ToStringFromEnumMembers();
                 lotListingRequest.Fencing = featuresInfo.Fencing.ToStringFromEnumMembers();
+                lotListingRequest.Waterfront = featuresInfo.WaterFront.BoolToNumericBool();
                 lotListingRequest.WaterfrontFeatures = featuresInfo.WaterFeatures.ToStringFromEnumMembers();
                 lotListingRequest.MineralsFeatures = featuresInfo.MineralRights.ToStringFromEnumMembers();
                 lotListingRequest.RestrictionsDescription = featuresInfo.RestrictionsType.ToStringFromEnumMembers();
