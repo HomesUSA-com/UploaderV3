@@ -12,6 +12,7 @@ namespace Husa.Uploader.Data.Entities
     using BuiltStatus = Husa.Uploader.Crosscutting.Enums.BuiltStatus;
 
     public abstract class ResidentialListingRequest :
+        IListingInfo,
         IListingAddress,
         IFinantialInformation,
         IShowingInformation,
@@ -897,6 +898,10 @@ namespace Husa.Uploader.Data.Entities
         public ShowingTimeFullInfoResponse ShowingTime { get; set; }
 
         public abstract BuiltStatus BuiltStatus { get; }
+
+        public Guid ListingRequestID => this.ResidentialListingRequestID;
+
+        public Guid ListingID => this.ResidentialListingID;
 
         public abstract ResidentialListingRequest CreateFromApiResponse();
 

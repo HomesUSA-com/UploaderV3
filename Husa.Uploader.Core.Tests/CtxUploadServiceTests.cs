@@ -5,6 +5,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Extensions.Common.Enums;
     using Husa.MediaService.Domain.Enums;
     using Husa.Quicklister.CTX.Api.Contracts.Response;
+    using Husa.Quicklister.CTX.Api.Contracts.Response.ListingRequest.LotRequest;
     using Husa.Quicklister.CTX.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.CTX.Api.Contracts.Response.SalePropertyDetail;
     using Husa.Quicklister.CTX.Domain.Enums;
@@ -18,6 +19,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
+    using Husa.Uploader.Data.Entities.MarketRequests.LotRequest;
     using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
     using Moq;
@@ -88,6 +90,47 @@ namespace Husa.Uploader.Core.Tests
             UploaderResponse expectedResponse = new UploaderResponse();
             expectedResponse.UploadResult = UploadResult.Success;
             var result = await sut.UpdateStatus(ctxListing);
+
+            // Assert
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
+        }
+
+        [Theory]
+        [InlineData("CSLD")] // UpdateStatus_Sold
+        [InlineData("AUC")] // UpdateStatus_ActiveUnderContract
+        [InlineData("PND")] // UpdateStatus_Pending
+        [InlineData("WDN")] // UpdateStatus_Withdrawn
+        [InlineData("CS")] // UpdateStatus_Hold
+        public async Task UpdateLotStatus_Success(string status)
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var ctxLotListing = new CtxLotListingRequest(new LotListingRequestDetailResponse())
+            {
+                ListStatus = status,
+                Directions = "This is a test for the directions info field",
+                StreetNum = "10",
+                BackOnMarketDate = DateTime.Now,
+                OffMarketDate = DateTime.Now,
+                EstClosedDate = DateTime.Now,
+                AgentMarketUniqueId = "12234",
+                SecondAgentMarketUniqueId = "354752",
+                SoldPrice = 150000,
+                SoldTerms = "CASH",
+                WithdrawnDate = DateTime.Now,
+                WithdrawalReason = "this is a test",
+                IsWithdrawalListingAgreement = "1",
+            };
+            ctxLotListing.OffMarketDate = DateTime.Now;
+            var sut = this.GetSut();
+
+            // Act
+            var expectedResponse = new UploaderResponse
+            {
+                UploadResult = UploadResult.Success,
+            };
+            var result = await sut.UpdateLotStatus(ctxLotListing);
 
             // Assert
             Assert.Equal(expectedResponse.UploadResult, result.UploadResult);

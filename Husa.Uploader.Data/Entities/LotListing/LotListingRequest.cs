@@ -7,6 +7,7 @@ namespace Husa.Uploader.Data.Entities.LotListing
     using Microsoft.IdentityModel.Tokens;
 
     public abstract class LotListingRequest :
+        IListingInfo,
         IListingAddress,
         IFinantialInformation,
         IShowingInformation,
@@ -113,6 +114,7 @@ namespace Husa.Uploader.Data.Entities.LotListing
 
         // Lot Features
         public string RestrictionsDescription { get; set; }
+        public string Waterfront { get; set; }
         public string WaterfrontFeatures { get; set; }
         public string View { get; set; }
         public string WaterSewer { get; set; }
@@ -197,6 +199,7 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public DateTime? EstClosedDate { get; set; }
         public bool HasContingencyInfo { get; set; }
         public DateTime? ClosedDate { get; set; }
+        public DateTime? ContractDate { get; set; }
         public string ContingencyInfo { get; set; }
         public decimal? SoldPrice { get; set; }
         public string AgentMarketUniqueId { get; set; }
@@ -204,6 +207,10 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public string SoldTerms { get; set; }
         public string SellConcess { get; set; }
         public string LotListType { get; set; }
+        public string IsWithdrawalListingAgreement { get; set; }
+        public string WithdrawalReason { get; set; }
+        public DateTime? WithdrawnDate { get; set; }
+        public string Financing { get; set; }
 
         // Lot Environment / Utiity
         public string IsGatedCommunity { get; set; }
@@ -238,6 +245,10 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public bool? IncludeRemarks => throw new NotImplementedException();
 
         public string RemarksFormatFromCompany => throw new NotImplementedException();
+
+        public Guid ListingRequestID => this.LotListingRequestID;
+
+        public Guid ListingID { get; set; }
 
         public abstract LotListingRequest CreateFromApiResponse();
 
