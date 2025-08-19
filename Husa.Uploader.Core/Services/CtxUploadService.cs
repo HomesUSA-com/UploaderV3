@@ -16,7 +16,9 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Data.Entities.BulkUpload;
     using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
+    using Husa.Uploader.Data.Entities.MarketRequests.LotRequest;
     using Husa.Uploader.Data.Interfaces;
+    using Husa.Uploader.Data.Interfaces.Common;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
     using OpenQA.Selenium;
@@ -60,7 +62,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.CloseDriver();
         }
 
-        public async Task<LoginResult> Login(Guid companyId)
+        public virtual async Task<LoginResult> Login(Guid companyId)
         {
             var marketInfo = this.options.MarketInfo.Ctx;
             var company = await this.serviceSubscriptionClient.Company.GetCompany(companyId);
@@ -124,34 +126,13 @@ namespace Husa.Uploader.Core.Services
             {
                 UploaderResponse response = new();
 
-                this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Editing the information for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
+                await this.Login(listing.CompanyId);
+                await this.LocateResidentialListing(listing.MLSNum, cancellationToken);
 
-                try
-                {
-                    await this.Login(listing.CompanyId);
-
-                    if (listing.IsNewListing)
-                    {
-                        this.NavigateToNewPropertyInput();
-                    }
-                    else
-                    {
-                        this.NavigateToQuickEdit(listing.MLSNum);
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
-                        this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
-                    }
-
-                    response.UploadResult = UploadResult.Success;
-                    return response;
-                }
-                catch (Exception exception)
-                {
-                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
-                    response.UploadResult = UploadResult.Failure;
-                    response.UploadInformation = this.uploaderClient.UploadInformation;
-                    return response;
-                }
+                response.UploadResult = UploadResult.Success;
+                return response;
             }
         }
 
@@ -169,7 +150,7 @@ namespace Husa.Uploader.Core.Services
                 UploaderResponse response = new UploaderResponse();
                 var newLatitude = listing.Latitude;
                 var newLongitude = listing.Longitude;
-                this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Editing the information for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 if (logIn)
                 {
@@ -179,16 +160,7 @@ namespace Husa.Uploader.Core.Services
 
                 try
                 {
-                    if (listing.IsNewListing)
-                    {
-                        this.NavigateToNewPropertyInput();
-                    }
-                    else
-                    {
-                        this.NavigateToQuickEdit(listing.MLSNum);
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
-                        this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
-                    }
+                    await this.LocateResidentialListing(listing.MLSNum, cancellationToken);
 
                     listing.Longitude = newLongitude;
                     listing.Latitude = newLatitude;
@@ -210,7 +182,50 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the lising {RequestId}", listing.ResidentialListingRequestID);
+                    response.UploadResult = UploadResult.Failure;
+                    response.UploadInformation = this.uploaderClient.UploadInformation;
+                    return response;
+                }
+
+                response.UploadResult = UploadResult.Success;
+                return response;
+            }
+        }
+
+        public Task<UploaderResponse> UploadLot(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        {
+            return listing is null ? throw new ArgumentNullException(nameof(listing)) : UploadListing(logIn);
+
+            async Task<UploaderResponse> UploadListing(bool logIn)
+            {
+                var response = new UploaderResponse();
+
+                this.logger.LogInformation("Uploading the information for the listing {RequestId}", listing.LotListingRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.LotListingRequestID, listing.IsNewListing);
+
+                try
+                {
+                    if (logIn)
+                    {
+                        await this.Login(listing.CompanyId);
+                        Thread.Sleep(1000);
+                    }
+
+                    await this.LocateLotListing(listing.MLSNum, cancellationToken);
+
+                    this.FillStatusInformation(listing);
+                    this.FillListingInformation(listing);
+                    this.FillBuildings(listing);
+                    this.FillLotEnvironmentUtilityInformation(listing);
+                    this.FillFinancialInformation(listing);
+                    this.FillShowingInformation(listing);
+                    this.FillRemarks(listing as CtxLotListingRequest);
+                    await this.FillMedia(listing, cancellationToken);
+                }
+                catch (Exception exception)
+                {
+                    this.logger.LogError(exception, "Failure uploading the lot {RequestId}", listing.LotListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -236,7 +251,7 @@ namespace Husa.Uploader.Core.Services
 
                 var newLatitude = listing.Latitude;
                 var newLongitude = listing.Longitude;
-                this.logger.LogInformation("Partial Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Partial Editing the information for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
                 try
@@ -266,7 +281,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the listing {RequestId}", listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -290,7 +305,7 @@ namespace Husa.Uploader.Core.Services
             {
                 UploaderResponse response = new UploaderResponse();
 
-                this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Editing the information for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
                 try
@@ -310,7 +325,7 @@ namespace Husa.Uploader.Core.Services
 
                     this.uploaderClient.ClickOnElement(By.LinkText("Remarks"));
 
-                    this.UpdatePublicRemarksInRemarksTab(listing);
+                    this.UpdatePublicRemarksInRemarksTab(listing, listing.GetAgentRemarksMessage, listing.GetPublicRemarks);
 
                     if (autoSave)
                     {
@@ -320,7 +335,7 @@ namespace Husa.Uploader.Core.Services
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the listing {RequestId}", listing.ResidentialListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -333,17 +348,13 @@ namespace Husa.Uploader.Core.Services
 
         public Task<UploaderResponse> UpdateImages(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
         {
-            if (listing is null)
-            {
-                throw new ArgumentNullException(nameof(listing));
-            }
+            return listing is null ? throw new ArgumentNullException(nameof(listing)) : UpdateListingImages(logIn);
 
-            return UpdateListingImages(logIn);
             async Task<UploaderResponse> UpdateListingImages(bool logIn)
             {
                 UploaderResponse response = new UploaderResponse();
 
-                this.logger.LogInformation("Updating media for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Updating media for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
                 try
@@ -355,20 +366,7 @@ namespace Husa.Uploader.Core.Services
                     }
 
                     this.NavigateToQuickEdit(listing.MLSNum);
-
-                    // Enter Manage Photos
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"), cancellationToken);
-                    this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSave"), cancellationToken);
-
-                    this.DeleteAllImages();
-                    await this.ProcessImages(listing, cancellationToken);
-
-                    if (logIn)
-                    {
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSave"), cancellationToken);
-                        Thread.Sleep(1000);
-                    }
+                    await this.ManageMedia(listing, logIn, cancellationToken);
                 }
                 catch (Exception exception)
                 {
@@ -383,21 +381,16 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploaderResponse> UpdatePrice(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
+        public Task<UploaderResponse> UpdateLotImages(LotListingRequest listing, CancellationToken cancellationToken = default)
         {
-            if (listing is null)
+            return listing is null ? throw new ArgumentNullException(nameof(listing)) : UpdateListingImages(logIn: true);
+
+            async Task<UploaderResponse> UpdateListingImages(bool logIn)
             {
-                throw new ArgumentNullException(nameof(listing));
-            }
+                var response = new UploaderResponse();
 
-            return UpdateListingPrice(logIn);
-
-            async Task<UploaderResponse> UpdateListingPrice(bool logIn)
-            {
-                UploaderResponse response = new UploaderResponse();
-
-                this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
-                this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
+                this.logger.LogInformation("Updating media for the listing {RequestId}", listing.LotListingRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.LotListingRequestID, listing.IsNewListing);
 
                 try
                 {
@@ -408,21 +401,11 @@ namespace Husa.Uploader.Core.Services
                     }
 
                     this.NavigateToQuickEdit(listing.MLSNum);
-
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
-                    this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
-                    this.uploaderClient.ScrollDown();
-                    this.uploaderClient.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
-
-                    if (autoSave)
-                    {
-                        this.uploaderClient.WaitUntilElementExists(By.Id(SuccessMessagePage), new TimeSpan(0, 5, 0), true, cancellationToken);
-                        Thread.Sleep(400);
-                    }
+                    await this.ManageMedia(listing, logIn, cancellationToken);
                 }
                 catch (Exception exception)
                 {
-                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
+                    this.logger.LogError(exception, "Failure uploading the listing {RequestId}", listing.LotListingRequestID);
                     response.UploadResult = UploadResult.Failure;
                     response.UploadInformation = this.uploaderClient.UploadInformation;
                     return response;
@@ -431,103 +414,45 @@ namespace Husa.Uploader.Core.Services
                 response.UploadResult = UploadResult.Success;
                 return response;
             }
+        }
+
+        public Task<UploaderResponse> UpdatePrice(
+            ResidentialListingRequest listing,
+            CancellationToken cancellationToken = default,
+            bool logIn = true,
+            bool autoSave = false)
+        {
+            return listing is null ?
+                throw new ArgumentNullException(nameof(listing))
+                : this.UpdateListingPrice(
+                    listing,
+                    listing.ListPrice,
+                    this.LocateResidentialListing,
+                    logIn,
+                    autoSave,
+                    cancellationToken);
+        }
+
+        public Task<UploaderResponse> UpdateLotPrice(
+            LotListingRequest listing,
+            CancellationToken cancellationToken = default,
+            bool logIn = true)
+        {
+            return listing is null ?
+                throw new ArgumentNullException(nameof(listing))
+                : this.UpdateListingPrice(
+                    listing, listing.ListPrice, this.LocateLotListing, logIn, false, cancellationToken);
         }
 
         public Task<UploaderResponse> UpdateStatus(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
-        {
-            if (listing is null)
-            {
-                throw new ArgumentNullException(nameof(listing));
-            }
+            => listing is null ?
+                throw new ArgumentNullException(nameof(listing))
+                : this.UpdateListingStatus(listing, logIn, cancellationToken);
 
-            return UpdateListingStatus(logIn);
-
-            async Task<UploaderResponse> UpdateListingStatus(bool logIn)
-            {
-                UploaderResponse response = new UploaderResponse();
-
-                this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
-                this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
-
-                if (logIn)
-                {
-                    await this.Login(listing.CompanyId);
-                    Thread.Sleep(5000);
-                }
-
-                try
-                {
-                    this.NavigateToQuickEdit(listing.MLSNum);
-
-                    Thread.Sleep(1500);
-                    switch (listing.ListStatus)
-                    {
-                        case "CSLD":
-
-                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Closed"), cancellationToken);
-                            this.uploaderClient.ClickOnElement(By.LinkText("Change to Closed"));
-                            Thread.Sleep(500);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_74"), listing.SoldPrice);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_73"), listing.ClosedDate.HasValue ? listing.ClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
-                            this.uploaderClient.SetSelect(By.Id($"Input_324"), value: listing.Financing);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_325"), listing.SellConcess);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.AgentMarketUniqueId);
-                            this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_321_Refresh').value='1';RefreshToSamePage();");
-                            this.uploaderClient.WriteTextbox(By.Id("Input_323"), listing.SecondAgentMarketUniqueId);
-                            this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_323_Refresh').value='1';RefreshToSamePage();");
-                            break;
-                        case "AUC":
-
-                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Active Under Contract"), cancellationToken);
-                            this.uploaderClient.ClickOnElement(By.LinkText("Change to Active Under Contract"));
-                            Thread.Sleep(500);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_455"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_810"), listing.EstClosedDate.HasValue ? listing.EstClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
-                            break;
-                        case "PND":
-
-                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Pending"), cancellationToken);
-                            this.uploaderClient.ClickOnElement(By.LinkText("Change to Pending"));
-                            Thread.Sleep(500);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_811"), listing.EstClosedDate.HasValue ? listing.EstClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.AgentMarketUniqueId);
-                            this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_321_Refresh').value='1';RefreshToSamePage();");
-                            break;
-                        case "WDN":
-
-                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Withdrawn"), cancellationToken);
-                            this.uploaderClient.ClickOnElement(By.LinkText("Change to Withdrawn"));
-                            Thread.Sleep(500);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_309"), listing.WithdrawnDate.HasValue ? listing.WithdrawnDate.Value.ToString("MM/dd/yyyy") : string.Empty);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_310"), listing.WithdrawalReason);
-                            this.uploaderClient.SetSelect(By.Id("Input_799"), listing.IsWithdrawalListingAgreement);
-                            break;
-                        case "CS":
-
-                            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Hold"), cancellationToken);
-                            this.uploaderClient.ClickOnElement(By.LinkText("Change to Hold"));
-                            Thread.Sleep(500);
-                            this.uploaderClient.WriteTextbox(By.Id("Input_306"), listing.OffMarketDate.HasValue ? listing.OffMarketDate.Value.ToString("MM/dd/yyyy") : string.Empty);
-                            break;
-
-                        default:
-                            throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for CTX Listing with Id '{listing.ResidentialListingID}'");
-                    }
-                }
-                catch (Exception exception)
-                {
-                    this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
-                    response.UploadResult = UploadResult.Failure;
-                    response.UploadInformation = this.uploaderClient.UploadInformation;
-                    return response;
-                }
-
-                response.UploadResult = UploadResult.Success;
-                return response;
-            }
-        }
+        public Task<UploaderResponse> UpdateLotStatus(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+            => listing is null ?
+                throw new ArgumentNullException(nameof(listing))
+                : this.UpdateListingStatus(listing, logIn, cancellationToken);
 
         public Task<UploaderResponse> UploadVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
@@ -542,7 +467,7 @@ namespace Husa.Uploader.Core.Services
             {
                 UploaderResponse response = new UploaderResponse();
 
-                this.logger.LogInformation("Editing the information for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Editing the information for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
                 await this.Login(listing.CompanyId);
@@ -585,7 +510,7 @@ namespace Husa.Uploader.Core.Services
             {
                 UploaderResponse response = new UploaderResponse();
 
-                this.logger.LogInformation("Editing the information of Open House for the listing {requestId}", listing.ResidentialListingRequestID);
+                this.logger.LogInformation("Editing the information of Open House for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
                 Thread.Sleep(5000);
@@ -611,41 +536,39 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploaderResponse> UploadLot(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<UploaderResponse> UpdateLotStatus(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<UploaderResponse> UpdateLotImages(LotListingRequest listing, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<UploaderResponse> UpdateLotPrice(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task<UploaderResponse> EditLot(LotListingRequest listing, CancellationToken cancellationToken, bool logIn)
         {
-            throw new NotImplementedException();
+            return listing is null ? throw new ArgumentNullException(nameof(listing)) : EditLotListing(logIn);
+
+            async Task<UploaderResponse> EditLotListing(bool logIn)
+            {
+                var response = new UploaderResponse();
+
+                this.logger.LogInformation("Editing the information for the lot {RequestId}", listing.InternalLotRequestID);
+                this.uploaderClient.InitializeUploadInfo(listing.LotListingRequestID, listing.IsNewListing);
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                    Thread.Sleep(1000);
+                }
+
+                await this.LocateLotListing(listing.MLSNum, cancellationToken);
+
+                response.UploadResult = UploadResult.Success;
+                return response;
+            }
         }
 
-        public void FillListDate(ResidentialListingRequest listing)
+        public void FillListDate(string listStatus, bool isNewListing)
         {
-            if (listing.IsNewListing)
+            if (isNewListing)
             {
                 DateTime listDate = DateTime.Now;
-                if (listing.ListStatus == "P" || listing.ListStatus == "PO")
+                if (listStatus == "P" || listStatus == "PO")
                 {
                     listDate = DateTime.Now.AddDays((int)ListingDaysOffset.PENDING);
                 }
-                else if (listing.ListStatus == "S")
+                else if (listStatus == "S")
                 {
                     listDate = DateTime.Now.AddDays((int)ListingDaysOffset.SOLD);
                 }
@@ -664,15 +587,15 @@ namespace Husa.Uploader.Core.Services
             throw new NotImplementedException();
         }
 
-        private void NavigateToNewPropertyInput()
+        private void NavigateToNewPropertyInput(By linkTextBy)
         {
             this.uploaderClient.NavigateToUrl("https://matrix.ctxmls.com/Matrix/Input");
             // this.uploaderClient.wait.Until(ExpectedConditions.ElementIsVisible(By.LinkText("Input")));
             // this.uploaderClient.Click(By.LinkText("Input"));
             this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Add new"));
             this.uploaderClient.ClickOnElement(By.LinkText("Add new"));
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"));
-            this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(linkTextBy);
+            this.uploaderClient.ClickOnElement(linkTextBy);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.PartialLinkText("Start with a blank Listing"));
             this.uploaderClient.ClickOnElement(By.PartialLinkText("Start with a blank Listing"));
 
@@ -691,7 +614,174 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElement(By.Id("m_lbEdit")); // "Modify button"
         }
 
-        private void FillStatusInformation(ResidentialListingRequest listing)
+        private void NavigateToListing(string mlsNumber, By linkTextBy)
+        {
+            if (string.IsNullOrEmpty(mlsNumber?.Trim()))
+            {
+                this.NavigateToNewPropertyInput(linkTextBy);
+                return;
+            }
+
+            this.NavigateToQuickEdit(mlsNumber);
+        }
+
+        private Task LocateResidentialListing(string mlsNumber, CancellationToken cancellationToken = default) => Task.Run(
+            () =>
+        {
+            var linkTextBy = By.LinkText("Residential Input Form");
+            this.NavigateToListing(mlsNumber, linkTextBy);
+            this.uploaderClient.WaitUntilElementIsDisplayed(linkTextBy, cancellationToken);
+            this.uploaderClient.ClickOnElement(linkTextBy);
+        },
+            cancellationToken);
+
+        private Task LocateLotListing(string mlsNumber, CancellationToken cancellationToken = default) => Task.Run(
+            () =>
+            {
+                var linkTextBy = By.LinkText("Land Input Form");
+                this.NavigateToListing(mlsNumber, linkTextBy);
+                this.uploaderClient.WaitUntilElementIsDisplayed(linkTextBy, cancellationToken);
+                this.uploaderClient.ClickOnElement(linkTextBy);
+            },
+            cancellationToken);
+
+        private async Task<UploaderResponse> UpdateListingPrice(
+            IListingInfo listing,
+            decimal? listPrice,
+            Func<string, CancellationToken, Task> locateListing,
+            bool logIn,
+            bool autoSave,
+            CancellationToken cancellationToken)
+        {
+            var response = new UploaderResponse();
+
+            this.logger.LogInformation("Editing the information for the listing {RequestId}", listing.ListingRequestID);
+            this.uploaderClient.InitializeUploadInfo(listing.ListingRequestID, listing.IsNewListing);
+
+            try
+            {
+                if (logIn)
+                {
+                    await this.Login(listing.CompanyId);
+                    Thread.Sleep(5000);
+                }
+
+                await locateListing(listing.MLSNum, cancellationToken);
+                this.uploaderClient.ScrollDown();
+                this.uploaderClient.WriteTextbox(By.Id("Input_127"), listPrice); // List Price
+
+                if (autoSave)
+                {
+                    this.uploaderClient.WaitUntilElementExists(By.Id(SuccessMessagePage), new TimeSpan(0, 5, 0), true, cancellationToken);
+                    Thread.Sleep(400);
+                }
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, "Failure uploading the listing {RequestId}", listing.ListingRequestID);
+                response.UploadResult = UploadResult.Failure;
+                response.UploadInformation = this.uploaderClient.UploadInformation;
+                return response;
+            }
+
+            response.UploadResult = UploadResult.Success;
+            return response;
+        }
+
+        private void SetListingStatus<TListing>(TListing listing, CancellationToken cancellationToken)
+            where TListing : IListingInfo, IStatusInformation
+        {
+            switch (listing.ListStatus)
+            {
+                case "CSLD":
+
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Closed"), cancellationToken);
+                    this.uploaderClient.ClickOnElement(By.LinkText("Change to Closed"));
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Id("Input_74"), listing.SoldPrice);
+                    this.uploaderClient.WriteTextbox(By.Id("Input_73"), listing.ClosedDate.HasValue ? listing.ClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                    this.uploaderClient.SetSelect(By.Id($"Input_324"), value: listing.Financing);
+                    this.uploaderClient.WriteTextbox(By.Id("Input_325"), listing.SellConcess);
+                    this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                    this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.AgentMarketUniqueId);
+                    this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_321_Refresh').value='1';RefreshToSamePage();");
+                    this.uploaderClient.WriteTextbox(By.Id("Input_323"), listing.SecondAgentMarketUniqueId);
+                    this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_323_Refresh').value='1';RefreshToSamePage();");
+                    break;
+                case "AUC":
+
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Active Under Contract"), cancellationToken);
+                    this.uploaderClient.ClickOnElement(By.LinkText("Change to Active Under Contract"));
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Id("Input_455"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                    this.uploaderClient.WriteTextbox(By.Id("Input_810"), listing.EstClosedDate.HasValue ? listing.EstClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                    break;
+                case "PND":
+
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Pending"), cancellationToken);
+                    this.uploaderClient.ClickOnElement(By.LinkText("Change to Pending"));
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                    this.uploaderClient.WriteTextbox(By.Id("Input_811"), listing.EstClosedDate.HasValue ? listing.EstClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                    this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.AgentMarketUniqueId);
+                    this.uploaderClient.ExecuteScript("javascript:document.getElementById('Input_321_Refresh').value='1';RefreshToSamePage();");
+                    break;
+                case "WDN":
+
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Withdrawn"), cancellationToken);
+                    this.uploaderClient.ClickOnElement(By.LinkText("Change to Withdrawn"));
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Id("Input_309"), listing.WithdrawnDate?.ToString("MM/dd/yyyy") ?? string.Empty);
+                    this.uploaderClient.WriteTextbox(By.Id("Input_310"), listing.WithdrawalReason);
+                    this.uploaderClient.SetSelect(By.Id("Input_799"), listing.IsWithdrawalListingAgreement);
+                    break;
+                case "CS":
+
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Hold"), cancellationToken);
+                    this.uploaderClient.ClickOnElement(By.LinkText("Change to Hold"));
+                    Thread.Sleep(500);
+                    this.uploaderClient.WriteTextbox(By.Id("Input_306"), listing.OffMarketDate.HasValue ? listing.OffMarketDate.Value.ToString("MM/dd/yyyy") : string.Empty);
+                    break;
+                default:
+                    throw new InvalidOperationException($"Invalid Status '{listing.ListStatus}' for CTX Listing with Id '{listing.ListingID}'");
+            }
+        }
+
+        private async Task<UploaderResponse> UpdateListingStatus<TListing>(
+            TListing listing, bool logIn, CancellationToken cancellationToken)
+            where TListing : IListingInfo, IStatusInformation
+        {
+            UploaderResponse response = new UploaderResponse();
+
+            this.logger.LogInformation("Editing the information for the listing {RequestId}", listing.ListingRequestID);
+            this.uploaderClient.InitializeUploadInfo(listing.ListingRequestID, isNewListing: false);
+
+            if (logIn)
+            {
+                await this.Login(listing.CompanyId);
+                Thread.Sleep(5000);
+            }
+
+            try
+            {
+                this.NavigateToQuickEdit(listing.MLSNum);
+
+                Thread.Sleep(1500);
+                this.SetListingStatus(listing, cancellationToken);
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, "Failure uploading the listing {RequestId}", listing.ListingRequestID);
+                response.UploadResult = UploadResult.Failure;
+                response.UploadInformation = this.uploaderClient.UploadInformation;
+                return response;
+            }
+
+            response.UploadResult = UploadResult.Success;
+            return response;
+        }
+
+        private void FillStatusInformation(IStatusInformation listing)
         {
             this.uploaderClient.WriteTextbox(By.Id("Input_778"), listing.ExpectedActiveDate, isElementOptional: true);
         }
@@ -746,7 +836,7 @@ namespace Husa.Uploader.Core.Services
             void FillPricingAndSchoolInformation(ResidentialListingRequest listing, string tabName)
             {
                 this.uploaderClient.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
-                this.SetLongitudeAndLatitudeValues(listing);
+                this.SetLongitudeAndLatitudeValues(listing, listing.IsNewListing);
                 this.uploaderClient.SetSelect(By.Id("Input_535_TB"), listing.SchoolDistrict.ToUpper(), fieldLabel: "School District", tabName); // School District
                 this.FillFieldSingleOption("Input_535", listing.SchoolDistrict);
                 this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(3000));
@@ -770,7 +860,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetSelect(By.Id("Input_545"), listing.ListType, fieldLabel: "Listing Type", tabName);
                 this.uploaderClient.SetSelect(By.Id("Input_539"), listing.Category, "Property Sub Type", tabName); // Property Sub Type
 
-                this.FillListDate(listing);
+                this.FillListDate(listing.ListStatus, listing.IsNewListing);
 
                 if (listing.ListDate != null)
                 {
@@ -790,6 +880,96 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetSelect(By.Id("Input_551"), "BUILD", "Source SqFt", tabName); // Source SqFt
                 this.uploaderClient.SetMultipleCheckboxById("Input_554", listing.AvailableDocumentsDesc, "Documents on File (Max 25)", tabName); // Documents on File (Max 25)
             }
+        }
+
+        private void FillListingInformation(LotListingRequest listing, bool isNotPartialFill = true)
+        {
+            const string tabName = "Listing Information";
+            this.uploaderClient.ClickOnElement(By.LinkText("Listing Information")); // click in tab Listing Information
+
+            if (isNotPartialFill)
+            {
+                FillAddressInformation(listing, tabName);
+            }
+
+            this.uploaderClient.ScrollDown(250);
+            FillPricingAndSchoolInformation(listing, tabName);
+
+            if (isNotPartialFill)
+            {
+                FillOwnerAndListingDetails(listing, tabName);
+            }
+
+            void FillAddressInformation(LotListingRequest listing, string tabName)
+            {
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_107"));
+                this.uploaderClient.WriteTextbox(By.Id("Input_107"), listing.StreetNum); // Street Number
+                this.uploaderClient.SetSelect(By.Id("Input_108"), listing.StreetDir, fieldLabel: "St Direction", tabName); // St Direction
+                this.uploaderClient.WriteTextbox(By.Id("Input_110"), listing.StreetName); // Street Name
+                this.uploaderClient.SetSelect(By.Id("Input_109"), listing.StreetType, fieldLabel: "Street Type", tabName); // Street Type
+                this.uploaderClient.WriteTextbox(By.Id("Input_111"), listing.UnitNumber); // Unit #
+                this.uploaderClient.SetSelect(By.Id("Input_112"), listing.CityCode, fieldLabel: "City", tabName); // City
+                this.uploaderClient.SetSelect(By.Id("Input_123"), value: "YES", fieldLabel: "In City Limits", tabName); // In City Limits
+                string ctxEtj = /*listing.InExtraTerritorialJurisdiction ? "1" : */"0";
+                this.uploaderClient.SetSelect(By.Id("Input_124"), ctxEtj, fieldLabel: "ETJ", tabName); // ETJ
+                this.uploaderClient.WriteTextbox(By.Id("Input_114"), listing.Zip); // Zip Code
+                this.uploaderClient.SetSelect(By.Id("Input_115"), listing.County, "County", tabName); // County
+                this.uploaderClient.WriteTextbox(By.Id("Input_528"), listing.LegalDescription); // Legal Description
+                this.uploaderClient.WriteTextbox(By.Id("Input_529"), listing.PropertyId); // Property ID
+                this.uploaderClient.SetSelect(By.Id("Input_530"), value: "NO", fieldLabel: "FEMA Flood Plain", tabName); // FEMA Flood Plain
+                this.uploaderClient.WriteTextbox(By.Id("Input_396"), listing.Subdivision); // Subdivision
+                this.uploaderClient.SetSelect(By.Id("Input_531"), value: "NO", fieldLabel: "Residential Flooded", tabName); // Residential Flooded
+                this.uploaderClient.WriteTextbox(By.Id("Input_532"), listing.LotNumber, isElementOptional: true); // Lot
+                this.uploaderClient.WriteTextbox(By.Id("Input_533"), listing.Block, isElementOptional: true); // Block
+            }
+
+            void FillPricingAndSchoolInformation(LotListingRequest listing, string tabName)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_127"), listing.ListPrice); // List Price
+                this.SetLongitudeAndLatitudeValues(listing, listing.IsNewListing);
+                this.uploaderClient.SetSelect(By.Id("Input_535_TB"), listing.SchoolDistrict.ToUpper(), fieldLabel: "School District", tabName); // School District
+                this.FillFieldSingleOption("Input_535", listing.SchoolDistrict);
+                this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(3000));
+                this.uploaderClient.SetSelect(By.Id("Input_658"), listing.SchoolName1, fieldLabel: "Elementary", tabName, isElementOptional: true); // Elementary School
+                this.uploaderClient.ResetImplicitWait();
+                this.uploaderClient.SetSelect(By.Id("Input_659"), listing.SchoolName2, fieldLabel: "Middle", tabName, isElementOptional: true); // Middle School
+                this.uploaderClient.SetSelect(By.Id("Input_660"), listing.HighSchool, fieldLabel: "High", tabName, isElementOptional: true); // High School
+            }
+
+            void FillOwnerAndListingDetails(LotListingRequest listing, string tabName)
+            {
+                this.uploaderClient.WriteTextbox(By.Id("Input_133"), listing.OwnerName); // Owner Legal Name
+                this.uploaderClient.SetSelect(By.Id("Input_137"), "0", "Also For Rent", tabName); // Also For Rent
+                this.uploaderClient.SetSelect(By.Id("Input_545"), listing.LotListType, fieldLabel: "Listing Type", tabName);
+                this.uploaderClient.SetSelect(By.Id("Input_664"), listing.Category, "Property Sub Type", tabName); // Property Sub Type
+                this.FillListDate(listing.ListStatus, listing.IsNewListing);
+
+                if (listing.ListDate != null)
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_130"), DateTime.Now.AddYears(1).ToShortDateString()); // Expiration Date
+                }
+                else
+                {
+                    this.uploaderClient.WriteTextbox(By.Id("Input_130"), listing.ExpiredDate != null ? ((DateTime)listing.ExpiredDate).ToShortDateString() : string.Empty); // Expiration Date
+                }
+
+                this.uploaderClient.SetSelect(By.Id("Input_544"), "NA", "First Right Refusal Option", tabName); // First Right Refusal Option (default hardcode "N/A")
+                this.uploaderClient.SetMultipleCheckboxById("Input_546", "BUILDER", "Sale Type", tabName); // Sale Type
+                this.uploaderClient.SetSelect(By.Id("Input_531"), listing.Flooded, "Res Flooded", tabName); // Res Flooded
+                this.uploaderClient.WriteTextbox(By.Id("Input_674"), listing.Zoning); // Builder Name
+                this.uploaderClient.SetSelect(By.Id("Input_551"), "BUILD", "Source SqFt", tabName); // Source SqFt
+                this.uploaderClient.SetMultipleCheckboxById("Input_554", listing.DocumentsOnFile, "Documents on File (Max 25)", tabName); // Documents on File (Max 25)
+            }
+        }
+
+        private void FillBuildings(LotListingRequest listing)
+        {
+            const string tabName = "Buildings";
+            this.UploaderClient.ClickOnElement(By.LinkText(tabName)); // click in tab Buildings
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_670_NONE"));
+            this.uploaderClient.WriteTextbox(By.Id("Input_669"), listing.ApxTotalSqft); // Total SqFt
+            this.uploaderClient.SetMultipleCheckboxById("Input_670", "NONE", tabName, tabName); // Buildings
         }
 
         private void FillFieldSingleOption(string fieldName, string value)
@@ -876,13 +1056,16 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_572", listing.AppliancesDesc, "Appliances/Equipment (Max 13)", tabName);
         }
 
+        private string MoveToLotEnvironmentUtilityInformationTab()
+        {
+            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
+            this.uploaderClient.ClickOnElement(By.LinkText("Lot/Environment/Utility")); // Lot/Environment/Utility
+            return "Lot/Environment/Utility";
+        }
+
         private void FillLotEnvironmentUtilityInformation(ResidentialListingRequest listing)
         {
-            string tabName = "Lot/Environment/Utility";
-            this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
-
-            this.uploaderClient.ClickOnElement(By.LinkText("Lot/Environment/Utility")); // Lot/Environment/Utility
-
+            var tabName = this.MoveToLotEnvironmentUtilityInformationTab();
             this.uploaderClient.WriteTextbox(By.Id("Input_576"), listing.LotDim); // Lot Dimensions
             this.uploaderClient.SetMultipleCheckboxById("Input_581", listing.FenceDesc, "Fencing (Max 12)", tabName);
             this.uploaderClient.WriteTextbox(By.Id("Input_577"), listing.LotSize); // Apx Acreage
@@ -918,11 +1101,43 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_613", listing.SupOther, " Other Utilities", tabName);
         }
 
-        private void FillFinancialInformation(ResidentialListingRequest listing)
+        private void FillLotEnvironmentUtilityInformation(LotListingRequest listing)
+        {
+            var tabName = this.MoveToLotEnvironmentUtilityInformationTab();
+            this.uploaderClient.WriteTextbox(By.Id("Input_576"), listing.LotDimension); // Lot Dimensions
+            this.uploaderClient.SetMultipleCheckboxById("Input_581", listing.Fencing, "Fencing (Max 12)", tabName);
+            this.uploaderClient.WriteTextbox(By.Id("Input_577"), listing.LotSize); // Apx Acreage
+            this.uploaderClient.SetSelect(By.Id("Input_582"), listing.Waterfront, fieldLabel: "Waterfront", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_585", listing.WaterfrontFeatures, "Water Features", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_578"), value: "0", fieldLabel: "Manufactured Allowed", tabName); // (default hardcode "No")
+            this.uploaderClient.SetSelect(By.Id("Input_583"), listing.IsGatedCommunity, fieldLabel: "Gated Community", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_776", listing.RestrictionsDescription, fieldLabel: "Restrictions Type", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_591"), listing.HasWaterAccess, fieldLabel: "Water Access", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_590", listing.WaterAccessDesc, fieldLabel: "Water Access Type", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_596", listing.ExteriorFeatures, fieldLabel: "Exterior Features (Max 32)", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_597", listing.TopoLandDescription, fieldLabel: "Topo/Land Desc (Max 33)", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_599", listing.NeighborhoodAmenities, fieldLabel: "Neighborhood Amenitites (Max 19)", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_600", listing.RoadFrontageDesc, fieldLabel: "Access/Road Surface", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_586"), value: "0", fieldLabel: "Spa/Hot Tub", tabName); // (default hardcode "No")
+
+            // Environment / Energy
+            this.uploaderClient.SetSelect(By.Id("Input_601"), listing.UpgradedEnergyFeatures, fieldLabel: "Upgraded Energy Features", tabName);
+            this.uploaderClient.SetSelect(By.Id("Input_602"), listing.EES, fieldLabel: "EES Features", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_605", listing.GreenIndoorAirQuality, fieldLabel: "Green Indoor Air Quality", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_604", listing.GreenCerts, fieldLabel: "Green Building Verification", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_606", listing.EESFeatures, fieldLabel: "Green Energy Efficient", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_608", listing.EnergyDesc, fieldLabel: "Green Verification Source", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_609", listing.GreenWaterConservation, fieldLabel: "Green Water Conservation", tabName);
+
+            // Utilities
+            this.uploaderClient.SetMultipleCheckboxById("Input_612", listing.WaterDesc, "Water/Sewer", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_613", listing.SupOther, " Other Utilities", tabName);
+        }
+
+        private void FillFinancialInformation(IFinantialInformation listing)
         {
             const string tabName = "Financial Information";
             this.uploaderClient.ExecuteScript(script: " jQuery(document).scrollTop(0);");
-
             this.uploaderClient.ClickOnElement(By.LinkText("Financial")); // Financial
 
             this.uploaderClient.SetMultipleCheckboxById("Input_614", "ATCLO,FUNDI", fieldLabel: "Possession (Max 7)", tabName);
@@ -945,11 +1160,10 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_630", listing.AssocFeeIncludes, fieldLabel: "HOA Fee Includes", tabName);  // HOA Fee Includes
         }
 
-        private void FillShowingInformation(ResidentialListingRequest listing)
+        private void FillShowingInformation(IShowingInformation listing)
         {
             const string tabName = "Showing Information";
             this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
-
             this.uploaderClient.ClickOnElement(By.LinkText("Brokerage/Showing Information")); // Brokerage/Showing Information
 
             // Brokerage
@@ -981,19 +1195,33 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetSelect(By.Id("Input_655"), "1", fieldLabel: "Allow 3rd Party Comments", tabName);
         }
 
-        private void FillRemarks(CtxListingRequest listing)
+        private void MoveToRemarksTab()
         {
             const string tabName = "Remarks";
             this.uploaderClient.ExecuteScript(" jQuery(document).scrollTop(0);");
             this.uploaderClient.ClickOnElement(By.LinkText(tabName)); // Financial Information
-            this.UpdatePublicRemarksInRemarksTab(listing); // Public Remarks
         }
 
-        private async Task FillMedia(ResidentialListingRequest listing, CancellationToken cancellationToken)
+        private void FillRemarks(CtxListingRequest listing)
+        {
+            this.MoveToRemarksTab();
+            this.UpdatePublicRemarksInRemarksTab(
+                listing, listing.GetAgentRemarksMessage, listing.GetPublicRemarks); // Public Remarks
+        }
+
+        private void FillRemarks(CtxLotListingRequest listing)
+        {
+            this.MoveToRemarksTab();
+            this.UpdatePublicRemarksInRemarksTab(
+                listing, listing.GetAgentRemarksMessage, listing.GetPublicRemarks); // Public Remarks
+        }
+
+        private async Task FillMedia<TListing>(TListing listing, CancellationToken cancellationToken)
+            where TListing : IListingInfo
         {
             if (!listing.IsNewListing)
             {
-                this.logger.LogInformation("Skipping media upload for existing listing {listingId}", listing.ResidentialListingID);
+                this.logger.LogInformation("Skipping media upload for existing listing {ListingId}", listing.ListingID);
                 return;
             }
 
@@ -1004,7 +1232,8 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbManagePhotos"), cancellationToken);
             this.uploaderClient.ClickOnElement(By.Id("m_lbManagePhotos"));
 
-            await this.ProcessImages(listing, cancellationToken);
+            var media = await this.mediaRepository.GetListingImages(listing.ListingRequestID, market: MarketCode.CTX, token: cancellationToken);
+            await this.ProcessImages(media, cancellationToken);
         }
 
         private void UpdateYearBuiltDescriptionInGeneralTab(ResidentialListingRequest listing)
@@ -1018,21 +1247,24 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WriteTextbox(By.Id("Input_553"), listing.YearBuilt); // Year Built
         }
 
-        private void UpdatePublicRemarksInRemarksTab(ResidentialListingRequest listing)
+        private void UpdatePublicRemarksInRemarksTab(
+            IListingRemarks listing,
+            Func<string> getAgentRemarksMessage,
+            Func<string> getPublicRemarks)
         {
             // driver.wait.Until(x => ExpectedConditions.ElementIsVisible(By.Id("Input_917")));
             Thread.Sleep(400);
-            string baseRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
+            string baseRemarks = getAgentRemarksMessage() ?? string.Empty;
             string additionalRemarks = listing.AgentPrivateRemarks ?? string.Empty;
             var agentRemarks = $"{baseRemarks}. {additionalRemarks}";
-            this.uploaderClient.WriteTextbox(By.Id("Input_140"), listing.GetPublicRemarks()); // Internet / Remarks / Desc. of Property
+            this.uploaderClient.WriteTextbox(By.Id("Input_140"), getPublicRemarks()); // Internet / Remarks / Desc. of Property
             this.uploaderClient.WriteTextbox(By.Id("Input_141"), agentRemarks); // Agent Remarks
             this.uploaderClient.WriteTextbox(By.Id("Input_142"), listing.Directions); // Syndication Remarks
         }
 
-        private void SetLongitudeAndLatitudeValues(ResidentialListingRequest listing)
+        private void SetLongitudeAndLatitudeValues(IListingAddress listing, bool isNewListing)
         {
-            if (!listing.IsNewListing)
+            if (!isNewListing)
             {
                 this.logger.LogInformation("Skipping configuration of latitude and longitude for listing {address} because it already has an mls number", $"{listing.StreetNum} {listing.StreetName}");
                 return;
@@ -1065,10 +1297,27 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        [SuppressMessage("SonarLint", "S2583", Justification = "Ignored due to suspected false positive")]
-        private async Task ProcessImages(ResidentialListingRequest listing, CancellationToken cancellationToken)
+        private async Task ManageMedia(IListingInfo listing, bool wait, CancellationToken cancellationToken)
         {
-            var media = await this.mediaRepository.GetListingImages(listing.ResidentialListingRequestID, market: MarketCode.CTX, token: cancellationToken);
+            // Enter Manage Photos
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.LinkText("Manage Photos"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSave"), cancellationToken);
+
+            this.DeleteAllImages();
+            var media = await this.mediaRepository.GetListingImages(listing.ListingRequestID, market: MarketCode.CTX, token: cancellationToken);
+            await this.ProcessImages(media, cancellationToken);
+
+            if (wait)
+            {
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSave"), cancellationToken);
+                Thread.Sleep(1000);
+            }
+        }
+
+        [SuppressMessage("SonarLint", "S2583", Justification = "Ignored due to suspected false positive")]
+        private async Task ProcessImages(IEnumerable<ResidentialListingMedia> media, CancellationToken cancellationToken)
+        {
             var imageOrder = 0;
             var imageRow = 0;
             var imageCell = 0;
