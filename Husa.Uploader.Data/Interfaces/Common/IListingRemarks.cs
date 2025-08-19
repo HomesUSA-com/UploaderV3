@@ -4,6 +4,7 @@ namespace Husa.Uploader.Data.Interfaces.Common
     {
         string PublicRemarks { get; }
         string AgentPrivateRemarks { get; }
+        string AgentPrivateRemarksAdditional { get; }
         string Directions { get; }
         bool? IncludeRemarks { get; }
         string RemarksFormatFromCompany { get; }

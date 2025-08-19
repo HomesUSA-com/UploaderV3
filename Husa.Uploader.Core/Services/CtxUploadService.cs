@@ -5,6 +5,7 @@ namespace Husa.Uploader.Core.Services
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
+    using Husa.MediaService.Domain.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Models;
@@ -12,6 +13,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
+    using Husa.Uploader.Crosscutting.Regex;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.BulkUpload;
     using Husa.Uploader.Data.Entities.LotListing;
@@ -172,7 +174,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillFinancialInformation(listing);
                     this.FillShowingInformation(listing);
                     this.FillRemarks(listing as CtxListingRequest);
-                    await this.FillMedia(listing, cancellationToken);
+                    await this.FillMedia(listing, MediaType.ListingRequest, cancellationToken);
 
                     if (autoSave)
                     {
@@ -216,12 +218,12 @@ namespace Husa.Uploader.Core.Services
 
                     this.FillStatusInformation(listing);
                     this.FillListingInformation(listing);
-                    this.FillBuildings(listing);
+                    this.FillBuildings();
                     this.FillLotEnvironmentUtilityInformation(listing);
                     this.FillFinancialInformation(listing);
                     this.FillShowingInformation(listing);
                     this.FillRemarks(listing as CtxLotListingRequest);
-                    await this.FillMedia(listing, cancellationToken);
+                    await this.FillMedia(listing, MediaType.LotRequest, cancellationToken);
                 }
                 catch (Exception exception)
                 {
@@ -325,7 +327,8 @@ namespace Husa.Uploader.Core.Services
 
                     this.uploaderClient.ClickOnElement(By.LinkText("Remarks"));
 
-                    this.UpdatePublicRemarksInRemarksTab(listing, listing.GetAgentRemarksMessage, listing.GetPublicRemarks);
+                    this.UpdatePublicRemarksInRemarksTab(
+                        listing, listing.GetAgentRemarksMessage(), listing.GetPublicRemarks());
 
                     if (autoSave)
                     {
@@ -366,7 +369,7 @@ namespace Husa.Uploader.Core.Services
                     }
 
                     this.NavigateToQuickEdit(listing.MLSNum);
-                    await this.ManageMedia(listing, logIn, cancellationToken);
+                    await this.ManageMedia(listing, logIn, MediaType.ListingRequest, cancellationToken);
                 }
                 catch (Exception exception)
                 {
@@ -401,7 +404,7 @@ namespace Husa.Uploader.Core.Services
                     }
 
                     this.NavigateToQuickEdit(listing.MLSNum);
-                    await this.ManageMedia(listing, logIn, cancellationToken);
+                    await this.ManageMedia(listing, logIn, MediaType.LotRequest, cancellationToken);
                 }
                 catch (Exception exception)
                 {
@@ -962,13 +965,12 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        private void FillBuildings(LotListingRequest listing)
+        private void FillBuildings()
         {
             const string tabName = "Buildings";
             this.UploaderClient.ClickOnElement(By.LinkText(tabName)); // click in tab Buildings
 
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_670_NONE"));
-            this.uploaderClient.WriteTextbox(By.Id("Input_669"), listing.ApxTotalSqft); // Total SqFt
             this.uploaderClient.SetMultipleCheckboxById("Input_670", "NONE", tabName, tabName); // Buildings
         }
 
@@ -1128,6 +1130,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_606", listing.EESFeatures, fieldLabel: "Green Energy Efficient", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_608", listing.EnergyDesc, fieldLabel: "Green Verification Source", tabName);
             this.uploaderClient.SetMultipleCheckboxById("Input_609", listing.GreenWaterConservation, fieldLabel: "Green Water Conservation", tabName);
+            this.uploaderClient.SetMultipleCheckboxById("Input_589", "OTHSE", fieldLabel: "Mineral Rights (Max 11)", tabName);
 
             // Utilities
             this.uploaderClient.SetMultipleCheckboxById("Input_612", listing.WaterDesc, "Water/Sewer", tabName);
@@ -1206,17 +1209,17 @@ namespace Husa.Uploader.Core.Services
         {
             this.MoveToRemarksTab();
             this.UpdatePublicRemarksInRemarksTab(
-                listing, listing.GetAgentRemarksMessage, listing.GetPublicRemarks); // Public Remarks
+                listing, listing.GetAgentRemarksMessage(), listing.GetPublicRemarks()); // Public Remarks
         }
 
         private void FillRemarks(CtxLotListingRequest listing)
         {
             this.MoveToRemarksTab();
             this.UpdatePublicRemarksInRemarksTab(
-                listing, listing.GetAgentRemarksMessage, listing.GetPublicRemarks); // Public Remarks
+                listing, listing.GetAgentRemarksMessage(), listing.GetPublicRemarks()); // Public Remarks
         }
 
-        private async Task FillMedia<TListing>(TListing listing, CancellationToken cancellationToken)
+        private async Task FillMedia<TListing>(TListing listing, MediaType mediaType, CancellationToken cancellationToken)
             where TListing : IListingInfo
         {
             if (!listing.IsNewListing)
@@ -1232,7 +1235,11 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbManagePhotos"), cancellationToken);
             this.uploaderClient.ClickOnElement(By.Id("m_lbManagePhotos"));
 
-            var media = await this.mediaRepository.GetListingImages(listing.ListingRequestID, market: MarketCode.CTX, token: cancellationToken);
+            var media = await this.mediaRepository.GetListingImages(
+                listing.ListingRequestID,
+                market: MarketCode.CTX,
+                token: cancellationToken,
+                mediaType: mediaType);
             await this.ProcessImages(media, cancellationToken);
         }
 
@@ -1249,15 +1256,20 @@ namespace Husa.Uploader.Core.Services
 
         private void UpdatePublicRemarksInRemarksTab(
             IListingRemarks listing,
-            Func<string> getAgentRemarksMessage,
-            Func<string> getPublicRemarks)
+            string agentRemarksMessage,
+            string publicRemarks)
         {
             // driver.wait.Until(x => ExpectedConditions.ElementIsVisible(By.Id("Input_917")));
             Thread.Sleep(400);
-            string baseRemarks = getAgentRemarksMessage() ?? string.Empty;
-            string additionalRemarks = listing.AgentPrivateRemarks ?? string.Empty;
-            var agentRemarks = $"{baseRemarks}. {additionalRemarks}";
-            this.uploaderClient.WriteTextbox(By.Id("Input_140"), getPublicRemarks()); // Internet / Remarks / Desc. of Property
+            var agentRemarks = string.Join(". ", new List<string>()
+            {
+                agentRemarksMessage,
+                listing.AgentPrivateRemarks,
+                listing.AgentPrivateRemarksAdditional,
+            }.Where(x => !string.IsNullOrEmpty(x)));
+            agentRemarks = RegexGenerator.InvalidInlineDots.Replace($"{agentRemarks}.", ".");
+            var remarks = RegexGenerator.InvalidInlineDots.Replace($"{publicRemarks}.", ".");
+            this.uploaderClient.WriteTextbox(By.Id("Input_140"), remarks); // Internet / Remarks / Desc. of Property
             this.uploaderClient.WriteTextbox(By.Id("Input_141"), agentRemarks); // Agent Remarks
             this.uploaderClient.WriteTextbox(By.Id("Input_142"), listing.Directions); // Syndication Remarks
         }
@@ -1297,7 +1309,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        private async Task ManageMedia(IListingInfo listing, bool wait, CancellationToken cancellationToken)
+        private async Task ManageMedia(IListingInfo listing, bool wait, MediaType mediaType, CancellationToken cancellationToken)
         {
             // Enter Manage Photos
             this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Manage Photos"), cancellationToken);
@@ -1305,7 +1317,11 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSave"), cancellationToken);
 
             this.DeleteAllImages();
-            var media = await this.mediaRepository.GetListingImages(listing.ListingRequestID, market: MarketCode.CTX, token: cancellationToken);
+            var media = await this.mediaRepository.GetListingImages(
+                listing.ListingRequestID,
+                market: MarketCode.CTX,
+                token: cancellationToken,
+                mediaType: mediaType);
             await this.ProcessImages(media, cancellationToken);
 
             if (wait)
