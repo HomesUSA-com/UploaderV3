@@ -317,7 +317,8 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_actionsContainer"), TimeSpan.FromSeconds(5000));
+                    this.uploaderClient.ExecuteScript("$('#Input_actionsContainer > button:eq(0)').click()");
 
                     this.UpdateYearBuiltDescriptionInGeneralTab(listing);
                     this.UpdatePublicRemarksInRemarksTab(listing as AborListingRequest);
@@ -367,9 +368,11 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_actionsContainer"), TimeSpan.FromSeconds(5000));
+                    this.uploaderClient.ExecuteScript("$('#Input_actionsContainer > button:eq(0)').click()");
 
                     // Enter Manage Photos
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("InputForm_nav-photos"), TimeSpan.FromSeconds(5000));
                     this.uploaderClient.FindElementById("InputForm_nav-photos").Click();
                     this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
                     Thread.Sleep(2000);
@@ -380,8 +383,23 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.FindElementById("InputForm_photos_deleteSelected").Click();
                     this.uploaderClient.AcceptAlertWindow(isElementOptional: true);
                     Thread.Sleep(2000);
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputForm_photos_addPhotoBtn"), cancellationToken);
-                    this.uploaderClient.FindElementById("InputForm_photos_addPhotoBtn").Click();
+                    this.uploaderClient.ClickOnElementById("InputForm_nav-photos");
+                    this.ClickIfNotSelected("InputForm_photo-full-info-toggle");
+
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("InputForm_photos_addPhotoBtn"));
+                    this.uploaderClient.ClickOnElementById("InputForm_photos_addPhotoBtn");
+
+                    this.uploaderClient.ClickOnElement(By.XPath("//button[contains(@onclick, 'mtrxDnDFileUploader.OpenFilesSelector(event)')]"));
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("InputForm_photos_certificationText"));
+                    var element = this.uploaderClient.FindElement(By.Id("InputForm_photos_certificationText"));
+                    this.uploaderClient.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight;", args: element);
+
+                    this.ClickIfNotSelected("InputForm_photos_commonAgreement");
+                    this.ClickIfNotSelected("InputForm_photos_aiAgreement", desiredState: false);
+
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("InputForm_photos_agreeBtn"));
+                    this.uploaderClient.ClickOnElementById("InputForm_photos_agreeBtn");
+                    Thread.Sleep(1000);
 
                     await this.ProcessImages(listing, cancellationToken);
 
@@ -430,10 +448,10 @@ namespace Husa.Uploader.Core.Services
 
                     this.NavigateToQuickEdit(listing.MLSNum);
 
-                    Thread.Sleep(2000);
-                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(1)').click()");
-                    Thread.Sleep(2000);
-                    this.uploaderClient.ExecuteScript("$('#accordionActionMenu > button:eq(1)').click()");
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ListResultsView"), TimeSpan.FromSeconds(5000));
+                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(0)').click()");
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_actionsContainer"), TimeSpan.FromSeconds(5000));
+                    this.uploaderClient.ExecuteScript("$('#Input_actionsContainer > button:eq(1)').click()");
 
                     // Listing Information
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_77"));
@@ -484,8 +502,8 @@ namespace Husa.Uploader.Core.Services
 
                     this.NavigateToQuickEdit(listing.MLSNum);
 
-                    Thread.Sleep(2000);
-                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(1)').click()");
+                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ListResultsView"), TimeSpan.FromSeconds(5000));
+                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(0)').click()");
                     Thread.Sleep(2000);
                     string buttonText = GetButtonTextForStatus(listing.ListStatus);
                     this.uploaderClient.ExecuteScript($"$('button[data-mtx-track-prop-item=\"{buttonText}\"]').click()");
@@ -1700,7 +1718,7 @@ namespace Husa.Uploader.Core.Services
         {
             try
             {
-                this.uploaderClient.WaitForElementToBeVisible(findBy, TimeSpan.FromSeconds(10));
+                this.uploaderClient.WaitUntilElementIsDisplayed(findBy, TimeSpan.FromSeconds(5000));
                 var element = this.uploaderClient.FindElement(findBy);
                 action(element);
             }
