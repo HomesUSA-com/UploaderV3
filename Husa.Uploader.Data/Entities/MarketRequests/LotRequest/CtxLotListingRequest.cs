@@ -12,7 +12,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
 
     public class CtxLotListingRequest : LotListingRequest
     {
-        private const string RemarksMessage = "No Offers of Compensation Permitted.";
         private const string DefaultIntegerAsStringValue = "0";
         private readonly ListingLotRequestQueryResponse listingResponse;
         private readonly LotListingRequestDetailResponse listingDetailResponse;
@@ -133,7 +132,6 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.PropertyId = propertyInfo.PropertyId;
                 lotListingRequest.Category = propertyInfo.TypeCategory?.ToStringFromEnumMember();
                 lotListingRequest.DocumentsOnFile = propertyInfo.DocumentsOnFile.ToStringFromEnumMembers();
-                lotListingRequest.ApxTotalSqft = propertyInfo.ApxTotalSqft;
             }
 
             void FillFeaturesInfo(LotFeaturesResponse featuresInfo)
@@ -200,6 +198,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
                 lotListingRequest.Directions = showingInfo.Directions;
                 lotListingRequest.PublicRemarks = showingInfo.PublicRemarks;
                 lotListingRequest.AgentPrivateRemarks = showingInfo.AgentPrivateRemarks;
+                lotListingRequest.AgentPrivateRemarksAdditional = showingInfo.AgentPrivateRemarksAdditional;
             }
 
             void FillSchoolsInfo(SchoolsResponse schoolsInfo)
@@ -231,8 +230,19 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
             }
         }
 
-        public virtual string GetPublicRemarks() => RemarksMessage;
+        public override string GetPublicRemarks(bool addBuiltByMsg = true)
+        {
+            return base.GetPublicRemarks(addBuiltByMsg).Replace("Built by ", string.Empty);
+        }
 
-        public virtual string GetAgentRemarksMessage() => RemarksMessage;
+        public override string GetAgentRemarksMessage(string agentRemarks = null)
+        {
+            return string.Join(
+                ". ",
+                $"For more information call {this.AgentListApptPhone}",
+                "LIMITED SERVICE LISTING: Buyer verifies dimensions & ISD info",
+                $"Use Bldr contract",
+                string.Empty).Trim();
+        }
     }
 }

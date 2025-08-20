@@ -51,14 +51,15 @@ namespace Husa.Uploader.Data.Repositories
                     continue;
                 }
 
+                var uri = mediaDetail.UriHd ?? mediaDetail.Uri;
                 var residentialListingMedia = new ResidentialListingMedia
                 {
                     Id = mediaDetail.Id,
                     Caption = GetCaption(mediaDetail.Title, mediaDetail.Description),
-                    MediaUri = mediaDetail.UriHd,
+                    MediaUri = uri,
                     Order = mediaDetail.Order ?? count,
                     IsPrimary = mediaDetail.IsPrimary,
-                    ExternalUrl = mediaDetail.UriHd.ToString(),
+                    ExternalUrl = uri.ToString(),
                 };
 
                 result.Add(residentialListingMedia);

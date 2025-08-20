@@ -110,7 +110,6 @@ namespace Husa.Uploader.Data.Entities.LotListing
         public string MasterPlannedCommunity { get; set; }
         public string LegalSubdivision { get; set; }
         public string DocumentsOnFile { get; set; }
-        public decimal? ApxTotalSqft { get; set; }
 
         // Lot Features
         public string RestrictionsDescription { get; set; }
