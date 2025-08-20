@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
     </PropertyGroup>
@@ -14,7 +14,7 @@
         <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="2.19.0-dev002" />
         <PackageReference Include="Husa.Quicklister.Extensions.Api.Client" Version="1.20.0-dev002" />
         <PackageReference Include="Husa.Quicklister.Har.Api.Client" Version="2.19.0-dev002" />
-        <PackageReference Include="Husa.Quicklister.Dfw.Api.Client" Version="0.23.0-dev005" />
+        <PackageReference Include="Husa.Quicklister.Dfw.Api.Client" Version="0.23.0-dev006" />
         <PackageReference Include="Husa.Quicklister.Sabor.Api.Client" Version="2.20.0-dev002" />
         <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.7.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
