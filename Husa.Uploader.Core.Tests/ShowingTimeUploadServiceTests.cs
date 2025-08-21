@@ -255,9 +255,11 @@ namespace Husa.Uploader.Core.Tests
         [Fact]
         public async Task SetAppointmentCenter_Success()
         {
+            var showingTime = this.ShowingTimeFaker();
+
             this.mockUploaderClient.Setup(x => x.ClickOnElementById(It.IsAny<string>(), false, 400, false)).Verifiable();
 
-            await this.Sut.SetAppointmentCenter(CancellationToken.None);
+            await this.Sut.SetAppointmentCenter(showingTime.AppointmentSettings, CancellationToken.None);
 
             this.mockUploaderClient.Verify(x => x.ClickOnElementById(It.IsAny<string>(), false, 400, false), Times.Exactly(2));
         }
@@ -272,7 +274,7 @@ namespace Husa.Uploader.Core.Tests
                 x => x.ClickOnElementById(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<bool>()))
                 .Verifiable();
 
-            await this.Sut.SetAppointmentSettings(showingTime.AppointmentSettings.AppointmentType.Value, CancellationToken.None);
+            await this.Sut.SetAppointmentSettings(showingTime.AppointmentSettings, CancellationToken.None);
 
             this.mockUploaderClient.Verify(x => x.ExecuteScript(It.IsAny<string>(), It.IsAny<bool>()), Times.Exactly(2));
             this.mockUploaderClient.Verify(
@@ -284,7 +286,7 @@ namespace Husa.Uploader.Core.Tests
         public async Task SetAppointmentRestrictions_Success()
         {
             var showingTime = this.ShowingTimeFaker();
-            this.mockUploaderClient.Setup(x => x.SetSelect(It.IsAny<By>(), It.IsAny<object>(), It.IsAny<bool>()))
+            this.mockUploaderClient.Setup(x => x.SetSelect(It.IsAny<By>(), It.IsAny<string>(), It.IsAny<bool>()))
                 .Verifiable();
             this.mockUploaderClient.Setup(
                 x => x.ClickOnElementById(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<bool>()))
@@ -293,10 +295,10 @@ namespace Husa.Uploader.Core.Tests
             await this.Sut.SetAppointmentRestrictions(showingTime.AppointmentRestrictions, CancellationToken.None);
 
             this.mockUploaderClient.Verify(
-                x => x.SetSelect(It.IsAny<By>(), It.IsAny<object>(), It.IsAny<bool>()), Times.Exactly(3));
-            this.mockUploaderClient.Verify(
                 x => x.ClickOnElementById(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<bool>()),
                 Times.Exactly(3));
+            this.mockUploaderClient.Verify(
+                x => x.SetSelect(It.IsAny<By>(), It.IsAny<string>(), It.IsAny<bool>()), Times.AtLeast(4));
         }
 
         [Fact]
@@ -511,16 +513,32 @@ namespace Husa.Uploader.Core.Tests
             AppointmentSettings = new()
             {
                 AppointmentType = Faker.Enum.Random<AppointmentType>(),
+                IsAgentAccompaniedShowing = Faker.Boolean.Random(),
+                IsFeedbackRequested = Faker.Boolean.Random(),
+                IsPropertyOccupied = Faker.Boolean.Random(),
+                AllowApptCenterTakeAppts = Faker.Boolean.Random(),
+                AllowShowingAgentsToRequest = Faker.Boolean.Random(),
+                FeedbackTemplate = Faker.Enum.Random<FeedbackTemplate>(),
+                RequiredStaffLanguage = Faker.Enum.Random<StaffLanguage>(),
+                AppointmentPresentationType = Faker.Enum.Random<AppointmentPresentationType>(),
             },
             AppointmentRestrictions = new()
             {
+                AllowRealtimeAvailabilityForBrokers = Faker.Boolean.Random(),
                 AllowAppraisals = Faker.Boolean.Random(),
                 AllowInspectionsAndWalkThroughs = Faker.Boolean.Random(),
+                RequiredTimeHours = Faker.Enum.Random<AppointmentTimeHours>(),
+                SuggestedTimeHours = Faker.Enum.Random<AppointmentTimeHours>(),
+                MinShowingWindowShowings = Faker.Enum.Random<AppointmentLength>(),
+                MaxShowingWindowShowings = Faker.Enum.Random<AppointmentLength>(),
+                BufferTimeBetweenAppointments = Faker.Enum.Random<TimeBetweenAppointments>(),
+                AdvancedNotice = Faker.Enum.Random<AdvancedNotice>(),
+                OverlappingAppointmentMode = Faker.Enum.Random<OverlappingAppointmentMode>(),
             },
             AccessInformation = new()
             {
+                GateCode = Faker.RandomNumber.Next(1000, 9999).ToString(),
                 AccessMethod = Faker.Enum.Random<AccessMethod>(),
-                ProvideAlarmDetails = Faker.Boolean.Random(),
                 Location = Faker.RandomNumber.Next(1000, 9999).ToString(),
                 Serial = Faker.RandomNumber.Next(1000, 9999).ToString(),
                 Combination = Faker.RandomNumber.Next(1000, 9999).ToString(),
@@ -528,8 +546,12 @@ namespace Husa.Uploader.Core.Tests
                 CbsCode = Faker.RandomNumber.Next(1000, 9999).ToString(),
                 Code = Faker.RandomNumber.Next(1000, 9999).ToString(),
                 DeviceId = Faker.RandomNumber.Next(1000, 9999).ToString(),
+                AccessNotes = Faker.Lorem.Paragraph(10),
+                ProvideAlarmDetails = Faker.Boolean.Random(),
+                HasManageKeySets = Faker.Boolean.Random(),
                 AlarmArmCode = Faker.RandomNumber.Next(1000, 9999).ToString(),
                 AlarmDisarmCode = Faker.RandomNumber.Next(1000, 9999).ToString(),
+                AlarmPasscode = Faker.RandomNumber.Next(1000, 9999).ToString(),
                 AlarmNotes = Faker.Lorem.Paragraph(10),
             },
             AdditionalInstructions = new()

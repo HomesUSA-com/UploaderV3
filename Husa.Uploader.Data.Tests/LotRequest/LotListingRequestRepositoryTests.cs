@@ -6,12 +6,14 @@ namespace Husa.Uploader.Data.Tests.LotRequest
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Abor.Api.Client;
+    using Husa.Quicklister.CTX.Api.Client;
     using Husa.Quicklister.Har.Api.Client;
     using Husa.Uploader.Data.Repositories;
     using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
     using AborResponseContracts = Husa.Quicklister.Abor.Api.Contracts.Response;
+    using CtxResponseContracts = Husa.Quicklister.CTX.Api.Contracts.Response;
     using HarResponseContracts = Husa.Quicklister.Har.Api.Contracts.Response;
 
     [Collection(nameof(ApplicationServicesFixture))]
@@ -19,6 +21,7 @@ namespace Husa.Uploader.Data.Tests.LotRequest
     {
         private readonly Mock<IQuicklisterAborClient> mockAborClient = new();
         private readonly Mock<IQuicklisterHarClient> mockHarClient = new();
+        private readonly Mock<IQuicklisterCtxClient> mockCtxClient = new();
         private readonly Mock<IServiceSubscriptionClient> mockServiceSubscriptionClient = new();
         private readonly Mock<ILogger<LotListingRequestRepository>> mockLogger = new();
         private readonly ApplicationServicesFixture fixture;
@@ -30,6 +33,7 @@ namespace Husa.Uploader.Data.Tests.LotRequest
         }
 
         [Theory]
+        [InlineData(MarketCode.CTX)]
         [InlineData(MarketCode.Houston)]
         [InlineData(MarketCode.Austin)]
         public async Task GetLotListingRequest_ReturnsResidentialListingRequest(MarketCode marketCode)
@@ -48,6 +52,7 @@ namespace Husa.Uploader.Data.Tests.LotRequest
         }
 
         [Theory]
+        [InlineData(MarketCode.CTX)]
         [InlineData(MarketCode.Houston)]
         [InlineData(MarketCode.Austin)]
         public async Task GetListingMlsNumber_Succeess(MarketCode marketCode)
@@ -80,6 +85,7 @@ namespace Husa.Uploader.Data.Tests.LotRequest
             this.fixture.ApplicationOptions.Object,
             this.mockAborClient.Object,
             this.mockHarClient.Object,
+            this.mockCtxClient.Object,
             this.mockLogger.Object);
 
         private void SetUpGetListingById(MarketCode market, Guid listingId, string mlsNumber)
@@ -103,6 +109,18 @@ namespace Husa.Uploader.Data.Tests.LotRequest
                         this.mockAborClient
                             .Setup(x => x.SaleListing.GetByIdAsync(listingId, It.IsAny<CancellationToken>()))
                             .ReturnsAsync(new AborResponseContracts.ListingSaleDetailResponse()
+                            {
+                                Id = listingId,
+                                MlsNumber = mlsNumber,
+                            });
+                        break;
+                    }
+
+                case MarketCode.CTX:
+                    {
+                        this.mockCtxClient
+                            .Setup(x => x.SaleListing.GetByIdAsync(listingId, It.IsAny<CancellationToken>()))
+                            .ReturnsAsync(new CtxResponseContracts.ListingSaleDetailResponse()
                             {
                                 Id = listingId,
                                 MlsNumber = mlsNumber,
@@ -170,6 +188,32 @@ namespace Husa.Uploader.Data.Tests.LotRequest
                             StatusFieldsInfo = new(),
                         };
                         this.mockAborClient
+                            .Setup(x => x.ListingLotRequest.GetListRequestSaleByIdAsync(requestId, It.IsAny<CancellationToken>()))
+                            .ReturnsAsync(response);
+                        break;
+                    }
+
+                case MarketCode.CTX:
+                    {
+                        var response = new CtxResponseContracts.ListingRequest.LotRequest.LotListingRequestDetailResponse
+                        {
+                            Id = requestId,
+                            ListingId = listingId,
+                            ListPrice = 1234567,
+                            MlsNumber = "fake-mls-num",
+                            SysCreatedOn = requestDate,
+                            SysCreatedBy = userId,
+                            SysModifiedOn = requestDate.AddMonths(1),
+                            SysModifiedBy = userId,
+                            AddressInfo = new(),
+                            FeaturesInfo = new(),
+                            FinancialInfo = new(),
+                            PropertyInfo = new(),
+                            SchoolsInfo = new(),
+                            ShowingInfo = new(),
+                            StatusFieldsInfo = new(),
+                        };
+                        this.mockCtxClient
                             .Setup(x => x.ListingLotRequest.GetListRequestSaleByIdAsync(requestId, It.IsAny<CancellationToken>()))
                             .ReturnsAsync(response);
                         break;

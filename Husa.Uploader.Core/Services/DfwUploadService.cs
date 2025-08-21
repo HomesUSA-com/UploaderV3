@@ -52,7 +52,7 @@ namespace Husa.Uploader.Core.Services
             this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.quicklisterDfwClient = quicklisterDfwClient ?? throw new ArgumentNullException(nameof(quicklisterDfwClient));
-            }
+        }
 
         public MarketCode CurrentMarket => MarketCode.DFW;
 
@@ -987,7 +987,8 @@ namespace Husa.Uploader.Core.Services
                 this.FillListDate(listing);
 
                 this.uploaderClient.WriteTextbox(By.Id("Input_81"), DateTime.Today.AddYears(1).ToShortDateString()); // Expire Date
-                this.uploaderClient.WriteTextbox(By.Id("Input_235"), string.IsNullOrWhiteSpace(listing.TaxID) ? "NA" : listing.TaxID); // Parcel Id
+                var parcelId = string.IsNullOrWhiteSpace(listing.TaxID) ? $"{listing.StreetNum} {listing.StreetName}" : listing.TaxID;
+                this.uploaderClient.WriteTextbox(By.Id("Input_235"), parcelId); // Parcel Id
                 this.uploaderClient.SetSelect(By.Id("Input_237"), value: "0"); // Multi Parcel ID YN
             }
 
