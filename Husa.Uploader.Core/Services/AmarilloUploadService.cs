@@ -586,11 +586,6 @@ namespace Husa.Uploader.Core.Services
 
         private void NavigateToEditResidentialForm(string mlsNumber, CancellationToken cancellationToken = default)
         {
-            if (mlsNumber.Length > 2)
-            {
-                mlsNumber = "25-6788";
-            }
-
             this.NavigateToQuickEdit(mlsNumber);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("change-listing-001"), cancellationToken);
             Thread.Sleep(1000);
@@ -747,6 +742,12 @@ namespace Husa.Uploader.Core.Services
             this.CheckOptions((listing as AmarilloListingRequest).ParkingFeatures); // Parking Features
 
             this.CheckOptions((listing as AmarilloListingRequest).CommunityFeatures); // Communuity Features
+
+            if ((listing as AmarilloListingRequest).HoaRequirement)
+            {
+                this.uploaderClient.ClickOnElementById("i_159");
+                this.uploaderClient.SetSelectByText(By.Id("t_159"), (listing as AmarilloListingRequest).HoaRequirement.BoolToYesNoBool().ToTitleCase(), HOARequiremientFieldLabel, HOARequiremientFieldLabel); // HOA Requiremient
+            }
 
             this.CheckOptions(listing.AppliancesDesc); // Appliances
             this.CheckOptionsByLabel(listing.ExteriorDesc); // Exterior
