@@ -1369,8 +1369,8 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetMultipleCheckboxById("Input_255", "CLOFUN", "Posession", tabName); // Posession
             this.uploaderClient.SetSelect(By.Id("Input_365"), "TRASCL", "Loan Type", tabName); // Loan Type
             this.uploaderClient.SetSelect(By.Id("Input_374"), "0", "Second  Mortgage YN", tabName); // Second Mortgage YN
-            this.uploaderClient.WriteTextbox(By.Id("Input_377"), listing.TitleCo); // Title Company-Preferred
-            this.uploaderClient.WriteTextbox(By.Id("Input_378"), listing.TitleCoPhone); // Title Company Phone
+            this.uploaderClient.WriteTextbox(By.Id("Input_887"), listing.TitleCo); // Title Company-Preferred
+            this.uploaderClient.WriteTextbox(By.Id("Input_889"), listing.TitleCoPhone); // Title Company Phone
             this.uploaderClient.WriteTextbox(By.Id("Input_379"), listing.TitleCoLocation); // Title Company Location
             this.uploaderClient.SetSelect(By.Id("Input_835"), listing.HasAgentBonus.Value.BoolToNumericBool()); // seller concessions
 
