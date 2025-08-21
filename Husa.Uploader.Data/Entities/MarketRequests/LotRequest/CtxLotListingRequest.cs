@@ -230,6 +230,11 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
             }
         }
 
+        public override string GetPublicRemarks(bool addBuiltByMsg = true)
+        {
+            return base.GetPublicRemarks(addBuiltByMsg).Replace("Built by ", string.Empty);
+        }
+
         public override string GetAgentRemarksMessage(string agentRemarks = null)
         {
             return string.Join(
