@@ -4,8 +4,10 @@ namespace Husa.Uploader.Core.Services
     using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
+    using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
     using Husa.MediaService.Domain.Enums;
+    using Husa.Quicklister.CTX.Domain.Enums.Entities;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Models;
@@ -296,12 +298,7 @@ namespace Husa.Uploader.Core.Services
 
         public Task<UploaderResponse> UpdateCompletionDate(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
-            if (listing is null)
-            {
-                throw new ArgumentNullException(nameof(listing));
-            }
-
-            return UpdateListingCompletionDate(logIn);
+            return listing is null ? throw new ArgumentNullException(nameof(listing)) : UpdateListingCompletionDate(logIn);
 
             async Task<UploaderResponse> UpdateListingCompletionDate(bool logIn)
             {
@@ -318,10 +315,7 @@ namespace Husa.Uploader.Core.Services
                         Thread.Sleep(5000);
                     }
 
-                    this.NavigateToQuickEdit(listing.MLSNum);
-
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Residential Input Form"), cancellationToken);
-                    this.uploaderClient.ClickOnElement(By.LinkText("Residential Input Form"));
+                    await this.LocateResidentialListing(listing.MLSNum, cancellationToken);
 
                     this.UpdateYearBuiltDescriptionInGeneralTab(listing);
 
@@ -1246,11 +1240,14 @@ namespace Husa.Uploader.Core.Services
         private void UpdateYearBuiltDescriptionInGeneralTab(ResidentialListingRequest listing)
         {
             const string tabName = "Listing Information";
+            var constructionCompleted = ConstructionStage.CompleteConstruction.ToStringFromEnumMember();
+            var completionDate = listing.YearBuiltDesc.Equals(constructionCompleted) ? null : listing.BuildCompletionDate;
+
             this.uploaderClient.ClickOnElement(By.LinkText(tabName));
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_553"));
             this.uploaderClient.ScrollDown();
             this.uploaderClient.SetSelect(By.Id("Input_547"), listing.YearBuiltDesc, fieldLabel: "Construction Status", tabName); // Construction Status
-            this.uploaderClient.WriteTextbox(By.Id("Input_549"), listing.BuildCompletionDate); // Estimated Completion Date
+            this.uploaderClient.WriteTextbox(By.Id("Input_549"), completionDate); // Estimated Completion Date
             this.uploaderClient.WriteTextbox(By.Id("Input_553"), listing.YearBuilt); // Year Built
         }
 
