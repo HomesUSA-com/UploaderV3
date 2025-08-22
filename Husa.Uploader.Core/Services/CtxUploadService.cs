@@ -1266,7 +1266,7 @@ namespace Husa.Uploader.Core.Services
             }.Where(x => !string.IsNullOrEmpty(x)));
             agentRemarks = RegexGenerator.InvalidInlineDots.Replace($"{agentRemarks}.", ".");
             var remarks = RegexGenerator.InvalidInlineDots.Replace($"{publicRemarks}.", ".");
-            remarks = RegexGenerator.MultipleSpaces.Replace(remarks, " ");
+            remarks = RegexGenerator.MultipleSpaces.Replace(remarks.Replace("#", string.Empty), " ");
             this.uploaderClient.WriteTextbox(By.Id("Input_140"), remarks); // Internet / Remarks / Desc. of Property
             this.uploaderClient.WriteTextbox(By.Id("Input_141"), agentRemarks); // Agent Remarks
             this.uploaderClient.WriteTextbox(By.Id("Input_142"), listing.Directions); // Syndication Remarks
