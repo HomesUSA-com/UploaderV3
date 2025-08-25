@@ -1,7 +1,7 @@
 namespace Husa.Uploader.Data.Projections
 {
     using Husa.Extensions.Common.Enums;
-    using Husa.Quicklister.Dfw.Api.Contracts.Response.Listing;
+    using Husa.Quicklister.Extensions.Api.Contracts.Response.Listing;
     using Husa.Uploader.Data.Entities.BulkUpload;
 
     public static class ListingProjection
