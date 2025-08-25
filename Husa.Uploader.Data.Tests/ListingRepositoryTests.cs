@@ -14,7 +14,7 @@ namespace Husa.Uploader.Data.Tests.Repositories
     using Microsoft.Extensions.Options;
     using Moq;
     using Xunit;
-    using ListingWithInvalidTaxIdResponse = Husa.Quicklister.Dfw.Api.Contracts.Response.Listing.InvalidTaxIdListingsResponse;
+    using ListingWithInvalidTaxIdResponse = Husa.Quicklister.Extensions.Api.Contracts.Response.Listing.InvalidTaxIdListingsResponse;
 
     public class ListingRepositoryTests
     {
