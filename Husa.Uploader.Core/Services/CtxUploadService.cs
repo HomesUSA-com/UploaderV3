@@ -4,10 +4,8 @@ namespace Husa.Uploader.Core.Services
     using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
-    using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
     using Husa.MediaService.Domain.Enums;
-    using Husa.Quicklister.CTX.Domain.Enums.Entities;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Models;
@@ -872,7 +870,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetMultipleCheckboxById("Input_546", "BUILDER", "Sale Type", tabName); // Sale Type
                 this.uploaderClient.SetSelect(By.Id("Input_531"), "0", "Res Flooded", tabName); // Res Flooded
                 this.uploaderClient.WriteTextbox(By.Id("Input_548"), listing.OwnerName); // Builder Name
-                this.uploaderClient.WriteTextbox(By.Id("Input_549"), listing.BuildCompletionDate); // Estimated Completion Date
+                this.uploaderClient.WriteTextbox(By.Id("Input_549"), listing.EstimatedCOmpletionDate); // Estimated Completion Date
                 this.uploaderClient.SetSelect(By.Id("Input_552"), listing.YearBuiltSrc); // Year Built Source
                 this.uploaderClient.SetSelect(By.Id("Input_551"), "BUILD", "Source SqFt", tabName); // Source SqFt
                 this.uploaderClient.SetMultipleCheckboxById("Input_554", listing.AvailableDocumentsDesc, "Documents on File (Max 25)", tabName); // Documents on File (Max 25)
@@ -1240,14 +1238,11 @@ namespace Husa.Uploader.Core.Services
         private void UpdateYearBuiltDescriptionInGeneralTab(ResidentialListingRequest listing)
         {
             const string tabName = "Listing Information";
-            var constructionCompleted = ConstructionStage.CompleteConstruction.ToStringFromEnumMember();
-            var completionDate = listing.YearBuiltDesc.Equals(constructionCompleted) ? null : listing.BuildCompletionDate;
-
             this.uploaderClient.ClickOnElement(By.LinkText(tabName));
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_553"));
             this.uploaderClient.ScrollDown();
             this.uploaderClient.SetSelect(By.Id("Input_547"), listing.YearBuiltDesc, fieldLabel: "Construction Status", tabName); // Construction Status
-            this.uploaderClient.WriteTextbox(By.Id("Input_549"), completionDate); // Estimated Completion Date
+            this.uploaderClient.WriteTextbox(By.Id("Input_549"), listing.EstimatedCOmpletionDate); // Estimated Completion Date
             this.uploaderClient.WriteTextbox(By.Id("Input_553"), listing.YearBuilt); // Year Built
         }
 

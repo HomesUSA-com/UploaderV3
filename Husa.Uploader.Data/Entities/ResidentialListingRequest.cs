@@ -2,7 +2,9 @@ namespace Husa.Uploader.Data.Entities
 {
     using System.Collections.Generic;
     using Husa.CompanyServicesManager.Api.Contracts.Response;
+    using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.CTX.Domain.Enums.Entities;
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ShowingTime;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
@@ -152,6 +154,15 @@ namespace Husa.Uploader.Data.Entities
         public string AddressOninternetAllowed { get; set; }
         public string AccessInstructionsDesc { get; set; }
         public DateTime? BuildCompletionDate { get; set; }
+        public DateTime? EstimatedCOmpletionDate
+        {
+            get
+            {
+                var constructionCompleted = ConstructionStage.CompleteConstruction.ToStringFromEnumMember();
+                return this.YearBuiltDesc.Equals(constructionCompleted) ? null : this.BuildCompletionDate;
+            }
+        }
+
         public DateTime? SysTimestamp { get; set; }
         public Guid? CommunityProfileID { get; set; }
         public string AvailableDocumentsDesc { get; set; }
