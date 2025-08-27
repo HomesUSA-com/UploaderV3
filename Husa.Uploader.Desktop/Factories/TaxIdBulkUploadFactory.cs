@@ -54,6 +54,7 @@ namespace Husa.Uploader.Desktop.Factories
             this.Uploader = marketCode switch
             {
                 MarketCode.DFW => this.serviceProvider.GetRequiredService<IDfwTaxIdBulkUploadService>(),
+                MarketCode.Houston => this.serviceProvider.GetRequiredService<IHarTaxIdBulkUploadService>(),
                 _ => throw new NotSupportedException($"The market {marketCode} is not supported"),
             };
 

@@ -1,6 +1,7 @@
 namespace Husa.Uploader.Data.Entities.BulkUpload
 {
     using System;
+    using Husa.Extensions.Common.Enums;
 
     public class TaxIdBulkUploadListingItem
     {
@@ -11,6 +12,6 @@ namespace Husa.Uploader.Data.Entities.BulkUpload
         public string OwnerName { get; set; }
         public Guid CompanyId { get; set; }
         public string TaxId { get; set; }
-        public string Market { get; set; }
+        public MarketCode Market { get; set; }
     }
 }

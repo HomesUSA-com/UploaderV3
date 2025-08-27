@@ -11,7 +11,7 @@ namespace Husa.Uploader.Data.Projections
             Id = response.Id,
             Address = response.Address,
             CompanyId = response.CompanyId,
-            Market = marketCode.ToString(),
+            Market = marketCode,
             MlsNumber = response.MlsNumber,
             OwnerName = response.OwnerName,
             TaxId = response.TaxId,

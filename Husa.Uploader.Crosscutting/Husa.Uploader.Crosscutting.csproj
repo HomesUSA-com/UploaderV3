@@ -2,10 +2,10 @@
 
 	<ItemGroup>
         <PackageReference Include="Husa.Extensions.Common" Version="4.3.1" />
-        <PackageReference Include="Husa.Quicklister.Abor.Api.Client" Version="2.23.0-dev003" />
-        <PackageReference Include="Husa.Quicklister.Amarillo.Api.Client" Version="1.12.0-dev002" />
-        <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="2.19.0-dev002" />
-        <PackageReference Include="Husa.Quicklister.Har.Api.Client" Version="2.19.0-dev002" />
+        <PackageReference Include="Husa.Quicklister.Abor.Api.Client" Version="2.23.0-dev004" />
+        <PackageReference Include="Husa.Quicklister.Amarillo.Api.Client" Version="1.12.0-dev003" />
+        <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="2.19.0-dev004" />
+        <PackageReference Include="Husa.Quicklister.Har.Api.Client" Version="2.19.0-dev003" />
 	</ItemGroup>
 
 </Project>
