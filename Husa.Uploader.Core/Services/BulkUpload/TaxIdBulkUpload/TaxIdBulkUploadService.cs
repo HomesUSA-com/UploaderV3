@@ -16,15 +16,12 @@ namespace Husa.Uploader.Core.Services.BulkUpload.TaxIdBulkUpload
     public abstract class TaxIdBulkUploadService<TUploadService> : ITaxIdBulkUploadListings
         where TUploadService : IMarketUploadService
     {
-        private readonly IUploaderClient uploaderClient;
         private readonly TUploadService uploadService;
         private readonly ILogger logger;
         protected TaxIdBulkUploadService(
-            IUploaderClient uploaderClient,
             TUploadService uploadService,
             ILogger logger)
         {
-            this.uploaderClient = uploaderClient ?? throw new ArgumentNullException(nameof(uploaderClient));
             this.uploadService = uploadService ?? throw new ArgumentNullException(nameof(uploadService));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -35,7 +32,7 @@ namespace Husa.Uploader.Core.Services.BulkUpload.TaxIdBulkUpload
         public void CancelOperation()
         {
             this.logger.LogInformation("Stopping driver at the request of the current user");
-            this.uploaderClient.CloseDriver();
+            this.uploadService.UploaderClient.CloseDriver();
         }
 
         public UploaderResponse Logout()
@@ -54,7 +51,7 @@ namespace Husa.Uploader.Core.Services.BulkUpload.TaxIdBulkUpload
             if (this.BulkListings == null)
             {
                 response.UploadResult = UploadResult.Failure;
-                response.UploadInformation = this.uploaderClient.UploadInformation;
+                response.UploadInformation = this.uploadService.UploaderClient.UploadInformation;
                 return response;
             }
 

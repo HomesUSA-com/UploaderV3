@@ -8,10 +8,9 @@ namespace Husa.Uploader.Core.Services.BulkUpload.TaxIdBulkUpload
     public class DfwTaxIdBulkUploadService : TaxIdBulkUploadService<IDfwUploadService>, IDfwTaxIdBulkUploadService
     {
         public DfwTaxIdBulkUploadService(
-            IUploaderClient uploaderClient,
             IDfwUploadService uploadService,
             ILogger<DfwTaxIdBulkUploadService> logger)
-            : base(uploaderClient, uploadService, logger)
+            : base(uploadService, logger)
         {
         }
 

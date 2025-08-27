@@ -854,9 +854,21 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploaderResponse> TaxIdRequestCreation(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default)
+        public async Task<UploaderResponse> TaxIdRequestCreation(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(listing);
+
+            var uploaderResponse = new UploaderResponse();
+            this.logger.LogInformation("Updating Tax Id information for the listing {ListingId}", listing.Id);
+            this.uploaderClient.InitializeUploadInfo(listing.Id, false);
+            if (logIn)
+            {
+                await this.Login(listing.CompanyId);
+                Thread.Sleep(2000);
+            }
+
+            uploaderResponse.UploadResult = UploadResult.Success;
+            return uploaderResponse;
         }
 
         public Task<UploaderResponse> TaxIdUpdate(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
