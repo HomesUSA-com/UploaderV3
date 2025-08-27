@@ -28,7 +28,8 @@ namespace Husa.Uploader.Core.Services
 
     public class HarUploadService : IHarUploadService
     {
-        private const string LandingPageURL = "https://www.har.com/moa_mls/goMatrix";
+        private const string LandingPageURL = $"https://www.har.com/moa_mls/goMatrix";
+        private const string SearchURL = $"https://matrix.harmls.com/Matrix/Search";
         private readonly IUploaderClient uploaderClient;
         private readonly IMediaRepository mediaRepository;
         private readonly IServiceSubscriptionClient serviceSubscriptionClient;
@@ -867,6 +868,8 @@ namespace Husa.Uploader.Core.Services
                 Thread.Sleep(2000);
             }
 
+            this.NavigateToListingInfo(listing.MlsNumber, logIn, cancellationToken);
+
             uploaderResponse.UploadResult = UploadResult.Success;
             return uploaderResponse;
         }
@@ -874,6 +877,23 @@ namespace Husa.Uploader.Core.Services
         public Task<UploaderResponse> TaxIdUpdate(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
+        }
+
+        private void NavigateToListingInfo(string mlsNumber, bool isInHomePage, CancellationToken cancellationToken = default)
+        {
+            this.uploaderClient.ScrollToTop();
+
+            if (isInHomePage)
+            {
+                this.uploaderClient.NavigateToUrl(SearchURL);
+            }
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id($"ctl01_m_ucSpeedBar_m_tbSpeedBar"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+            this.uploaderClient.WriteTextbox(By.Id($"ctl01_m_ucSpeedBar_m_tbSpeedBar"), value: mlsNumber);
+            this.uploaderClient.ClickOnElement(By.Id($"ctl01_m_ucSpeedBar_m_lnkGo"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("singleLineTableHeader"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.LinkText(mlsNumber));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("mtx-containerNavTabs"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
         }
 
         private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
