@@ -9,6 +9,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Extensions.Common.Enums;
     using Husa.MediaService.Domain.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
+    using Husa.Quicklister.Har.Api.Client;
     using Husa.Quicklister.Har.Domain.Enums.Domain;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Models;
@@ -29,6 +30,7 @@ namespace Husa.Uploader.Core.Tests
     public class HarUploadServiceTests : MarketUploadServiceTests<HarUploadService, HarListingRequest>
     {
         private readonly Mock<IUploaderClient> uploaderClient = new();
+        private readonly Mock<IQuicklisterHarClient> quicklisterHarClient = new();
         private readonly Mock<ILogger<HarUploadService>> logger = new();
         private readonly ApplicationServicesFixture fixture;
 
@@ -498,6 +500,7 @@ namespace Husa.Uploader.Core.Tests
                 this.fixture.ApplicationOptions,
                 this.mediaRepository.Object,
                 this.serviceSubscriptionClient.Object,
+                this.quicklisterHarClient.Object,
                 this.logger.Object);
 
         protected override HarListingRequest GetEmptyListingRequest()

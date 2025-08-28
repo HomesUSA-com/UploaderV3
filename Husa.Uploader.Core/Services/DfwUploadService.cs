@@ -10,6 +10,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Quicklister.Dfw.Domain.Enums;
     using Husa.Quicklister.Dfw.Domain.Enums.Domain;
     using Husa.Quicklister.Extensions.Domain.Enums;
+    using Husa.Uploader.Core.Extensions;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Models;
     using Husa.Uploader.Core.Services.Common;
@@ -787,15 +788,8 @@ namespace Husa.Uploader.Core.Services
             }
             catch (HttpRequestException ex)
             {
-                this.uploaderClient.ExecuteScript("$(\"head link[rel='stylesheet']\").last().after(\"<link rel='stylesheet' href='https://leadmanager.homesusa.com/css/animate.css' type='text/css'>\");");
-                this.uploaderClient.ExecuteScript("$(\"head link[rel='stylesheet']\").last().after(\"<link rel='stylesheet' href='https://leadmanager.homesusa.com/css/igrowl.css' type='text/css'>\");");
-                this.uploaderClient.ExecuteScript("$(\"head link[rel='stylesheet']\").last().after(\"<link rel='stylesheet' href='https://leadmanager.homesusa.com/css/fonts/feather.css' type='text/css'>\");");
-                this.uploaderClient.ExecuteScript("$(\"head\").append('<script src=\"https://leadmanager.homesusa.com/Scripts/igrowl.js\"></script>')");
-                Thread.Sleep(2000);
-                this.uploaderClient.ExecuteScript("$.iGrowl({type: 'error',title: 'HomesUSA - Bulk Uploader',message: 'Request creation failed! Please check if listing has at least one completed request and does not have any pending requests. List will be skipped...',delay: 0,small: false,placement:{ x: 'right', y: 'bottom'}, offset: {x: 30,y: 50},animShow: 'fadeInDown',animHide: 'bounceOutUp'});");
+                this.uploaderClient.ShowRequestCreationFailedMessage();
                 this.logger.LogError(ex, "Error from Quicklister: {error}", ex);
-                Thread.Sleep(5000);
-                this.uploaderClient.ExecuteScript("$.iGrowl.prototype.dismissAll('all')");
             }
             catch (Exception ex)
             {

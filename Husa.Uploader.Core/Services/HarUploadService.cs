@@ -8,8 +8,10 @@ namespace Husa.Uploader.Core.Services
     using Husa.Extensions.Common.Enums;
     using Husa.MediaService.Domain.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
+    using Husa.Quicklister.Har.Api.Client;
     using Husa.Quicklister.Har.Domain.Enums;
     using Husa.Quicklister.Har.Domain.Enums.Domain;
+    using Husa.Uploader.Core.Extensions;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Models;
     using Husa.Uploader.Core.Services.Common;
@@ -35,18 +37,21 @@ namespace Husa.Uploader.Core.Services
         private readonly IServiceSubscriptionClient serviceSubscriptionClient;
         private readonly ApplicationOptions options;
         private readonly ILogger<HarUploadService> logger;
+        private readonly IQuicklisterHarClient quicklisterHarClient;
 
         public HarUploadService(
             IUploaderClient uploaderClient,
             IOptions<ApplicationOptions> options,
             IMediaRepository mediaRepository,
             IServiceSubscriptionClient serviceSubscriptionClient,
+            IQuicklisterHarClient quicklisterHarClient,
             ILogger<HarUploadService> logger)
         {
             this.uploaderClient = uploaderClient ?? throw new ArgumentNullException(nameof(uploaderClient));
             this.mediaRepository = mediaRepository ?? throw new ArgumentNullException(nameof(mediaRepository));
             this.serviceSubscriptionClient = serviceSubscriptionClient ?? throw new ArgumentNullException(nameof(serviceSubscriptionClient));
             this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+            this.quicklisterHarClient = quicklisterHarClient ?? throw new ArgumentNullException(nameof(quicklisterHarClient));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -870,6 +875,41 @@ namespace Husa.Uploader.Core.Services
 
             this.NavigateToListingInfo(listing.MlsNumber, logIn, cancellationToken);
 
+            var taxTabLocator = By.XPath("//li[@role='presentation']/a[text()='Tax']");
+
+            if (!this.uploaderClient.IsElementClickable(taxTabLocator))
+            {
+                this.logger.LogInformation("Tax section is not available. Skipping...");
+                uploaderResponse.UploadResult = UploadResult.Success;
+                return uploaderResponse;
+            }
+
+            this.uploaderClient.FindElement(taxTabLocator).Click();
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//span[text()='Parcel ID:']"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+
+            var taxId = this.ScrapeFieldFromTaxPage("Parcel ID");
+
+            if (string.IsNullOrEmpty(taxId))
+            {
+                this.logger.LogInformation("Parcel Id is not available. Skipping...");
+                uploaderResponse.UploadResult = UploadResult.Success;
+                return uploaderResponse;
+            }
+
+            try
+            {
+                await this.quicklisterHarClient.ListingSaleRequest.CreateTaxIdRequestAsync(listing.Id, taxId, cancellationToken);
+            }
+            catch (HttpRequestException ex)
+            {
+                this.uploaderClient.ShowRequestCreationFailedMessage();
+                this.logger.LogError(ex, "Error from Quicklister: {Error}", ex);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Error from Quicklister: {Error}", ex);
+            }
+
             uploaderResponse.UploadResult = UploadResult.Success;
             return uploaderResponse;
         }
@@ -895,6 +935,9 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.ClickOnElement(By.LinkText(mlsNumber));
             this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("mtx-containerNavTabs"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
         }
+
+        private string ScrapeFieldFromTaxPage(string fieldLabel) =>
+            this.uploaderClient.FindElement(By.XPath($"//span[text()='{fieldLabel}:']/../following-sibling::div/span")).Text;
 
         private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
