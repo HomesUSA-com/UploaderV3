@@ -914,9 +914,40 @@ namespace Husa.Uploader.Core.Services
             return uploaderResponse;
         }
 
-        public Task<UploaderResponse> TaxIdUpdate(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
+        public async Task<UploaderResponse> TaxIdUpdate(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(listing);
+
+            var uploaderResponse = new UploaderResponse();
+
+            this.logger.LogInformation("Updating Tax Id information for the listing {ListingId}", listing.ResidentialListingRequestID);
+            this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, false);
+            if (logIn)
+            {
+                await this.Login(listing.CompanyId);
+                Thread.Sleep(2000);
+            }
+
+            try
+            {
+                this.NavigateToQuickEdit(listing.MLSNum);
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//span[text()='Modify Listing']"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+                this.uploaderClient.ClickOnElementById("m_dlInputList_ctl00_m_btnSelect");
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_174"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+                this.uploaderClient.WriteTextbox(By.Id("Input_174"), listing.TaxID);
+                this.uploaderClient.WaitUntilElementExists(By.Id("css_InputCompleted"), TimeSpan.FromMinutes(5), showAlert: true, cancellationToken);
+                Thread.Sleep(500);
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
+                uploaderResponse.UploadResult = UploadResult.Failure;
+                uploaderResponse.UploadInformation = this.uploaderClient.UploadInformation;
+                return uploaderResponse;
+            }
+
+            uploaderResponse.UploadResult = UploadResult.Success;
+            return uploaderResponse;
         }
 
         private void NavigateToListingInfo(string mlsNumber, bool isInHomePage, CancellationToken cancellationToken = default)
