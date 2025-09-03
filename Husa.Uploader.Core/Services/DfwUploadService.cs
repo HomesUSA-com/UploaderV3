@@ -52,7 +52,7 @@ namespace Husa.Uploader.Core.Services
             this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.quicklisterDfwClient = quicklisterDfwClient ?? throw new ArgumentNullException(nameof(quicklisterDfwClient));
-            }
+        }
 
         public MarketCode CurrentMarket => MarketCode.DFW;
 
@@ -494,10 +494,7 @@ namespace Husa.Uploader.Core.Services
 
         public Task<UploaderResponse> UpdateStatus(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
-            if (listing is null)
-            {
-                throw new ArgumentNullException(nameof(listing));
-            }
+            ArgumentNullException.ThrowIfNull(listing);
 
             this.uploaderClient.UploadInformation.UserFullName = listing.WorkingBy;
 
@@ -559,8 +556,10 @@ namespace Husa.Uploader.Core.Services
                                                                                                    //// 1st Interest Rate
                             this.uploaderClient.SetSelect(By.Id("Input_624"), listing.HasBuyerAgent.BoolToNumericBool());  // Buyers/SubAgent
                             this.uploaderClient.SetSelect(By.Id("Input_625"), listing.HasSecondBuyerAgent.BoolToNumericBool());  // Buyers/SubAgent2
-                            this.uploaderClient.WriteTextbox(By.Id("filter_Input_141"), listing.AgentMarketUniqueId ?? "99999999"); // Buyers/SubAgent ID
-                            this.uploaderClient.WriteTextbox(By.Id("filter_Input_145"), listing.SecondAgentMarketUniqueId); // Buyers/SubAgent 2 ID
+
+                            var agentMarketUniqueId = string.IsNullOrEmpty(listing.AgentMarketUniqueId?.Trim()) ? "99999999" : listing.AgentMarketUniqueId;
+                            await this.SetBuyersSubAgentId(agentMarketUniqueId, "Input_141", cancellationToken); // Buyers/SubAgent ID
+                            await this.SetBuyersSubAgentId(listing.SecondAgentMarketUniqueId, "Input_145", cancellationToken); // Buyers/SubAgent 2 ID
                             break;
                         case "PND":
                             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_94"));
@@ -844,6 +843,26 @@ namespace Husa.Uploader.Core.Services
             return uploaderResponse;
         }
 
+        private async Task SetBuyersSubAgentId(string agentMarketUniqueId, string inputId, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(agentMarketUniqueId?.Trim()))
+            {
+                return;
+            }
+
+            this.uploaderClient.WriteTextbox(By.Id($"filter_{inputId}"), agentMarketUniqueId); // Buyers/SubAgent ID
+            var buyersSubAgentIdBy = By.XPath($"//div[@class='TBXFilter']/table/tbody/tr/td[contains(text(), '{agentMarketUniqueId}')]");
+            var buyersSubAgentId = this.uploaderClient.FindElement(buyersSubAgentIdBy, shouldWait: true, isElementOptional: true);
+            if (buyersSubAgentId != null)
+            {
+                await Task.Delay(1000, cancellationToken);
+                this.uploaderClient.ExecuteScript("document.querySelector('div.TBXFilter > table > tbody > tr > td').click()");
+                var buyersSubAgentIdRefreshBy = By.XPath($"//a[contains(@href, '#{inputId}_Refresh')]");
+                await Task.Delay(1000, cancellationToken);
+                this.uploaderClient.ClickOnElement(buyersSubAgentIdRefreshBy);
+            }
+        }
+
         private void CheckIfAutoSaveWindowIsVisible()
         {
             if (this.uploaderClient.IsElementPresent(By.Id("m_divAutoSaveRestore"), true))
@@ -987,7 +1006,8 @@ namespace Husa.Uploader.Core.Services
                 this.FillListDate(listing);
 
                 this.uploaderClient.WriteTextbox(By.Id("Input_81"), DateTime.Today.AddYears(1).ToShortDateString()); // Expire Date
-                this.uploaderClient.WriteTextbox(By.Id("Input_235"), string.IsNullOrWhiteSpace(listing.TaxID) ? "NA" : listing.TaxID); // Parcel Id
+                var parcelId = string.IsNullOrWhiteSpace(listing.TaxID) ? $"{listing.StreetNum} {listing.StreetName}" : listing.TaxID;
+                this.uploaderClient.WriteTextbox(By.Id("Input_235"), parcelId); // Parcel Id
                 this.uploaderClient.SetSelect(By.Id("Input_237"), value: "0"); // Multi Parcel ID YN
             }
 

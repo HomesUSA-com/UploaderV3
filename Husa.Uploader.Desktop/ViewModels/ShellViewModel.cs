@@ -1642,8 +1642,8 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
 
             this.ShowCancelButton = true;
-            var market = Enum.Parse<MarketCode>(this.selectedListingRequest.Market);
-            var uploader = this.uploadFactory.ShowingTimeUploaderFactory(market);
+            var marketCode = this.selectedListingRequest.Market.ToUpper();
+            var uploader = this.uploadFactory.ShowingTimeUploaderFactory(marketCode);
             this.cancellationTokenSource ??= new CancellationTokenSource();
             await this.SetFullRequestInformation();
             await uploader.Upload(
@@ -1658,8 +1658,8 @@ namespace Husa.Uploader.Desktop.ViewModels
             }
 
             this.ShowCancelButton = true;
-            var market = Enum.Parse<MarketCode>(this.selectedListingRequest.Market);
-            var uploader = this.uploadFactory.ShowingTimeUploaderFactory(market);
+            var marketCode = this.selectedListingRequest.Market.ToUpper();
+            var uploader = this.uploadFactory.ShowingTimeUploaderFactory(marketCode);
             this.cancellationTokenSource ??= new CancellationTokenSource();
             await this.SetFullRequestInformation();
             var companyId = this.selectedListingRequest.FullListing.CompanyId;

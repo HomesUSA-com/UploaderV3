@@ -75,14 +75,14 @@ namespace Husa.Uploader.Desktop.Factories
             }
         }
 
-        public IShowingTimeUploadService ShowingTimeUploaderFactory(MarketCode market) => market switch
+        public IShowingTimeUploadService ShowingTimeUploaderFactory(string marketCode) => marketCode switch
         {
-            MarketCode.Amarillo => throw new NotImplementedException(),
-            MarketCode.Austin => throw new NotImplementedException(),
-            MarketCode.CTX => throw new NotImplementedException(),
-            MarketCode.DFW => this.serviceProvider.GetRequiredService<DfwShowingTimeUploadService>(),
-            MarketCode.Houston => throw new NotImplementedException(),
-            MarketCode.SanAntonio => throw new NotImplementedException(),
+            "ABOR" => this.serviceProvider.GetRequiredService<AborShowingTimeUploadService>(),
+            "AMARILLO" => this.serviceProvider.GetRequiredService<AmarilloShowingTimeUploadService>(),
+            "CTX" => this.serviceProvider.GetRequiredService<CtxShowingTimeUploadService>(),
+            "DFW" => this.serviceProvider.GetRequiredService<DfwShowingTimeUploadService>(),
+            "HAR" => this.serviceProvider.GetRequiredService<HarShowingTimeUploadService>(),
+            "SABOR" => this.serviceProvider.GetRequiredService<SaborShowingTimeUploadService>(),
             _ => throw new NotImplementedException(),
         };
 

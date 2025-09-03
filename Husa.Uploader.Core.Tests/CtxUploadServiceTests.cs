@@ -1,9 +1,11 @@
 namespace Husa.Uploader.Core.Tests
 {
+    using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.CompanyServicesManager.Api.Contracts.Response;
     using Husa.Extensions.Common.Enums;
     using Husa.MediaService.Domain.Enums;
     using Husa.Quicklister.CTX.Api.Contracts.Response;
+    using Husa.Quicklister.CTX.Api.Contracts.Response.ListingRequest.LotRequest;
     using Husa.Quicklister.CTX.Api.Contracts.Response.ListingRequest.SaleRequest;
     using Husa.Quicklister.CTX.Api.Contracts.Response.SalePropertyDetail;
     using Husa.Quicklister.CTX.Domain.Enums;
@@ -13,9 +15,12 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Core.Models;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Core.Services.Common;
+    using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
+    using Husa.Uploader.Data.Entities.MarketRequests.LotRequest;
+    using Husa.Uploader.Data.Interfaces;
     using Microsoft.Extensions.Logging;
     using Moq;
     using OpenQA.Selenium;
@@ -27,6 +32,8 @@ namespace Husa.Uploader.Core.Tests
     {
         private readonly Mock<IUploaderClient> uploaderClient = new();
         private readonly Mock<ILogger<CtxUploadService>> logger = new();
+        private readonly Mock<IMediaRepository> mediaRepositoryMock = new();
+        private readonly Mock<IServiceSubscriptionClient> serviceSubscriptionClientMock = new();
         private readonly ApplicationServicesFixture fixture;
 
         public CtxUploadServiceTests(ApplicationServicesFixture fixture)
@@ -83,6 +90,47 @@ namespace Husa.Uploader.Core.Tests
             UploaderResponse expectedResponse = new UploaderResponse();
             expectedResponse.UploadResult = UploadResult.Success;
             var result = await sut.UpdateStatus(ctxListing);
+
+            // Assert
+            Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
+        }
+
+        [Theory]
+        [InlineData("CSLD")] // UpdateStatus_Sold
+        [InlineData("AUC")] // UpdateStatus_ActiveUnderContract
+        [InlineData("PND")] // UpdateStatus_Pending
+        [InlineData("WDN")] // UpdateStatus_Withdrawn
+        [InlineData("CS")] // UpdateStatus_Hold
+        public async Task UpdateLotStatus_Success(string status)
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var ctxLotListing = new CtxLotListingRequest(new LotListingRequestDetailResponse())
+            {
+                ListStatus = status,
+                Directions = "This is a test for the directions info field",
+                StreetNum = "10",
+                BackOnMarketDate = DateTime.Now,
+                OffMarketDate = DateTime.Now,
+                EstClosedDate = DateTime.Now,
+                AgentMarketUniqueId = "12234",
+                SecondAgentMarketUniqueId = "354752",
+                SoldPrice = 150000,
+                SoldTerms = "CASH",
+                WithdrawnDate = DateTime.Now,
+                WithdrawalReason = "this is a test",
+                IsWithdrawalListingAgreement = "1",
+            };
+            ctxLotListing.OffMarketDate = DateTime.Now;
+            var sut = this.GetSut();
+
+            // Act
+            var expectedResponse = new UploaderResponse
+            {
+                UploadResult = UploadResult.Success,
+            };
+            var result = await sut.UpdateLotStatus(ctxLotListing);
 
             // Assert
             Assert.Equal(expectedResponse.UploadResult, result.UploadResult);
@@ -270,20 +318,116 @@ namespace Husa.Uploader.Core.Tests
             var sut = this.GetSut();
 
             // Act
-            sut.FillListDate(ctxListing);
+            sut.FillListDate(ctxListing.ListStatus, ctxListing.IsNewListing);
 
             // Assert
             this.uploaderClient.Verify(x => x.WriteTextbox(By.Id("Input_129"), expectedDate.ToShortDateString(), false, false, false, false), Times.Once);
         }
 
         [Fact]
-        public async Task UpdateLotPrice_NotImplementedException_Fails()
+        public async Task EditLot_CallsLoginAndNavigateToQuickEdit()
         {
             // Arrange
-            var lotListingRequest = new Mock<LotListingRequest>();
+            var listing = CreateLotListingRequest(mlsNumber: "1231231");
+            var loginCalled = false;
 
-            // Act && Assert
-            await Assert.ThrowsAsync<NotImplementedException>(async () => await this.GetSut().UpdateLotPrice(lotListingRequest.Object));
+            var serviceMock = this.CreateCtxUploadServiceMock();
+
+            serviceMock.Setup(s => s.Login(listing.CompanyId)).ReturnsAsync(LoginResult.Logged)
+                .Callback(() => loginCalled = true);
+
+            // Act
+            await serviceMock.Object.EditLot(listing, CancellationToken.None, true);
+
+            // Assert
+            Assert.True(loginCalled);
+            this.VerifyNavigateToQuickEdit(listing.MLSNum);
+        }
+
+        [Fact]
+        public async Task UpdateLotPrice_CallsLoginAndNavigateToQuickEdit()
+        {
+            // Arrange
+            var serviceMock = this.CreateCtxUploadServiceMock();
+            var listing = CreateLotListingRequest(mlsNumber: "1234555");
+            var loginCalled = false;
+
+            serviceMock.Setup(s => s.Login(listing.CompanyId)).ReturnsAsync(LoginResult.Logged)
+                .Callback(() => loginCalled = true);
+
+            // Act
+            await serviceMock.Object.UpdateLotPrice(listing, CancellationToken.None, true);
+
+            // Assert
+            Assert.True(loginCalled);
+            this.VerifyNavigateToQuickEdit(listing.MLSNum);
+        }
+
+        [Fact]
+        public async Task UpdateLotImages_CallsLoginAndNavigateToQuickEdit()
+        {
+            // Arrange
+            var listing = CreateLotListingRequest(mlsNumber: "1234500");
+            var loginCalled = false;
+
+            var serviceMock = this.CreateCtxUploadServiceMock();
+
+            serviceMock.Setup(s => s.Login(listing.CompanyId)).ReturnsAsync(LoginResult.Logged)
+                .Callback(() => loginCalled = true);
+
+            this.ConfigureCtxUploaderServiceMockLoginSteps();
+
+            // Act
+            await serviceMock.Object.UpdateLotImages(listing, CancellationToken.None);
+
+            // Assert
+            Assert.True(loginCalled);
+            this.VerifyNavigateToQuickEdit(listing.MLSNum);
+        }
+
+        [Fact]
+        public async Task UpdateLotStatus_CallsLoginAndNavigateToQuickEdit()
+        {
+            // Arrange
+            var listing = CreateLotListingRequest(mlsNumber: "1234567");
+            var loginCalled = false;
+
+            var serviceMock = this.CreateCtxUploadServiceMock();
+
+            serviceMock.Setup(s => s.Login(listing.CompanyId)).ReturnsAsync(LoginResult.Logged)
+                .Callback(() => loginCalled = true);
+
+            this.ConfigureCtxUploaderServiceMockLoginSteps();
+
+            // Act
+            await serviceMock.Object.UpdateLotStatus(listing, CancellationToken.None, true);
+
+            // Assert
+            Assert.True(loginCalled);
+            this.VerifyNavigateToQuickEdit(listing.MLSNum);
+        }
+
+        [Fact]
+        public async Task UploadLot_CallsLoginAndNavigateToNewPropertyInput_IfNewListing()
+        {
+            // Arrange
+            var listing = CreateLotListingRequest(mlsNumber: null);
+            var loginCalled = false;
+
+            var serviceMock = this.CreateCtxUploadServiceMock();
+
+            serviceMock.Setup(s => s.Login(listing.CompanyId)).ReturnsAsync(LoginResult.Logged)
+                .Callback(() => loginCalled = true);
+
+            this.uploaderClient.Setup(c => c.NavigateToUrl(It.IsAny<string>())).Verifiable();
+
+            // Act
+            await serviceMock.Object.UploadLot(listing, CancellationToken.None, true);
+
+            // Assert
+            Assert.True(loginCalled);
+            this.uploaderClient.Verify(c => c.NavigateToUrl(It.Is<string>(url => url.Contains("Matrix/Input"))), Times.Once);
+            // For new listings, NavigateToNewPropertyInput is called, not NavigateToQuickEdit
         }
 
         protected override LotListingRequest GetLotListingRequest(bool isNewListing = true)
@@ -394,6 +538,62 @@ namespace Husa.Uploader.Core.Tests
             };
 
             return listingSale;
+        }
+
+        private static LotListingRequest CreateLotListingRequest(string mlsNumber = null)
+        {
+            return new TestLotListingRequest
+            {
+                LotListingRequestID = Guid.NewGuid(),
+                CompanyId = Guid.NewGuid(),
+                MLSNum = mlsNumber,
+            };
+        }
+
+        private Mock<CtxUploadService> CreateCtxUploadServiceMock() => new(
+                this.uploaderClient.Object,
+                this.fixture.ApplicationOptions,
+                this.mediaRepositoryMock.Object,
+                this.serviceSubscriptionClientMock.Object,
+                this.logger.Object)
+            { CallBase = true };
+
+        private void ConfigureCtxUploaderServiceMockLoginSteps()
+        {
+            this.uploaderClient.Setup(c => c.NavigateToUrl(It.IsAny<string>())).Verifiable();
+            this.uploaderClient.Setup(
+                c => c.WaitUntilElementIsDisplayed(It.IsAny<By>(), It.IsAny<CancellationToken>()))
+                .Verifiable();
+            this.uploaderClient.Setup(
+                c => c.WriteTextbox(
+                    It.IsAny<By>(),
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()))
+                .Verifiable();
+            this.uploaderClient.Setup(c => c.ClickOnElement(It.IsAny<By>())).Verifiable();
+        }
+
+        private void VerifyNavigateToQuickEdit(string mlsNumber)
+        {
+            this.uploaderClient.Verify(c => c.NavigateToUrl(It.Is<string>(url => url.Contains("Matrix/Input"))), Times.Once);
+            this.uploaderClient.Verify(
+                c => c.WriteTextbox(
+                    It.IsAny<By>(),
+                    It.Is<object>(x => x.ToString().Equals(mlsNumber)),
+                    It.IsAny<bool>()),
+                Times.Once);
+        }
+
+        // Helper class to allow instantiation of abstract LotListingRequest
+        private class TestLotListingRequest : LotListingRequest
+        {
+            public override MarketCode MarketCode => MarketCode.CTX;
+
+            public override LotListingRequest CreateFromApiResponse() => this;
+            public override LotListingRequest CreateFromApiResponseDetail() => this;
         }
     }
 }
