@@ -18,6 +18,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
+    using Husa.Uploader.Crosscutting.Regex;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.BulkUpload;
     using Husa.Uploader.Data.Entities.LotListing;
@@ -1556,11 +1557,16 @@ namespace Husa.Uploader.Core.Services
 
         private void UpdatePublicRemarksInRemarksTab(ResidentialListingRequest listing)
         {
-            var remarks = listing.GetPublicRemarks();
-            string baseRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
-            string additionalRemarks = listing.AgentPrivateRemarksAdditional ?? string.Empty;
-            var agentRemarks = $"{baseRemarks} {additionalRemarks}";
-            this.uploaderClient.WriteTextbox(By.Id("Input_135"), remarks, true); // Public Remarks
+            var publicRemarks = listing.GetPublicRemarks();
+            var agentRemarks = string.Join(". ", new List<string>()
+            {
+                listing.GetAgentRemarksMessage(),
+                listing.AgentPrivateRemarks,
+                listing.AgentPrivateRemarksAdditional,
+            }.Where(x => !string.IsNullOrEmpty(x)));
+            publicRemarks = RegexGenerator.InvalidInlineDots.Replace($"{publicRemarks}.", ".");
+            agentRemarks = RegexGenerator.InvalidInlineDots.Replace($"{agentRemarks}.", ".");
+            this.uploaderClient.WriteTextbox(By.Id("Input_135"), publicRemarks, true); // Public Remarks
             this.uploaderClient.WriteTextbox(By.Id("Input_137"), agentRemarks, true); // Agent Remarks
         }
 

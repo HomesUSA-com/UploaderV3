@@ -17,6 +17,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
+    using Husa.Uploader.Crosscutting.Regex;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.BulkUpload;
     using Husa.Uploader.Data.Entities.LotListing;
@@ -1602,9 +1603,13 @@ namespace Husa.Uploader.Core.Services
 
         private void UpdatePrivateRemarksInRemarksTab(DfwListingRequest listing)
         {
-            string baseRemarks = listing.GetAgentRemarksMessage(listing.YearBuiltDesc) ?? string.Empty;
-            string additionalRemarks = listing.AgentPrivateRemarksAdditional ?? string.Empty;
-            var agentRemarks = $"{baseRemarks}. {additionalRemarks}";
+            var agentRemarks = string.Join(". ", new List<string>()
+            {
+                listing.GetAgentRemarksMessage(listing.YearBuiltDesc),
+                listing.AgentPrivateRemarks,
+                listing.AgentPrivateRemarksAdditional,
+            }.Where(x => !string.IsNullOrEmpty(x)));
+            agentRemarks = RegexGenerator.InvalidInlineDots.Replace($"{agentRemarks}.", ".");
             this.uploaderClient.WriteTextbox(By.Id("Input_265"), string.Empty);
             this.uploaderClient.WriteTextbox(By.Id("Input_265"), agentRemarks);
         }
