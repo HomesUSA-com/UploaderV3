@@ -535,23 +535,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetSelect(By.Id("Input_310"), listing.HasBuyerAgent ? "Y" : "N"); // Did Selling Agent Represent Buyer
                 this.uploaderClient.SetSelect(By.Id("Input_525"), listing.SoldTerms); // Sold Terms
 
-                if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
-                {
-                    this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
-                    this.uploaderClient.ExecuteScript(" document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ");
-                }
-
-                if (!string.IsNullOrEmpty(listing.SellTeamID) && this.uploaderClient.IsElementPresent(By.Id("Input_614")))
-                {
-                    this.uploaderClient.WriteTextbox(By.Id("Input_614"), listing.SellTeamID); // Selling Team ID
-                    this.uploaderClient.ExecuteScript(" document.getElementById('Input_614_Refresh').value='1';RefreshToSamePage(); ");
-                }
-
-                if (!string.IsNullOrEmpty(listing.SellingAgent2ID))
-                {
-                    this.uploaderClient.WriteTextbox(By.Id("Input_344"), listing.SellingAgent2ID); // Co Selling Associate MLSID
-                    this.uploaderClient.ExecuteScript(" document.getElementById('Input_344_Refresh').value='1';RefreshToSamePage(); ");
-                }
+                this.FillAgentRemarkInformation(listing);
 
                 this.uploaderClient.ScrollDown();
                 if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
@@ -580,25 +564,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetSelect(By.Id("Input_310"), listing.HasBuyerAgent ? "Y" : "N"); // Did Selling Agent Represent Buyer
 
                 this.uploaderClient.ScrollDown();
-
-                if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
-                {
-                    this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
-                    this.uploaderClient.ExecuteScript(" document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ");
-                }
-
-                if (!string.IsNullOrEmpty(listing.SellTeamID))
-                {
-                    this.uploaderClient.WriteTextbox(By.Id("Input_614"), listing.SellTeamID); // Selling Team MLSID
-                    this.uploaderClient.ExecuteScript(" document.getElementById('Input_614_Refresh').value='1';RefreshToSamePage(); ");
-                }
-
-                this.uploaderClient.ScrollDown();
-                if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
-                {
-                    this.uploaderClient.SetSelect(By.Id("Input_528"), "0"); // Buyer Represented by NONMLS Licensed Agent
-                    this.uploaderClient.WriteTextbox(By.Id("Input_131"), listing.SellingAgentLicenseNum); // TREC License Number
-                }
+                this.FillAgentRemarkInformation(listing);
             }
 
             void HandleTerminatedStatus(CancellationToken cancellationToken)
@@ -634,7 +600,7 @@ namespace Husa.Uploader.Core.Services
 
                 if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
                 {
-                    this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Associate MLSID
+                    this.uploaderClient.WriteTextbox(By.Id("filter_Input_734"), listing.AgentMarketUniqueId); // Selling Agent MLSID
                 }
             }
 
@@ -661,8 +627,8 @@ namespace Husa.Uploader.Core.Services
 
                 if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
                 {
-                    this.uploaderClient.WriteTextbox(By.Id("Input_342"), listing.AgentMarketUniqueId); // Selling Agent MLSID
-                    this.uploaderClient.ExecuteScript(" document.getElementById('Input_342_Refresh').value='1';RefreshToSamePage(); ");
+                    this.uploaderClient.WriteTextbox(By.Id("filter_Input_734"), listing.AgentMarketUniqueId); // Selling Agent MLSID
+                    this.uploaderClient.ExecuteScript(" document.getElementById('Input_734_Refresh').value='1';RefreshToSamePage(); ");
                 }
 
                 this.uploaderClient.ScrollDown();
@@ -862,6 +828,28 @@ namespace Husa.Uploader.Core.Services
         public Task<UploaderResponse> TaxIdUpdate(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
+        }
+
+        private void FillAgentRemarkInformation(ResidentialListingRequest listing)
+        {
+            if (!string.IsNullOrEmpty(listing.AgentMarketUniqueId))
+            {
+                this.uploaderClient.WriteTextbox(By.Id("filter_Input_734"), listing.AgentMarketUniqueId); // Selling Agent MLSID
+                this.uploaderClient.ExecuteScript(" document.getElementById('Input_734_Refresh').value='1';RefreshToSamePage(); ");
+            }
+
+            if (!string.IsNullOrEmpty(listing.SellTeamID) && this.uploaderClient.IsElementPresent(By.Id("filter_Input_735")))
+            {
+                this.uploaderClient.WriteTextbox(By.Id("filter_Input_735"), listing.SellTeamID); // Selling Team ID
+                this.uploaderClient.ExecuteScript(" document.getElementById('Input_735_Refresh').value='1';RefreshToSamePage(); ");
+            }
+
+            this.uploaderClient.ScrollDown();
+            if (!string.IsNullOrEmpty(listing.SellingAgentLicenseNum) && listing.SellingAgentLicenseNum != "NONMLS")
+            {
+                this.uploaderClient.SetSelect(By.Id("Input_528"), "0"); // Buyer Represented by NONMLS Licensed Agent
+                this.uploaderClient.WriteTextbox(By.Id("Input_131"), listing.SellingAgentLicenseNum); // TREC License Number
+            }
         }
 
         private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
