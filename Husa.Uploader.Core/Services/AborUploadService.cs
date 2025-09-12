@@ -769,6 +769,9 @@ namespace Husa.Uploader.Core.Services
                     else
                     {
                         this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_actionsContainer"), TimeSpan.FromSeconds(5000));
+                        this.uploaderClient.ExecuteScript("$('#Input_actionsContainer > button:eq(0)').click()");
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_actionsContainer"), TimeSpan.FromSeconds(5000));
                     }
 
                     listing.Longitude = newLongitude;
@@ -1130,9 +1133,9 @@ namespace Husa.Uploader.Core.Services
         private void NavigateToEditResidentialForm(string mlsNumber, CancellationToken cancellationToken)
         {
             this.NavigateToQuickEdit(mlsNumber);
+            Thread.Sleep(5000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ListResultsView"), cancellationToken);
-            this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(0)').click()");
-            Thread.Sleep(2000);
+            this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button').click()");
         }
 
         private string GetInputPath(string fieldName, string inputType = "input")
@@ -1329,16 +1332,20 @@ namespace Husa.Uploader.Core.Services
             {
                 this.SetSelect("Input_179", "EA"); // List Agreement Type
                 this.SetSelect("Input_341", "LIMIT"); // Listing Service
-                if (listing.ListDate.HasValue)
+                if (this.uploaderClient.IsElementVisible(By.Id("Input_83")))
                 {
-                    this.WriteTextbox("Input_83", listing.ListDate.Value.AddYears(1).ToShortDateString()); // Expiration Date
-                }
-                else
-                {
-                    this.WriteTextbox("Input_83", DateTime.Now.AddYears(1).ToShortDateString()); // Expiration Date
+                    if (listing.ListDate.HasValue)
+                    {
+                        this.WriteTextbox("Input_83", listing.ListDate.Value.AddYears(1).ToShortDateString()); // Expiration Date
+                    }
+                    else
+                    {
+                        this.WriteTextbox("Input_83", DateTime.Now.AddYears(1).ToShortDateString()); // Expiration Date
+                    }
                 }
 
                 this.SetMultipleCheckboxById("Input_180", "STANDARD"); // Special Listing Conditions
+                Thread.Sleep(2000);
 
                 this.SetSelect("Input_181", "OT"); // List Agreement Document*/
                 this.WriteTextbox("Input_183", listing.StreetNum); // Street #
