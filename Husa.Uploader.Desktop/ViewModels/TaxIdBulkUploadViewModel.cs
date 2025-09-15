@@ -20,8 +20,9 @@ namespace Husa.Uploader.Desktop.ViewModels
 
         public static ObservableCollection<dynamic> Markets =>
         [
-            new { Value = MarketCode.Houston, Text = "Houston" },
+            new { Value = MarketCode.Austin, Text = "Austin" },
             new { Value = MarketCode.DFW, Text = "Dfw" },
+            new { Value = MarketCode.Houston, Text = "Houston" },
         ];
 
         public MarketCode? Market

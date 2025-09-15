@@ -218,6 +218,7 @@ namespace Husa.Uploader.Desktop.Configuration
             services.AddTransient<ITaxIdBulkUploadFactory, TaxIdBulkUploadFactory>();
             services.AddTransient<IDfwTaxIdBulkUploadService, DfwTaxIdBulkUploadService>();
             services.AddTransient<IHarTaxIdBulkUploadService, HarTaxIdBulkUploadService>();
+            services.AddTransient<IAborTaxIdBulkUploadService, AborTaxIdBulkUploadService>();
             services.AddTransient<AborShowingTimeUploadService>();
             services.AddTransient<AmarilloShowingTimeUploadService>();
             services.AddTransient<CtxShowingTimeUploadService>();

@@ -6,6 +6,7 @@ namespace Husa.Uploader.Data.Tests.Repositories
     using System.Threading;
     using System.Threading.Tasks;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Abor.Api.Client;
     using Husa.Quicklister.Dfw.Api.Client;
     using Husa.Quicklister.Har.Api.Client;
     using Husa.Uploader.Data.Repositories;
@@ -18,18 +19,21 @@ namespace Husa.Uploader.Data.Tests.Repositories
     {
         private readonly Mock<IQuicklisterDfwClient> quicklisterDfwClientMock;
         private readonly Mock<IQuicklisterHarClient> quicklisterHarClientMock;
+        private readonly Mock<IQuicklisterAborClient> quicklisterAborClientMock;
         private readonly Mock<ILogger<ListingRepository>> loggerMock;
 
         public ListingRepositoryTests()
         {
             this.quicklisterDfwClientMock = new Mock<IQuicklisterDfwClient>();
             this.quicklisterHarClientMock = new Mock<IQuicklisterHarClient>();
+            this.quicklisterAborClientMock = new Mock<IQuicklisterAborClient>();
             this.loggerMock = new Mock<ILogger<ListingRepository>>();
         }
 
         private ListingRepository Sut => new(
                 this.quicklisterDfwClientMock.Object,
                 this.quicklisterHarClientMock.Object,
+                this.quicklisterAborClientMock.Object,
                 this.loggerMock.Object);
 
         [Theory]
@@ -86,6 +90,7 @@ namespace Husa.Uploader.Data.Tests.Repositories
             var exception = Assert.Throws<ArgumentNullException>(() => new ListingRepository(
                 null,
                 null,
+                null,
                 this.loggerMock.Object));
 
             Assert.Equal("quicklisterDfwClient", exception.ParamName);
@@ -98,6 +103,7 @@ namespace Husa.Uploader.Data.Tests.Repositories
             var exception = Assert.Throws<ArgumentNullException>(() => new ListingRepository(
                 this.quicklisterDfwClientMock.Object,
                 this.quicklisterHarClientMock.Object,
+                this.quicklisterAborClientMock.Object,
                 null));
 
             Assert.Equal("logger", exception.ParamName);
@@ -117,6 +123,11 @@ namespace Husa.Uploader.Data.Tests.Repositories
                     .Setup(x => x.SaleListing.GetListingsWithInvalidTaxId(It.IsAny<CancellationToken>()))
                     .ReturnsAsync(mockListings);
                     break;
+                case MarketCode.Austin:
+                    this.quicklisterAborClientMock
+                    .Setup(x => x.SaleListing.GetListingsWithInvalidTaxId(It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(mockListings);
+                    break;
                 default:
                     break;
             }
@@ -131,6 +142,9 @@ namespace Husa.Uploader.Data.Tests.Repositories
                     break;
                 case MarketCode.Houston:
                     this.quicklisterHarClientMock.Verify(x => x.SaleListing.GetListingsWithInvalidTaxId(It.IsAny<CancellationToken>()), Times.Once);
+                    break;
+                case MarketCode.Austin:
+                    this.quicklisterAborClientMock.Verify(x => x.SaleListing.GetListingsWithInvalidTaxId(It.IsAny<CancellationToken>()), Times.Once);
                     break;
                 default:
                     break;

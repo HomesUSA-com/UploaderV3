@@ -55,6 +55,7 @@ namespace Husa.Uploader.Desktop.Factories
             {
                 MarketCode.DFW => this.serviceProvider.GetRequiredService<IDfwTaxIdBulkUploadService>(),
                 MarketCode.Houston => this.serviceProvider.GetRequiredService<IHarTaxIdBulkUploadService>(),
+                MarketCode.Austin => this.serviceProvider.GetRequiredService<IAborTaxIdBulkUploadService>(),
                 _ => throw new NotSupportedException($"The market {marketCode} is not supported"),
             };
 

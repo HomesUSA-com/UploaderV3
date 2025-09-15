@@ -4,6 +4,7 @@ namespace Husa.Uploader.Data.Repositories
     using System.Threading;
     using System.Threading.Tasks;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.Abor.Api.Client;
     using Husa.Quicklister.Dfw.Api.Client;
     using Husa.Quicklister.Har.Api.Client;
     using Husa.Uploader.Data.Entities.BulkUpload;
@@ -15,15 +16,18 @@ namespace Husa.Uploader.Data.Repositories
     {
         private readonly IQuicklisterDfwClient quicklisterDfwClient;
         private readonly IQuicklisterHarClient quicklisterHarClient;
+        private readonly IQuicklisterAborClient quicklisterAborClient;
         private readonly ILogger<ListingRepository> logger;
 
         public ListingRepository(
             IQuicklisterDfwClient quicklisterDfwClient,
             IQuicklisterHarClient quicklisterHarClient,
+            IQuicklisterAborClient quicklisterAborClient,
             ILogger<ListingRepository> logger)
         {
             this.quicklisterDfwClient = quicklisterDfwClient ?? throw new ArgumentNullException(nameof(quicklisterDfwClient));
             this.quicklisterHarClient = quicklisterHarClient ?? throw new ArgumentNullException(nameof(quicklisterHarClient));
+            this.quicklisterAborClient = quicklisterAborClient ?? throw new ArgumentNullException(nameof(quicklisterAborClient));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -34,6 +38,7 @@ namespace Husa.Uploader.Data.Repositories
             {
                 MarketCode.DFW => await this.quicklisterDfwClient.SaleListing.GetListingsWithInvalidTaxId(token),
                 MarketCode.Houston => await this.quicklisterHarClient.SaleListing.GetListingsWithInvalidTaxId(token),
+                MarketCode.Austin => await this.quicklisterAborClient.SaleListing.GetListingsWithInvalidTaxId(token),
                 _ => throw new NotSupportedException(),
             };
             return
