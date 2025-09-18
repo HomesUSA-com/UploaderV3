@@ -194,7 +194,11 @@ namespace Husa.Uploader.Core.Services
                     else
                     {
                         this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_actionsContainer"), TimeSpan.FromSeconds(5000));
+                        this.uploaderClient.ExecuteScript("$('#Input_actionsContainer > button:eq(0)').click()");
                     }
+
+                    Thread.Sleep(5000);
 
                     listing.Longitude = newLongitude;
                     listing.Latitude = newLatitude;
@@ -672,13 +676,13 @@ namespace Husa.Uploader.Core.Services
                 this.NavigateToQuickEdit(listing.MLSNum);
 
                 Thread.Sleep(2000);
-                this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td').find('button').click()");
+                this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(1)').click()");
                 Thread.Sleep(5000);
 
                 // Enter OpenHouse
                 string buttonText = "Open Houses Input Form";
                 this.uploaderClient.ExecuteScript($"$('button[data-mtx-track-prop-item=\"{buttonText}\"]').click()");
-                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
+                this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
 
                 this.CleanOpenHouse();
 
@@ -769,9 +773,6 @@ namespace Husa.Uploader.Core.Services
                     else
                     {
                         this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_actionsContainer"), TimeSpan.FromSeconds(5000));
-                        this.uploaderClient.ExecuteScript("$('#Input_actionsContainer > button:eq(0)').click()");
-                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_actionsContainer"), TimeSpan.FromSeconds(5000));
                     }
 
                     listing.Longitude = newLongitude;
@@ -1114,7 +1115,7 @@ namespace Husa.Uploader.Core.Services
         private void NavigateToQuickEdit(string mlsNumber)
         {
             this.uploaderClient.NavigateToUrl("https://matrix.abor.com/Matrix/AddEdit");
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_FilterSearch"));
 
             char[] mlsCharacters = mlsNumber.ToArray();
@@ -1125,17 +1126,18 @@ namespace Husa.Uploader.Core.Services
             }
 
             this.uploaderClient.FindElementById("Input_FilterSearch").SendKeys(Keys.Tab);
-            Thread.Sleep(2000);
+            Thread.Sleep(5000);
 
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ListResultsView"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("wrapperTable"));
         }
 
         private void NavigateToEditResidentialForm(string mlsNumber, CancellationToken cancellationToken)
         {
             this.NavigateToQuickEdit(mlsNumber);
-            Thread.Sleep(5000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ListResultsView"), cancellationToken);
-            this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button').click()");
+            Thread.Sleep(2000);
+            this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td').find('button').click()");
+            Thread.Sleep(5000);
         }
 
         private string GetInputPath(string fieldName, string inputType = "input")
@@ -1153,19 +1155,22 @@ namespace Husa.Uploader.Core.Services
 
         private void SetSelect(string inputId, string value)
         {
-            inputId = $"filter_{inputId}";
-            string inputXPath = this.GetInputPath(inputId);
-            var filterInputElement = this.uploaderClient.FindElement(By.XPath(inputXPath), shouldWait: true);
-
             try
             {
-                if (filterInputElement == null)
+                inputId = $"filter_{inputId}";
+                string inputXPath = this.GetInputPath(inputId);
+                var filterInputElement = this.uploaderClient.FindElement(By.XPath(inputXPath), shouldWait: true);
+
+                if (filterInputElement == null || string.IsNullOrEmpty(value))
                 {
                     return;
                 }
 
+                var filterInputElementId = filterInputElement.GetAttribute("id");
+                this.uploaderClient.ExecuteScript($"$('#{filterInputElementId}').focus()");
+
                 filterInputElement.Click();
-                Thread.Sleep(400);
+                Thread.Sleep(2000);
 
                 string actualFilterId = filterInputElement.GetAttribute("id");
                 string baseId = actualFilterId.Replace("filter_", string.Empty);
@@ -1178,11 +1183,13 @@ namespace Husa.Uploader.Core.Services
                 }
 
                 this.uploaderClient.ExecuteScript("arguments[0].scrollIntoView(true);", args: optionElement);
-                Thread.Sleep(200);
+                Thread.Sleep(1000);
 
                 optionElement.Click();
 
-                this.uploaderClient.ScrollDown(250);
+                Thread.Sleep(1000);
+
+                this.uploaderClient.FindElementById(actualFilterId).SendKeys(Keys.Tab);
             }
             catch (Exception ex) when (ex is NoSuchElementException || ex is UnexpectedTagNameException)
             {
@@ -1257,16 +1264,15 @@ namespace Husa.Uploader.Core.Services
                             }
                         }
                     }
-                    catch (Exception ex) when (ex is NoSuchElementException || ex is UnexpectedTagNameException)
+                    catch (Exception ex)
                     {
-                        this.uploaderClient.ExecuteScript("document.activeElement.blur();", false);
-                        this.uploaderClient.ExecuteScript("document.body.click();", false);
+                        this.logger.LogError("{ex}", ex.Message);
                     }
                 }
             }
 
-            this.uploaderClient.ExecuteScript("document.activeElement.blur();");
-            this.uploaderClient.ScrollDown(250);
+            this.uploaderClient.ExecuteScript("document.activeElement.blur();", false);
+            this.uploaderClient.ExecuteScript("document.body.click();", false);
         }
 
         private void WriteTextbox(string inputName, string value, string inputType = "input")
@@ -1281,15 +1287,12 @@ namespace Husa.Uploader.Core.Services
                 }
 
                 this.uploaderClient.ExecuteScript("arguments[0].value = '';", false, inputElement);
-                this.uploaderClient.ExecuteScript("arguments[0].value = arguments[1];", false, inputElement, value);
+                this.uploaderClient.ExecuteScript("arguments[0].value = arguments[1];", false, inputElement, value ?? string.Empty);
 
                 this.uploaderClient.ExecuteScript("arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", false, inputElement);
                 this.uploaderClient.ExecuteScript("arguments[0].dispatchEvent(new Event('change', { bubbles: true }));", false, inputElement);
                 this.uploaderClient.ExecuteScript("arguments[0].dispatchEvent(new Event('blur', { bubbles: true }));", false, inputElement);
                 this.uploaderClient.ExecuteScript("arguments[0].dispatchEvent(new Event('keyup', { bubbles: true }));", false, inputElement);
-
-                this.uploaderClient.ExecuteScript("document.activeElement.blur();", false);
-                this.uploaderClient.ExecuteScript("document.body.click();", false);
             }
             catch (NoSuchElementException ex)
             {
@@ -1299,6 +1302,9 @@ namespace Husa.Uploader.Core.Services
             {
                 this.logger.LogError("Error to write in {inputName}: {ex}", inputName, ex.Message);
             }
+
+            this.uploaderClient.ExecuteScript("document.activeElement.blur();", false);
+            this.uploaderClient.ExecuteScript("document.body.click();", false);
         }
 
         private void SelectToggleButton(string inputId, bool shouldSelect)
@@ -1332,20 +1338,10 @@ namespace Husa.Uploader.Core.Services
             {
                 this.SetSelect("Input_179", "EA"); // List Agreement Type
                 this.SetSelect("Input_341", "LIMIT"); // Listing Service
-                if (this.uploaderClient.IsElementVisible(By.Id("Input_83")))
-                {
-                    if (listing.ListDate.HasValue)
-                    {
-                        this.WriteTextbox("Input_83", listing.ListDate.Value.AddYears(1).ToShortDateString()); // Expiration Date
-                    }
-                    else
-                    {
-                        this.WriteTextbox("Input_83", DateTime.Now.AddYears(1).ToShortDateString()); // Expiration Date
-                    }
-                }
+                var expirationDate = listing.ListDate.HasValue ? listing.ListDate.Value.AddYears(1) : DateTime.Now.AddYears(1);
+                this.SetExpirationDate(expirationDate); // Expiration Date
 
                 this.SetMultipleCheckboxById("Input_180", "STANDARD"); // Special Listing Conditions
-                Thread.Sleep(2000);
 
                 this.SetSelect("Input_181", "OT"); // List Agreement Document*/
                 this.WriteTextbox("Input_183", listing.StreetNum); // Street #
@@ -1495,56 +1491,32 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(1000);
 
             int indexInput = 0;
-            int nRoomsToDelete = 0;
             int nRoomsUploaded = 0;
 
             if (!listing.IsNewListing)
             {
                 var deleteButtons = this.uploaderClient.FindElements(By.XPath("//button[contains(@onclick, 'mtrxSubForm.DeleteRow') and contains(@onclick, 'Input_761')]"));
 
-                nRoomsToDelete = deleteButtons.Count - 1;
-
-                for (int i = 0; i < nRoomsToDelete; i++)
-                {
-                    deleteButtons[i].Click();
-                    indexInput++;
-                }
-
-                indexInput = Math.Max(0, nRoomsToDelete - 1);
+                nRoomsUploaded = deleteButtons.Count - 1;
 
                 Thread.Sleep(500);
-
-                this.uploaderClient.ClickOnElement(By.XPath("//button[starts-with(@id, 'addBlankRow_Input_761')]"));
-                this.uploaderClient.ExecuteScript("document.activeElement.blur();");
             }
 
             foreach (var room in listing.Rooms)
             {
                 this.SetSelect($"_Input_761___REPEAT{indexInput}_345", room.RoomType);
-                this.uploaderClient.ResetImplicitWait();
+                Thread.Sleep(500);
                 this.SetSelect($"_Input_761___REPEAT{indexInput}_346", room.Level);
+                Thread.Sleep(500);
                 this.SetMultipleCheckboxById($"_Input_761___REPEAT{indexInput}_347", room.Features);
+                Thread.Sleep(500);
                 this.WriteTextbox($"_Input_761___REPEAT{indexInput}_648", room.Description, inputType: "textarea");
-                nRoomsUploaded++;
-                if (nRoomsUploaded < listing.Rooms.Count)
+                Thread.Sleep(500);
+                indexInput++;
+                if (indexInput >= nRoomsUploaded)
                 {
                     this.uploaderClient.ClickOnElement(By.XPath("//button[starts-with(@id, 'addBlankRow_Input_761')]"));
                     this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(400));
-                }
-
-                if (indexInput > 0 && nRoomsToDelete > 0)
-                {
-                    indexInput--;
-                }
-                else
-                {
-                    if (nRoomsToDelete > 0)
-                    {
-                        indexInput = nRoomsToDelete;
-                        nRoomsToDelete = 0;
-                    }
-
-                    indexInput++;
                 }
             }
         }
@@ -1737,118 +1709,123 @@ namespace Husa.Uploader.Core.Services
 
         private void CleanOpenHouse(CancellationToken cancellationToken = default)
         {
-            // Cleaning OH data
-            try
+            var elems = this.uploaderClient.FindElements(By.CssSelector("table[id^=_Input_168__del_REPEAT] a"))?.Count(c => c.Displayed);
+            if (elems == null || elems == 0)
             {
-                this.uploaderClient.ExecuteScript("$('button[class=\"btn btn-danger\"]').each(function() { $(this).click(); });");
-                Thread.Sleep(2000);
-            }
-            catch (Exception ex)
-            {
-                // Optional: Handle exceptions or log an error message
-                Console.WriteLine($"Error clicking button: {ex.Message}");
+                return;
             }
 
-            this.uploaderClient.ScrollDown(0);
-            this.uploaderClient.ClickOnElementById("InputForm_btnSubmit");
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("InputCompleted_divInputCompleted"), cancellationToken);
+            this.uploaderClient.ScrollDown(3000);
+            while (elems > 1)
+            {
+                this.uploaderClient.ScrollDown();
+                var elementId = $"_Input_168__del_REPEAT{elems - 1}_";
+                this.uploaderClient.ClickOnElementById(elementId);
+                elems--;
+                Thread.Sleep(300);
+            }
+
+            this.uploaderClient.ScrollDown(5000);
             Thread.Sleep(2000);
-            this.uploaderClient.ExecuteScript("$('button[data-bs-original-title=\"Continue Editing\"]').click();");
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSubmit"), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.Id("m_lbSubmit"));
+            Thread.Sleep(2000);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lblInputCompletedMessage"), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.Id("m_lbContinueEdit"));
             Thread.Sleep(2000);
         }
 
         private void AddOpenHouses(ResidentialListingRequest listing)
         {
-            Thread.Sleep(2000);
-
             string inputXPath = "//div[substring(@id, string-length(@id) - string-length('_accordion') + 1) = '_accordion']";
             var filterInputElement = this.uploaderClient.FindElement(By.XPath(inputXPath), shouldWait: true);
-            if (filterInputElement != null)
+            if (filterInputElement == null)
             {
-                var fullyqualifiedNameField = filterInputElement.GetAttribute("id")?.Replace("_accordion", string.Empty);
-                var index = 0;
-                Thread.Sleep(1000);
-                var sortedOpenHouses = listing.OpenHouse.OrderBy(openHouse => openHouse.Date).ToList();
-                var type = "PUBLIC";
+                return;
+            }
 
-                foreach (var openHouse in sortedOpenHouses)
+            var fullyqualifiedNameField = filterInputElement.GetAttribute("id")?.Replace("_accordion", string.Empty);
+            var index = 0;
+            Thread.Sleep(1000);
+            var sortedOpenHouses = listing.OpenHouse.OrderBy(openHouse => openHouse.Date).ToList();
+            var type = "PUBLIC";
+            foreach (var openHouse in sortedOpenHouses)
+            {
+                if (index != 0)
                 {
-                    if (index != 0)
-                    {
-                        this.uploaderClient.ExecuteScript(script: "jQuery('.mtrx-toc-content').animate({ scrollTop: 9999 }, 'slow');");
-                        this.uploaderClient.ClickOnElementById(elementId: $"addBlankRow_{fullyqualifiedNameField}");
-                        Thread.Sleep(1000);
-                    }
-
-                    // Active Status
-                    this.SetSelect($"_{fullyqualifiedNameField}__REPEAT{index}_165", value: "ACT");
-
-                    // Open House Type
-                    this.SetSelect($"_{fullyqualifiedNameField}__REPEAT{index}_161", value: type);
-
-                    // Refreshments
-                    this.SetMultipleCheckboxById($"_{fullyqualifiedNameField}__REPEAT{index}_652", openHouse.Refreshments);
-
-                    // Date
-                    this.uploaderClient.WriteTextbox(By.Name($"_{fullyqualifiedNameField}__REPEAT{index}_162"), openHouse.Date);
-                    this.uploaderClient.ExecuteScript(script: $"jQuery('input[id^=_{fullyqualifiedNameField}__REPEAT{index}_162]').parent().parent().find('button').click()");
-                    Thread.Sleep(5000);
-                    this.uploaderClient.ExecuteScript(script: $"jQuery('#btnApplyDate')[0].click()");
-                    Thread.Sleep(2000);
-
-                    // From Time
-                    string fromTimeId = this.uploaderClient.ExecuteScript(script: $"return jQuery('input[id^=timeBox__{fullyqualifiedNameField}__REPEAT{index}_163]').attr('id');").ToString();
-
-                    ////1. click in the time picker FROM field
-                    this.uploaderClient.ExecuteScript(script: $"jQuery('#{fromTimeId}').first().click();");
-                    this.uploaderClient.ExecuteScript(script: $"document.getElementById('{fromTimeId}').scrollIntoView();");
-                    var fromTimeMeridiem = openHouse.StartTime.Hours >= 12 ? "PM" : "AM";
-
-                    // 1. Hour
-                    string hoursFromScript = $"jQuery('#{fromTimeId}').parent().parent().find('select:eq(0)')";
-                    this.uploaderClient.ExecuteScript(script: $"{hoursFromScript}.first().click()");
-                    string hoursFromValue = DateTime.Today.Add(openHouse.StartTime).ToString("hh");
-                    this.uploaderClient.ExecuteScript(script: $"{hoursFromScript}.val('{hoursFromValue}')");
-
-                    // 2. Minutes
-                    string minutesFromScript = $"jQuery('#{fromTimeId}').parent().parent().find('select:eq(1)')";
-                    this.uploaderClient.ExecuteScript(script: $"{minutesFromScript}.first().click()");
-                    string minutesFromValue = openHouse.StartTime.ToString("mm", CultureInfo.InvariantCulture);
-                    this.uploaderClient.ExecuteScript(script: $"{minutesFromScript}.val('{minutesFromValue}')");
-
-                    // 3. AM / PM
-                    string meridiemFromfieldId = this.uploaderClient.ExecuteScript($"return jQuery('#{fromTimeId}').parent().parent().find('select:eq(2)').attr('id');").ToString();
-                    this.uploaderClient.SetSelect(By.Id(meridiemFromfieldId), fromTimeMeridiem);
-
-                    // To Time
-                    string toTimeId = this.uploaderClient.ExecuteScript(script: $"return jQuery('input[id^=timeBox__{fullyqualifiedNameField}__REPEAT{index}_164]').attr('id');").ToString();
-
-                    ////2. click in the time picker TO field
-                    this.uploaderClient.ExecuteScript(script: $"jQuery('#{toTimeId}').first().click();");
-                    this.uploaderClient.ExecuteScript(script: $"document.getElementById('{toTimeId}').scrollIntoView();");
-                    var toTimeMeridiem = openHouse.EndTime.Hours >= 12 ? "PM" : "AM";
-
-                    // 1. Hour
-                    string hoursToScript = $"jQuery('#{toTimeId}').parent().parent().find('select:eq(0)')";
-                    this.uploaderClient.ExecuteScript(script: $"{hoursToScript}.first().click()");
-                    string hoursToValue = DateTime.Today.Add(openHouse.EndTime).ToString("hh");
-                    this.uploaderClient.ExecuteScript(script: $"{hoursToScript}.val('{hoursToValue}')");
-
-                    // 2. Minutes
-                    string minutesToScript = $"jQuery('#{toTimeId}').parent().parent().find('select:eq(1)')";
-                    this.uploaderClient.ExecuteScript(script: $"{minutesToScript}.first().click()");
-                    string minutesToValue = openHouse.EndTime.ToString("mm", CultureInfo.InvariantCulture);
-                    this.uploaderClient.ExecuteScript(script: $"{minutesToScript}.val('{minutesToValue}')");
-
-                    // 3. AM / PM
-                    string meridiemTofieldId = this.uploaderClient.ExecuteScript($"return jQuery('#{toTimeId}').parent().parent().find('select:eq(2)').attr('id');").ToString();
-                    this.uploaderClient.SetSelect(By.Id(meridiemTofieldId), toTimeMeridiem);
-
-                    // Comments
-                    this.WriteTextbox($"_{fullyqualifiedNameField}__REPEAT{index}_167", openHouse.Comments);
-
-                    index++;
+                    this.uploaderClient.ExecuteScript(script: "jQuery('.mtrx-toc-content').animate({ scrollTop: 9999 }, 'slow');");
+                    this.uploaderClient.ClickOnElementById(elementId: $"addBlankRow_{fullyqualifiedNameField}");
+                    Thread.Sleep(1000);
                 }
+
+                // Active Status
+                this.SetSelect($"_{fullyqualifiedNameField}__REPEAT{index}_165", value: "ACT");
+
+                // Open House Type
+                this.SetSelect($"_{fullyqualifiedNameField}__REPEAT{index}_161", value: type);
+
+                // Refreshments
+                this.SetMultipleCheckboxById($"_{fullyqualifiedNameField}__REPEAT{index}_652", openHouse.Refreshments);
+
+                // Date
+                this.uploaderClient.WriteTextbox(By.Name($"_{fullyqualifiedNameField}__REPEAT{index}_162"), openHouse.Date);
+                this.uploaderClient.ExecuteScript(script: $"jQuery('input[id^=_{fullyqualifiedNameField}__REPEAT{index}_162]').parent().parent().find('button').click()");
+                Thread.Sleep(5000);
+                this.uploaderClient.ExecuteScript(script: $"jQuery('#btnApplyDate')[0].click()");
+                Thread.Sleep(2000);
+
+                // From Time
+                string fromTimeId = this.uploaderClient.ExecuteScript(script: $"return jQuery('input[id^=timeBox__{fullyqualifiedNameField}__REPEAT{index}_163]').attr('id');").ToString();
+
+                ////1. click in the time picker FROM field
+                this.uploaderClient.ExecuteScript(script: $"jQuery('#{fromTimeId}').first().click();");
+                this.uploaderClient.ExecuteScript(script: $"document.getElementById('{fromTimeId}').scrollIntoView();");
+                var fromTimeMeridiem = openHouse.StartTime.Hours >= 12 ? "PM" : "AM";
+
+                // 1. Hour
+                string hoursFromScript = $"jQuery('#{fromTimeId}').parent().parent().find('select:eq(0)')";
+                this.uploaderClient.ExecuteScript(script: $"{hoursFromScript}.first().click()");
+                string hoursFromValue = DateTime.Today.Add(openHouse.StartTime).ToString("hh");
+                this.uploaderClient.ExecuteScript(script: $"{hoursFromScript}.val('{hoursFromValue}')");
+
+                // 2. Minutes
+                string minutesFromScript = $"jQuery('#{fromTimeId}').parent().parent().find('select:eq(1)')";
+                this.uploaderClient.ExecuteScript(script: $"{minutesFromScript}.first().click()");
+                string minutesFromValue = openHouse.StartTime.ToString("mm", CultureInfo.InvariantCulture);
+                this.uploaderClient.ExecuteScript(script: $"{minutesFromScript}.val('{minutesFromValue}')");
+
+                // 3. AM / PM
+                string meridiemFromfieldId = this.uploaderClient.ExecuteScript($"return jQuery('#{fromTimeId}').parent().parent().find('select:eq(2)').attr('id');").ToString();
+                this.uploaderClient.SetSelect(By.Id(meridiemFromfieldId), fromTimeMeridiem);
+
+                // To Time
+                string toTimeId = this.uploaderClient.ExecuteScript(script: $"return jQuery('input[id^=timeBox__{fullyqualifiedNameField}__REPEAT{index}_164]').attr('id');").ToString();
+
+                ////2. click in the time picker TO field
+                this.uploaderClient.ExecuteScript(script: $"jQuery('#{toTimeId}').first().click();");
+                this.uploaderClient.ExecuteScript(script: $"document.getElementById('{toTimeId}').scrollIntoView();");
+                var toTimeMeridiem = openHouse.EndTime.Hours >= 12 ? "PM" : "AM";
+
+                // 1. Hour
+                string hoursToScript = $"jQuery('#{toTimeId}').parent().parent().find('select:eq(0)')";
+                this.uploaderClient.ExecuteScript(script: $"{hoursToScript}.first().click()");
+                string hoursToValue = DateTime.Today.Add(openHouse.EndTime).ToString("hh");
+                this.uploaderClient.ExecuteScript(script: $"{hoursToScript}.val('{hoursToValue}')");
+
+                // 2. Minutes
+                string minutesToScript = $"jQuery('#{toTimeId}').parent().parent().find('select:eq(1)')";
+                this.uploaderClient.ExecuteScript(script: $"{minutesToScript}.first().click()");
+                string minutesToValue = openHouse.EndTime.ToString("mm", CultureInfo.InvariantCulture);
+                this.uploaderClient.ExecuteScript(script: $"{minutesToScript}.val('{minutesToValue}')");
+
+                // 3. AM / PM
+                string meridiemTofieldId = this.uploaderClient.ExecuteScript($"return jQuery('#{toTimeId}').parent().parent().find('select:eq(2)').attr('id');").ToString();
+                this.uploaderClient.SetSelect(By.Id(meridiemTofieldId), toTimeMeridiem);
+
+                // Comments
+                this.WriteTextbox($"_{fullyqualifiedNameField}__REPEAT{index}_167", openHouse.Comments);
+
+                index++;
             }
         }
 
@@ -1888,14 +1865,8 @@ namespace Husa.Uploader.Core.Services
             this.SetSelect("Input_179", "EA"); // List Agreement Type
             this.SetSelect("Input_341", "LIMIT"); // Listing Service
             this.uploaderClient.WriteTextbox(By.Name("Input_77"), listing.ListPrice); // List Price
-            if (listing.ListDate.HasValue)
-            {
-                this.WriteTextbox("Input_83", listing.ListDate.Value.AddYears(1).ToShortDateString()); // Expiration Date
-            }
-            else
-            {
-                this.WriteTextbox("Input_83", DateTime.Now.AddYears(1).ToShortDateString()); // Expiration Date
-            }
+            var expirationDate = listing.ListDate.HasValue ? listing.ListDate.Value.AddYears(1) : DateTime.Now.AddYears(1);
+            this.SetExpirationDate(expirationDate); // Expiration Date
 
             this.SetMultipleCheckboxById("Input_180", "STANDARD"); // Special Listing Conditions
             this.SetSelect("Input_181", "A"); // List Agreement Document*/
@@ -2157,6 +2128,15 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ScrollDown(200);
                 Thread.Sleep(400);
             }
+        }
+
+        private void SetExpirationDate(DateTime expirationDate)
+        {
+            this.uploaderClient.WriteTextbox(By.Name("Input_83"), expirationDate.ToShortDateString()); // Expiration Date
+            this.uploaderClient.ExecuteScript($"jQuery('input[name^=Input_83]').parent().parent().find('button').click()");
+            Thread.Sleep(5000);
+            this.uploaderClient.ExecuteScript($"jQuery('#btnApplyDate')[0].click()");
+            Thread.Sleep(2000);
         }
     }
 }
