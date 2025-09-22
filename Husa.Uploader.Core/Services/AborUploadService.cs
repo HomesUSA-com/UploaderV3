@@ -453,9 +453,9 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ListResultsView"), TimeSpan.FromSeconds(5000));
-                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(0)').click()");
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_actionsContainer"), TimeSpan.FromSeconds(5000));
-                    this.uploaderClient.ExecuteScript("$('#Input_actionsContainer > button:eq(1)').click()");
+                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
+                    Thread.Sleep(5000);
 
                     // Listing Information
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_77"));
@@ -507,7 +507,8 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ListResultsView"), TimeSpan.FromSeconds(5000));
-                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(0)').click()");
+                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
                     Thread.Sleep(2000);
                     string buttonText = GetButtonTextForStatus(listing.ListStatus);
                     this.uploaderClient.ExecuteScript($"$('button[data-mtx-track-prop-item=\"{buttonText}\"]').click()");
@@ -676,7 +677,8 @@ namespace Husa.Uploader.Core.Services
                 this.NavigateToQuickEdit(listing.MLSNum);
 
                 Thread.Sleep(2000);
-                this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(1)').click()");
+                this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
+                this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
                 Thread.Sleep(5000);
 
                 // Enter OpenHouse
@@ -833,7 +835,8 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     Thread.Sleep(2000);
-                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(1)').click()");
+                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
                     Thread.Sleep(2000);
                     string buttonText = GetButtonTextForStatus(listing.ListStatus);
                     this.uploaderClient.ExecuteScript($"$('button[data-mtx-track-prop-item=\"{buttonText}\"]').click()");
@@ -986,7 +989,8 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     Thread.Sleep(2000);
-                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(1)').click()");
+                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
                     Thread.Sleep(2000);
                     this.uploaderClient.ExecuteScript("$('#accordionActionMenu > button:eq(1)').click()");
 

@@ -86,32 +86,14 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
 
             var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
-
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//div[@class='v-btn__content' and text()=' Log In ']"), TimeSpan.FromSeconds(5000));
-
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//div[@class='v-btn__content' and text()=' Log In ']"));
             this.uploaderClient.WriteTextbox(By.Name("member_login_id"), credentials[LoginCredentials.Username]);
             this.uploaderClient.WriteTextbox(By.XPath("//input[@type='password' and @aria-label='Password']"), credentials[LoginCredentials.Password]);
             Thread.Sleep(2000);
             this.uploaderClient.FindElement(By.XPath("//div[@class='v-btn__content' and text()=' Log In ']")).Click();
 
             this.uploaderClient.ExecuteScript("let head = document.getElementsByTagName(\"head\")[0];let script = document.createElement(\"script\");script.setAttribute(\"src\", \"https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js\");document.body.appendChild(script);");
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//a[contains(@class, 'resource-card') and contains(@title, 'connectMLS')]"), TimeSpan.FromSeconds(5000));
-
-            switch (company.Name)
-            {
-                case "Highland Homes":
-                    this.uploaderClient.ExecuteScript("jQuery('div[role=listitem] .primary--text:eq(1)')[0].click()");
-                    break;
-                case "HistoryMaker Homes":
-                    this.uploaderClient.ExecuteScript("jQuery('div[role=listitem] .primary--text:eq(2)')[0].click()");
-                    break;
-                default:
-                    this.uploaderClient.ExecuteScript("jQuery('div[role=listitem] .primary--text:eq(3)')[0].click()");
-                    break;
-            }
-
-            this.uploaderClient.FindElement(By.XPath("//a[contains(@class, 'resource-card') and contains(@title, 'connectMLS')]")).Click();
-            this.uploaderClient.SwitchToLast();
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//a[contains(@class, 'resource-card') and contains(@title, 'connectMLS')]"));
 
             return LoginResult.Logged;
         }
@@ -756,44 +738,49 @@ namespace Husa.Uploader.Core.Services
         {
             const string tabName = "General";
             this.uploaderClient.ScrollDown(500);
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("listTxnsLink"), TimeSpan.FromSeconds(5000));
             this.uploaderClient.FindElement(By.Id("listTxnsLink")).Click();
             this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("mylistcontainer"));
 
             this.uploaderClient.ExecuteScript("jQuery('.select-list-styled:eq(1) > select').attr('id','selectlist');");
             this.uploaderClient.SetSelect(By.Id("selectlist"), "ALL", "Filters", tabName);
-            Thread.Sleep(2000);
+            Thread.Sleep(5000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("mylistings"));
 
             var mlsFound = false;
-            while (!mlsFound)
+            var breakProcess = false;
+            while (!mlsFound && !breakProcess)
             {
                 try
                 {
-                    var result = this.uploaderClient.ExecuteScript("return jQuery('.dctable-cell > a:contains(\"" + mlsnum + "\")').length;").ToString();
+                    var result = this.uploaderClient.ExecuteScript($"return jQuery('.dctable-cell > a:contains(\"{mlsnum}\")').length;").ToString();
                     if (result != "0")
                     {
+                        mlsFound = true;
+                        this.logger.LogInformation("Found listing with MlsId: {MlsId} in market", mlsnum);
                         break;
                     }
 
-                    var nextButtonVisible = this.uploaderClient.ExecuteScript("return jQuery('.main-content > .mylistcontainer > .affix-top > ul.pagination > li').length;").ToString();
-                    if (!string.IsNullOrEmpty(nextButtonVisible) && nextButtonVisible != "0")
+                    breakProcess = this.BreakProcess();
+                    if (!breakProcess)
                     {
+                        var nextButtonVisible = this.uploaderClient.ExecuteScript("return jQuery('.main-content > .mylistcontainer > .affix-top > ul.pagination > li').length;").ToString();
                         int nextButtonIndex = (int.Parse(nextButtonVisible) > 0) ? (int.Parse(nextButtonVisible) - 2) : 0;
-                        string nextButtonDisabled = this.uploaderClient.ExecuteScript("return jQuery('ul.pagination > li:eq(" + nextButtonIndex + ")').is(':disabled');").ToString();
-                        if (!bool.Parse(nextButtonDisabled))
-                        {
-                            this.uploaderClient.ExecuteScript("return jQuery('ul.pagination > li:eq(" + nextButtonIndex + ") > a').click();", isScriptOptional: true);
-                        }
+                        this.uploaderClient.ExecuteScript("return jQuery('ul.pagination > li:eq(" + nextButtonIndex + ") > a').click();", isScriptOptional: true);
                     }
 
                     Thread.Sleep(3000);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    break;
+                    this.logger.LogError("An error has occurred when searching for listing with MlsId: {MlsId} on market: {Ex}", mlsnum, ex);
                 }
             }
+        }
+
+        private bool BreakProcess()
+        {
+            string nextButtonDisabled = this.uploaderClient.ExecuteScript($"return jQuery(\"a:contains('Last'):first\").parent('li.disabled').length;").ToString();
+            return nextButtonDisabled == "1";
         }
 
         private void FillGeneralCompletionDateInformation(DateTime? listingBuildCompletionDate)
