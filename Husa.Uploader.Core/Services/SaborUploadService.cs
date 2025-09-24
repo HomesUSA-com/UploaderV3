@@ -93,8 +93,23 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.FindElement(By.XPath("//div[@class='v-btn__content' and text()=' Log In ']")).Click();
 
             this.uploaderClient.ExecuteScript("let head = document.getElementsByTagName(\"head\")[0];let script = document.createElement(\"script\");script.setAttribute(\"src\", \"https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js\");document.body.appendChild(script);");
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//a[contains(@class, 'resource-card') and contains(@title, 'connectMLS')]"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//a[contains(@class, 'resource-card') and contains(@title, 'connectMLS')]"), TimeSpan.FromSeconds(5000));
 
+            switch (company.Name)
+            {
+                case "Highland Homes":
+                    this.uploaderClient.ExecuteScript("jQuery('div[role=listitem] .primary--text:eq(1)')[0].click()");
+                    break;
+                case "HistoryMaker Homes":
+                    this.uploaderClient.ExecuteScript("jQuery('div[role=listitem] .primary--text:eq(2)')[0].click()");
+                    break;
+                default:
+                    this.uploaderClient.ExecuteScript("jQuery('div[role=listitem] .primary--text:eq(3)')[0].click()");
+                    break;
+            }
+
+            this.uploaderClient.FindElement(By.XPath("//a[contains(@class, 'resource-card') and contains(@title, 'connectMLS')]")).Click();
+            this.uploaderClient.SwitchToLast();
             return LoginResult.Logged;
         }
 
@@ -738,7 +753,9 @@ namespace Husa.Uploader.Core.Services
         {
             const string tabName = "General";
             this.uploaderClient.ScrollDown(500);
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("listTxnsLink"), TimeSpan.FromSeconds(5000));
             this.uploaderClient.FindElement(By.Id("listTxnsLink")).Click();
+
             this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("mylistcontainer"));
 
             this.uploaderClient.ExecuteScript("jQuery('.select-list-styled:eq(1) > select').attr('id','selectlist');");
