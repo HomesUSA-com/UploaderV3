@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AssemblyName>Husa.Uploader.ServiceBus.Contracts</AssemblyName>
+        <RootNamespace>Husa.Uploader.ServiceBus.Contracts</RootNamespace>
+        <Description>Husa Uploader Service Bus Contracts</Description>
+        <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <PackageDescription>Husa Uploader Service Bus Contracts</PackageDescription>
+        <PackageId>Husa.Uploader.ServiceBus.Contracts</PackageId>
+        <Version>0.0.1</Version>
+        <PackageReleaseNotes>
+            Release 0.0.1:
+            - Initial Version
+        </PackageReleaseNotes>
+        <GeneratePackageOnBuild Condition=" '$(Configuration)'=='Release'">true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Husa.Extensions.ServiceBus" Version="5.0.7" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Update="SonarAnalyzer.CSharp" Version="9.32.0.97167">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <Target DependsOnTargets="ResolveReferences" Name="CopyProjectReferencesToPackage">
+        <ItemGroup>
+            <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+        </ItemGroup>
+    </Target>
+
+</Project>

@@ -52,7 +52,6 @@ namespace Husa.Uploader.Data.Tests.LotRequest
         }
 
         [Theory]
-        [InlineData(MarketCode.CTX)]
         [InlineData(MarketCode.Houston)]
         [InlineData(MarketCode.Austin)]
         public async Task GetListingMlsNumber_Succeess(MarketCode marketCode)

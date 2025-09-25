@@ -12,6 +12,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
+    using Husa.Uploader.Crosscutting.Interfaces;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Crosscutting.Regex;
     using Husa.Uploader.Data.Entities;
@@ -33,19 +34,22 @@ namespace Husa.Uploader.Core.Services
         private readonly IServiceSubscriptionClient serviceSubscriptionClient;
         private readonly ApplicationOptions options;
         private readonly ILogger<CtxUploadService> logger;
+        private readonly ISleepService sleepService;
 
         public CtxUploadService(
             IUploaderClient uploaderClient,
             IOptions<ApplicationOptions> options,
             IMediaRepository mediaRepository,
             IServiceSubscriptionClient serviceSubscriptionClient,
-            ILogger<CtxUploadService> logger)
+            ILogger<CtxUploadService> logger,
+            ISleepService sleepService)
         {
             this.uploaderClient = uploaderClient ?? throw new ArgumentNullException(nameof(uploaderClient));
             this.mediaRepository = mediaRepository ?? throw new ArgumentNullException(nameof(mediaRepository));
             this.serviceSubscriptionClient = serviceSubscriptionClient ?? throw new ArgumentNullException(nameof(serviceSubscriptionClient));
             this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.sleepService = sleepService ?? throw new ArgumentNullException(nameof(sleepService));
         }
 
         public MarketCode CurrentMarket => MarketCode.CTX;
@@ -73,25 +77,25 @@ namespace Husa.Uploader.Core.Services
             var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
 
             this.uploaderClient.NavigateToUrl(marketInfo.LogoutUrl);
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
 
             // Connect to the login page
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("loginbtn"));
 
             this.uploaderClient.WriteTextbox(By.Name("username"), credentials[LoginCredentials.Username]);
             this.uploaderClient.WriteTextbox(By.Name("password"), credentials[LoginCredentials.Password]);
             this.uploaderClient.ClickOnElementById("loginbtn");
 
-            Thread.Sleep(2000);
+            this.sleepService.Sleep(2000);
 
             // Use the same browser page NOT _blank
-            Thread.Sleep(2000);
+            this.sleepService.Sleep(2000);
 
             if (this.uploaderClient.IsElementVisible(By.Id("NewsDetailDismiss")))
             {
-                this.uploaderClient.ClickOnElementById("NewsDetailDismiss");
+                this.uploaderClient.ClickOnElement(By.Id("NewsDetailDismiss"));
             }
 
             if (this.uploaderClient.IsElementVisible(By.LinkText("Skip")))
@@ -99,10 +103,10 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ClickOnElement(By.LinkText("Skip"), shouldWait: false, waitTime: 0, isElementOptional: true);
             }
 
-            Thread.Sleep(2000);
+            this.sleepService.Sleep(2000);
 
             this.uploaderClient.NavigateToUrl("https://matrix.ctxmls.com/Matrix/Default.aspx?c=AAEAAAD*****AQAAAAAAAAARAQAAAFIAAAAGAgAAAAQ4OTQwDRsGAwAAAAQLPCUSDTUL&f=");
-            Thread.Sleep(2000);
+            this.sleepService.Sleep(2000);
 
             return LoginResult.Logged;
         }
@@ -157,7 +161,7 @@ namespace Husa.Uploader.Core.Services
                 if (logIn)
                 {
                     await this.Login(listing.CompanyId);
-                    Thread.Sleep(5000);
+                    this.sleepService.Sleep(5000);
                 }
 
                 try
@@ -179,7 +183,7 @@ namespace Husa.Uploader.Core.Services
                     if (autoSave)
                     {
                         this.uploaderClient.WaitUntilElementExists(By.Id(SuccessMessagePage), new TimeSpan(0, 5, 0), true, cancellationToken);
-                        Thread.Sleep(400);
+                        this.sleepService.Sleep(400);
                     }
                 }
                 catch (Exception exception)
@@ -211,7 +215,7 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
-                        Thread.Sleep(1000);
+                        this.sleepService.Sleep(1000);
                     }
 
                     await this.LocateLotListing(listing.MLSNum, cancellationToken);
@@ -261,7 +265,7 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
-                        Thread.Sleep(5000);
+                        this.sleepService.Sleep(5000);
                     }
 
                     this.NavigateToQuickEdit(listing.MLSNum);
@@ -278,7 +282,7 @@ namespace Husa.Uploader.Core.Services
                     if (autoSave)
                     {
                         this.uploaderClient.WaitUntilElementExists(By.Id(SuccessMessagePage), new TimeSpan(0, 5, 0), true, cancellationToken);
-                        Thread.Sleep(400);
+                        this.sleepService.Sleep(400);
                     }
                 }
                 catch (Exception exception)
@@ -310,7 +314,7 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
-                        Thread.Sleep(5000);
+                        this.sleepService.Sleep(5000);
                     }
 
                     await this.LocateResidentialListing(listing.MLSNum, cancellationToken);
@@ -325,7 +329,7 @@ namespace Husa.Uploader.Core.Services
                     if (autoSave)
                     {
                         this.uploaderClient.WaitUntilElementExists(By.Id(SuccessMessagePage), new TimeSpan(0, 5, 0), true, cancellationToken);
-                        Thread.Sleep(400);
+                        this.sleepService.Sleep(400);
                     }
                 }
                 catch (Exception exception)
@@ -357,7 +361,7 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
-                        Thread.Sleep(5000);
+                        this.sleepService.Sleep(5000);
                     }
 
                     this.NavigateToQuickEdit(listing.MLSNum);
@@ -392,7 +396,7 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
-                        Thread.Sleep(5000);
+                        this.sleepService.Sleep(5000);
                     }
 
                     this.NavigateToQuickEdit(listing.MLSNum);
@@ -466,17 +470,17 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
                 await this.Login(listing.CompanyId);
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
 
                 this.uploaderClient.ClickOnElement(By.LinkText(@"Edit Listing Details"), shouldWait: false, waitTime: 0, isElementOptional: false);
                 this.NavigateToQuickEdit(listing.MLSNum);
 
                 this.uploaderClient.SwitchTo("main");
                 this.uploaderClient.SwitchTo("workspace");
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
 
                 this.uploaderClient.ExecuteScript(" SP('7') ");
-                Thread.Sleep(2000);
+                this.sleepService.Sleep(2000);
 
                 var virtualTourResponse = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.SanAntonio, cancellationToken);
                 var virtualTour = virtualTourResponse.FirstOrDefault();
@@ -508,16 +512,16 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Editing the information of Open House for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
-                Thread.Sleep(5000);
+                this.sleepService.Sleep(5000);
                 this.NavigateToQuickEdit(listing.MLSNum);
 
-                Thread.Sleep(400);
+                this.sleepService.Sleep(400);
 
                 // Enter OpenHouse
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Open Houses"), cancellationToken);
                 this.uploaderClient.ClickOnElement(By.LinkText("Open Houses"));
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_tdValidate"), cancellationToken);
-                Thread.Sleep(3000);
+                this.sleepService.Sleep(3000);
 
                 this.CleanOpenHouse();
 
@@ -544,7 +548,7 @@ namespace Husa.Uploader.Core.Services
                 if (logIn)
                 {
                     await this.Login(listing.CompanyId);
-                    Thread.Sleep(1000);
+                    this.sleepService.Sleep(1000);
                 }
 
                 await this.LocateLotListing(listing.MLSNum, cancellationToken);
@@ -582,6 +586,11 @@ namespace Husa.Uploader.Core.Services
             throw new NotImplementedException();
         }
 
+        public Task<UploaderResponse> FullUploadListing(MarketCode marketCode, Guid requestId, CancellationToken cancellationToken, bool logInFirstStepOnly = true, bool autoSave = true)
+        {
+            throw new NotImplementedException();
+        }
+
         private void NavigateToNewPropertyInput(By linkTextBy)
         {
             this.uploaderClient.NavigateToUrl("https://matrix.ctxmls.com/Matrix/Input");
@@ -594,7 +603,7 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WaitUntilElementIsDisplayed(By.PartialLinkText("Start with a blank Listing"));
             this.uploaderClient.ClickOnElement(By.PartialLinkText("Start with a blank Listing"));
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
         }
 
         private void NavigateToQuickEdit(string mlsNumber)
@@ -658,7 +667,7 @@ namespace Husa.Uploader.Core.Services
                 if (logIn)
                 {
                     await this.Login(listing.CompanyId);
-                    Thread.Sleep(5000);
+                    this.sleepService.Sleep(5000);
                 }
 
                 await locateListing(listing.MLSNum, cancellationToken);
@@ -668,7 +677,7 @@ namespace Husa.Uploader.Core.Services
                 if (autoSave)
                 {
                     this.uploaderClient.WaitUntilElementExists(By.Id(SuccessMessagePage), new TimeSpan(0, 5, 0), true, cancellationToken);
-                    Thread.Sleep(400);
+                    this.sleepService.Sleep(400);
                 }
             }
             catch (Exception exception)
@@ -692,7 +701,7 @@ namespace Husa.Uploader.Core.Services
 
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Closed"), cancellationToken);
                     this.uploaderClient.ClickOnElement(By.LinkText("Change to Closed"));
-                    Thread.Sleep(500);
+                    this.sleepService.Sleep(500);
                     this.uploaderClient.WriteTextbox(By.Id("Input_74"), listing.SoldPrice);
                     this.uploaderClient.WriteTextbox(By.Id("Input_73"), listing.ClosedDate.HasValue ? listing.ClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
                     this.uploaderClient.SetSelect(By.Id($"Input_324"), value: listing.Financing);
@@ -707,7 +716,7 @@ namespace Husa.Uploader.Core.Services
 
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Active Under Contract"), cancellationToken);
                     this.uploaderClient.ClickOnElement(By.LinkText("Change to Active Under Contract"));
-                    Thread.Sleep(500);
+                    this.sleepService.Sleep(500);
                     this.uploaderClient.WriteTextbox(By.Id("Input_455"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
                     this.uploaderClient.WriteTextbox(By.Id("Input_810"), listing.EstClosedDate.HasValue ? listing.EstClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
                     break;
@@ -715,7 +724,7 @@ namespace Husa.Uploader.Core.Services
 
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Pending"), cancellationToken);
                     this.uploaderClient.ClickOnElement(By.LinkText("Change to Pending"));
-                    Thread.Sleep(500);
+                    this.sleepService.Sleep(500);
                     this.uploaderClient.WriteTextbox(By.Id("Input_83"), listing.ContractDate.HasValue ? listing.ContractDate.Value.ToString("MM/dd/yyyy") : string.Empty);
                     this.uploaderClient.WriteTextbox(By.Id("Input_811"), listing.EstClosedDate.HasValue ? listing.EstClosedDate.Value.ToString("MM/dd/yyyy") : string.Empty);
                     this.uploaderClient.WriteTextbox(By.Id("Input_321"), listing.AgentMarketUniqueId);
@@ -725,7 +734,7 @@ namespace Husa.Uploader.Core.Services
 
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Withdrawn"), cancellationToken);
                     this.uploaderClient.ClickOnElement(By.LinkText("Change to Withdrawn"));
-                    Thread.Sleep(500);
+                    this.sleepService.Sleep(500);
                     this.uploaderClient.WriteTextbox(By.Id("Input_309"), listing.WithdrawnDate?.ToString("MM/dd/yyyy") ?? string.Empty);
                     this.uploaderClient.WriteTextbox(By.Id("Input_310"), listing.WithdrawalReason);
                     this.uploaderClient.SetSelect(By.Id("Input_799"), listing.IsWithdrawalListingAgreement);
@@ -734,7 +743,7 @@ namespace Husa.Uploader.Core.Services
 
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Change to Hold"), cancellationToken);
                     this.uploaderClient.ClickOnElement(By.LinkText("Change to Hold"));
-                    Thread.Sleep(500);
+                    this.sleepService.Sleep(500);
                     this.uploaderClient.WriteTextbox(By.Id("Input_306"), listing.OffMarketDate.HasValue ? listing.OffMarketDate.Value.ToString("MM/dd/yyyy") : string.Empty);
                     break;
                 default:
@@ -754,14 +763,14 @@ namespace Husa.Uploader.Core.Services
             if (logIn)
             {
                 await this.Login(listing.CompanyId);
-                Thread.Sleep(5000);
+                this.sleepService.Sleep(5000);
             }
 
             try
             {
                 this.NavigateToQuickEdit(listing.MLSNum);
 
-                Thread.Sleep(1500);
+                this.sleepService.Sleep(1500);
                 this.SetListingStatus(listing, cancellationToken);
             }
             catch (Exception exception)
@@ -1223,7 +1232,7 @@ namespace Husa.Uploader.Core.Services
             // Enter Manage Photos
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSaveIncomplete"), cancellationToken);
             this.uploaderClient.ClickOnElement(By.Id("m_lbSaveIncomplete"));
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbManagePhotos"), cancellationToken);
             this.uploaderClient.ClickOnElement(By.Id("m_lbManagePhotos"));
 
@@ -1252,7 +1261,7 @@ namespace Husa.Uploader.Core.Services
             string publicRemarks)
         {
             // driver.wait.Until(x => ExpectedConditions.ElementIsVisible(By.Id("Input_917")));
-            Thread.Sleep(400);
+            this.sleepService.Sleep(400);
             var agentRemarks = string.Join(". ", new List<string>()
             {
                 agentRemarksMessage,
@@ -1286,7 +1295,7 @@ namespace Husa.Uploader.Core.Services
                 if (this.uploaderClient.FindElements(By.LinkText(getLatLongFromAddress))?.Any() == true)
                 {
                     this.uploaderClient.ClickOnElement(By.LinkText(getLatLongFromAddress));
-                    Thread.Sleep(1000);
+                    this.sleepService.Sleep(1000);
                 }
             }
         }
@@ -1297,7 +1306,7 @@ namespace Husa.Uploader.Core.Services
             {
                 this.uploaderClient.ClickOnElement(By.Id("cbxCheckAll"));
                 this.uploaderClient.ClickOnElement(By.Id("m_lbDeleteChecked"));
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
                 this.uploaderClient.AcceptAlertWindow();
             }
         }
@@ -1320,7 +1329,7 @@ namespace Husa.Uploader.Core.Services
             if (wait)
             {
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSave"), cancellationToken);
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
             }
         }
 
@@ -1394,21 +1403,21 @@ namespace Husa.Uploader.Core.Services
                 var elementId = $"_Input_349__del_REPEAT{elems - 1}_";
                 this.uploaderClient.ClickOnElementById(elementId);
                 elems--;
-                Thread.Sleep(300);
+                this.sleepService.Sleep(300);
             }
         }
 
         private void AddOpenHouses(ResidentialListingRequest listing)
         {
             var index = 0;
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
             foreach (var openHouse in listing.OpenHouse.OrderBy(x => x.Order).ThenBy(x => x.StartTime))
             {
                 if (index != 0)
                 {
                     this.uploaderClient.ScrollDown();
                     this.uploaderClient.ClickOnElementById(elementId: $"_Input_349_more");
-                    Thread.Sleep(1000);
+                    this.sleepService.Sleep(1000);
                 }
 
                 // Date

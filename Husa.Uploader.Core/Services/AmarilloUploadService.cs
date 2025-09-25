@@ -12,6 +12,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
+    using Husa.Uploader.Crosscutting.Interfaces;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.BulkUpload;
@@ -43,19 +44,22 @@ namespace Husa.Uploader.Core.Services
         private readonly IServiceSubscriptionClient serviceSubscriptionClient;
         private readonly ApplicationOptions options;
         private readonly ILogger<AmarilloUploadService> logger;
+        private readonly ISleepService sleepService;
 
         public AmarilloUploadService(
             IUploaderClient uploaderClient,
             IOptions<ApplicationOptions> options,
             IMediaRepository mediaRepository,
             IServiceSubscriptionClient serviceSubscriptionClient,
-            ILogger<AmarilloUploadService> logger)
+            ILogger<AmarilloUploadService> logger,
+            ISleepService sleepService)
         {
             this.uploaderClient = uploaderClient ?? throw new ArgumentNullException(nameof(uploaderClient));
             this.mediaRepository = mediaRepository ?? throw new ArgumentNullException(nameof(mediaRepository));
             this.serviceSubscriptionClient = serviceSubscriptionClient ?? throw new ArgumentNullException(nameof(serviceSubscriptionClient));
             this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.sleepService = sleepService;
         }
 
         public MarketCode CurrentMarket => MarketCode.Amarillo;
@@ -85,17 +89,17 @@ namespace Husa.Uploader.Core.Services
 
             // Connect to the login page
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("login-button"));
 
             this.uploaderClient.WriteTextbox(By.Id("user"), credentials[LoginCredentials.Username]);
             this.uploaderClient.ClickOnElementById("login-button");
-            Thread.Sleep(500);
+            this.sleepService.Sleep(500);
 
             this.uploaderClient.WriteTextbox(By.Id("password"), credentials[LoginCredentials.Password]);
             this.uploaderClient.ClickOnElementById("login-button");
 
-            Thread.Sleep(2000);
+            this.sleepService.Sleep(2000);
 
             return LoginResult.Logged;
         }
@@ -103,7 +107,7 @@ namespace Husa.Uploader.Core.Services
         public UploaderResponse Logout()
         {
             this.uploaderClient.ClickOnElementById("user-menu-button");
-            Thread.Sleep(500);
+            this.sleepService.Sleep(500);
             this.uploaderClient.ClickOnElementById("user-menu-button");
             UploaderResponse response = new UploaderResponse();
             response.UploadResult = UploadResult.Success;
@@ -165,7 +169,7 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
-                        Thread.Sleep(1000);
+                        this.sleepService.Sleep(1000);
                     }
 
                     if (listing.IsNewListing)
@@ -216,7 +220,7 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
-                        Thread.Sleep(1000);
+                        this.sleepService.Sleep(1000);
                     }
 
                     this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
@@ -254,7 +258,7 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
-                        Thread.Sleep(1000);
+                        this.sleepService.Sleep(1000);
                     }
 
                     this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
@@ -295,14 +299,14 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
-                        Thread.Sleep(1000);
+                        this.sleepService.Sleep(1000);
                     }
 
                     this.logger.LogInformation("Updating media for the listing {requestId}", listing.ResidentialListingRequestID);
                     this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
 
                     this.NavigateToQuickEdit(listing.MLSNum);
-                    Thread.Sleep(1000);
+                    this.sleepService.Sleep(1000);
 
                     // Enter Manage Photos
                     this.uploaderClient.ExecuteScript("jQuery('a[title=\"Attach photos to this listing\"')[0].click()");
@@ -342,11 +346,11 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
-                        Thread.Sleep(1000);
+                        this.sleepService.Sleep(1000);
                     }
 
                     this.NavigateToQuickEdit(listing.MLSNum);
-                    Thread.Sleep(1000);
+                    this.sleepService.Sleep(1000);
                     var mlsPreffix = listing.MLSNum.Split('-')[0];
                     var listNumber = listing.MLSNum.Split('-')[1];
                     var url = "https://amt.flexmls.com/cgi-bin/mainmenu.cgi?cmd=url+brokerload/changeprice/step2.html&list_nbr=" + listNumber + "&prefix=" + mlsPreffix;
@@ -386,11 +390,11 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
-                        Thread.Sleep(1000);
+                        this.sleepService.Sleep(1000);
                     }
 
                     this.NavigateToQuickEdit(listing.MLSNum);
-                    Thread.Sleep(1000);
+                    this.sleepService.Sleep(1000);
 
                     switch (listing.ListStatus)
                     {
@@ -426,7 +430,7 @@ namespace Husa.Uploader.Core.Services
             void HandleClosedStatus(ResidentialListingRequest listing)
             {
                 this.uploaderClient.ExecuteScript("javascript:changestatus('C');");
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
 
                 this.uploaderClient.WriteTextbox(By.Id("cancel_date"), listing.ClosedDate?.ToShortDateString()); // Cancel Date
             }
@@ -434,7 +438,7 @@ namespace Husa.Uploader.Core.Services
             void HandlePendingStatus(ResidentialListingRequest listing)
             {
                 this.uploaderClient.ExecuteScript("javascript:changestatus('P');");
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
 
                 this.uploaderClient.WriteTextbox(By.Id("un_contr_date"), listing.ContractDate?.ToShortDateString()); // Under Contract Date
 
@@ -448,7 +452,7 @@ namespace Husa.Uploader.Core.Services
             void HandleCancelledStatus(CancellationToken cancellationToken)
             {
                 this.uploaderClient.ExecuteScript("javascript:changestatus('L');");
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
 
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("cancel_date"), cancellationToken);
                 this.uploaderClient.WriteTextbox(By.Id("cancel_date"), listing.ClosedDate?.ToShortDateString()); // Cancel Date
@@ -457,7 +461,7 @@ namespace Husa.Uploader.Core.Services
             void HandleWithdrawnStatus(ResidentialListingRequest listing)
             {
                 this.uploaderClient.ExecuteScript("javascript:changestatus('W');");
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
 
                 this.uploaderClient.WriteTextbox(By.Id("withdraw_date"), listing.WithdrawnDate?.ToShortDateString()); // Withdrawal Date
 
@@ -490,7 +494,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
                 await this.Login(listing.CompanyId);
                 this.NavigateToQuickEdit(listing.MLSNum);
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
 
                 response.UploadResult = UploadResult.Success;
                 return response;
@@ -512,7 +516,7 @@ namespace Husa.Uploader.Core.Services
                 await this.Login(listing.CompanyId);
                 this.NavigateToQuickEdit(listing.MLSNum);
 
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
                 //// Enter Open House
                 this.uploaderClient.ExecuteScript("jQuery('a[title=\"Maintain open houses for this listing\"')[0].click()");
 
@@ -563,32 +567,37 @@ namespace Husa.Uploader.Core.Services
             throw new NotImplementedException();
         }
 
+        public Task<UploaderResponse> FullUploadListing(MarketCode marketCode, Guid requestId, CancellationToken cancellationToken, bool logInFirstStepOnly = true, bool autoSave = true)
+        {
+            throw new NotImplementedException();
+        }
+
         private void NavigateToNewPropertyInput()
         {
             this.uploaderClient.SwitchTo().Frame("top_frame");
             this.uploaderClient.ExecuteScript("jQuery('#bookmarkMenuItems > li:eq(5) > a')[0].click();");
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
             this.uploaderClient.SwitchTo().Frame("view_frame");
         }
 
         private void NavigateToQuickEdit(string mlsNumber)
         {
             this.uploaderClient.NavigateToUrl("https://amt.flexmls.com/cgi-bin/mainmenu.cgi?cmd=url+brokerload/changelisting/step1.html");
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("changeListingNextButton"));
             var mlsNumberFormatted = mlsNumber.Split("-");
             this.uploaderClient.WriteTextbox(By.Name("prefix"), value: mlsNumberFormatted[0]);
             this.uploaderClient.WriteTextbox(By.Name("list_nbr"), value: mlsNumberFormatted[1]);
-            Thread.Sleep(500);
+            this.sleepService.Sleep(500);
             this.uploaderClient.ClickOnElement(By.Id("changeListingNextButton"));
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
         }
 
         private void NavigateToEditResidentialForm(string mlsNumber, CancellationToken cancellationToken = default)
         {
             this.NavigateToQuickEdit(mlsNumber);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("change-listing-001"), cancellationToken);
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
         }
 
         private void FillGeneralInformationNewListing(ResidentialListingRequest listing)
@@ -607,7 +616,7 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.ClickOnElementById(ButtonNextId);
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
         }
 
         private void FillAddressFields(ResidentialListingRequest listing)
@@ -621,7 +630,7 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.ClickOnElementById(ButtonNextId);
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
         }
 
         private void FillMainFields(ResidentialListingRequest listing)
@@ -697,7 +706,7 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.ClickOnElementById(ButtonNextId);
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
         }
 
         private void FillDetailsForExistingListings(ResidentialListingRequest listing)
@@ -814,7 +823,7 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.ClickOnElementById(ButtonNextId);
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
         }
 
         private void FillDetailsForNewListings(ResidentialListingRequest listing)
@@ -931,7 +940,7 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.ClickOnElementById(ButtonNextId);
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
         }
 
         private void FillRoomInformation(ResidentialListingRequest listing)
@@ -941,7 +950,7 @@ namespace Husa.Uploader.Core.Services
             for (int index = 0; index < removeButtons; index++)
             {
                 this.uploaderClient.ClickOnElementById("remove_button_0");
-                Thread.Sleep(400);
+                this.sleepService.Sleep(400);
                 this.uploaderClient.AcceptAlertWindow();
             }
 
@@ -949,7 +958,7 @@ namespace Husa.Uploader.Core.Services
             foreach (var room in listing.Rooms)
             {
                 this.uploaderClient.ClickOnElement(By.Id("addRoomButton"));
-                Thread.Sleep(400);
+                this.sleepService.Sleep(400);
 
                 this.uploaderClient.SetSelect(By.Id($"roomtype_{i}"), room.RoomType, "Room Type", "Rooms"); // Room Type
                 this.uploaderClient.WriteTextbox(By.Id($"std_length_{i}"), room.Length, isElementOptional: true); // Length
@@ -960,7 +969,7 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.ClickOnElementById(ButtonNextId);
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
         }
 
         private void CheckOptions(string options)
@@ -1000,15 +1009,15 @@ namespace Husa.Uploader.Core.Services
 
             foreach (var character in characters)
             {
-                Thread.Sleep(400);
+                this.sleepService.Sleep(400);
                 var script = "var keyEvent = jQuery.Event('keypress');keyEvent.keyCode = " + (int)character + ";jQuery('.select2-search__field').trigger(keyEvent)";
                 this.uploaderClient.ExecuteScript(script);
                 this.uploaderClient.FindElements(By.ClassName("select2-search__field"))[0].SendKeys(character.ToString());
             }
 
-            Thread.Sleep(2000);
+            this.sleepService.Sleep(2000);
             this.uploaderClient.FindElements(By.ClassName("select2-search__field"))[0].SendKeys(Keys.Down);
-            Thread.Sleep(500);
+            this.sleepService.Sleep(500);
             this.uploaderClient.FindElements(By.ClassName("select2-search__field"))[0].SendKeys(Keys.Enter);
         }
 
@@ -1026,7 +1035,7 @@ namespace Husa.Uploader.Core.Services
         {
             this.uploaderClient.ScrollToTop();
             this.uploaderClient.ClickOnElement(By.Id(elementId));
-            Thread.Sleep(500);
+            this.sleepService.Sleep(500);
         }
 
         private void UpdateYearBuiltDescription(ResidentialListingRequest listing)
@@ -1056,10 +1065,10 @@ namespace Husa.Uploader.Core.Services
             if (this.uploaderClient.FindElements(By.ClassName("photo-select")).Count > 0)
             {
                 this.uploaderClient.ClickOnElement(By.Id("selectAllCheckbox"));
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
                 this.uploaderClient.WaitForElementToBeVisible(By.Id("delete-selected"), TimeSpan.FromSeconds(10));
                 this.uploaderClient.ClickOnElement(By.Id("delete-selected"));
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
                 this.uploaderClient.ClickOnElement(By.PartialLinkText("Continue"));
             }
         }
@@ -1074,7 +1083,7 @@ namespace Husa.Uploader.Core.Services
             Directory.CreateDirectory(folder);
             foreach (var photo in mediaFiles)
             {
-                Thread.Sleep(500);
+                this.sleepService.Sleep(500);
                 await this.mediaRepository.PrepareImage(photo, MarketCode.Amarillo, cancellationToken, folder);
                 this.uploaderClient.FindElement(By.Id("files")).SendKeys(photo.PathOnDisk);
             }
@@ -1090,7 +1099,7 @@ namespace Husa.Uploader.Core.Services
                 var countOpenHouses = int.Parse(currentOpenHouses);
                 this.uploaderClient.ExecuteScript("$('.open-house-checkbox .openHouseCheckbox').each(function () { $(this).prop('checked', true) }); $('#checkbox-headers').css('display', 'block');");
                 this.uploaderClient.ClickOnElementById("delete-selected");
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
                 if (countOpenHouses > 1)
                 {
                     this.uploaderClient.ClickOnElementById("bulkDeleteModal_confirmationCheckbox");
@@ -1102,31 +1111,31 @@ namespace Husa.Uploader.Core.Services
                 }
             }
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
         }
 
         private void AddOpenHouses(ResidentialListingRequest listing)
         {
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
             var sortedOpenHouses = listing.OpenHouse.OrderBy(openHouse => openHouse.Date).ToList();
             foreach (var openHouse in sortedOpenHouses)
             {
                 this.uploaderClient.ExecuteScript("$('button[data-target=\"#modal-open-house\"].add-open-house').click()");
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
 
                 this.uploaderClient.SwitchToLast();
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
                 this.uploaderClient.ExecuteScript("const datepicker = $('#oh-date')[0]._flatpickr;datepicker.setDate(\"" + openHouse.Date + "\");"); // Open House Date
                 this.uploaderClient.ExecuteScript("const startTimepicker = $('#oh-time-start')[0]._flatpickr;startTimepicker.setDate(\"" + OpenHouseExtensions.GetOpenHouseHours(openHouse.StartTime.To12Format()) + "\");"); // Open House Start Time
                 this.uploaderClient.ExecuteScript("const endTimepicker = $('#oh-time-end')[0]._flatpickr;endTimepicker.setDate(\"" + OpenHouseExtensions.GetOpenHouseHours(openHouse.EndTime.To12Format()) + "\");"); // Open House End Time
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
                 this.uploaderClient.FindElementsByName("commit")[0].Click();
-                Thread.Sleep(2000);
+                this.sleepService.Sleep(2000);
                 var window = this.uploaderClient.WindowHandles.FirstOrDefault();
                 this.uploaderClient.SwitchTo().Window(windowName: window);
             }
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
         }
     }
 }

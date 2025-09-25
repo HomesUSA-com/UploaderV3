@@ -16,6 +16,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
+    using Husa.Uploader.Crosscutting.Interfaces;
     using Husa.Uploader.Crosscutting.Options;
     using Husa.Uploader.Crosscutting.Regex;
     using Husa.Uploader.Data.Entities;
@@ -27,68 +28,45 @@ namespace Husa.Uploader.Core.Services
     using Microsoft.Extensions.Options;
     using OpenQA.Selenium;
 
-    public class DfwUploadService : IDfwUploadService
+    public class DfwUploadService : MarketUploadService, IDfwUploadService
     {
         private const string LandingPageURL = "https://matrix.ntreis.net/";
         private const string EditUrl = "https://ntrdd.mlsmatrix.com/Matrix/Input";
         private const string NavigateToUrlNewListing = "https://ntrdd.mlsmatrix.com/Matrix/Input";
         private const string SEARCHURL = "https://ntrdd.mlsmatrix.com/Matrix/Search/Residential/Quick";
-        private readonly IUploaderClient uploaderClient;
-        private readonly IMediaRepository mediaRepository;
-        private readonly IServiceSubscriptionClient serviceSubscriptionClient;
-        private readonly ApplicationOptions options;
-        private readonly ILogger<DfwUploadService> logger;
+
         private readonly IQuicklisterDfwClient quicklisterDfwClient;
 
         public DfwUploadService(
             IUploaderClient uploaderClient,
             IOptions<ApplicationOptions> options,
             IMediaRepository mediaRepository,
+            IListingRequestRepository listingRequestRepository,
             IServiceSubscriptionClient serviceSubscriptionClient,
             IQuicklisterDfwClient quicklisterDfwClient,
+            ISleepService sleepService,
             ILogger<DfwUploadService> logger)
+            : base(uploaderClient, options, mediaRepository, listingRequestRepository, serviceSubscriptionClient, logger, sleepService)
         {
-            this.uploaderClient = uploaderClient ?? throw new ArgumentNullException(nameof(uploaderClient));
-            this.mediaRepository = mediaRepository ?? throw new ArgumentNullException(nameof(mediaRepository));
-            this.serviceSubscriptionClient = serviceSubscriptionClient ?? throw new ArgumentNullException(nameof(serviceSubscriptionClient));
-            this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.quicklisterDfwClient = quicklisterDfwClient ?? throw new ArgumentNullException(nameof(quicklisterDfwClient));
         }
 
-        public MarketCode CurrentMarket => MarketCode.DFW;
-
-        public IUploaderClient UploaderClient => this.uploaderClient;
-
-        public IServiceSubscriptionClient ServiceSubscriptionClient => this.serviceSubscriptionClient;
+        public override MarketCode CurrentMarket => MarketCode.DFW;
 
         public string MultiFamilyPropType => ListPropertyType.ResidencialIncome.ToStringFromEnumMember();
 
-        public bool IsFlashRequired => false;
-
-        public bool CanUpload(ResidentialListingRequest listing) => listing.MarketCode == this.CurrentMarket;
-
-        public void CancelOperation()
-        {
-            this.logger.LogInformation("Stopping driver at the request of the current user");
-            this.uploaderClient.CloseDriver();
-        }
-
-        public async Task<LoginResult> Login(Guid companyId)
+        public override async Task<LoginResult> Login(Guid companyId)
         {
             var marketInfo = this.options.MarketInfo.Dfw;
-            var company = await this.serviceSubscriptionClient.Company.GetCompany(companyId);
-            var credentialsTask = this.serviceSubscriptionClient.Corporation.GetMarketReverseProspectInformation(this.CurrentMarket);
-            this.uploaderClient.DeleteAllCookies();
-
-            var credentials = await LoginCommon.GetMarketCredentials(company, credentialsTask);
+            this.PrepareForLogin();
+            var credentials = await this.GetMarketCredentials(companyId);
 
             // Connect to the login page
             var loginButtonId = "loginbtn";
             this.uploaderClient.NavigateToUrl(marketInfo.LogoutUrl);
-            Thread.Sleep(5000);
+            this.sleepService.Sleep(5000);
             this.uploaderClient.NavigateToUrl(marketInfo.LoginUrl);
-            Thread.Sleep(5000);
+            this.sleepService.Sleep(5000);
 
             string userName;
             string password;
@@ -128,20 +106,20 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id(loginButtonId));
             this.uploaderClient.WriteTextbox(By.Name("username"), userName);
             this.uploaderClient.WriteTextbox(By.Name("password"), password);
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
             this.uploaderClient.ClickOnElementById(loginButtonId);
-            Thread.Sleep(5000);
+            this.sleepService.Sleep(5000);
 
             this.uploaderClient.ExecuteScript(" $('.tour-backdrop').remove();$('#step-0').remove();");
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
             this.uploaderClient.NavigateToUrl(LandingPageURL);
-            Thread.Sleep(5000);
+            this.sleepService.Sleep(5000);
 
             return LoginResult.Logged;
         }
 
-        public UploaderResponse Logout()
+        public override UploaderResponse Logout()
         {
             this.uploaderClient.NavigateToUrl(this.options.MarketInfo.Dfw.LogoutUrl);
             UploaderResponse response = new UploaderResponse();
@@ -149,7 +127,7 @@ namespace Husa.Uploader.Core.Services
             return response;
         }
 
-        public Task<UploaderResponse> Edit(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public override Task<UploaderResponse> Edit(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
             if (listing is null)
             {
@@ -188,7 +166,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploaderResponse> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
+        public override Task<UploaderResponse> Upload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -210,7 +188,7 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
-                        Thread.Sleep(1000);
+                        this.sleepService.Sleep(1000);
                     }
 
                     NavigateToForm(listing);
@@ -220,8 +198,7 @@ namespace Husa.Uploader.Core.Services
 
                     if (autoSave)
                     {
-                        this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
-                        Thread.Sleep(400);
+                        this.WaitForAutoSave(cancellationToken);
                     }
                 }
                 catch (Exception exception)
@@ -278,7 +255,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploaderResponse> PartialUpload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
+        public override Task<UploaderResponse> PartialUpload(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -301,7 +278,7 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
-                        Thread.Sleep(1000);
+                        this.sleepService.Sleep(1000);
                     }
 
                     this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
@@ -315,8 +292,7 @@ namespace Husa.Uploader.Core.Services
 
                     if (autoSave)
                     {
-                        this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
-                        Thread.Sleep(400);
+                        this.WaitForAutoSave(cancellationToken);
                     }
                 }
                 catch (Exception exception)
@@ -332,7 +308,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploaderResponse> UpdateCompletionDate(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
+        public override Task<UploaderResponse> UpdateCompletionDate(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -355,7 +331,7 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
-                        Thread.Sleep(1000);
+                        this.sleepService.Sleep(1000);
                     }
 
                     this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
@@ -373,8 +349,7 @@ namespace Husa.Uploader.Core.Services
 
                     if (autoSave)
                     {
-                        this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
-                        Thread.Sleep(400);
+                        this.WaitForAutoSave(cancellationToken);
                     }
                 }
                 catch (Exception exception)
@@ -390,7 +365,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploaderResponse> UpdateImages(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
+        public override Task<UploaderResponse> UpdateImages(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
         {
             if (listing is null)
             {
@@ -412,7 +387,7 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
-                        Thread.Sleep(1000);
+                        this.sleepService.Sleep(1000);
                     }
 
                     this.NavigateToQuickEdit(listing.MLSNum);
@@ -426,7 +401,7 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSave"), cancellationToken);
-                        Thread.Sleep(1000);
+                        this.sleepService.Sleep(1000);
                     }
                 }
                 catch (Exception exception)
@@ -442,7 +417,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploaderResponse> UpdatePrice(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
+        public override Task<UploaderResponse> UpdatePrice(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             if (listing is null)
             {
@@ -465,7 +440,7 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
-                        Thread.Sleep(1000);
+                        this.sleepService.Sleep(1000);
                     }
 
                     this.NavigateToQuickEdit(listing.MLSNum);
@@ -477,8 +452,7 @@ namespace Husa.Uploader.Core.Services
 
                     if (autoSave)
                     {
-                        this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
-                        Thread.Sleep(400);
+                        this.WaitForAutoSave(cancellationToken);
                     }
                 }
                 catch (Exception exception)
@@ -494,7 +468,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploaderResponse> UpdateStatus(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
+        public override Task<UploaderResponse> UpdateStatus(ResidentialListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true, bool autoSave = false)
         {
             ArgumentNullException.ThrowIfNull(listing);
 
@@ -514,12 +488,12 @@ namespace Husa.Uploader.Core.Services
                     if (logIn)
                     {
                         await this.Login(listing.CompanyId);
-                        Thread.Sleep(1000);
+                        this.sleepService.Sleep(1000);
                     }
 
                     this.NavigateToQuickEdit(listing.MLSNum);
 
-                    Thread.Sleep(1000);
+                    this.sleepService.Sleep(1000);
                     var linkText = string.Empty;
                     var transformedStatus = this.TransformStatus(listing.ListStatus, ref linkText);
 
@@ -596,8 +570,7 @@ namespace Husa.Uploader.Core.Services
 
                     if (autoSave)
                     {
-                        this.uploaderClient.WaitUntilElementExists(By.Id("m_lblInputCompletedMessage"), new TimeSpan(0, 5, 0), true, cancellationToken);
-                        Thread.Sleep(400);
+                        this.WaitForAutoSave(cancellationToken);
                     }
                 }
                 catch (Exception exception)
@@ -613,7 +586,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploaderResponse> UploadVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public override Task<UploaderResponse> UploadVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
             if (listing is null)
             {
@@ -629,7 +602,7 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Updating VirtualTour for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, isNewListing: false);
                 await this.Login(listing.CompanyId);
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
 
                 this.NavigateToQuickEdit(listing.MLSNum);
 
@@ -643,7 +616,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploaderResponse> UpdateOpenHouse(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
+        public override Task<UploaderResponse> UpdateOpenHouse(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
         {
             if (listing is null)
             {
@@ -661,18 +634,18 @@ namespace Husa.Uploader.Core.Services
                 this.logger.LogInformation("Editing the information of Open House for the listing {RequestId}", listing.ResidentialListingRequestID);
                 this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, listing.IsNewListing);
                 await this.Login(listing.CompanyId);
-                Thread.Sleep(5000);
+                this.sleepService.Sleep(5000);
                 this.NavigateToQuickEdit(listing.MLSNum);
 
-                Thread.Sleep(400);
+                this.sleepService.Sleep(400);
 
                 // Enter OpenHouse
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_dlInputList_ctl11_m_btnSelect"), cancellationToken);
                 this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl11_m_btnSelect"));
-                Thread.Sleep(3000);
+                this.sleepService.Sleep(3000);
 
                 this.CleanOpenHouse(cancellationToken);
-                Thread.Sleep(2000);
+                this.sleepService.Sleep(2000);
 
                 if (listing.EnableOpenHouse)
                 {
@@ -681,7 +654,7 @@ namespace Husa.Uploader.Core.Services
                         && listing.AllowPendingList))
                     {
                         this.AddOpenHouses(listing);
-                        Thread.Sleep(2000);
+                        this.sleepService.Sleep(2000);
                     }
                 }
 
@@ -690,27 +663,27 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploaderResponse> UploadLot(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        public override Task<UploaderResponse> UploadLot(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             throw new NotImplementedException();
         }
 
-        public Task<UploaderResponse> UpdateLotStatus(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        public override Task<UploaderResponse> UpdateLotStatus(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             throw new NotImplementedException();
         }
 
-        public Task<UploaderResponse> UpdateLotImages(LotListingRequest listing, CancellationToken cancellationToken = default)
+        public override Task<UploaderResponse> UpdateLotImages(LotListingRequest listing, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public Task<UploaderResponse> UpdateLotPrice(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
+        public override Task<UploaderResponse> UpdateLotPrice(LotListingRequest listing, CancellationToken cancellationToken = default, bool logIn = true)
         {
             throw new NotImplementedException();
         }
 
-        public Task<UploaderResponse> EditLot(LotListingRequest listing, CancellationToken cancellationToken, bool logIn)
+        public override Task<UploaderResponse> EditLot(LotListingRequest listing, CancellationToken cancellationToken, bool logIn)
         {
             throw new NotImplementedException();
         }
@@ -741,7 +714,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public async Task<UploaderResponse> TaxIdRequestCreation(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default)
+        public override async Task<UploaderResponse> TaxIdRequestCreation(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(listing);
 
@@ -752,7 +725,7 @@ namespace Husa.Uploader.Core.Services
             if (logIn)
             {
                 await this.Login(listing.CompanyId);
-                Thread.Sleep(2000);
+                this.sleepService.Sleep(2000);
                 this.CheckIfAutoSaveWindowIsVisible();
             }
 
@@ -801,7 +774,7 @@ namespace Husa.Uploader.Core.Services
             return uploaderResponse;
         }
 
-        public async Task<UploaderResponse> TaxIdUpdate(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
+        public override async Task<UploaderResponse> TaxIdUpdate(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(listing);
 
@@ -812,7 +785,7 @@ namespace Husa.Uploader.Core.Services
             if (logIn)
             {
                 await this.Login(listing.CompanyId);
-                Thread.Sleep(2000);
+                this.sleepService.Sleep(2000);
                 this.CheckIfAutoSaveWindowIsVisible();
             }
 
@@ -824,7 +797,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_235"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
                 this.uploaderClient.WriteTextbox(By.Id("Input_235"), listing.TaxID);
                 this.uploaderClient.WaitUntilElementExists(By.Id("css_InputCompleted"), TimeSpan.FromMinutes(5), showAlert: true, cancellationToken);
-                Thread.Sleep(500);
+                this.sleepService.Sleep(500);
             }
             catch (Exception exception)
             {
@@ -883,38 +856,12 @@ namespace Husa.Uploader.Core.Services
         private string ScrapeFieldFromTaxPage(string fieldLabel) =>
             this.uploaderClient.FindElement(By.XPath($"//span[text()='{fieldLabel}:']/../following-sibling::div/span")).Text;
 
-        private async Task UpdateVirtualTour(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
-        {
-            var virtualTours = await this.mediaRepository.GetListingVirtualTours(listing.ResidentialListingRequestID, market: MarketCode.DFW, cancellationToken);
-            if (!virtualTours.Any())
-            {
-                return;
-            }
-
-            this.GoToTab("Virtual Tours/URLs");
-
-            var firstVirtualTour = virtualTours.FirstOrDefault();
-            if (firstVirtualTour != null)
-            {
-                var uri = firstVirtualTour.GetUnbrandedUrl();
-                this.uploaderClient.WriteTextbox(By.Id("Input_341"), uri); // Virtual Tour URL Unbranded
-            }
-
-            virtualTours = virtualTours.Skip(1).ToList();
-            var secondVirtualTour = virtualTours.FirstOrDefault();
-            if (secondVirtualTour != null)
-            {
-                var uri = secondVirtualTour.GetUnbrandedUrl();
-                this.uploaderClient.WriteTextbox(By.Id("Input_532"), uri); // Virtual Tour URL Unbranded
-            }
-        }
-
         private void NavigateToNewPropertyInput(string propType)
         {
             this.uploaderClient.NavigateToUrl(NavigateToUrlNewListing);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Add new"));
             this.uploaderClient.ClickOnElement(By.Id("m_lvInputUISections_ctrl0_lvInputUISubsections_ctrl0_lbAddNewItem"));
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
 
             if (propType == this.MultiFamilyPropType)
             {
@@ -925,7 +872,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl00_m_btnSelect")); // Single Family
             }
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
             WaitAndClick("Start with a blank Property");
 
             void WaitAndClick(string text)
@@ -934,7 +881,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ClickOnElement(By.LinkText(text));
             }
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
         }
 
         private async Task UpdateVirtualTourLinks(ResidentialListingRequest listing, CancellationToken cancellationToken = default)
@@ -965,12 +912,12 @@ namespace Husa.Uploader.Core.Services
         private void NavigateToQuickEdit(string mlsNumber)
         {
             this.uploaderClient.NavigateToUrl(EditUrl);
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.LinkText("Edit existing"));
             this.uploaderClient.WriteTextbox(By.Id("m_lvInputUISections_ctrl0_tbQuickEditCommonID_m_txbInternalTextBox"), value: mlsNumber);
-            Thread.Sleep(500);
+            this.sleepService.Sleep(500);
             this.uploaderClient.ClickOnElement(By.Id("m_lvInputUISections_ctrl0_lbQuickEdit"));
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
         }
 
         private void NavigateToEditResidentialForm(string mlsNumber, CancellationToken cancellationToken = default)
@@ -978,7 +925,7 @@ namespace Husa.Uploader.Core.Services
             this.NavigateToQuickEdit(mlsNumber);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"), cancellationToken);
             this.uploaderClient.ClickOnElement(By.Id("m_dlInputList_ctl00_m_btnSelect"));
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
         }
 
         private void FillPropertyInformation(DfwListingRequest listing, bool isNotPartialFill = true)
@@ -1035,7 +982,7 @@ namespace Husa.Uploader.Core.Services
                 }
             }
 
-            Thread.Sleep(500);
+            this.sleepService.Sleep(500);
         }
 
         private void FillLocationSchools(DfwListingRequest listing, bool isNotPartialFill = true)
@@ -1044,7 +991,7 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
 
             if (isNotPartialFill)
             {
@@ -1081,28 +1028,28 @@ namespace Husa.Uploader.Core.Services
 
             try
             {
-                Thread.Sleep(500);
+                this.sleepService.Sleep(500);
                 this.uploaderClient.SetSelect(By.Id("Input_334"), value: listing.SchoolDistrict); // School District
 
-                Thread.Sleep(500);
+                this.sleepService.Sleep(500);
                 this.uploaderClient.SetSelect(By.Id("Input_335"), value: listing.SchoolName1); // Elementary School
 
-                Thread.Sleep(500);
+                this.sleepService.Sleep(500);
                 this.uploaderClient.SetSelect(By.Id("Input_336"), value: listing.SchoolName5); // Junior School
 
-                Thread.Sleep(500);
+                this.sleepService.Sleep(500);
                 this.uploaderClient.SetSelect(By.Id("Input_337"), value: listing.SchoolName6); // Senior High School
 
-                Thread.Sleep(500);
+                this.sleepService.Sleep(500);
                 this.uploaderClient.SetSelect(By.Id("Input_338"), value: listing.SchoolName4); // Primary School
 
-                Thread.Sleep(500);
+                this.sleepService.Sleep(500);
                 this.uploaderClient.SetSelect(By.Id("Input_339"), value: listing.SchoolName2); // Middle School
 
-                Thread.Sleep(500);
+                this.sleepService.Sleep(500);
                 this.uploaderClient.SetSelect(By.Id("Input_340"), value: listing.HighSchool); // High School
 
-                Thread.Sleep(500);
+                this.sleepService.Sleep(500);
                 this.uploaderClient.SetSelect(By.Id("Input_341"), value: listing.SchoolName7); // Intermediate School
             }
             catch (Exception e)
@@ -1126,7 +1073,7 @@ namespace Husa.Uploader.Core.Services
             this.GoToTab(tabName);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
 
-            Thread.Sleep(2000);
+            this.sleepService.Sleep(2000);
 
             this.uploaderClient.WriteTextbox(By.Id("Input_243"), listing.Beds); // Bedrooms
             this.uploaderClient.WriteTextbox(By.Id("Input_398"), listing.BathsFull); // Full Baths
@@ -1152,13 +1099,13 @@ namespace Husa.Uploader.Core.Services
                     {
                         this.uploaderClient.ClickOnElement(By.Id("m_rpPageList_ctl04_lbPageLink"));
                         this.uploaderClient.ExecuteScript("Subforms['s_442'].deleteRow('_Input_442__del_REPEAT" + index + "_');");
-                        Thread.Sleep(400);
+                        this.sleepService.Sleep(400);
                     }
                 }
             }
 
             this.uploaderClient.ClickOnElement(By.Id("m_rpPageList_ctl04_lbPageLink"));
-            Thread.Sleep(400);
+            this.sleepService.Sleep(400);
 
             var i = 0;
 
@@ -1167,25 +1114,25 @@ namespace Husa.Uploader.Core.Services
                 if (i > 0)
                 {
                     this.uploaderClient.ScrollDown(10000);
-                    Thread.Sleep(400);
+                    this.sleepService.Sleep(400);
                     this.uploaderClient.ClickOnElement(By.Id("_Input_442_more"));
-                    Thread.Sleep(400);
+                    this.sleepService.Sleep(400);
                 }
 
                 this.uploaderClient.SetSelect(By.Id("_Input_442__REPEAT" + i + "_440"), room.RoomType, "Name", tabName, true); // FieldName
-                Thread.Sleep(400);
+                this.sleepService.Sleep(400);
                 this.uploaderClient.ScrollDown();
                 this.uploaderClient.SetSelect(By.Id("_Input_442__REPEAT" + i + "_443"), room.Level, "Level", tabName, true);
-                Thread.Sleep(400);
+                this.sleepService.Sleep(400);
                 this.uploaderClient.ScrollDown();
                 this.uploaderClient.WriteTextbox(By.Id("_Input_442__REPEAT" + i + "_444"), room.Length, true);
-                Thread.Sleep(400);
+                this.sleepService.Sleep(400);
                 this.uploaderClient.ScrollDown();
                 this.uploaderClient.WriteTextbox(By.Id("_Input_442__REPEAT" + i + "_445"), room.Width, true);
-                Thread.Sleep(400);
+                this.sleepService.Sleep(400);
                 this.uploaderClient.ScrollDown();
                 this.uploaderClient.SetMultipleCheckboxById("_Input_442__REPEAT" + i + "_441", room.Features, "Features", tabName);
-                Thread.Sleep(400);
+                this.sleepService.Sleep(400);
                 this.uploaderClient.ScrollDown();
 
                 i++;
@@ -1198,7 +1145,7 @@ namespace Husa.Uploader.Core.Services
             this.GoToTab(tabName);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
 
-            Thread.Sleep(2000);
+            this.sleepService.Sleep(2000);
 
             this.uploaderClient.WriteTextbox(By.Id("Input_243"), listing.Beds); // Bedrooms
             this.uploaderClient.WriteTextbox(By.Id("Input_398"), listing.BathsFull); // Full Baths
@@ -1220,13 +1167,13 @@ namespace Husa.Uploader.Core.Services
                     {
                         this.uploaderClient.ClickOnElement(By.Id("m_rpPageList_ctl04_lbPageLink"));
                         this.uploaderClient.ExecuteScript("Subforms['s_518'].deleteRow('_Input_518__del_REPEAT" + index + "_');");
-                        Thread.Sleep(400);
+                        this.sleepService.Sleep(400);
                     }
                 }
             }
 
             this.uploaderClient.ClickOnElement(By.Id("m_rpPageList_ctl04_lbPageLink"));
-            Thread.Sleep(400);
+            this.sleepService.Sleep(400);
 
             var i = 0;
 
@@ -1235,13 +1182,13 @@ namespace Husa.Uploader.Core.Services
                 if (i > 0)
                 {
                     this.uploaderClient.ScrollDown(10000);
-                    Thread.Sleep(400);
+                    this.sleepService.Sleep(400);
                     this.uploaderClient.ClickOnElement(By.Id("_Input_518_more"));
-                    Thread.Sleep(400);
+                    this.sleepService.Sleep(400);
                 }
 
                 this.uploaderClient.SetSelect(By.Id("_Input_518__REPEAT" + i + "_566"), room.RoomType, "Type", tabName, false); // FieldName
-                Thread.Sleep(400);
+                this.sleepService.Sleep(400);
 
                 i++;
             }
@@ -1253,7 +1200,7 @@ namespace Husa.Uploader.Core.Services
             this.GoToTab(tabName);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
 
             this.uploaderClient.SetSelect(By.Id("Input_309"), listing.HasAccessibility.BoolToNumericBool(), "Accessibility Features YN", tabName); // Accessibility Features YN
             this.uploaderClient.SetSelect(By.Id("Input_342"), listing.IsSmartHome.BoolToNumericBool(), "Smart Home Features YN", tabName); // Smart Home Features YN
@@ -1300,7 +1247,7 @@ namespace Husa.Uploader.Core.Services
             this.GoToTab(tabName);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
 
             this.uploaderClient.WriteTextbox(By.Id("Input_247"), listing.LotSizeAcres); // Acres
             this.uploaderClient.SetSelect(By.Id("Input_248"), listing.LotSizeUnit, "Lot Size Unit", tabName); // Lot Size Unit
@@ -1331,7 +1278,7 @@ namespace Husa.Uploader.Core.Services
                 this.GoToTab(tabName);
                 this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
 
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
 
                 this.uploaderClient.SetMultipleCheckboxById("Input_252", listing.UtilitiesDesc, "Street/Utilities", tabName); // Street/Utilities
                 this.uploaderClient.SetMultipleCheckboxById("Input_362", listing.HeatSystemDesc, "Heating", tabName); // Heating
@@ -1377,7 +1324,7 @@ namespace Husa.Uploader.Core.Services
             this.GoToTab(tabName);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
 
             this.uploaderClient.SetMultipleCheckboxById("Input_254", listing.FinancingProposed, "Listing Terms", tabName); // Listing Terms
             this.uploaderClient.SetMultipleCheckboxById("Input_255", "CLOFUN", "Posession", tabName); // Posession
@@ -1408,7 +1355,7 @@ namespace Husa.Uploader.Core.Services
             this.GoToTab(tabName);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
 
             if (this.uploaderClient.UploadInformation?.IsNewListing != null && this.uploaderClient.UploadInformation.IsNewListing)
             {
@@ -1423,13 +1370,13 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.FindElement(By.Id("filter_Input_146")).Clear();
                     foreach (var charact in agentName)
                     {
-                        Thread.Sleep(400);
+                        this.sleepService.Sleep(400);
                         this.uploaderClient.FindElement(By.Id("filter_Input_146")).SendKeys(charact.ToString());
                     }
 
-                    Thread.Sleep(1000);
+                    this.sleepService.Sleep(1000);
                     this.uploaderClient.FindElement(By.Id("filter_Input_146")).SendKeys(Keys.Enter);
-                    Thread.Sleep(1000);
+                    this.sleepService.Sleep(1000);
                     this.uploaderClient.FindElement(By.Id("filter_Input_146")).SendKeys(Keys.Tab);
                 }
 
@@ -1439,13 +1386,13 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.FindElement(By.Id("filter_Input_761")).Clear();
                     foreach (var charact in supervisorName)
                     {
-                        Thread.Sleep(400);
+                        this.sleepService.Sleep(400);
                         this.uploaderClient.FindElement(By.Id("filter_Input_761")).SendKeys(charact.ToString());
                     }
 
-                    Thread.Sleep(1000);
+                    this.sleepService.Sleep(1000);
                     this.uploaderClient.FindElement(By.Id("filter_Input_761")).SendKeys(Keys.Enter);
-                    Thread.Sleep(1000);
+                    this.sleepService.Sleep(1000);
                     this.uploaderClient.FindElement(By.Id("filter_Input_146")).SendKeys(Keys.Tab);
                 }
             }
@@ -1457,7 +1404,7 @@ namespace Husa.Uploader.Core.Services
             this.GoToTab(tabName);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
 
             this.uploaderClient.WriteTextbox(By.Id("Input_396"), listing.OtherPhone, isElementOptional: true); // Occupant Alternate Phone
 
@@ -1506,7 +1453,7 @@ namespace Husa.Uploader.Core.Services
             this.GoToTab(tabName);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
 
             this.uploaderClient.SetSelect(By.Id("Input_261"), "1", "Allow Address Display", tabName); // Allow Address Display
             this.uploaderClient.SetSelect(By.Id("Input_416"), "1", "Allow AVM", tabName); // Allow AVM
@@ -1560,7 +1507,7 @@ namespace Husa.Uploader.Core.Services
             var tabName = "Status";
             this.GoToTab(tabName);
 
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
 
             this.uploaderClient.SetSelect(By.Id("Input_478"), listing.ListStatus, "Status", tabName); // Status
         }
@@ -1580,7 +1527,7 @@ namespace Husa.Uploader.Core.Services
         {
             this.uploaderClient.ScrollToTop();
             this.uploaderClient.ClickOnElement(By.LinkText(tabText));
-            Thread.Sleep(500);
+            this.sleepService.Sleep(500);
         }
 
         private async Task FillMedia(ResidentialListingRequest listing, CancellationToken cancellationToken)
@@ -1594,7 +1541,7 @@ namespace Husa.Uploader.Core.Services
             // Enter Manage Photos
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSaveIncomplete"), cancellationToken);
             this.uploaderClient.ClickOnElement(By.Id("m_lbSaveIncomplete"));
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbManagePhotos"), cancellationToken);
             this.uploaderClient.ClickOnElement(By.Id("m_lbManagePhotos"));
 
@@ -1626,7 +1573,7 @@ namespace Husa.Uploader.Core.Services
             {
                 this.uploaderClient.ClickOnElement(By.Id("cbxCheckAll"));
                 this.uploaderClient.ClickOnElement(By.Id("m_lbDeleteChecked"));
-                Thread.Sleep(1000);
+                this.sleepService.Sleep(1000);
                 this.uploaderClient.AcceptAlertWindow();
             }
         }
@@ -1694,7 +1641,7 @@ namespace Husa.Uploader.Core.Services
 
         private void CleanOpenHouse(CancellationToken cancellationToken = default)
         {
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
             int countDeleteButtons = this.uploaderClient.FindElements(By.LinkText("Delete")).Count;
             for (int i = 0; i < countDeleteButtons; i++)
             {
@@ -1717,29 +1664,29 @@ namespace Husa.Uploader.Core.Services
             }
 
             this.uploaderClient.ScrollDown(5000);
-            Thread.Sleep(2000);
+            this.sleepService.Sleep(2000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("m_lbSubmit"), cancellationToken);
             this.uploaderClient.ClickOnElement(By.Id("m_lbSubmit"));
-            Thread.Sleep(2000);
+            this.sleepService.Sleep(2000);
             this.uploaderClient.ClickOnElement(By.Id("m_btnReturnToEdit"));
-            Thread.Sleep(2000);
+            this.sleepService.Sleep(2000);
         }
 
         private void AddOpenHouses(ResidentialListingRequest listing)
         {
-            Thread.Sleep(1000);
+            this.sleepService.Sleep(1000);
 
             var index = 0;
             var sortedOpenHouses = listing.OpenHouse.OrderBy(openHouse => openHouse.Date).ToList();
             this.uploaderClient.ClickOnElement(By.Id("m_lbContinueEdit"));
-            Thread.Sleep(2000);
+            this.sleepService.Sleep(2000);
             foreach (var openHouse in sortedOpenHouses)
             {
                 if (index != 0)
                 {
                     this.uploaderClient.ScrollDown();
                     this.uploaderClient.ClickOnElementById(elementId: $"_Input_168_more");
-                    Thread.Sleep(1000);
+                    this.sleepService.Sleep(1000);
                     this.uploaderClient.ScrollDown();
                 }
 
@@ -1770,14 +1717,6 @@ namespace Husa.Uploader.Core.Services
 
                 index++;
             }
-        }
-
-        private void NavigateToTab(string tabName)
-        {
-            this.uploaderClient.ClickOnElement(By.LinkText(tabName));
-            this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(800));
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ctl02_m_divFooterContainer"));
-            this.uploaderClient.ResetImplicitWait();
         }
 
         private string TransformStatus(string status, ref string linkText)

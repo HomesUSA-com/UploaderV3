@@ -14,6 +14,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Core.Services.ShowingTime;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
+    using Husa.Uploader.Crosscutting.Interfaces;
     using Husa.Uploader.Data.Entities;
     using Microsoft.Extensions.Logging;
     using OpenQA.Selenium;
@@ -23,15 +24,18 @@ namespace Husa.Uploader.Core.Services
         private readonly IMarketUploadService marketUploadService;
         private readonly ILogger logger;
         private readonly string agentSelectorValue;
+        private readonly ISleepService sleepService;
 
         public ShowingTimeUploadService(
             IMarketUploadService marketUploadService,
             string agentSelectorValue,
-            ILogger logger)
+            ILogger logger,
+            ISleepService sleepService)
         {
             this.marketUploadService = marketUploadService ?? throw new ArgumentNullException(nameof(marketUploadService));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.agentSelectorValue = agentSelectorValue;
+            this.sleepService = sleepService ?? throw new ArgumentNullException(nameof(sleepService));
         }
 
         public MarketCode CurrentMarket => this.marketUploadService.CurrentMarket;
@@ -51,7 +55,7 @@ namespace Husa.Uploader.Core.Services
                 this.UploaderClient.WaitForElementToBeVisible(By.Id("m_dlInputList"), TimeSpan.FromSeconds(3));
                 this.UploaderClient.WriteTextbox(By.Id("m_lvInputUISections_ctrl0_tbQuickEditCommonID_m_txbInternalTextBox"), mlsNumber);
                 this.UploaderClient.ClickOnElementById("m_lvInputUISections_ctrl0_lbQuickEdit");
-                Task.Delay(3000).Wait(cancellationToken);
+                this.sleepService.Sleep(3000);
                 return this.UploaderClient.FindElement(By.XPath("//span[text()='Modify Property']"), isElementOptional: true) != null;
             },
             cancellationToken);
@@ -71,7 +75,7 @@ namespace Husa.Uploader.Core.Services
             {
                 this.logger.LogDebug("Accessing...");
                 this.UploaderClient.ClickOnElementById("m_oThirdPartyLinks_m_lvThirdPartLinks_ctrl3_m_lbtnThirdPartyLink");
-                await Task.Delay(3000, cancellationToken);
+                await this.sleepService.SleepAsync(3000, cancellationToken);
                 this.UploaderClient.SwitchTo().Window(this.UploaderClient.WindowHandles[1]);
                 this.UploaderClient.ClickOnElement(
                     By.XPath("//button/span[text()='Remind Me Later']"),
@@ -91,7 +95,7 @@ namespace Husa.Uploader.Core.Services
             }
 
             this.UploaderClient.ClickOnElement(By.XPath("//a[text()='Contacts']"));
-            await Task.Delay(2000, cancellationToken);
+            await this.sleepService.SleepAsync(2000, cancellationToken);
             this.UploaderClient.SetSelect(By.ClassName("selectList"), this.agentSelectorValue);
             this.UploaderClient.ClickOnElement(By.XPath("//a[text()='Sellers']"));
             var pages = int.Parse(
@@ -151,7 +155,7 @@ namespace Husa.Uploader.Core.Services
                 var rowIndex = 0;
                 var phonesToKeep = new List<string>();
                 this.UploaderClient.WriteTextbox(By.Id("tableFilter"), searchText);
-                await Task.Delay(1000, cancellationToken);
+                await this.sleepService.SleepAsync(1000, cancellationToken);
                 var table = this.UploaderClient.FindElementById("clientSellersTable");
                 var rows = table.FindElements(By.TagName("tr")).Skip(1);
                 var rowsTotal = rows.Count();
@@ -170,19 +174,19 @@ namespace Husa.Uploader.Core.Services
                         else if (phones.Contains(phone) && string.IsNullOrEmpty(listings))
                         {
                             columns[6].FindElement(By.TagName("a")).Click();
-                            await Task.Delay(3000, cancellationToken);
+                            await this.sleepService.SleepAsync(3000, cancellationToken);
                             this.UploaderClient.ClickOnElement(
                                 By.Id("deleteButton"),
                                 shouldWait: true,
                                 waitTime: 3000,
                                 isElementOptional: false);
-                            await Task.Delay(3000, cancellationToken);
+                            await this.sleepService.SleepAsync(3000, cancellationToken);
                             var confirmButton = this.UploaderClient.FindElement(
                                 By.XPath("//button/span[text()='Yes']"),
                                 shouldWait: true,
                                 isElementOptional: false);
                             confirmButton.Click();
-                            await Task.Delay(3000, cancellationToken);
+                            await this.sleepService.SleepAsync(3000, cancellationToken);
                             table = this.UploaderClient.FindElementById("clientSellersTable");
                             rows = table.FindElements(By.TagName("tr")).Skip(1 + rowIndex);
                             rowsTotal = rows.Count();
@@ -621,7 +625,7 @@ namespace Husa.Uploader.Core.Services
             this.UploaderClient.WaitForElementToBeVisible(By.Id("m_dlInputList"), TimeSpan.FromSeconds(3));
             this.UploaderClient.WriteTextbox(By.Id("m_lvInputUISections_ctrl0_tbQuickEditCommonID_m_txbInternalTextBox"), mlsNumber);
             this.UploaderClient.ClickOnElementById("m_lvInputUISections_ctrl0_lbQuickEdit");
-            await Task.Delay(3000, cancellationToken);
+            await this.sleepService.SleepAsync(3000, cancellationToken);
             var listingFound = this.UploaderClient.FindElement(By.XPath("//span[text()='Modify Property']"), isElementOptional: true) != null;
             if (listingFound)
             {
@@ -738,7 +742,7 @@ namespace Husa.Uploader.Core.Services
             try
             {
                 this.UploaderClient.WaitUntilElementDisappears(by, cancellationToken);
-                Task.Delay(1000, cancellationToken).Wait(cancellationToken);
+                this.sleepService.Sleep(1000);
             }
             catch
             {

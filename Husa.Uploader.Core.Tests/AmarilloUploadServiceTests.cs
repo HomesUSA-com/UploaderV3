@@ -16,6 +16,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
+    using Husa.Uploader.Crosscutting.Interfaces;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
@@ -36,6 +37,7 @@ namespace Husa.Uploader.Core.Tests
         private readonly Mock<ILogger<AmarilloUploadService>> logger = new();
         private readonly Mock<Models.UploadCommandInfo> uploadCommandInfo = new();
         private readonly ApplicationServicesFixture fixture;
+        private readonly Mock<ISleepService> sleepService = new();
 
         public AmarilloUploadServiceTests(ApplicationServicesFixture fixture)
         {
@@ -659,6 +661,7 @@ namespace Husa.Uploader.Core.Tests
                 this.fixture.ApplicationOptions,
                 this.mediaRepository.Object,
                 this.serviceSubscriptionClient.Object,
-                this.logger.Object);
+                this.logger.Object,
+                this.sleepService.Object);
     }
 }

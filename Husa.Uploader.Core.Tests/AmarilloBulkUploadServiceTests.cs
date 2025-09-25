@@ -6,6 +6,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Models;
     using Husa.Uploader.Core.Services.BulkUpload;
+    using Husa.Uploader.Crosscutting.Interfaces;
     using Husa.Uploader.Data.Entities;
     using Microsoft.Extensions.Logging;
     using Moq;
@@ -17,6 +18,7 @@ namespace Husa.Uploader.Core.Tests
         private readonly Mock<IAmarilloUploadService> uploadService = new();
         private readonly Mock<ILogger<AmarilloBulkUploadService>> logger = new();
         private readonly Mock<UploaderResponse> uploaderResponse = new();
+        private readonly Mock<ISleepService> sleepService = new();
 
         public AmarilloBulkUploadServiceTests()
         {
@@ -92,7 +94,8 @@ namespace Husa.Uploader.Core.Tests
             => new(
                 this.uploaderClient.Object,
                 this.uploadService.Object,
-                this.logger.Object);
+                this.logger.Object,
+                this.sleepService.Object);
 
         private List<UploadListingItem> GetBulkListings()
         {

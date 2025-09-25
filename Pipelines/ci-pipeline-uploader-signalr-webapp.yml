@@ -1,24 +1,16 @@
 pr:
   branches:
-    include:
-    - develop
-    - release/*
-    - hotfix/*
-    - master
+    include: [develop, release/*, hotfix/*, master]
   paths:
     include:
-      - Husa.Uploader.SignalR.WebApp
+      - Husa.Uploader.SignalR.WebApp/**
 
 trigger:
   branches:
-    include:
-    - develop
-    - release/*
-    - hotfix/*
-    - master
+    include: [develop, release/*, hotfix/*, master]
   paths:
     include:
-      - Husa.Uploader.SignalR.WebApp
+      - Husa.Uploader.SignalR.WebApp/**
 
 pool:
   vmImage: windows-latest
@@ -26,21 +18,27 @@ pool:
 variables:
 - name: isPullRequest
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
+- name: BuildConfiguration
+  value: Release
 
 steps:
+- task: NuGetAuthenticate@1
+
 - task: DotNetCoreCLI@2
   displayName: 'dotnet restore'
   inputs:
     command: restore
     projects: '**/Husa.Uploader.SignalR.WebApp/Husa.Uploader.SignalR.WebApp.csproj'
-    restoreArguments: '/property:Configuration=Release'
+    restoreArguments: '/property:Configuration=$(BuildConfiguration)'
     feedsToUse: 'select'
     vstsFeed: 'f820f957-6781-4cd6-b5f5-e720c189507f/891ce0ed-37b7-4336-b1fe-079c0525a171'
+
 - task: DotNetCoreCLI@2
   displayName: 'dotnet build'
   inputs:
     projects: '**/Husa.Uploader.SignalR.WebApp/Husa.Uploader.SignalR.WebApp.csproj'
-    arguments: '--configuration $(BuildConfiguration)'
+    arguments: '--configuration $(BuildConfiguration) --no-restore'
+
 - task: DotNetCoreCLI@2
   displayName: 'dotnet publish'
   condition: ne(variables.isPullRequest, true)
@@ -48,10 +46,11 @@ steps:
     command: publish
     publishWebProjects: false
     projects: '**/Husa.Uploader.SignalR.WebApp/Husa.Uploader.SignalR.WebApp.csproj'
-    arguments: '--configuration Release --output $(build.artifactstagingdirectory)'
+    arguments: '--configuration $(BuildConfiguration) --no-restore --output $(Build.ArtifactStagingDirectory)'
+
 - task: PublishBuildArtifacts@1
   condition: and(succeededOrFailed(), ne(variables.isPullRequest, true))
   displayName: 'Publish Artifact'
   inputs:
-    PathtoPublish: '$(build.artifactstagingdirectory)'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
     ArtifactName: 'drop'

@@ -1,6 +1,8 @@
 namespace Husa.Uploader.Core.Tests
 {
     using System;
+    using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.CompanyServicesManager.Api.Contracts.Response;
@@ -17,6 +19,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
+    using Husa.Uploader.Crosscutting.Interfaces;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
@@ -37,6 +40,7 @@ namespace Husa.Uploader.Core.Tests
         private readonly Mock<ILogger<SaborUploadService>> logger = new();
         private readonly Mock<Models.UploadCommandInfo> uploadCommandInfo = new();
         private readonly ApplicationServicesFixture fixture;
+        private readonly Mock<ISleepService> sleepService = new();
 
         public SaborUploadServiceTests(ApplicationServicesFixture fixture)
         {
@@ -623,6 +627,7 @@ namespace Husa.Uploader.Core.Tests
                 this.fixture.ApplicationOptions,
                 this.mediaRepository.Object,
                 this.serviceSubscriptionClient.Object,
-                this.logger.Object);
+                this.logger.Object,
+                this.sleepService.Object);
     }
 }

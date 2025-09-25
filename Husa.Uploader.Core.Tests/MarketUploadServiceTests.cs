@@ -21,11 +21,12 @@ namespace Husa.Uploader.Core.Tests
             where TResidentialListingRequest : ResidentialListingRequest
     {
         protected Mock<IMediaRepository> mediaRepository = new();
+        protected Mock<IListingRequestRepository> listingRequestRepository = new();
         protected Mock<IListingRequestRepository> sqlDataLoader = new();
         protected Mock<IServiceSubscriptionClient> serviceSubscriptionClient = new();
 
         [Fact]
-        public async Task Upload_ReturnSuccess()
+        public virtual async Task Upload_ReturnSuccess()
         {
             // Arrange
             UploaderResponse expectedResponse = new UploaderResponse();
@@ -133,6 +134,42 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(LoginResult.Logged, result);
         }
 
+        [Fact]
+        public void CanUpload_ValidListing_ReturnsTrue()
+        {
+            // Arrange
+            var sut = this.GetSut();
+            var listing = this.GetResidentialListingRequest();
+
+            // Act
+            var result = sut.CanUpload(listing);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void CanUpload_NullListing_ReturnsFalse()
+        {
+            // Arrange
+            var sut = this.GetSut();
+
+            // Act & Assert
+            try
+            {
+                var result = sut.CanUpload(null);
+                Assert.False(result);
+            }
+            catch (ArgumentNullException)
+            {
+                Assert.True(true);
+            }
+            catch (NullReferenceException)
+            {
+                Assert.True(true);
+            }
+        }
+
         protected abstract TUploadService GetSut();
         protected abstract TResidentialListingRequest GetEmptyListingRequest();
         protected abstract ResidentialListingRequest GetResidentialListingRequest(bool isNewListing = true);
@@ -146,6 +183,10 @@ namespace Husa.Uploader.Core.Tests
                 {
                     SiteUsername = username,
                     SitePassword = password,
+                },
+                MlsInfo = new MlsInfoResponse()
+                {
+                    RemarksForCompletedHomes = "SD",
                 },
             };
             this.serviceSubscriptionClient

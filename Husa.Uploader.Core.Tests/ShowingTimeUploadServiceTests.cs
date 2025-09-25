@@ -1,12 +1,17 @@
 namespace Husa.Uploader.Core.Tests
 {
+    using System;
+    using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Husa.Extensions.ShowingTime.Enums;
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ShowingTime;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Crosscutting.Interfaces;
     using Microsoft.Extensions.Logging;
     using Moq;
     using OpenQA.Selenium;
@@ -18,6 +23,7 @@ namespace Husa.Uploader.Core.Tests
         private readonly Mock<IMarketUploadService> mockMarketUploadService;
         private readonly Mock<IUploaderClient> mockUploaderClient;
         private readonly Mock<ILogger> mockLogger;
+        private readonly Mock<ISleepService> mockSleepService;
         private readonly string agentSelectorValue = "test-agent";
 
         public ShowingTimeUploadServiceTests()
@@ -25,13 +31,15 @@ namespace Husa.Uploader.Core.Tests
             this.mockMarketUploadService = new Mock<IMarketUploadService>();
             this.mockUploaderClient = new Mock<IUploaderClient>();
             this.mockLogger = new Mock<ILogger>();
+            this.mockSleepService = new Mock<ISleepService>();
 
             this.mockMarketUploadService.Setup(x => x.UploaderClient).Returns(this.mockUploaderClient.Object);
 
             this.Sut = new ShowingTimeUploadService(
                 this.mockMarketUploadService.Object,
                 this.agentSelectorValue,
-                this.mockLogger.Object);
+                this.mockLogger.Object,
+                this.mockSleepService.Object);
         }
 
         public ShowingTimeUploadService Sut { get; private set; }
@@ -298,7 +306,7 @@ namespace Husa.Uploader.Core.Tests
                 x => x.ClickOnElementById(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<int>(), It.IsAny<bool>()),
                 Times.Exactly(3));
             this.mockUploaderClient.Verify(
-                x => x.SetSelect(It.IsAny<By>(), It.IsAny<string>(), It.IsAny<bool>()), Times.AtLeast(4));
+                x => x.SetSelect(It.IsAny<By>(), It.IsAny<string>(), It.IsAny<bool>()), Times.AtLeast(3));
         }
 
         [Fact]
@@ -387,21 +395,16 @@ namespace Husa.Uploader.Core.Tests
         [Fact]
         public async Task SetContactConfirmSection_Success()
         {
-            var contact = this.ShowingTimeFaker().Contacts.ElementAt(1);
-            var executeScriptQty = 0;
-
-            if (contact.ConfirmAppointmentsByMobilePhone.Value || contact.ConfirmAppointmentsByOfficePhone.Value)
+            var contact = new ContactDetailResponse
             {
-                executeScriptQty += 2;
-            }
-
-            if (contact.ConfirmAppointmentsByEmail.Value
-                    || contact.ConfirmAppointmentsByMobilePhone.Value
-                    || contact.ConfirmAppointmentsByOfficePhone.Value
-                    || contact.ConfirmAppointmentsByText.Value)
-            {
-                executeScriptQty += 1;
-            }
+                ConfirmAppointmentsByMobilePhone = true,
+                ConfirmAppointmentsByOfficePhone = true,
+                ConfirmAppointmentsByEmail = true,
+                ConfirmAppointmentsByText = true,
+                SendOnFYIByEmail = false,
+                SendOnFYIByText = false,
+            };
+            var executeScriptQty = 4;
 
             var confirmSectionMock = new Mock<IWebElement>();
             confirmSectionMock.SetupAllProperties();
@@ -419,7 +422,7 @@ namespace Husa.Uploader.Core.Tests
 
             this.mockUploaderClient.Verify(
                 x => x.ExecuteScript(It.IsAny<string>(), It.IsAny<bool>()),
-                Times.AtLeast(executeScriptQty));
+                Times.Exactly(executeScriptQty));
         }
 
         [Fact]

@@ -16,6 +16,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Enums;
+    using Husa.Uploader.Crosscutting.Interfaces;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.LotListing;
     using Husa.Uploader.Data.Entities.MarketRequests;
@@ -34,6 +35,7 @@ namespace Husa.Uploader.Core.Tests
         private readonly Mock<ILogger<CtxUploadService>> logger = new();
         private readonly Mock<IMediaRepository> mediaRepositoryMock = new();
         private readonly Mock<IServiceSubscriptionClient> serviceSubscriptionClientMock = new();
+        private readonly Mock<ISleepService> sleepServiceMock = new();
         private readonly ApplicationServicesFixture fixture;
 
         public CtxUploadServiceTests(ApplicationServicesFixture fixture)
@@ -441,7 +443,8 @@ namespace Husa.Uploader.Core.Tests
                 this.fixture.ApplicationOptions,
                 this.mediaRepository.Object,
                 this.serviceSubscriptionClient.Object,
-                this.logger.Object);
+                this.logger.Object,
+                this.sleepServiceMock.Object);
 
         protected override CtxListingRequest GetEmptyListingRequest()
             => new CtxListingRequest(new ListingSaleRequestDetailResponse());
@@ -555,7 +558,8 @@ namespace Husa.Uploader.Core.Tests
                 this.fixture.ApplicationOptions,
                 this.mediaRepositoryMock.Object,
                 this.serviceSubscriptionClientMock.Object,
-                this.logger.Object)
+                this.logger.Object,
+                this.sleepServiceMock.Object)
             { CallBase = true };
 
         private void ConfigureCtxUploaderServiceMockLoginSteps()

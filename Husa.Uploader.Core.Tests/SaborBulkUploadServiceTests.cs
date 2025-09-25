@@ -6,6 +6,7 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Models;
     using Husa.Uploader.Core.Services.BulkUpload;
+    using Husa.Uploader.Crosscutting.Interfaces;
     using Husa.Uploader.Data.Entities;
     using Microsoft.Extensions.Logging;
     using Moq;
@@ -16,6 +17,7 @@ namespace Husa.Uploader.Core.Tests
         private readonly Mock<IUploaderClient> uploaderClient = new();
         private readonly Mock<ISaborUploadService> uploadService = new();
         private readonly Mock<ILogger<SaborBulkUploadService>> logger = new();
+        private readonly Mock<ISleepService> sleepService = new();
 
         public SaborBulkUploadServiceTests()
         {
@@ -91,7 +93,8 @@ namespace Husa.Uploader.Core.Tests
             => new(
                 this.uploaderClient.Object,
                 this.uploadService.Object,
-                this.logger.Object);
+                this.logger.Object,
+                this.sleepService.Object);
 
         private List<UploadListingItem> GetBulkListings()
         {

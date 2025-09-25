@@ -7,6 +7,7 @@ namespace Husa.Uploader.Core.Services.BulkUpload
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.BulkUpload;
     using Husa.Uploader.Core.Models;
+    using Husa.Uploader.Crosscutting.Interfaces;
     using Husa.Uploader.Data.Entities;
     using Microsoft.Extensions.Logging;
 
@@ -15,15 +16,18 @@ namespace Husa.Uploader.Core.Services.BulkUpload
         private readonly IUploaderClient uploaderClient;
         private readonly ISaborUploadService uploadService;
         private readonly ILogger<SaborBulkUploadService> logger;
+        private readonly ISleepService sleepService;
 
         public SaborBulkUploadService(
             IUploaderClient uploaderClient,
             ISaborUploadService uploadService,
-            ILogger<SaborBulkUploadService> logger)
+            ILogger<SaborBulkUploadService> logger,
+            ISleepService sleepService)
         {
             this.uploaderClient = uploaderClient ?? throw new ArgumentNullException(nameof(uploaderClient));
             this.uploadService = uploadService ?? throw new ArgumentNullException(nameof(uploadService));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.sleepService = sleepService ?? throw new ArgumentNullException(nameof(sleepService));
         }
 
         public MarketCode CurrentMarket => MarketCode.SanAntonio;
@@ -80,11 +84,11 @@ namespace Husa.Uploader.Core.Services.BulkUpload
             {
                 await this.ProcessListing(bulkFullListing, cancellationToken, logInForCompany, autoSave);
                 logInForCompany = false;
-                Thread.Sleep(400);
+                this.sleepService.Sleep(400);
             }
 
             this.uploadService.Logout();
-            Thread.Sleep(400);
+            this.sleepService.Sleep(400);
         }
 
         private async Task ProcessListing(ResidentialListingRequest bulkFullListing, CancellationToken cancellationToken, bool logInForCompany, bool autoSave = false)

@@ -11,5 +11,7 @@ namespace Husa.Uploader.Crosscutting.Options
         public bool EnableSignalR { get; set; }
 
         public bool SkipAuthentication { get; set; }
+
+        public bool EnableBusHandlers { get; set; }
     }
 }

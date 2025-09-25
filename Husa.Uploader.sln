@@ -22,6 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Pipelines\ci-pipeline-uploader-signalr-webapp.yml = Pipelines\ci-pipeline-uploader-signalr-webapp.yml
 		ci-pipeline-uploader.yml = ci-pipeline-uploader.yml
 		Directory.Build.props = Directory.Build.props
+		NuGet.config = NuGet.config
 		README.md = README.md
 		stylecop.json = stylecop.json
 	EndProjectSection
@@ -39,6 +40,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{26DE
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Husa.Uploader.Crosscutting.Tests", "Husa.Uploader.Crosscutting.Tests\Husa.Uploader.Crosscutting.Tests.csproj", "{DC3DAA8E-ED17-4B08-A46B-A6ED520C128D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Uploader.Api", "Husa.Uploader.Api\Husa.Uploader.Api.csproj", "{E4D8BA23-2069-45BA-8542-EB769C554160}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Husa.Uploader.ServiceBus.Contracts", "Husa.Uploader.ServiceBus.Contracts\Husa.Uploader.ServiceBus.Contracts.csproj", "{42D8ECAB-D1DC-4E59-2DA5-20E56ADC3CB5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -82,6 +87,14 @@ Global
 		{DC3DAA8E-ED17-4B08-A46B-A6ED520C128D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC3DAA8E-ED17-4B08-A46B-A6ED520C128D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC3DAA8E-ED17-4B08-A46B-A6ED520C128D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4D8BA23-2069-45BA-8542-EB769C554160}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4D8BA23-2069-45BA-8542-EB769C554160}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4D8BA23-2069-45BA-8542-EB769C554160}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4D8BA23-2069-45BA-8542-EB769C554160}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42D8ECAB-D1DC-4E59-2DA5-20E56ADC3CB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42D8ECAB-D1DC-4E59-2DA5-20E56ADC3CB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42D8ECAB-D1DC-4E59-2DA5-20E56ADC3CB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42D8ECAB-D1DC-4E59-2DA5-20E56ADC3CB5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

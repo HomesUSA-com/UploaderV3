@@ -17,7 +17,9 @@ namespace Husa.Uploader.Core.Tests
     using Husa.Uploader.Core.Models;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Core.Services.Common;
+    using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
+    using Husa.Uploader.Crosscutting.Interfaces;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.BulkUpload;
     using Husa.Uploader.Data.Entities.LotListing;
@@ -34,6 +36,7 @@ namespace Husa.Uploader.Core.Tests
         private readonly Mock<IUploaderClient> uploaderClient = new();
         private readonly Mock<ILogger<DfwUploadService>> logger = new();
         private readonly Mock<IQuicklisterDfwClient> quicklisterDfwClient = new();
+        private readonly Mock<ISleepService> sleepService = new();
         private readonly ApplicationServicesFixture fixture;
 
         public DfwUploadServiceTests(ApplicationServicesFixture fixture)
@@ -700,6 +703,195 @@ namespace Husa.Uploader.Core.Tests
             Assert.Equal(UploadResult.Failure, result.UploadResult);
         }
 
+        [Fact]
+        public async Task FullUploadListing_ListingNotFound_ThrowsException()
+        {
+            // Arrange
+            var marketCode = MarketCode.DFW;
+            var requestId = Guid.NewGuid();
+
+            this.listingRequestRepository
+                .Setup(x => x.GetListingRequest(requestId, marketCode, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((ResidentialListingRequest)null);
+
+            var sut = this.GetSut();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<NotFoundException<ResidentialListingRequest>>(() =>
+                sut.FullUploadListing(marketCode, requestId, CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task FullUploadListing_UploadFails_ReturnsFailureResult()
+        {
+            // Arrange
+            var marketCode = MarketCode.DFW;
+            var requestId = Guid.NewGuid();
+            var listing = this.GetResidentialListingRequest();
+            listing.ResidentialListingRequestID = requestId;
+
+            this.listingRequestRepository
+                .Setup(x => x.GetListingRequest(requestId, marketCode, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(listing);
+
+            // Setup failure scenario by making Upload throw an exception
+            this.uploaderClient
+                .Setup(x => x.WriteTextbox(It.IsAny<By>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                .Throws<InvalidOperationException>();
+
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.FullUploadListing(marketCode, requestId, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(UploadResult.Failure, result.UploadResult);
+        }
+
+        [Fact]
+        public async Task FullUploadListing_OperationCancelled_ReturnsFailureResult()
+        {
+            // Arrange
+            var marketCode = MarketCode.DFW;
+            var requestId = Guid.NewGuid();
+            var listing = this.GetResidentialListingRequest();
+            listing.ResidentialListingRequestID = requestId;
+
+            this.listingRequestRepository
+                .Setup(x => x.GetListingRequest(requestId, marketCode, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(listing);
+
+            using var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.Cancel();
+
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.FullUploadListing(marketCode, requestId, cancellationTokenSource.Token);
+
+            // Assert
+            Assert.Equal(UploadResult.Failure, result.UploadResult);
+        }
+
+        [Fact]
+        public void CurrentMarket_ReturnsDFW()
+        {
+            // Arrange
+            var sut = this.GetSut();
+
+            // Act & Assert
+            Assert.Equal(MarketCode.DFW, sut.CurrentMarket);
+        }
+
+        [Fact]
+        public void MultiFamilyPropType_ReturnsCorrectValue()
+        {
+            // Arrange
+            var sut = this.GetSut();
+
+            // Act
+            var result = sut.MultiFamilyPropType;
+
+            // Assert
+            Assert.Equal(ListPropertyType.ResidencialIncome.ToStringFromEnumMember(), result);
+        }
+
+        [Fact]
+        public void CanUpload_ValidDfwListing_ReturnsTrue()
+        {
+            // Arrange
+            var sut = this.GetSut();
+            var listing = this.GetResidentialListingRequest();
+
+            // Act
+            var result = sut.CanUpload(listing);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task Login_WithValidCredentials_ReturnsLogged()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.Login(Guid.NewGuid());
+
+            // Assert
+            Assert.Equal(LoginResult.Logged, result);
+        }
+
+        [Fact]
+        public async Task UpdateImages_ValidListing_ReturnsSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var listing = this.GetResidentialListingRequest();
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdateImages(listing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result.UploadResult);
+        }
+
+        [Fact]
+        public async Task UpdateImages_NullListing_ThrowsArgumentNullException()
+        {
+            // Arrange
+            var sut = this.GetSut();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.UpdateImages(null));
+        }
+
+        [Fact]
+        public async Task UpdatePrice_ValidListing_ReturnsSuccess()
+        {
+            // Arrange
+            this.SetUpCredentials();
+            this.SetUpCompany();
+            var listing = this.GetResidentialListingRequest();
+            listing.MLSNum = "123456";
+            listing.ListPrice = 250000;
+            var sut = this.GetSut();
+
+            // Act
+            var result = await sut.UpdatePrice(listing);
+
+            // Assert
+            Assert.Equal(UploadResult.Success, result.UploadResult);
+        }
+
+        [Fact]
+        public async Task UpdatePrice_NullListing_ThrowsArgumentNullException()
+        {
+            // Arrange
+            var sut = this.GetSut();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => sut.UpdatePrice(null));
+        }
+
+        [Fact]
+        public void CancelOperation_CallsCloseDriverOnUploaderClient()
+        {
+            // Arrange
+            var sut = this.GetSut();
+
+            // Act
+            sut.CancelOperation();
+
+            // Assert
+            this.uploaderClient.Verify(x => x.CloseDriver(), Times.Once);
+        }
+
         protected override LotListingRequest GetLotListingRequest(bool isNewListing = true)
         {
             throw new NotImplementedException();
@@ -710,8 +902,10 @@ namespace Husa.Uploader.Core.Tests
                 this.uploaderClient.Object,
                 this.fixture.ApplicationOptions,
                 this.mediaRepository.Object,
+                this.listingRequestRepository.Object,
                 this.serviceSubscriptionClient.Object,
                 this.quicklisterDfwClient.Object,
+                this.sleepService.Object,
                 this.logger.Object);
 
         protected override DfwListingRequest GetEmptyListingRequest()
