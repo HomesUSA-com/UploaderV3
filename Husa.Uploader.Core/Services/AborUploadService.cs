@@ -454,10 +454,13 @@ namespace Husa.Uploader.Core.Services
 
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ListResultsView"), TimeSpan.FromSeconds(5000));
                     this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
                     Thread.Sleep(5000);
 
-                    this.uploaderClient.ScrollDown(5000);
+                    // Enter Price Change
+                    string buttonText = "Price Change";
+                    this.uploaderClient.ExecuteScript($"$('button[data-mtx-track-prop-item=\"{buttonText}\"]').click()");
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
+                    Thread.Sleep(5000);
 
                     // Listing Information
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_77"));
