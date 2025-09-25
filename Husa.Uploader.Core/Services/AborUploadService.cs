@@ -457,6 +457,8 @@ namespace Husa.Uploader.Core.Services
                     this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
                     Thread.Sleep(5000);
 
+                    this.uploaderClient.ScrollDown(5000);
+
                     // Listing Information
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_77"));
                     this.uploaderClient.WriteTextbox(By.Name("Input_77"), listing.ListPrice); // List Price
