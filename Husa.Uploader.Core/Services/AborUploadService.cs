@@ -195,7 +195,11 @@ namespace Husa.Uploader.Core.Services
                     else
                     {
                         this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_actionsContainer"), TimeSpan.FromSeconds(5000));
+                        this.uploaderClient.ExecuteScript("$('#Input_actionsContainer > button:eq(0)').click()");
                     }
+
+                    Thread.Sleep(5000);
 
                     listing.Longitude = newLongitude;
                     listing.Latitude = newLatitude;
@@ -450,9 +454,14 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ListResultsView"), TimeSpan.FromSeconds(5000));
-                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(0)').click()");
-                    this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_actionsContainer"), TimeSpan.FromSeconds(5000));
-                    this.uploaderClient.ExecuteScript("$('#Input_actionsContainer > button:eq(1)').click()");
+                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
+                    Thread.Sleep(5000);
+
+                    // Enter Price Change
+                    string buttonText = "Price Change";
+                    this.uploaderClient.ExecuteScript($"$('button[data-mtx-track-prop-item=\"{buttonText}\"]').click()");
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
+                    Thread.Sleep(5000);
 
                     // Listing Information
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("Input_77"));
@@ -504,7 +513,8 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ListResultsView"), TimeSpan.FromSeconds(5000));
-                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(0)').click()");
+                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
                     Thread.Sleep(2000);
                     string buttonText = GetButtonTextForStatus(listing.ListStatus);
                     this.uploaderClient.ExecuteScript($"$('button[data-mtx-track-prop-item=\"{buttonText}\"]').click()");
@@ -673,8 +683,9 @@ namespace Husa.Uploader.Core.Services
                 this.NavigateToQuickEdit(listing.MLSNum);
 
                 Thread.Sleep(2000);
-                this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(1)').click()");
-                Thread.Sleep(2000);
+                this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
+                this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
+                Thread.Sleep(5000);
 
                 // Enter OpenHouse
                 string buttonText = "Open Houses Input Form";
@@ -830,7 +841,8 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     Thread.Sleep(2000);
-                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(1)').click()");
+                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
                     Thread.Sleep(2000);
                     string buttonText = GetButtonTextForStatus(listing.ListStatus);
                     this.uploaderClient.ExecuteScript($"$('button[data-mtx-track-prop-item=\"{buttonText}\"]').click()");
@@ -983,7 +995,8 @@ namespace Husa.Uploader.Core.Services
                     this.NavigateToQuickEdit(listing.MLSNum);
 
                     Thread.Sleep(2000);
-                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(1)').click()");
+                    this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
+                    this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
                     Thread.Sleep(2000);
                     this.uploaderClient.ExecuteScript("$('#accordionActionMenu > button:eq(1)').click()");
 
@@ -1112,7 +1125,7 @@ namespace Husa.Uploader.Core.Services
         private void NavigateToQuickEdit(string mlsNumber)
         {
             this.uploaderClient.NavigateToUrl("https://matrix.abor.com/Matrix/AddEdit");
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_FilterSearch"));
 
             char[] mlsCharacters = mlsNumber.ToArray();
@@ -1123,17 +1136,18 @@ namespace Husa.Uploader.Core.Services
             }
 
             this.uploaderClient.FindElementById("Input_FilterSearch").SendKeys(Keys.Tab);
-            Thread.Sleep(2000);
+            Thread.Sleep(5000);
 
-            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ListResultsView"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Name("wrapperTable"));
         }
 
         private void NavigateToEditResidentialForm(string mlsNumber, CancellationToken cancellationToken)
         {
             this.NavigateToQuickEdit(mlsNumber);
             this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("ListResultsView"), cancellationToken);
-            this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:eq(0)').click()");
             Thread.Sleep(2000);
+            this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td').find('button').click()");
+            Thread.Sleep(5000);
         }
 
         private string GetInputPath(string fieldName, string inputType = "input")
@@ -1151,19 +1165,22 @@ namespace Husa.Uploader.Core.Services
 
         private void SetSelect(string inputId, string value)
         {
-            inputId = $"filter_{inputId}";
-            string inputXPath = this.GetInputPath(inputId);
-            var filterInputElement = this.uploaderClient.FindElement(By.XPath(inputXPath), shouldWait: true);
-
             try
             {
-                if (filterInputElement == null)
+                inputId = $"filter_{inputId}";
+                string inputXPath = this.GetInputPath(inputId);
+                var filterInputElement = this.uploaderClient.FindElement(By.XPath(inputXPath), shouldWait: true);
+
+                if (filterInputElement == null || string.IsNullOrEmpty(value))
                 {
                     return;
                 }
 
+                var filterInputElementId = filterInputElement.GetAttribute("id");
+                this.uploaderClient.ExecuteScript($"$('#{filterInputElementId}').focus()");
+
                 filterInputElement.Click();
-                Thread.Sleep(400);
+                Thread.Sleep(2000);
 
                 string actualFilterId = filterInputElement.GetAttribute("id");
                 string baseId = actualFilterId.Replace("filter_", string.Empty);
@@ -1176,11 +1193,13 @@ namespace Husa.Uploader.Core.Services
                 }
 
                 this.uploaderClient.ExecuteScript("arguments[0].scrollIntoView(true);", args: optionElement);
-                Thread.Sleep(200);
+                Thread.Sleep(1000);
 
                 optionElement.Click();
 
-                this.uploaderClient.ScrollDown(250);
+                Thread.Sleep(1000);
+
+                this.uploaderClient.FindElementById(actualFilterId).SendKeys(Keys.Tab);
             }
             catch (Exception ex) when (ex is NoSuchElementException || ex is UnexpectedTagNameException)
             {
@@ -1255,16 +1274,15 @@ namespace Husa.Uploader.Core.Services
                             }
                         }
                     }
-                    catch (Exception ex) when (ex is NoSuchElementException || ex is UnexpectedTagNameException)
+                    catch (Exception ex)
                     {
-                        this.uploaderClient.ExecuteScript("document.activeElement.blur();", false);
-                        this.uploaderClient.ExecuteScript("document.body.click();", false);
+                        this.logger.LogError("{ex}", ex.Message);
                     }
                 }
             }
 
-            this.uploaderClient.ExecuteScript("document.activeElement.blur();");
-            this.uploaderClient.ScrollDown(250);
+            this.uploaderClient.ExecuteScript("document.activeElement.blur();", false);
+            this.uploaderClient.ExecuteScript("document.body.click();", false);
         }
 
         private void WriteTextbox(string inputName, string value, string inputType = "input")
@@ -1279,15 +1297,12 @@ namespace Husa.Uploader.Core.Services
                 }
 
                 this.uploaderClient.ExecuteScript("arguments[0].value = '';", false, inputElement);
-                this.uploaderClient.ExecuteScript("arguments[0].value = arguments[1];", false, inputElement, value);
+                this.uploaderClient.ExecuteScript("arguments[0].value = arguments[1];", false, inputElement, value ?? string.Empty);
 
                 this.uploaderClient.ExecuteScript("arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", false, inputElement);
                 this.uploaderClient.ExecuteScript("arguments[0].dispatchEvent(new Event('change', { bubbles: true }));", false, inputElement);
                 this.uploaderClient.ExecuteScript("arguments[0].dispatchEvent(new Event('blur', { bubbles: true }));", false, inputElement);
                 this.uploaderClient.ExecuteScript("arguments[0].dispatchEvent(new Event('keyup', { bubbles: true }));", false, inputElement);
-
-                this.uploaderClient.ExecuteScript("document.activeElement.blur();", false);
-                this.uploaderClient.ExecuteScript("document.body.click();", false);
             }
             catch (NoSuchElementException ex)
             {
@@ -1297,6 +1312,9 @@ namespace Husa.Uploader.Core.Services
             {
                 this.logger.LogError("Error to write in {inputName}: {ex}", inputName, ex.Message);
             }
+
+            this.uploaderClient.ExecuteScript("document.activeElement.blur();", false);
+            this.uploaderClient.ExecuteScript("document.body.click();", false);
         }
 
         private void SelectToggleButton(string inputId, bool shouldSelect)
@@ -1330,14 +1348,8 @@ namespace Husa.Uploader.Core.Services
             {
                 this.SetSelect("Input_179", "EA"); // List Agreement Type
                 this.SetSelect("Input_341", "LIMIT"); // Listing Service
-                if (listing.ListDate.HasValue)
-                {
-                    this.WriteTextbox("Input_83", listing.ListDate.Value.AddYears(1).ToShortDateString()); // Expiration Date
-                }
-                else
-                {
-                    this.WriteTextbox("Input_83", DateTime.Now.AddYears(1).ToShortDateString()); // Expiration Date
-                }
+                var expirationDate = listing.ListDate.HasValue ? listing.ListDate.Value.AddYears(1) : DateTime.Now.AddYears(1);
+                this.SetExpirationDate(expirationDate); // Expiration Date
 
                 this.SetMultipleCheckboxById("Input_180", "STANDARD"); // Special Listing Conditions
 
@@ -1489,56 +1501,32 @@ namespace Husa.Uploader.Core.Services
             Thread.Sleep(1000);
 
             int indexInput = 0;
-            int nRoomsToDelete = 0;
             int nRoomsUploaded = 0;
 
             if (!listing.IsNewListing)
             {
                 var deleteButtons = this.uploaderClient.FindElements(By.XPath("//button[contains(@onclick, 'mtrxSubForm.DeleteRow') and contains(@onclick, 'Input_761')]"));
 
-                nRoomsToDelete = deleteButtons.Count - 1;
-
-                for (int i = 0; i < nRoomsToDelete; i++)
-                {
-                    deleteButtons[i].Click();
-                    indexInput++;
-                }
-
-                indexInput = Math.Max(0, nRoomsToDelete - 1);
+                nRoomsUploaded = deleteButtons.Count - 1;
 
                 Thread.Sleep(500);
-
-                this.uploaderClient.ClickOnElement(By.XPath("//button[starts-with(@id, 'addBlankRow_Input_761')]"));
-                this.uploaderClient.ExecuteScript("document.activeElement.blur();");
             }
 
             foreach (var room in listing.Rooms)
             {
                 this.SetSelect($"_Input_761___REPEAT{indexInput}_345", room.RoomType);
-                this.uploaderClient.ResetImplicitWait();
+                Thread.Sleep(500);
                 this.SetSelect($"_Input_761___REPEAT{indexInput}_346", room.Level);
+                Thread.Sleep(500);
                 this.SetMultipleCheckboxById($"_Input_761___REPEAT{indexInput}_347", room.Features);
+                Thread.Sleep(500);
                 this.WriteTextbox($"_Input_761___REPEAT{indexInput}_648", room.Description, inputType: "textarea");
-                nRoomsUploaded++;
-                if (nRoomsUploaded < listing.Rooms.Count)
+                Thread.Sleep(500);
+                indexInput++;
+                if (indexInput >= nRoomsUploaded)
                 {
                     this.uploaderClient.ClickOnElement(By.XPath("//button[starts-with(@id, 'addBlankRow_Input_761')]"));
                     this.uploaderClient.SetImplicitWait(TimeSpan.FromMilliseconds(400));
-                }
-
-                if (indexInput > 0 && nRoomsToDelete > 0)
-                {
-                    indexInput--;
-                }
-                else
-                {
-                    if (nRoomsToDelete > 0)
-                    {
-                        indexInput = nRoomsToDelete;
-                        nRoomsToDelete = 0;
-                    }
-
-                    indexInput++;
                 }
             }
         }
@@ -1891,14 +1879,8 @@ namespace Husa.Uploader.Core.Services
             this.SetSelect("Input_179", "EA"); // List Agreement Type
             this.SetSelect("Input_341", "LIMIT"); // Listing Service
             this.uploaderClient.WriteTextbox(By.Name("Input_77"), listing.ListPrice); // List Price
-            if (listing.ListDate.HasValue)
-            {
-                this.WriteTextbox("Input_83", listing.ListDate.Value.AddYears(1).ToShortDateString()); // Expiration Date
-            }
-            else
-            {
-                this.WriteTextbox("Input_83", DateTime.Now.AddYears(1).ToShortDateString()); // Expiration Date
-            }
+            var expirationDate = listing.ListDate.HasValue ? listing.ListDate.Value.AddYears(1) : DateTime.Now.AddYears(1);
+            this.SetExpirationDate(expirationDate); // Expiration Date
 
             this.SetMultipleCheckboxById("Input_180", "STANDARD"); // Special Listing Conditions
             this.SetSelect("Input_181", "A"); // List Agreement Document*/
@@ -2160,6 +2142,15 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ScrollDown(200);
                 Thread.Sleep(400);
             }
+        }
+
+        private void SetExpirationDate(DateTime expirationDate)
+        {
+            this.uploaderClient.WriteTextbox(By.Name("Input_83"), expirationDate.ToShortDateString()); // Expiration Date
+            this.uploaderClient.ExecuteScript($"jQuery('input[name^=Input_83]').parent().parent().find('button').click()");
+            Thread.Sleep(5000);
+            this.uploaderClient.ExecuteScript($"jQuery('#btnApplyDate')[0].click()");
+            Thread.Sleep(2000);
         }
     }
 }
