@@ -1466,6 +1466,9 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.SetMultipleCheckboxById("Input_380", "BUILDE", "Special Listing Conditions", tabName); // Special Listing Conditions
                 this.uploaderClient.SetSelect(By.Id("Input_393"), "VACANT", "Occupant Type", tabName); // Occupant Type
                 this.uploaderClient.SetMultipleCheckboxById("Input_391", listing.Showing, "Showing Requirements", tabName); // Showing Requirements
+
+                this.SetShowingServiceType(listing, tabName);
+
                 this.uploaderClient.SetMultipleCheckboxById("Input_387", listing.ShowingContactType, "Showing Contact Type", tabName); // Showing Contact Type
                 this.uploaderClient.WriteTextbox(By.Id("Input_493"), listing.OwnerName); // Owner Name
                 this.uploaderClient.SetSelect(By.Id("Input_260"), "NONE", "Keybox Type", tabName); // Lockbox Type
@@ -1483,6 +1486,7 @@ namespace Husa.Uploader.Core.Services
 
                 if (isNotPartialFill)
                 {
+                    this.SetShowingServiceType(listing, tabName);
                     this.uploaderClient.SetMultiSelect(By.Id("Input_387"), listing.ShowingContactType); // Showing Contact Type
                 }
             }
@@ -1496,6 +1500,31 @@ namespace Husa.Uploader.Core.Services
                 if (isNotPartialFill)
                 {
                     this.uploaderClient.SetMultiSelect(By.Id("Input_387"), null); // Showing
+                }
+            }
+        }
+
+        private void SetShowingServiceType(DfwListingRequest listing, string tabName)
+        {
+            const string ShowingServiceFieldId = "Input_786";
+            const string NoneServiceType = "NONE";
+            const string ShowingServiceType = "STCSS";
+
+            if (!string.IsNullOrEmpty(listing.ShowingContactType))
+            {
+                switch (listing.ShowingContactType)
+                {
+                    case var type when type.Contains("BUILDER"):
+                        this.uploaderClient.SetMultipleCheckboxById(ShowingServiceFieldId, NoneServiceType, "Showing Service(s)", tabName);
+                        break;
+
+                    case var type when type.Contains("SHSVC"):
+                        this.uploaderClient.SetMultipleCheckboxById(ShowingServiceFieldId, ShowingServiceType, "Showing Service(s)", tabName);
+                        break;
+
+                    default:
+                        this.logger?.LogWarning("ShowingContactType does not match known patterns: {ShowingContactType}", listing.ShowingContactType);
+                        break;
                 }
             }
         }
