@@ -140,13 +140,9 @@ namespace Husa.Uploader.Core.Services
                     }
                     else
                     {
-                        this.NavigateToQuickEdit(listing.MLSNum);
-
-                        this.uploaderClient.ExecuteScript("$('#ListResultsView > table > tbody > tr > td > button:first').click()");
-                        this.uploaderClient.WaitUntilElementExists(By.Id("InputFormnav-inputFormDetail"), cancellationToken);
-
-                        this.uploaderClient.ClickOnElementById("toc_InputForm_section_9"); // click in tab Listing Information
-                        Thread.Sleep(400);
+                        this.NavigateToEditResidentialForm(listing.MLSNum, cancellationToken);
+                        this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_actionsContainer"), TimeSpan.FromSeconds(5000));
+                        this.uploaderClient.ExecuteScript("$('#Input_actionsContainer > button:eq(0)').click()");
                     }
 
                     response.UploadResult = UploadResult.Success;
