@@ -1,6 +1,5 @@
 namespace Husa.Uploader.Desktop.ViewModels.BulkUpload
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Windows;
@@ -23,7 +22,7 @@ namespace Husa.Uploader.Desktop.ViewModels.BulkUpload
         {
             this.ListingsBulkFiltered = new List<TaxIdBulkUploadResidentialListingFiltered>();
             this.SelectedListings = new List<TaxIdBulkUploadListingItem>();
-            var marketListings = listings.Where(rq => GetMarketCodeFromString(rq.Market) == market);
+            var marketListings = listings.Where(rq => rq.Market == market);
 
             foreach (var rl in marketListings)
             {
@@ -106,17 +105,6 @@ namespace Husa.Uploader.Desktop.ViewModels.BulkUpload
                 this.OnPropertyChanged(name: nameof(this.ShowError));
             }
         }
-
-        public static MarketCode GetMarketCodeFromString(string market) => market switch
-        {
-            "SABOR" => MarketCode.SanAntonio,
-            "CTX" => MarketCode.CTX,
-            "ABOR" => MarketCode.Austin,
-            "HAR" => MarketCode.Houston,
-            "DFW" => MarketCode.DFW,
-            "AMARILLO" => MarketCode.Amarillo,
-            _ => throw new NotSupportedException(nameof(market)),
-        };
 
         public void Cancel()
         {

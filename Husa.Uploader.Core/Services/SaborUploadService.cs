@@ -11,6 +11,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
+    using Husa.Uploader.Crosscutting.Regex;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.BulkUpload;
     using Husa.Uploader.Data.Entities.LotListing;
@@ -1497,9 +1498,13 @@ namespace Husa.Uploader.Core.Services
             {
                 this.ClickNextButton();
 
-                string baseRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
-                string additionalRemarks = listing.AgentPrivateRemarksAdditional ?? string.Empty;
-                var agentRemarks = $"{baseRemarks}. {additionalRemarks}";
+                var agentRemarks = string.Join(". ", new List<string>()
+                {
+                    listing.GetAgentRemarksMessage(),
+                    listing.AgentPrivateRemarks,
+                    listing.AgentPrivateRemarksAdditional,
+                }.Where(x => !string.IsNullOrEmpty(x)));
+                agentRemarks = RegexGenerator.InvalidInlineDots.Replace($"{agentRemarks}.", ".");
 
                 Thread.Sleep(2000);
 
@@ -1510,9 +1515,10 @@ namespace Husa.Uploader.Core.Services
                     isElementOptional: true); // Agent Confidential Rmrks
             }
 
-            var remarks = listing.GetPublicRemarks();
+            var publicRemarks = listing.GetPublicRemarks();
+            publicRemarks = RegexGenerator.InvalidInlineDots.Replace($"{publicRemarks}.", ".");
             Thread.Sleep(2000);
-            this.uploaderClient.WriteTextbox(By.Name("REMARKS"), remarks, isElementOptional: true); // Public Remarks
+            this.uploaderClient.WriteTextbox(By.Name("REMARKS"), publicRemarks, isElementOptional: true); // Public Remarks
         }
 
         private async Task FillMedia(Guid residentialListingRequestID, CancellationToken cancellationToken)

@@ -5,34 +5,37 @@ namespace Husa.Uploader.Data.Tests.Repositories
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-    using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Dfw.Api.Client;
-    using Husa.Uploader.Crosscutting.Options;
+    using Husa.Quicklister.Har.Api.Client;
     using Husa.Uploader.Data.Repositories;
     using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Options;
     using Moq;
     using Xunit;
-    using ListingWithInvalidTaxIdResponse = Husa.Quicklister.Dfw.Api.Contracts.Response.Listing.InvalidTaxIdListingsResponse;
+    using ListingWithInvalidTaxIdResponse = Husa.Quicklister.Extensions.Api.Contracts.Response.Listing.InvalidTaxIdListingsResponse;
 
     public class ListingRepositoryTests
     {
-        private readonly Mock<IOptions<ApplicationOptions>> applicationOptionsMock;
         private readonly Mock<IQuicklisterDfwClient> quicklisterDfwClientMock;
-        private readonly Mock<IServiceSubscriptionClient> serviceSubscriptionClientMock;
+        private readonly Mock<IQuicklisterHarClient> quicklisterHarClientMock;
         private readonly Mock<ILogger<ListingRepository>> loggerMock;
 
         public ListingRepositoryTests()
         {
-            this.applicationOptionsMock = new Mock<IOptions<ApplicationOptions>>();
             this.quicklisterDfwClientMock = new Mock<IQuicklisterDfwClient>();
-            this.serviceSubscriptionClientMock = new Mock<IServiceSubscriptionClient>();
+            this.quicklisterHarClientMock = new Mock<IQuicklisterHarClient>();
             this.loggerMock = new Mock<ILogger<ListingRepository>>();
         }
 
-        [Fact]
-        public async Task GetListingsWithInvalidTaxId_DfwMarket_ReturnsListings()
+        private ListingRepository Sut => new(
+                this.quicklisterDfwClientMock.Object,
+                this.quicklisterHarClientMock.Object,
+                this.loggerMock.Object);
+
+        [Theory]
+        [InlineData(MarketCode.DFW)]
+        [InlineData(MarketCode.Houston)]
+        public async Task GetListingsWithInvalidTaxId_DfwMarket_ReturnsListings(MarketCode marketCode)
         {
             // Arrange
             var mockListings = new List<ListingWithInvalidTaxIdResponse>
@@ -51,18 +54,10 @@ namespace Husa.Uploader.Data.Tests.Repositories
                 },
             };
 
-            this.quicklisterDfwClientMock
-                .Setup(x => x.SaleListing.GetListingsWithInvalidTaxId(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mockListings);
-
-            var repository = new ListingRepository(
-                this.applicationOptionsMock.Object,
-                this.quicklisterDfwClientMock.Object,
-                this.serviceSubscriptionClientMock.Object,
-                this.loggerMock.Object);
+            this.SetupClient(marketCode, mockListings);
 
             // Act
-            var result = await repository.GetListingsWithInvalidTaxId(MarketCode.DFW);
+            var result = await this.Sut.GetListingsWithInvalidTaxId(marketCode);
 
             // Assert
             Assert.NotNull(result);
@@ -72,24 +67,16 @@ namespace Husa.Uploader.Data.Tests.Repositories
             Assert.Equal("12345", firstItem.MlsNumber);
             Assert.Equal("123 Main St", firstItem.Address);
             Assert.Equal("invalid-tax-id", firstItem.TaxId);
-            Assert.Equal("DFW", firstItem.Market);
-
-            this.quicklisterDfwClientMock.Verify(x => x.SaleListing.GetListingsWithInvalidTaxId(It.IsAny<CancellationToken>()), Times.Once);
+            Assert.Equal(marketCode, firstItem.Market);
+            this.VerifyClientInvocation(marketCode);
         }
 
         [Fact]
         public async Task GetListingsWithInvalidTaxId_UnsupportedMarket_ThrowsNotSupportedException()
         {
-            // Arrange
-            var repository = new ListingRepository(
-                this.applicationOptionsMock.Object,
-                this.quicklisterDfwClientMock.Object,
-                this.serviceSubscriptionClientMock.Object,
-                this.loggerMock.Object);
-
             // Act & Assert
             await Assert.ThrowsAsync<NotSupportedException>(() =>
-                repository.GetListingsWithInvalidTaxId(MarketCode.CTX));
+                this.Sut.GetListingsWithInvalidTaxId(MarketCode.CTX));
         }
 
         [Fact]
@@ -97,9 +84,8 @@ namespace Husa.Uploader.Data.Tests.Repositories
         {
             // Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() => new ListingRepository(
-                this.applicationOptionsMock.Object,
                 null,
-                this.serviceSubscriptionClientMock.Object,
+                null,
                 this.loggerMock.Object));
 
             Assert.Equal("quicklisterDfwClient", exception.ParamName);
@@ -110,12 +96,45 @@ namespace Husa.Uploader.Data.Tests.Repositories
         {
             // Act & Assert
             var exception = Assert.Throws<ArgumentNullException>(() => new ListingRepository(
-                this.applicationOptionsMock.Object,
                 this.quicklisterDfwClientMock.Object,
-                this.serviceSubscriptionClientMock.Object,
+                this.quicklisterHarClientMock.Object,
                 null));
 
             Assert.Equal("logger", exception.ParamName);
+        }
+
+        private void SetupClient(MarketCode marketCode, List<ListingWithInvalidTaxIdResponse> mockListings)
+        {
+            switch (marketCode)
+            {
+                case MarketCode.DFW:
+                    this.quicklisterDfwClientMock
+                    .Setup(x => x.SaleListing.GetListingsWithInvalidTaxId(It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(mockListings);
+                    break;
+                case MarketCode.Houston:
+                    this.quicklisterHarClientMock
+                    .Setup(x => x.SaleListing.GetListingsWithInvalidTaxId(It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(mockListings);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void VerifyClientInvocation(MarketCode marketCode)
+        {
+            switch (marketCode)
+            {
+                case MarketCode.DFW:
+                    this.quicklisterDfwClientMock.Verify(x => x.SaleListing.GetListingsWithInvalidTaxId(It.IsAny<CancellationToken>()), Times.Once);
+                    break;
+                case MarketCode.Houston:
+                    this.quicklisterHarClientMock.Verify(x => x.SaleListing.GetListingsWithInvalidTaxId(It.IsAny<CancellationToken>()), Times.Once);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

@@ -106,6 +106,9 @@ namespace Husa.Uploader.Core.Services.BulkUpload
                 case RequestFieldChange.ConstructionStage:
                     await this.uploadService.UpdateStatus(bulkFullListing, cancellationToken, logInForCompany, autoSave);
                     break;
+                case RequestFieldChange.TaxId:
+                    await this.uploadService.TaxIdUpdate(bulkFullListing, logInForCompany, cancellationToken);
+                    break;
                 default:
                     throw new NotImplementedException();
             }

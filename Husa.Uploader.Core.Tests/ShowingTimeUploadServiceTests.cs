@@ -2,8 +2,8 @@ namespace Husa.Uploader.Core.Tests
 {
     using System.Collections.ObjectModel;
     using System.Linq;
+    using Husa.Extensions.ShowingTime.Enums;
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ShowingTime;
-    using Husa.Quicklister.Extensions.Domain.Enums.ShowingTime;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Services;
     using Husa.Uploader.Crosscutting.Enums;

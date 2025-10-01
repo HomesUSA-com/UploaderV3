@@ -14,6 +14,7 @@ namespace Husa.Uploader.Core.Services
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
+    using Husa.Uploader.Crosscutting.Regex;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.BulkUpload;
     using Husa.Uploader.Data.Entities.LotListing;
@@ -1651,9 +1652,13 @@ namespace Husa.Uploader.Core.Services
                 this.WriteTextbox("Input_323", remarks, inputType: "textarea"); // Syndication Remarks
             }
 
-            string baseAgentRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
-            string additionalRemarks = listing.AgentPrivateRemarksAdditional ?? string.Empty;
-            var agentRemarks = $"{baseAgentRemarks}. {additionalRemarks}";
+            var agentRemarks = string.Join(". ", new List<string>()
+            {
+                listing.GetAgentRemarksMessage(),
+                listing.AgentPrivateRemarks,
+                listing.AgentPrivateRemarksAdditional,
+            }.Where(x => !string.IsNullOrEmpty(x)));
+            agentRemarks = RegexGenerator.InvalidInlineDots.Replace($"{agentRemarks}.", ".");
             this.WriteTextbox("Input_321", agentRemarks, inputType: "textarea");
         }
 

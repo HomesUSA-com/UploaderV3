@@ -592,7 +592,7 @@ namespace Husa.Uploader.Core.Tests
                 Address = "1234 Address",
                 CompanyId = Guid.NewGuid(),
                 Id = Guid.NewGuid(),
-                Market = "DFW",
+                Market = MarketCode.DFW,
                 MlsNumber = "123456",
                 OwnerName = "Test Company",
                 TaxId = "12346",

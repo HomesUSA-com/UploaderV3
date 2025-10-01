@@ -5,15 +5,15 @@ namespace Husa.Uploader.Core.Services.BulkUpload.TaxIdBulkUpload
     using Husa.Uploader.Core.Interfaces.BulkUpload.TaxIdBulkUpload;
     using Microsoft.Extensions.Logging;
 
-    public class DfwTaxIdBulkUploadService : TaxIdBulkUploadService<IDfwUploadService>, IDfwTaxIdBulkUploadService
+    public class HarTaxIdBulkUploadService : TaxIdBulkUploadService<IHarUploadService>, IHarTaxIdBulkUploadService
     {
-        public DfwTaxIdBulkUploadService(
-            IDfwUploadService uploadService,
-            ILogger<DfwTaxIdBulkUploadService> logger)
+        public HarTaxIdBulkUploadService(
+            IHarUploadService uploadService,
+            ILogger<HarTaxIdBulkUploadService> logger)
             : base(uploadService, logger)
         {
         }
 
-        public override MarketCode CurrentMarket => MarketCode.DFW;
+        public override MarketCode CurrentMarket => MarketCode.Houston;
     }
 }

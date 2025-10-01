@@ -5,9 +5,9 @@ namespace Husa.Uploader.Core.Services
     using System.Threading.Tasks;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
+    using Husa.Extensions.ShowingTime.Enums;
     using Husa.Quicklister.Extensions.Api.Contracts.Response.ShowingTime;
     using Husa.Quicklister.Extensions.Domain.Enums;
-    using Husa.Quicklister.Extensions.Domain.Enums.ShowingTime;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Interfaces.ShowingTime;
     using Husa.Uploader.Core.Models;

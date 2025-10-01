@@ -8,14 +8,17 @@ namespace Husa.Uploader.Core.Services
     using Husa.Extensions.Common.Enums;
     using Husa.MediaService.Domain.Enums;
     using Husa.Quicklister.Extensions.Domain.Enums;
+    using Husa.Quicklister.Har.Api.Client;
     using Husa.Quicklister.Har.Domain.Enums;
     using Husa.Quicklister.Har.Domain.Enums.Domain;
+    using Husa.Uploader.Core.Extensions;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Models;
     using Husa.Uploader.Core.Services.Common;
     using Husa.Uploader.Crosscutting.Enums;
     using Husa.Uploader.Crosscutting.Extensions;
     using Husa.Uploader.Crosscutting.Options;
+    using Husa.Uploader.Crosscutting.Regex;
     using Husa.Uploader.Data.Entities;
     using Husa.Uploader.Data.Entities.BulkUpload;
     using Husa.Uploader.Data.Entities.LotListing;
@@ -28,24 +31,28 @@ namespace Husa.Uploader.Core.Services
 
     public class HarUploadService : IHarUploadService
     {
-        private const string LandingPageURL = "https://www.har.com/moa_mls/goMatrix";
+        private const string LandingPageURL = $"https://www.har.com/moa_mls/goMatrix";
+        private const string SearchURL = $"https://matrix.harmls.com/Matrix/Search";
         private readonly IUploaderClient uploaderClient;
         private readonly IMediaRepository mediaRepository;
         private readonly IServiceSubscriptionClient serviceSubscriptionClient;
         private readonly ApplicationOptions options;
         private readonly ILogger<HarUploadService> logger;
+        private readonly IQuicklisterHarClient quicklisterHarClient;
 
         public HarUploadService(
             IUploaderClient uploaderClient,
             IOptions<ApplicationOptions> options,
             IMediaRepository mediaRepository,
             IServiceSubscriptionClient serviceSubscriptionClient,
+            IQuicklisterHarClient quicklisterHarClient,
             ILogger<HarUploadService> logger)
         {
             this.uploaderClient = uploaderClient ?? throw new ArgumentNullException(nameof(uploaderClient));
             this.mediaRepository = mediaRepository ?? throw new ArgumentNullException(nameof(mediaRepository));
             this.serviceSubscriptionClient = serviceSubscriptionClient ?? throw new ArgumentNullException(nameof(serviceSubscriptionClient));
             this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+            this.quicklisterHarClient = quicklisterHarClient ?? throw new ArgumentNullException(nameof(quicklisterHarClient));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -820,15 +827,115 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        public Task<UploaderResponse> TaxIdRequestCreation(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default)
+        public async Task<UploaderResponse> TaxIdRequestCreation(TaxIdBulkUploadListingItem listing, bool logIn = true, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(listing);
+
+            var uploaderResponse = new UploaderResponse();
+            this.logger.LogInformation("Updating Tax Id information for the listing {ListingId}", listing.Id);
+            this.uploaderClient.InitializeUploadInfo(listing.Id, false);
+            if (logIn)
+            {
+                await this.Login(listing.CompanyId);
+                Thread.Sleep(2000);
+            }
+
+            this.NavigateToListingInfo(listing.MlsNumber, logIn, cancellationToken);
+
+            var taxTabLocator = By.XPath("//li[@role='presentation']/a[text()='Tax']");
+
+            if (!this.uploaderClient.IsElementClickable(taxTabLocator))
+            {
+                this.logger.LogInformation("Tax section is not available. Skipping...");
+                uploaderResponse.UploadResult = UploadResult.Success;
+                return uploaderResponse;
+            }
+
+            this.uploaderClient.FindElement(taxTabLocator).Click();
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//span[text()='Parcel ID:']"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+
+            var taxId = this.ScrapeFieldFromTaxPage("Parcel ID");
+
+            if (string.IsNullOrEmpty(taxId))
+            {
+                this.logger.LogInformation("Parcel Id is not available. Skipping...");
+                uploaderResponse.UploadResult = UploadResult.Success;
+                return uploaderResponse;
+            }
+
+            try
+            {
+                await this.quicklisterHarClient.ListingSaleRequest.CreateTaxIdRequestAsync(listing.Id, taxId, cancellationToken);
+            }
+            catch (HttpRequestException ex)
+            {
+                this.uploaderClient.ShowRequestCreationFailedMessage();
+                this.logger.LogError(ex, "Error from Quicklister: {Error}", ex);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Error from Quicklister: {Error}", ex);
+            }
+
+            uploaderResponse.UploadResult = UploadResult.Success;
+            return uploaderResponse;
         }
 
-        public Task<UploaderResponse> TaxIdUpdate(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
+        public async Task<UploaderResponse> TaxIdUpdate(ResidentialListingRequest listing, bool logIn = true, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(listing);
+
+            var uploaderResponse = new UploaderResponse();
+
+            this.logger.LogInformation("Updating Tax Id information for the listing {ListingId}", listing.ResidentialListingRequestID);
+            this.uploaderClient.InitializeUploadInfo(listing.ResidentialListingRequestID, false);
+            if (logIn)
+            {
+                await this.Login(listing.CompanyId);
+                Thread.Sleep(2000);
+            }
+
+            try
+            {
+                this.NavigateToQuickEdit(listing.MLSNum);
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.XPath("//span[text()='Modify Listing']"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+                this.uploaderClient.ClickOnElementById("m_dlInputList_ctl00_m_btnSelect");
+                this.uploaderClient.WaitUntilElementIsDisplayed(By.Id("Input_174"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+                this.uploaderClient.WriteTextbox(By.Id("Input_174"), listing.TaxID);
+                this.uploaderClient.WaitUntilElementExists(By.Id("css_InputCompleted"), TimeSpan.FromMinutes(5), showAlert: true, cancellationToken);
+                Thread.Sleep(500);
+            }
+            catch (Exception exception)
+            {
+                this.logger.LogError(exception, "Failure uploading the request {RequestId}", listing.ResidentialListingRequestID);
+                uploaderResponse.UploadResult = UploadResult.Failure;
+                uploaderResponse.UploadInformation = this.uploaderClient.UploadInformation;
+                return uploaderResponse;
+            }
+
+            uploaderResponse.UploadResult = UploadResult.Success;
+            return uploaderResponse;
         }
+
+        private void NavigateToListingInfo(string mlsNumber, bool isInHomePage, CancellationToken cancellationToken = default)
+        {
+            this.uploaderClient.ScrollToTop();
+
+            if (isInHomePage)
+            {
+                this.uploaderClient.NavigateToUrl(SearchURL);
+            }
+
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.Id($"ctl01_m_ucSpeedBar_m_tbSpeedBar"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+            this.uploaderClient.WriteTextbox(By.Id($"ctl01_m_ucSpeedBar_m_tbSpeedBar"), value: mlsNumber);
+            this.uploaderClient.ClickOnElement(By.Id($"ctl01_m_ucSpeedBar_m_lnkGo"));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("singleLineTableHeader"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+            this.uploaderClient.ClickOnElement(By.LinkText(mlsNumber));
+            this.uploaderClient.WaitUntilElementIsDisplayed(By.ClassName("mtx-containerNavTabs"), waitTime: TimeSpan.FromSeconds(5), cancellationToken);
+        }
+
+        private string ScrapeFieldFromTaxPage(string fieldLabel) =>
+            this.uploaderClient.FindElement(By.XPath($"//span[text()='{fieldLabel}:']/../following-sibling::div/span")).Text;
 
         private void FillAgentRemarkInformation(ResidentialListingRequest listing)
         {
@@ -1438,11 +1545,16 @@ namespace Husa.Uploader.Core.Services
 
         private void UpdatePublicRemarksInRemarksTab(ResidentialListingRequest listing)
         {
-            var remarks = listing.GetPublicRemarks();
-            string baseRemarks = listing.GetAgentRemarksMessage() ?? string.Empty;
-            string additionalRemarks = listing.AgentPrivateRemarksAdditional ?? string.Empty;
-            var agentRemarks = $"{baseRemarks} {additionalRemarks}";
-            this.uploaderClient.WriteTextbox(By.Id("Input_135"), remarks, true); // Public Remarks
+            var publicRemarks = listing.GetPublicRemarks();
+            var agentRemarks = string.Join(". ", new List<string>()
+            {
+                listing.GetAgentRemarksMessage(),
+                listing.AgentPrivateRemarks,
+                listing.AgentPrivateRemarksAdditional,
+            }.Where(x => !string.IsNullOrEmpty(x)));
+            publicRemarks = RegexGenerator.InvalidInlineDots.Replace($"{publicRemarks}.", ".");
+            agentRemarks = RegexGenerator.InvalidInlineDots.Replace($"{agentRemarks}.", ".");
+            this.uploaderClient.WriteTextbox(By.Id("Input_135"), publicRemarks, true); // Public Remarks
             this.uploaderClient.WriteTextbox(By.Id("Input_137"), agentRemarks, true); // Agent Remarks
         }
 
