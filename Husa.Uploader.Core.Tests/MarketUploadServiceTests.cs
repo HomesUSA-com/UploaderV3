@@ -3,8 +3,10 @@ namespace Husa.Uploader.Core.Tests
     using System.Threading;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.CompanyServicesManager.Api.Contracts.Response;
+    using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
     using Husa.MediaService.Domain.Enums;
+    using Husa.Quicklister.Abor.Domain.Enums.Domain;
     using Husa.Quicklister.Extensions.Domain.Enums;
     using Husa.Uploader.Core.Interfaces;
     using Husa.Uploader.Core.Models;
@@ -107,6 +109,9 @@ namespace Husa.Uploader.Core.Tests
             this.SetUpCompany();
             var request = this.GetEmptyListingRequest();
             request.MLSNum = "MLSNum";
+            request.YearBuiltDesc = ConstructionStage.ToBeBuilt.ToStringFromEnumMember();
+            request.BuildCompletionDate = DateTime.UtcNow.AddMonths(1);
+            request.RemarksFormatFromCompany = "SD";
             var sut = this.GetSut();
 
             // Act
