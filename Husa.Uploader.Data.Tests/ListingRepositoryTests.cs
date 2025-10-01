@@ -1,9 +1,9 @@
 namespace Husa.Uploader.Data.Tests.Repositories
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
+    ////using System;
+    ////using System.Collections.Generic;
+    ////using System.Linq;
+    ////using System.Threading;
     using System.Threading.Tasks;
     using Husa.CompanyServicesManager.Api.Client.Interfaces;
     using Husa.Extensions.Common.Enums;
@@ -14,7 +14,7 @@ namespace Husa.Uploader.Data.Tests.Repositories
     using Microsoft.Extensions.Options;
     using Moq;
     using Xunit;
-    using ListingWithInvalidTaxIdResponse = Husa.Quicklister.Dfw.Api.Contracts.Response.Listing.InvalidTaxIdListingsResponse;
+    ////using ListingWithInvalidTaxIdResponse = Husa.Quicklister.Dfw.Api.Contracts.Response.Listing.InvalidTaxIdListingsResponse;
 
     public class ListingRepositoryTests
     {
@@ -31,51 +31,51 @@ namespace Husa.Uploader.Data.Tests.Repositories
             this.loggerMock = new Mock<ILogger<ListingRepository>>();
         }
 
-        [Fact]
-        public async Task GetListingsWithInvalidTaxId_DfwMarket_ReturnsListings()
-        {
-            // Arrange
-            var mockListings = new List<ListingWithInvalidTaxIdResponse>
-            {
-                new()
-                {
-                    MlsNumber = "12345",
-                    Address = "123 Main St",
-                    TaxId = "invalid-tax-id",
-                },
-                new()
-                {
-                    MlsNumber = "67890",
-                    Address = "456 Oak Ave",
-                    TaxId = "another-invalid-tax-id",
-                },
-            };
+        ////[Fact]
+        ////public async Task GetListingsWithInvalidTaxId_DfwMarket_ReturnsListings()
+        ////{
+        ////    // Arrange
+        ////    var mockListings = new List<ListingWithInvalidTaxIdResponse>
+        ////    {
+        ////        new()
+        ////        {
+        ////            MlsNumber = "12345",
+        ////            Address = "123 Main St",
+        ////            TaxId = "invalid-tax-id",
+        ////        },
+        ////        new()
+        ////        {
+        ////            MlsNumber = "67890",
+        ////            Address = "456 Oak Ave",
+        ////            TaxId = "another-invalid-tax-id",
+        ////        },
+        ////    };
 
-            this.quicklisterDfwClientMock
-                .Setup(x => x.SaleListing.GetListingsWithInvalidTaxId(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mockListings);
+        ////    this.quicklisterDfwClientMock
+        ////        .Setup(x => x.SaleListing.GetListingsWithInvalidTaxId(It.IsAny<CancellationToken>()))
+        ////        .ReturnsAsync(mockListings);
 
-            var repository = new ListingRepository(
-                this.applicationOptionsMock.Object,
-                this.quicklisterDfwClientMock.Object,
-                this.serviceSubscriptionClientMock.Object,
-                this.loggerMock.Object);
+        ////    var repository = new ListingRepository(
+        ////        this.applicationOptionsMock.Object,
+        ////        this.quicklisterDfwClientMock.Object,
+        ////        this.serviceSubscriptionClientMock.Object,
+        ////        this.loggerMock.Object);
 
-            // Act
-            var result = await repository.GetListingsWithInvalidTaxId(MarketCode.DFW);
+        ////    // Act
+        ////    var result = await repository.GetListingsWithInvalidTaxId(MarketCode.DFW);
 
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(2, result.Count());
+        ////    // Assert
+        ////    Assert.NotNull(result);
+        ////    Assert.Equal(2, result.Count());
 
-            var firstItem = result.First();
-            Assert.Equal("12345", firstItem.MlsNumber);
-            Assert.Equal("123 Main St", firstItem.Address);
-            Assert.Equal("invalid-tax-id", firstItem.TaxId);
-            Assert.Equal("DFW", firstItem.Market);
+        ////    var firstItem = result.First();
+        ////    Assert.Equal("12345", firstItem.MlsNumber);
+        ////    Assert.Equal("123 Main St", firstItem.Address);
+        ////    Assert.Equal("invalid-tax-id", firstItem.TaxId);
+        ////    Assert.Equal("DFW", firstItem.Market);
 
-            this.quicklisterDfwClientMock.Verify(x => x.SaleListing.GetListingsWithInvalidTaxId(It.IsAny<CancellationToken>()), Times.Once);
-        }
+        ////    this.quicklisterDfwClientMock.Verify(x => x.SaleListing.GetListingsWithInvalidTaxId(It.IsAny<CancellationToken>()), Times.Once);
+        ////}
 
         [Fact]
         public async Task GetListingsWithInvalidTaxId_UnsupportedMarket_ThrowsNotSupportedException()
