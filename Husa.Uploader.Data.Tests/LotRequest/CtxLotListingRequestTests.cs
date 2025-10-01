@@ -3,6 +3,7 @@ namespace Husa.Uploader.Data.Tests.Entities.MarketRequests.LotRequest
     using System;
     using Husa.Extensions.Common;
     using Husa.Extensions.Common.Enums;
+    using Husa.Quicklister.CTX.Api.Contracts.Response;
     using Husa.Quicklister.CTX.Api.Contracts.Response.ListingRequest.LotRequest;
     using Husa.Quicklister.CTX.Api.Contracts.Response.LotListing;
     using Husa.Quicklister.CTX.Api.Contracts.Response.SalePropertyDetail;
@@ -157,6 +158,7 @@ namespace Husa.Uploader.Data.Tests.Entities.MarketRequests.LotRequest
                 FinancialInfo = new LotFinancialResponse(),
                 FeaturesInfo = new LotFeaturesResponse(),
                 SchoolsInfo = new SchoolsResponse(),
+                StatusFieldsInfo = new ListingSaleStatusFieldsResponse(),
             };
 
             var sut = new CtxLotListingRequest(listingDetailResponse);
@@ -260,6 +262,7 @@ namespace Husa.Uploader.Data.Tests.Entities.MarketRequests.LotRequest
                 FinancialInfo = financialInfo,
                 FeaturesInfo = featuresInfo,
                 SchoolsInfo = schoolsInfo,
+                StatusFieldsInfo = new ListingSaleStatusFieldsResponse(),
             };
 
             var sut = new CtxLotListingRequest(listingDetailResponse);
