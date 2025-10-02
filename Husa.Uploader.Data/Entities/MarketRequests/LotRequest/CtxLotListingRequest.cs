@@ -205,7 +205,7 @@ namespace Husa.Uploader.Data.Entities.MarketRequests.LotRequest
             {
                 ArgumentNullException.ThrowIfNull(schoolsInfo);
 
-                lotListingRequest.SchoolDistrict = schoolsInfo.SchoolDistrict?.GetEnumDescription();
+                lotListingRequest.SchoolDistrict = schoolsInfo.SchoolDistrict?.ToStringFromEnumMember();
                 lotListingRequest.HighSchool = schoolsInfo.HighSchool?.ToStringFromEnumMember();
                 lotListingRequest.SchoolName1 = schoolsInfo.ElementarySchool?.ToStringFromEnumMember();
                 lotListingRequest.SchoolName2 = schoolsInfo.MiddleSchool?.ToStringFromEnumMember();

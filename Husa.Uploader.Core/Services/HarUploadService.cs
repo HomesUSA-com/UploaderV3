@@ -329,7 +329,7 @@ namespace Husa.Uploader.Core.Services
                     this.FillCompletionDate(listing);
 
                     this.GoToRemarksTab(housingType);
-                    this.UpdatePublicRemarksInRemarksTab(listing);
+                    this.UpdatePublicRemarksInRemarksTab(listing as HarListingRequest);
 
                     if (autoSave)
                     {
@@ -1543,7 +1543,7 @@ namespace Husa.Uploader.Core.Services
             }
         }
 
-        private void UpdatePublicRemarksInRemarksTab(ResidentialListingRequest listing)
+        private void UpdatePublicRemarksInRemarksTab(HarListingRequest listing)
         {
             var publicRemarks = listing.GetPublicRemarks();
             var agentRemarks = string.Join(". ", new List<string>()

@@ -7,12 +7,12 @@ namespace Husa.Uploader.Data.Tests.Repositories
     using System.Threading.Tasks;
     using Husa.Extensions.Common.Enums;
     using Husa.Quicklister.Dfw.Api.Client;
+    using Husa.Quicklister.Extensions.Api.Contracts.Response.Listing;
     using Husa.Quicklister.Har.Api.Client;
     using Husa.Uploader.Data.Repositories;
     using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
-    using ListingWithInvalidTaxIdResponse = Husa.Quicklister.Extensions.Api.Contracts.Response.Listing.InvalidTaxIdListingsResponse;
 
     public class ListingRepositoryTests
     {
@@ -38,7 +38,7 @@ namespace Husa.Uploader.Data.Tests.Repositories
         public async Task GetListingsWithInvalidTaxId_DfwMarket_ReturnsListings(MarketCode marketCode)
         {
             // Arrange
-            var mockListings = new List<ListingWithInvalidTaxIdResponse>
+            var mockListings = new List<InvalidTaxIdListingsResponse>
             {
                 new()
                 {
@@ -103,7 +103,7 @@ namespace Husa.Uploader.Data.Tests.Repositories
             Assert.Equal("logger", exception.ParamName);
         }
 
-        private void SetupClient(MarketCode marketCode, List<ListingWithInvalidTaxIdResponse> mockListings)
+        private void SetupClient(MarketCode marketCode, List<InvalidTaxIdListingsResponse> mockListings)
         {
             switch (marketCode)
             {

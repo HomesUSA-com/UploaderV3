@@ -112,6 +112,7 @@ namespace Husa.Uploader.Data.Repositories
             {
                 MarketCode.Austin => await GetFromAbor(),
                 MarketCode.Houston => await GetFromHar(),
+                MarketCode.CTX => await GetFromCtx(),
                 _ => throw new NotSupportedException($"The market {marketCode} is not yet supported"),
             };
 
@@ -126,6 +127,12 @@ namespace Husa.Uploader.Data.Repositories
             async Task<string> GetFromHar()
             {
                 var listing = await this.quicklisterHarClient.SaleListing.GetByIdAsync(lotListingId, token);
+                return listing.MlsNumber;
+            }
+
+            async Task<string> GetFromCtx()
+            {
+                var listing = await this.quicklisterCtxClient.SaleListing.GetByIdAsync(lotListingId, token);
                 return listing.MlsNumber;
             }
         }
