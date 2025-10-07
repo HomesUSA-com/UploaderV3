@@ -441,8 +441,6 @@ namespace Husa.Uploader.Core.Services
                 var marketInfo = this.options.MarketInfo.Amarillo;
                 var listingMember = marketInfo.AgentId;
                 this.FillDropDownWithAutocomplete(listingMember, "me_tech_id");  // Listing Member
-                this.FillDropDownWithAutocomplete(listingMember, "sell_agent_id");  // Selling Member
-                this.FillDropDownWithAutocomplete(listingMember, "co_sell_agent_id");  // Co-selling Member
             }
 
             void HandleCancelledStatus(CancellationToken cancellationToken)
