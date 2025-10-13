@@ -436,7 +436,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ExecuteScript("javascript:changestatus('P');");
                 Thread.Sleep(1000);
 
-                this.uploaderClient.WriteTextbox(By.Id("un_contr_date"), listing.ContractDate?.ToShortDateString()); // Under Contract Date
+                this.uploaderClient.WriteTextbox(By.Id("un_contr_date"), listing.EstClosedDate?.ToShortDateString()); // Under Contract Date
 
                 var marketInfo = this.options.MarketInfo.Amarillo;
                 var listingMember = marketInfo.AgentId;
