@@ -1546,10 +1546,10 @@ namespace Husa.Uploader.Core.Services
         private void UpdatePublicRemarksInRemarksTab(HarListingRequest listing)
         {
             var publicRemarks = listing.GetPublicRemarks();
+            var autoAgentRemarksMessage = !string.IsNullOrEmpty(listing.AgentPrivateRemarks) ? listing.AgentPrivateRemarks : listing.GetAgentRemarksMessage();
             var agentRemarks = string.Join(". ", new List<string>()
             {
-                listing.GetAgentRemarksMessage(),
-                listing.AgentPrivateRemarks,
+                autoAgentRemarksMessage,
                 listing.AgentPrivateRemarksAdditional,
             }.Where(x => !string.IsNullOrEmpty(x)));
             publicRemarks = RegexGenerator.InvalidInlineDots.Replace($"{publicRemarks}.", ".");

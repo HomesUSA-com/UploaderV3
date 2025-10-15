@@ -436,7 +436,7 @@ namespace Husa.Uploader.Core.Services
                 this.uploaderClient.ExecuteScript("javascript:changestatus('P');");
                 Thread.Sleep(1000);
 
-                this.uploaderClient.WriteTextbox(By.Id("un_contr_date"), listing.ContractDate?.ToShortDateString()); // Under Contract Date
+                this.uploaderClient.WriteTextbox(By.Id("un_contr_date"), listing.EstClosedDate?.ToShortDateString()); // Under Contract Date
 
                 var marketInfo = this.options.MarketInfo.Amarillo;
                 var listingMember = marketInfo.AgentId;
@@ -618,6 +618,13 @@ namespace Husa.Uploader.Core.Services
             this.uploaderClient.SetSelect(By.Id("county"), listing.County); // County
 
             this.uploaderClient.ClickOnElementById(ButtonNextId);
+
+            Thread.Sleep(2000);
+
+            if (this.uploaderClient.IsElementVisible(By.Id("aoiDialog")))
+            {
+                this.uploaderClient.FindElement(By.XPath("//*[@id=\"aoiDialog\"]/div[2]/table/tbody/tr[2]/td[1]/button")).Click();
+            }
 
             Thread.Sleep(1000);
         }
@@ -817,7 +824,7 @@ namespace Husa.Uploader.Core.Services
 
         private void FillDetailsForNewListings(ResidentialListingRequest listing)
         {
-            this.uploaderClient.SetSelectByText(By.Id("t_683"), "Negotiable", "Hydrostatic", "Hydrostatic Test"); // Hydrostatic Tests
+            this.uploaderClient.SetSelectByText(By.Id("t_3431"), "Negotiable", "Hydrostatic", "Hydrostatic Test"); // Hydrostatic Tests
 
             this.uploaderClient.SetSelectByText(By.Id("t_735"), (listing as AmarilloListingRequest).HasLenderOwned.BoolToYesNoBool().ToTitleCase(), LenderOwnerFieldLabel, LenderOwnerFieldLabel); // Lender Owned
 
@@ -852,7 +859,7 @@ namespace Husa.Uploader.Core.Services
 
             this.uploaderClient.ScrollDownPosition(3000);
 
-            this.uploaderClient.WriteTextbox(By.Id("t_807"), (listing as AmarilloListingRequest).OtherSpecialFeatures); // Other Spec. Feature
+            this.uploaderClient.WriteTextbox(By.Id("t_3555"), (listing as AmarilloListingRequest).OtherSpecialFeatures); // Other Spec. Feature
 
             this.CheckOptions((listing as AmarilloListingRequest).ParkingFeatures); // Parking Features
 
@@ -906,26 +913,26 @@ namespace Husa.Uploader.Core.Services
             this.CheckOptions(listing.HeatSystemDesc); // Heat
             this.CheckOptions(listing.CoolSystemDesc); // A/C
 
-            this.uploaderClient.WriteTextbox(By.Id("t_1303"), (listing as AmarilloListingRequest).WaterHeater); // # Heaters
+            this.uploaderClient.WriteTextbox(By.Id("t_4055"), (listing as AmarilloListingRequest).WaterHeater); // # Heaters
 
-            this.uploaderClient.SetSelect(By.Id("t_1321"), listing.SchoolName1); // Elementary School
-            this.uploaderClient.SetSelect(By.Id("t_1323"), listing.SchoolName2); // Intermedaite School
-            this.uploaderClient.SetSelect(By.Id("t_1325"), listing.HighSchool); // High School
-            this.uploaderClient.SetSelect(By.Id("t_1327"), listing.SchoolDistrict); // Disctrict School
+            this.uploaderClient.SetSelect(By.Id("t_4073"), listing.SchoolName1); // Elementary School
+            this.uploaderClient.SetSelect(By.Id("t_4075"), listing.SchoolName2); // Intermedaite School
+            this.uploaderClient.SetSelect(By.Id("t_4077"), listing.HighSchool); // High School
+            this.uploaderClient.SetSelect(By.Id("t_4079"), listing.SchoolDistrict); // Disctrict School
 
             this.CheckOptions(listing.FinancingProposed); // Possible Financing
 
-            this.uploaderClient.WriteTextbox(By.Id("t_1345"), listing.TitleCo); // Suggested Title Company/Address
+            this.uploaderClient.WriteTextbox(By.Id("t_4097"), listing.TitleCo); // Suggested Title Company/Address
 
             var marketInfo = this.options.MarketInfo.Amarillo;
 
-            this.uploaderClient.WriteTextbox(By.Id("t_1355"), marketInfo.AgentId); // Listing Agent
-            this.uploaderClient.WriteTextbox(By.Id("t_1357"), listing.AgentListApptPhone); // Listing Agent's Phone
+            this.uploaderClient.WriteTextbox(By.Id("t_4107"), marketInfo.AgentId); // Listing Agent
+            this.uploaderClient.WriteTextbox(By.Id("t_4109"), listing.AgentListApptPhone); // Listing Agent's Phone
 
-            this.uploaderClient.WriteTextbox(By.Id("t_1359"), marketInfo.AgentId); // Secondary Contact
-            this.uploaderClient.WriteTextbox(By.Id("t_1361"), listing.OtherPhone); // Secondary Contact's Phone
+            this.uploaderClient.WriteTextbox(By.Id("t_4111"), marketInfo.AgentId); // Secondary Contact
+            this.uploaderClient.WriteTextbox(By.Id("t_4113"), listing.OtherPhone); // Secondary Contact's Phone
 
-            this.uploaderClient.WriteTextbox(By.Id("t_1363"), (listing as AmarilloListingRequest).SupervisorLicense); // Listing Agent's License Number
+            this.uploaderClient.WriteTextbox(By.Id("t_4115"), (listing as AmarilloListingRequest).SupervisorLicense); // Listing Agent's License Number
 
             this.uploaderClient.ClickOnElementById(ButtonNextId);
 

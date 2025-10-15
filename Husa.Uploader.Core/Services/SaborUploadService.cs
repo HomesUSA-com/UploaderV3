@@ -1500,7 +1500,6 @@ namespace Husa.Uploader.Core.Services
 
                 var agentRemarks = string.Join(". ", new List<string>()
                 {
-                    listing.GetAgentRemarksMessage(),
                     listing.AgentPrivateRemarks,
                     listing.AgentPrivateRemarksAdditional,
                 }.Where(x => !string.IsNullOrEmpty(x)));

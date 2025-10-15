@@ -1635,7 +1635,6 @@ namespace Husa.Uploader.Core.Services
             var agentRemarks = string.Join(". ", new List<string>()
             {
                 listing.GetAgentRemarksMessage(listing.YearBuiltDesc),
-                listing.AgentPrivateRemarks,
                 listing.AgentPrivateRemarksAdditional,
             }.Where(x => !string.IsNullOrEmpty(x)));
             agentRemarks = RegexGenerator.InvalidInlineDots.Replace($"{agentRemarks}.", ".");
