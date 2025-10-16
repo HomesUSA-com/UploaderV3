@@ -13,7 +13,7 @@
         <PackageReference Include="Husa.Quicklister.Amarillo.Api.Client" Version="1.12.1" />
         <PackageReference Include="Husa.Quicklister.CTX.Api.Client" Version="2.19.2" />
         <PackageReference Include="Husa.Quicklister.Extensions.Api.Client" Version="1.20.1" />
-        <PackageReference Include="Husa.Quicklister.Har.Api.Client" Version="2.19.1" />
+        <PackageReference Include="Husa.Quicklister.Har.Api.Client" Version="2.19.2" />
         <PackageReference Include="Husa.Quicklister.Dfw.Api.Client" Version="0.23.5" />
         <PackageReference Include="Husa.Quicklister.Sabor.Api.Client" Version="2.20.3" />
         <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.8.2" />
