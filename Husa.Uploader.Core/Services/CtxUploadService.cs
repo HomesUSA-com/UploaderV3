@@ -1252,11 +1252,11 @@ namespace Husa.Uploader.Core.Services
             string publicRemarks)
         {
             // driver.wait.Until(x => ExpectedConditions.ElementIsVisible(By.Id("Input_917")));
+            var autoAgentRemarksMessage = !string.IsNullOrEmpty(listing.AgentPrivateRemarks) ? listing.AgentPrivateRemarks : agentRemarksMessage;
             Thread.Sleep(400);
             var agentRemarks = string.Join(". ", new List<string>()
             {
-                agentRemarksMessage,
-                listing.AgentPrivateRemarks,
+                autoAgentRemarksMessage,
                 listing.AgentPrivateRemarksAdditional,
             }.Where(x => !string.IsNullOrEmpty(x)));
             agentRemarks = RegexGenerator.InvalidInlineDots.Replace($"{agentRemarks}.", ".");
