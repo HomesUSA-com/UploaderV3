@@ -39,7 +39,7 @@ jobs:
       run: dotnet restore ${{ env.SOLUTION_FILE }} /p:RuntimeIdentifier=win-x64
       
     - name: Build solution
-      run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore
+      run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore /p:RuntimeIdentifier=win-x64
       
     - name: Run tests
       run: dotnet test ${{ env.SOLUTION_FILE }} --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
