@@ -1,0 +1,54 @@
+name: CI - Build and Test
+
+on:
+  push:
+    branches: [ develop, master ]
+  pull_request:
+    branches: [ develop, master ]
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  SOLUTION_FILE: 'Husa.Uploader.sln'
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Configure GitHub Packages authentication
+      shell: pwsh
+      run: |
+        dotnet nuget remove source github 2>$null
+        dotnet nuget add source https://nuget.pkg.github.com/HomesUSA-com/index.json `
+          --name github `
+          --username ${{ github.repository_owner }} `
+          --password ${{ secrets.PACKAGE_PAT }} `
+          --store-password-in-clear-text
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.SOLUTION_FILE }}
+      
+    - name: Build solution
+      run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore
+      
+    - name: Run tests
+      run: dotnet test ${{ env.SOLUTION_FILE }} --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+      
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: '**/test-results.trx'
+        retention-days: 30
+

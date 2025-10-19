@@ -1,0 +1,72 @@
+name: CD - Publish Packages
+
+on:
+  push:
+    branches: [ master ]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  SOLUTION_FILE: 'Husa.Uploader.sln'
+
+jobs:
+  publish-packages:
+    name: Build and Publish NuGet Packages
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Configure GitHub Packages authentication
+      shell: pwsh
+      run: |
+        dotnet nuget remove source github 2>$null
+        dotnet nuget add source https://nuget.pkg.github.com/HomesUSA-com/index.json `
+          --name github `
+          --username ${{ github.repository_owner }} `
+          --password ${{ secrets.PACKAGE_PAT }} `
+          --store-password-in-clear-text
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.SOLUTION_FILE }}
+      
+    - name: Build solution (generates NuGet packages automatically)
+      run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore
+      
+    - name: Collect generated NuGet packages
+      shell: pwsh
+      run: |
+        New-Item -Path ./nupkgs -ItemType Directory -Force
+        Get-ChildItem -Recurse -Filter "*.nupkg" -Path . | Where-Object { $_.FullName -like "*\bin\Release\*" } | ForEach-Object { Copy-Item $_.FullName ./nupkgs/ }
+        Get-ChildItem ./nupkgs/
+          
+    - name: Publish packages to GitHub Packages
+      shell: pwsh
+      run: |
+        Get-ChildItem ./nupkgs/*.nupkg | ForEach-Object {
+          Write-Host "Publishing: $($_.Name)"
+          dotnet nuget push $_.FullName `
+            --source github `
+            --api-key ${{ secrets.PACKAGE_PAT }} `
+            --skip-duplicate `
+            2>&1 | Out-String | Write-Host
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Failed or duplicate: $($_.Name)"
+          }
+        }
+    
+    - name: Upload package artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-packages
+        path: ./nupkgs/*.nupkg
+        retention-days: 30
+
