@@ -36,10 +36,10 @@ jobs:
           --store-password-in-clear-text
 
     - name: Restore dependencies
-      run: dotnet restore ${{ env.SOLUTION_FILE }} -r win-x64
+      run: dotnet restore ${{ env.SOLUTION_FILE }}
       
     - name: Build solution
-      run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore -r win-x64
+      run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore
       
     - name: Run tests
       run: dotnet test ${{ env.SOLUTION_FILE }} --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
